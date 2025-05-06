@@ -248,6 +248,30 @@ export const insertUserFeedbackSchema = createInsertSchema(user_feedback).omit({
 export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
 export type UserFeedback = typeof user_feedback.$inferSelect;
 
+// Game Leaderboards table
+export const game_leaderboards = pgTable("game_leaderboards", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull().references(() => users.id),
+  wallet_address: text("wallet_address").notNull(),
+  username: text("username").notNull(),
+  game_type: text("game_type").notNull(), // "hashlord", "gasescape", "stakingwars"
+  score: integer("score").notNull(),
+  difficulty: integer("difficulty").notNull().default(1),
+  time_spent: integer("time_spent").notNull(), // In seconds
+  blocks_mined: integer("blocks_mined"), // For hashlord
+  gas_saved: numeric("gas_saved", { precision: 18, scale: 6 }), // For gasescape
+  staking_rewards: numeric("staking_rewards", { precision: 18, scale: 6 }), // For stakingwars
+  created_at: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertGameLeaderboardSchema = createInsertSchema(game_leaderboards).omit({
+  id: true,
+  created_at: true,
+});
+
+export type InsertGameLeaderboard = z.infer<typeof insertGameLeaderboardSchema>;
+export type GameLeaderboard = typeof game_leaderboards.$inferSelect;
+
 // Types for veto guardian tables
 export type InsertVetoGuardian = z.infer<typeof insertVetoGuardianSchema>;
 export type VetoGuardian = typeof veto_guardians.$inferSelect;

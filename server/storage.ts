@@ -52,6 +52,21 @@ export interface IStorage {
   getVotes(address: string): Promise<{proposalId: string, option: VoteOption}[]>;
   vote(address: string, proposalId: string, option: VoteOption): Promise<boolean>;
   
+  // Game Leaderboard methods
+  getGameLeaderboards(gameType: string, limit?: number): Promise<GameLeaderboard[]>;
+  getLeaderboardsByUser(userId: number): Promise<GameLeaderboard[]>;
+  getLeaderboardsByWalletAddress(walletAddress: string): Promise<GameLeaderboard[]>;
+  addGameScore(entry: InsertGameLeaderboard): Promise<GameLeaderboard>;
+  getTopScores(gameType: string, limit?: number): Promise<GameLeaderboard[]>;
+  getUserRank(userId: number, gameType: string): Promise<number>; // Returns rank position (1st, 2nd, etc.)
+  getRecentScores(limit?: number): Promise<GameLeaderboard[]>;
+  getGameStats(gameType: string): Promise<{
+    totalPlayers: number;
+    highestScore: number;
+    averageScore: number;
+    totalGamesPlayed: number;
+  }>;
+  
   // Veto Guardian related methods
   getVetoGuardians(): Promise<VetoGuardian[]>;
   getVetoGuardian(id: number): Promise<VetoGuardian | undefined>;
