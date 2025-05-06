@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface NetworkStatsType {
   blockHeight: number;
@@ -14,8 +15,72 @@ interface SidebarProps {
 
 export function Sidebar({ networkStats }: SidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const sidebarCanvasRef = useRef<HTMLCanvasElement>(null);
   
-  // Handle window resize
+  // Matrix effect for sidebar
+  useEffect(() => {
+    if (!sidebarCanvasRef.current) return;
+    
+    const canvas = sidebarCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    // Set canvas size to match sidebar
+    const resizeCanvas = () => {
+      const sidebar = canvas.parentElement;
+      if (sidebar) {
+        canvas.width = sidebar.offsetWidth;
+        canvas.height = sidebar.offsetHeight;
+      }
+    };
+    
+    resizeCanvas();
+    
+    // Matrix rain effect with traditional Japanese and Chinese characters
+    const characters = 'ｦｧｨｩｪｫｬｭｮｯｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃ日本語社会木水火土金天海空雲電車語';
+    const fontSize = 14;
+    const columns = Math.floor(canvas.width / fontSize);
+    
+    const drops: number[] = [];
+    for (let i = 0; i < columns; i++) {
+      drops[i] = 1;
+    }
+    
+    const matrix = () => {
+      // Semi-transparent black background to show trail
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Green text
+      ctx.fillStyle = '#0f0';
+      ctx.font = fontSize + 'px monospace';
+      
+      for (let i = 0; i < drops.length; i++) {
+        // Get random character
+        const text = characters[Math.floor(Math.random() * characters.length)];
+        
+        // Draw the character
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        
+        // Reset when drop reaches bottom or random chance
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        
+        drops[i]++;
+      }
+    };
+    
+    const matrixInterval = setInterval(matrix, 40);
+    window.addEventListener('resize', resizeCanvas);
+    
+    return () => {
+      clearInterval(matrixInterval);
+      window.removeEventListener('resize', resizeCanvas);
+    };
+  }, []);
+  
+  // Handle window resize for sidebar display
   useEffect(() => {
     const handleResize = () => {
       setSidebarOpen(window.innerWidth >= 768);
@@ -55,29 +120,40 @@ export function Sidebar({ networkStats }: SidebarProps) {
           </div>
           <h1 className="ml-3 text-xl font-bold text-gray-800 dark:text-white">PixelVault</h1>
         </div>
-        <button 
-          onClick={() => setSidebarOpen(!sidebarOpen)} 
-          className="text-gray-500 dark:text-gray-300 focus:outline-none"
-        >
-          <i className={`fas ${sidebarOpen ? 'fa-times' : 'fa-bars'}`}></i>
-        </button>
+        <div className="flex items-center space-x-3">
+          <ThemeToggle />
+          <button 
+            onClick={() => setSidebarOpen(!sidebarOpen)} 
+            className="text-gray-500 dark:text-gray-300 focus:outline-none"
+          >
+            <i className={`fas ${sidebarOpen ? 'fa-times' : 'fa-bars'}`}></i>
+          </button>
+        </div>
       </div>
     
       {/* Sidebar - Responsive */}
       <aside 
         className={cn(
-          "z-20 flex-shrink-0 bg-white dark:bg-dark-card border-r border-light-border dark:border-dark-border",
+          "z-20 flex-shrink-0 bg-black relative border-r border-light-border dark:border-dark-border",
           "transition-all duration-300 md:relative flex flex-col overflow-y-auto",
           "w-64 md:flex",
           sidebarOpen ? "block fixed inset-0 md:relative" : "hidden"
         )}
       >
+        {/* Matrix effect canvas for sidebar */}
+        <canvas 
+          ref={sidebarCanvasRef}
+          className="absolute inset-0 z-0 pointer-events-none opacity-50"
+        />
         {/* Sidebar Header (hidden on mobile) */}
-        <div className="hidden md:flex items-center p-4 border-b border-light-border dark:border-dark-border">
-          <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
-            <i className="ri-shield-keyhole-fill text-white text-xl"></i>
+        <div className="hidden md:flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
+          <div className="flex items-center">
+            <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
+              <i className="ri-shield-keyhole-fill text-white text-xl"></i>
+            </div>
+            <h1 className="ml-3 text-xl font-bold text-gray-800 dark:text-white">PixelVault</h1>
           </div>
-          <h1 className="ml-3 text-xl font-bold text-gray-800 dark:text-white">PixelVault</h1>
+          <ThemeToggle />
         </div>
         
         {/* Close button for mobile */}
