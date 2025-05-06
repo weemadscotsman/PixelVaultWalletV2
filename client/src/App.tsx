@@ -4,18 +4,26 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
-import Dashboard from "@/pages/Dashboard";
-import LearningPage from "@/pages/LearningPage";
+import HomePage from "@/pages/home-page";
+import LearningPage from "@/pages/learning-page";
 import { ThemeProvider } from "next-themes";
-import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 // Router component
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Dashboard} />
+      <Route path="/" component={HomePage} />
       <Route path="/learning" component={LearningPage} />
+      <Route path="/wallet" component={() => <HomePage />} />
+      <Route path="/blockchain" component={() => <HomePage />} />
+      <Route path="/staking" component={() => <HomePage />} />
+      <Route path="/governance" component={() => <HomePage />} />
+      <Route path="/thringlets" component={() => <HomePage />} />
+      <Route path="/drops" component={() => <HomePage />} />
+      <Route path="/terminal" component={() => <HomePage />} />
+      <Route path="/profile" component={() => <HomePage />} />
+      <Route path="/settings" component={() => <HomePage />} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -30,7 +38,6 @@ function App() {
         enableSystem={false}
       >
         <TooltipProvider>
-          <MatrixBackground />
           <Toaster />
           <FeedbackButton />
           <Router />
