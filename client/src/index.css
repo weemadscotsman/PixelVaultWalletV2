@@ -6,6 +6,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  .text-shadow-neon {
+    text-shadow: 0 0 5px #0af, 0 0 10px #0af, 0 0 15px #0af;
+  }
+}
+
 :root {
   --background: 0 0% 13%;
   --foreground: 0 0% 95%;

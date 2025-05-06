@@ -178,7 +178,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
                     "flex items-center px-4 py-3 rounded-lg transition-colors duration-200 cursor-pointer",
                     isActive(item.id)
                       ? "bg-primary bg-opacity-90 text-white" 
-                      : "text-green-400 hover:bg-black hover:bg-opacity-50 hover:text-green-300"
+                      : "text-blue-400 hover:bg-black hover:bg-opacity-50 hover:text-blue-300 text-shadow-neon"
                   )}
                   onClick={() => {
                     // Set hash for navigation
@@ -198,34 +198,34 @@ export function Sidebar({ networkStats }: SidebarProps) {
           </ul>
 
           <div className="mt-8 px-4 relative z-10">
-            <h3 className="text-xs uppercase text-green-500 font-medium mb-2">
+            <h3 className="text-xs uppercase text-blue-400 font-medium mb-2 text-shadow-neon">
               Network Status
             </h3>
-            <div className="bg-black bg-opacity-70 border border-green-900 p-3 rounded-md text-sm space-y-2 text-green-400">
+            <div className="bg-black bg-opacity-70 border border-blue-900 p-3 rounded-md text-sm space-y-2 text-blue-400">
               <div className="flex justify-between">
                 <span>Block Height:</span>
-                <span className="font-mono font-medium">
+                <span className="font-mono font-medium text-shadow-neon">
                   {networkStats.blockHeight.toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Block Time:</span>
-                <span className="font-mono font-medium">{networkStats.blockTime}</span>
+                <span className="font-mono font-medium text-shadow-neon">{networkStats.blockTime}</span>
               </div>
               <div className="flex justify-between">
                 <span>Peers:</span>
-                <span className="font-mono font-medium">{networkStats.peers}</span>
+                <span className="font-mono font-medium text-shadow-neon">{networkStats.peers}</span>
               </div>
               <div className="flex justify-between">
                 <span>Hash Rate:</span>
-                <span className="font-mono font-medium">{networkStats.hashRate}</span>
+                <span className="font-mono font-medium text-shadow-neon">{networkStats.hashRate}</span>
               </div>
             </div>
           </div>
         </nav>
         
         {/* Footer */}
-        <div className="p-4 border-t border-green-900 text-sm text-green-500 relative z-10">
+        <div className="p-4 border-t border-blue-900 text-sm text-blue-400 text-shadow-neon relative z-10">
           <p>PixelVault v1.0.0</p>
           <p className="mt-1">PVX Zero-Knowledge Wallet</p>
         </div>
