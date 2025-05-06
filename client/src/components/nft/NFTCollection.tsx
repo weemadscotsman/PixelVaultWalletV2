@@ -108,7 +108,6 @@ export function NFTCollection() {
             <Button 
               variant="outline"
               className="w-full mt-4 bg-background hover:bg-muted text-white"
-              onClick={() => window.location.href = '/nft/collection'}
             >
               <i className="ri-eye-line mr-2"></i>
               View All NFTs
