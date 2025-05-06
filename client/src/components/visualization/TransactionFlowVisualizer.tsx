@@ -140,6 +140,12 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, maxDisplay);
     
+    // If array is the same length and has the same IDs, don't update to avoid rerenders
+    if (visibleTransactions.length === recent.length && 
+        visibleTransactions.every((tx, i) => tx.id === recent[i].id)) {
+      return;
+    }
+    
     setVisibleTransactions(recent);
   }, [allTransactions, maxDisplay]);
 
