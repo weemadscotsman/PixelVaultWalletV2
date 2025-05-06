@@ -500,6 +500,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User Feedback Routes
+  app.get("/api/feedback", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const feedback = await storage.getUserFeedback(limit);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching feedback:", error);
+      res.status(500).json({ error: "Failed to fetch feedback" });
+    }
+  });
+
+  app.get("/api/feedback/stats", async (req, res) => {
+    try {
+      const stats = await storage.getFeedbackStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching feedback stats:", error);
+      res.status(500).json({ error: "Failed to fetch feedback statistics" });
+    }
+  });
+
+  app.get("/api/feedback/:id", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const feedback = await storage.getUserFeedbackById(id);
+      
+      if (!feedback) {
+        return res.status(404).json({ error: "Feedback not found" });
+      }
+      
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching feedback by ID:", error);
+      res.status(500).json({ error: "Failed to fetch feedback" });
+    }
+  });
+
+  app.get("/api/feedback/user/:address", async (req, res) => {
+    try {
+      const address = req.params.address;
+      const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
+      const feedback = await storage.getFeedbackByAddress(address, limit);
+      res.json(feedback);
+    } catch (error) {
+      console.error("Error fetching user feedback:", error);
+      res.status(500).json({ error: "Failed to fetch user feedback" });
+    }
+  });
+
+  app.post("/api/feedback", async (req, res) => {
+    try {
+      const feedbackData = req.body;
+      
+      // Add browser info if not provided
+      if (!feedbackData.browser_info) {
+        feedbackData.browser_info = {
+          userAgent: req.headers["user-agent"],
+          ip: req.ip,
+          referrer: req.headers.referer || ''
+        };
+      }
+      
+      const feedback = await storage.createFeedback(feedbackData);
+      res.status(201).json(feedback);
+    } catch (error) {
+      console.error("Error creating feedback:", error);
+      res.status(500).json({ error: "Failed to create feedback" });
+    }
+  });
+
+  app.patch("/api/feedback/:id/status", async (req, res) => {
+    try {
+      const id = req.params.id;
+      const { isResolved, resolutionNote } = req.body;
+      
+      if (isResolved === undefined) {
+        return res.status(400).json({ error: "isResolved field is required" });
+      }
+      
+      const updatedFeedback = await storage.updateFeedbackStatus(id, isResolved, resolutionNote);
+      
+      if (!updatedFeedback) {
+        return res.status(404).json({ error: "Feedback not found" });
+      }
+      
+      res.json(updatedFeedback);
+    } catch (error) {
+      console.error("Error updating feedback status:", error);
+      res.status(500).json({ error: "Failed to update feedback status" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

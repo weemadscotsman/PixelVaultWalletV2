@@ -7,7 +7,8 @@ import {
   User, InsertUser, Transaction, Block, MiningStats,
   MiningReward, Stake, Proposal, VoteOption, NFT, NetworkStats,
   users, wallets, transactions, blocks, mining_stats,
-  mining_rewards, stakes, proposals, votes, nfts
+  mining_rewards, stakes, proposals, votes, nfts, user_feedback,
+  UserFeedback, InsertUserFeedback
 } from '@shared/schema';
 
 export interface IStorage {
@@ -86,6 +87,9 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // User feedback in-memory storage - will be replaced with proper DB implementation
+  private userFeedback: UserFeedback[] = [];
+  
   // Secret Drops in-memory storage
   private secretDrops: any[] = [
     {
@@ -876,6 +880,305 @@ export class DatabaseStorage implements IStorage {
     
     this.thringlets[index] = thringlet;
     return thringlet;
+  }
+
+  // User Feedback methods implementation
+  async getUserFeedback(limit: number = 50): Promise<UserFeedback[]> {
+    try {
+      const results = await db
+        .select()
+        .from(user_feedback)
+        .orderBy(desc(user_feedback.created_at))
+        .limit(limit);
+      
+      // Convert from database schema to application schema
+      return results.map(feedback => ({
+        id: feedback.id.toString(),
+        userAddress: feedback.user_address,
+        feedbackType: feedback.feedback_type,
+        content: feedback.content,
+        sentiment: feedback.sentiment,
+        category: feedback.category || undefined,
+        pageUrl: feedback.page_url || undefined,
+        browserInfo: feedback.browser_info,
+        isResolved: feedback.is_resolved,
+        createdAt: feedback.created_at,
+        resolvedAt: feedback.resolved_at || undefined,
+        resolutionNote: feedback.resolution_note || undefined
+      }));
+    } catch (error) {
+      console.error("Error fetching user feedback:", error);
+      // Return cached in-memory data on error
+      return this.userFeedback;
+    }
+  }
+  
+  async getUserFeedbackById(id: string): Promise<UserFeedback | undefined> {
+    try {
+      const numId = parseInt(id, 10);
+      const [feedback] = await db
+        .select()
+        .from(user_feedback)
+        .where(eq(user_feedback.id, numId));
+      
+      if (!feedback) return undefined;
+      
+      // Convert to application schema
+      return {
+        id: feedback.id.toString(),
+        userAddress: feedback.user_address,
+        feedbackType: feedback.feedback_type,
+        content: feedback.content,
+        sentiment: feedback.sentiment,
+        category: feedback.category || undefined,
+        pageUrl: feedback.page_url || undefined,
+        browserInfo: feedback.browser_info,
+        isResolved: feedback.is_resolved,
+        createdAt: feedback.created_at,
+        resolvedAt: feedback.resolved_at || undefined,
+        resolutionNote: feedback.resolution_note || undefined
+      };
+    } catch (error) {
+      console.error("Error fetching feedback by ID:", error);
+      // Try finding in local cache
+      return this.userFeedback.find(f => f.id === id);
+    }
+  }
+  
+  async getFeedbackByAddress(address: string, limit: number = 20): Promise<UserFeedback[]> {
+    try {
+      const results = await db
+        .select()
+        .from(user_feedback)
+        .where(eq(user_feedback.user_address, address))
+        .orderBy(desc(user_feedback.created_at))
+        .limit(limit);
+      
+      // Convert from database schema to application schema
+      return results.map(feedback => ({
+        id: feedback.id.toString(),
+        userAddress: feedback.user_address,
+        feedbackType: feedback.feedback_type,
+        content: feedback.content,
+        sentiment: feedback.sentiment,
+        category: feedback.category || undefined,
+        pageUrl: feedback.page_url || undefined,
+        browserInfo: feedback.browser_info,
+        isResolved: feedback.is_resolved,
+        createdAt: feedback.created_at,
+        resolvedAt: feedback.resolved_at || undefined,
+        resolutionNote: feedback.resolution_note || undefined
+      }));
+    } catch (error) {
+      console.error("Error fetching feedback by address:", error);
+      // Return filtered cached data on error
+      return this.userFeedback.filter(f => f.userAddress === address);
+    }
+  }
+  
+  async createFeedback(feedbackData: InsertUserFeedback): Promise<UserFeedback> {
+    try {
+      // Map application schema to database schema
+      const dbFeedback = {
+        user_address: feedbackData.user_address,
+        feedback_type: feedbackData.feedback_type,
+        content: feedbackData.content,
+        sentiment: feedbackData.sentiment,
+        category: feedbackData.category,
+        page_url: feedbackData.page_url,
+        browser_info: feedbackData.browser_info,
+        is_resolved: feedbackData.is_resolved || false,
+        resolution_note: feedbackData.resolution_note
+      };
+      
+      const [newFeedback] = await db
+        .insert(user_feedback)
+        .values(dbFeedback)
+        .returning();
+      
+      // Convert to application schema
+      const feedbackResult: UserFeedback = {
+        id: newFeedback.id.toString(),
+        userAddress: newFeedback.user_address,
+        feedbackType: newFeedback.feedback_type,
+        content: newFeedback.content,
+        sentiment: newFeedback.sentiment,
+        category: newFeedback.category || undefined,
+        pageUrl: newFeedback.page_url || undefined,
+        browserInfo: newFeedback.browser_info,
+        isResolved: newFeedback.is_resolved,
+        createdAt: newFeedback.created_at,
+        resolvedAt: newFeedback.resolved_at || undefined,
+        resolutionNote: newFeedback.resolution_note || undefined
+      };
+      
+      // Store in cache for fallback
+      this.userFeedback.push(feedbackResult);
+      
+      return feedbackResult;
+    } catch (error) {
+      console.error("Error creating feedback:", error);
+      
+      // Generate a unique ID for the in-memory fallback
+      const fallbackId = `local-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      
+      // Create an in-memory fallback with current timestamp
+      const fallbackFeedback: UserFeedback = {
+        id: fallbackId,
+        userAddress: feedbackData.user_address,
+        feedbackType: feedbackData.feedback_type,
+        content: feedbackData.content,
+        sentiment: feedbackData.sentiment,
+        category: feedbackData.category || undefined,
+        pageUrl: feedbackData.page_url || undefined,
+        browserInfo: feedbackData.browser_info,
+        isResolved: feedbackData.is_resolved || false,
+        createdAt: new Date(),
+        resolvedAt: undefined,
+        resolutionNote: feedbackData.resolution_note || undefined
+      };
+      
+      // Store in memory for fallback
+      this.userFeedback.push(fallbackFeedback);
+      
+      return fallbackFeedback;
+    }
+  }
+  
+  async updateFeedbackStatus(id: string, isResolved: boolean, resolutionNote?: string): Promise<UserFeedback | undefined> {
+    try {
+      const numId = parseInt(id, 10);
+      const [updatedFeedback] = await db
+        .update(user_feedback)
+        .set({ 
+          is_resolved: isResolved,
+          resolution_note: resolutionNote || null,
+          resolved_at: isResolved ? new Date() : null
+        })
+        .where(eq(user_feedback.id, numId))
+        .returning();
+      
+      if (!updatedFeedback) return undefined;
+      
+      // Convert to application schema
+      const result: UserFeedback = {
+        id: updatedFeedback.id.toString(),
+        userAddress: updatedFeedback.user_address,
+        feedbackType: updatedFeedback.feedback_type,
+        content: updatedFeedback.content,
+        sentiment: updatedFeedback.sentiment,
+        category: updatedFeedback.category || undefined,
+        pageUrl: updatedFeedback.page_url || undefined,
+        browserInfo: updatedFeedback.browser_info,
+        isResolved: updatedFeedback.is_resolved,
+        createdAt: updatedFeedback.created_at,
+        resolvedAt: updatedFeedback.resolved_at || undefined,
+        resolutionNote: updatedFeedback.resolution_note || undefined
+      };
+      
+      // Update in cache for fallback
+      const index = this.userFeedback.findIndex(f => f.id === id);
+      if (index !== -1) {
+        this.userFeedback[index] = result;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error updating feedback status:", error);
+      
+      // Try updating in local cache
+      const index = this.userFeedback.findIndex(f => f.id === id);
+      if (index !== -1) {
+        this.userFeedback[index] = {
+          ...this.userFeedback[index],
+          isResolved,
+          resolutionNote: resolutionNote || this.userFeedback[index].resolutionNote,
+          resolvedAt: isResolved ? new Date() : undefined
+        };
+        return this.userFeedback[index];
+      }
+      
+      return undefined;
+    }
+  }
+  
+  async getFeedbackStats(): Promise<{
+    total: number;
+    resolved: number;
+    unresolved: number;
+    byType: Record<string, number>;
+    bySentiment: Record<string, number>;
+  }> {
+    try {
+      const [countResult] = await db
+        .select({ 
+          total: sql<number>`count(*)`,
+          resolved: sql<number>`sum(case when ${user_feedback.is_resolved} = true then 1 else 0 end)` 
+        })
+        .from(user_feedback);
+      
+      const typeResults = await db
+        .select({
+          type: user_feedback.feedback_type,
+          count: sql<number>`count(*)`
+        })
+        .from(user_feedback)
+        .groupBy(user_feedback.feedback_type);
+      
+      const sentimentResults = await db
+        .select({
+          sentiment: user_feedback.sentiment,
+          count: sql<number>`count(*)`
+        })
+        .from(user_feedback)
+        .groupBy(user_feedback.sentiment);
+      
+      // Format type counts
+      const byType: Record<string, number> = {};
+      typeResults.forEach(row => {
+        byType[row.type] = Number(row.count);
+      });
+      
+      // Format sentiment counts
+      const bySentiment: Record<string, number> = {};
+      sentimentResults.forEach(row => {
+        bySentiment[row.sentiment] = Number(row.count);
+      });
+      
+      return {
+        total: Number(countResult.total) || 0,
+        resolved: Number(countResult.resolved) || 0,
+        unresolved: (Number(countResult.total) || 0) - (Number(countResult.resolved) || 0),
+        byType,
+        bySentiment
+      };
+    } catch (error) {
+      console.error("Error getting feedback stats:", error);
+      
+      // Generate stats from local cache as fallback
+      const total = this.userFeedback.length;
+      const resolved = this.userFeedback.filter(f => f.isResolved).length;
+      
+      // Count by type
+      const byType: Record<string, number> = {};
+      this.userFeedback.forEach(f => {
+        byType[f.feedbackType] = (byType[f.feedbackType] || 0) + 1;
+      });
+      
+      // Count by sentiment
+      const bySentiment: Record<string, number> = {};
+      this.userFeedback.forEach(f => {
+        bySentiment[f.sentiment] = (bySentiment[f.sentiment] || 0) + 1;
+      });
+      
+      return {
+        total,
+        resolved,
+        unresolved: total - resolved,
+        byType,
+        bySentiment
+      };
+    }
   }
 }
 
