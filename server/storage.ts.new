@@ -1,13 +1,16 @@
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as schema from '@shared/schema';
-import { and, desc, eq, or, sql } from 'drizzle-orm';
+import { and, desc, eq, or, sql, count, avg, max } from 'drizzle-orm';
 import * as sha3 from 'js-sha3';
 import {
   User, InsertUser, Transaction, Block, MiningStats,
   MiningReward, Stake, Proposal, VoteOption, NFT, NetworkStats,
   users, wallets, transactions, blocks, mining_stats,
-  mining_rewards, stakes, proposals, votes, nfts
+  mining_rewards, stakes, proposals, votes, nfts, user_feedback,
+  UserFeedback, InsertUserFeedback, VetoGuardian, InsertVetoGuardian,
+  VetoAction, InsertVetoAction, veto_guardians, veto_actions,
+  GameLeaderboard, InsertGameLeaderboard, game_leaderboards
 } from '@shared/schema';
 
 export interface IStorage {
@@ -25,6 +28,7 @@ export interface IStorage {
   // Transaction related methods
   createTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction>;
   getTransactionsByAddress(address: string, limit?: number): Promise<Transaction[]>;
+  getRecentTransactions(limit?: number): Promise<Transaction[]>;
   
   // Block related methods
   getCurrentBlockHeight(): Promise<number>;
@@ -49,6 +53,29 @@ export interface IStorage {
   getVotes(address: string): Promise<{proposalId: string, option: VoteOption}[]>;
   vote(address: string, proposalId: string, option: VoteOption): Promise<boolean>;
   
+  // Game Leaderboard methods
+  getGameLeaderboards(gameType: string, limit?: number): Promise<GameLeaderboard[]>;
+  getLeaderboardsByUser(userId: number): Promise<GameLeaderboard[]>;
+  getLeaderboardsByWalletAddress(walletAddress: string): Promise<GameLeaderboard[]>;
+  addGameScore(entry: InsertGameLeaderboard): Promise<GameLeaderboard>;
+  getTopScores(gameType: string, limit?: number): Promise<GameLeaderboard[]>;
+  getUserRank(userId: number, gameType: string): Promise<number>; // Returns rank position (1st, 2nd, etc.)
+  getRecentScores(limit?: number): Promise<GameLeaderboard[]>;
+  getGameStats(gameType: string): Promise<{
+    totalPlayers: number;
+    highestScore: number;
+    averageScore: number;
+    totalGamesPlayed: number;
+  }>;
+  
+  // Veto Guardian related methods
+  getVetoGuardians(): Promise<VetoGuardian[]>;
+  getVetoGuardian(id: number): Promise<VetoGuardian | undefined>;
+  getVetoGuardianByAddress(address: string): Promise<VetoGuardian | undefined>;
+  createVetoGuardian(guardian: InsertVetoGuardian): Promise<VetoGuardian>;
+  updateVetoGuardian(id: number, isActive: boolean): Promise<VetoGuardian | undefined>;
+  vetoProposal(guardianId: number, proposalId: number, reason: string): Promise<VetoAction | undefined>;
+  
   // NFT related methods
   getNFTs(): Promise<any[]>;
   getNFTsByOwner(ownerAddress: string): Promise<any[]>;
@@ -66,12 +93,75 @@ export interface IStorage {
   createThringlet(thringlet: any): Promise<any>;
   updateThringlet(thringlet: any): Promise<any>;
   
+  // User Feedback methods
+  getUserFeedback(limit?: number): Promise<UserFeedback[]>;
+  getUserFeedbackById(id: string): Promise<UserFeedback | undefined>;
+  getFeedbackByAddress(address: string, limit?: number): Promise<UserFeedback[]>;
+  createFeedback(feedback: InsertUserFeedback): Promise<UserFeedback>;
+  updateFeedbackStatus(id: string, isResolved: boolean, resolutionNote?: string): Promise<UserFeedback | undefined>;
+  getFeedbackStats(): Promise<{
+    total: number;
+    resolved: number;
+    unresolved: number;
+    byType: Record<string, number>;
+    bySentiment: Record<string, number>;
+  }>;
+  
   // Network stats
   getNetworkStats(): Promise<NetworkStats>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // In-memory storage for drops and thringlets
+  // User feedback in-memory storage - will be replaced with proper DB implementation
+  private userFeedback: UserFeedback[] = [];
+  
+  // In-memory game leaderboards storage, initial sample data
+  private gameLeaderboards: GameLeaderboard[] = [
+    {
+      id: 1,
+      user_id: 1,
+      wallet_address: "zk_PVX:0x1234567890abcdef1234567890abcdef12345678",
+      username: "CryptoNinja",
+      game_type: "hashlord",
+      score: 42069,
+      difficulty: 3,
+      time_spent: 600,
+      blocks_mined: 5,
+      gas_saved: null,
+      staking_rewards: null,
+      created_at: new Date(Date.now() - 86400000 * 2) // 2 days ago
+    },
+    {
+      id: 2,
+      user_id: 2,
+      wallet_address: "zk_PVX:0xabcdef1234567890abcdef1234567890abcdef12",
+      username: "BlockchainWizard",
+      game_type: "hashlord",
+      score: 38420,
+      difficulty: 2,
+      time_spent: 480,
+      blocks_mined: 4,
+      gas_saved: null,
+      staking_rewards: null,
+      created_at: new Date(Date.now() - 86400000 * 1) // 1 day ago
+    },
+    {
+      id: 3,
+      user_id: 3,
+      wallet_address: "zk_PVX:0x7890abcdef1234567890abcdef1234567890abcd",
+      username: "CipherPunk",
+      game_type: "hashlord",
+      score: 69420,
+      difficulty: 4,
+      time_spent: 720,
+      blocks_mined: 7,
+      gas_saved: null,
+      staking_rewards: null,
+      created_at: new Date(Date.now() - 86400000 * 3) // 3 days ago
+    }
+  ];
+  
+  // Secret Drops in-memory storage
   private secretDrops: any[] = [
     {
       id: "drop-001",
@@ -127,6 +217,10 @@ export class DatabaseStorage implements IStorage {
       mintTxHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
     }
   ];
+  
+  // In-memory veto guardians for testing
+  private vetoGuardians: VetoGuardian[] = [];
+  private vetoActions: VetoAction[] = [];
   
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
@@ -239,6 +333,33 @@ export class DatabaseStorage implements IStorage {
       blockHeight: tx.block_height || undefined,
       note: tx.note || undefined
     }));
+  }
+  
+  async getRecentTransactions(limit: number = 20): Promise<Transaction[]> {
+    try {
+      const results = await db
+        .select()
+        .from(transactions)
+        .orderBy(desc(transactions.timestamp))
+        .limit(limit);
+      
+      // Convert from database schema to application schema
+      return results.map(tx => ({
+        id: tx.id.toString(),
+        type: tx.type as any,
+        hash: tx.hash,
+        fromAddress: tx.from_address,
+        toAddress: tx.to_address,
+        amount: Number(tx.amount),
+        timestamp: tx.timestamp,
+        blockHeight: tx.block_height || undefined,
+        note: tx.note || undefined
+      }));
+    } catch (error) {
+      console.error("Error fetching recent transactions:", error);
+      // Return an empty array on error
+      return [];
+    }
   }
   
   async getCurrentBlockHeight(): Promise<number> {
@@ -834,6 +955,462 @@ export class DatabaseStorage implements IStorage {
     
     this.thringlets[index] = thringlet;
     return thringlet;
+  }
+  
+  // Veto Guardian methods implementation
+  async getVetoGuardians(): Promise<VetoGuardian[]> {
+    try {
+      const guardians = await db
+        .select()
+        .from(veto_guardians)
+        .orderBy(desc(veto_guardians.appointed_at));
+      
+      return guardians;
+    } catch (error) {
+      console.error("Error fetching veto guardians:", error);
+      return this.vetoGuardians; // Fallback to in-memory data
+    }
+  }
+  
+  async getVetoGuardian(id: number): Promise<VetoGuardian | undefined> {
+    try {
+      const [guardian] = await db
+        .select()
+        .from(veto_guardians)
+        .where(eq(veto_guardians.id, id));
+      
+      return guardian || undefined;
+    } catch (error) {
+      console.error(`Error fetching veto guardian id ${id}:`, error);
+      return this.vetoGuardians.find(g => g.id === id);
+    }
+  }
+  
+  async getVetoGuardianByAddress(address: string): Promise<VetoGuardian | undefined> {
+    try {
+      const [guardian] = await db
+        .select()
+        .from(veto_guardians)
+        .where(eq(veto_guardians.address, address));
+      
+      return guardian || undefined;
+    } catch (error) {
+      console.error(`Error fetching veto guardian for address ${address}:`, error);
+      return this.vetoGuardians.find(g => g.address === address);
+    }
+  }
+  
+  async createVetoGuardian(guardian: InsertVetoGuardian): Promise<VetoGuardian> {
+    try {
+      const [newGuardian] = await db
+        .insert(veto_guardians)
+        .values({
+          ...guardian,
+          veto_count: 0,
+          appointed_at: guardian.appointed_at || new Date()
+        })
+        .returning();
+      
+      return newGuardian;
+    } catch (error) {
+      console.error("Error creating veto guardian:", error);
+      // Fallback to in-memory implementation
+      const newGuardian: VetoGuardian = {
+        id: this.vetoGuardians.length + 1,
+        address: guardian.address,
+        name: guardian.name,
+        appointed_at: guardian.appointed_at || new Date(),
+        active_until: guardian.active_until,
+        is_active: guardian.is_active === undefined ? true : guardian.is_active,
+        veto_count: 0,
+        description: guardian.description || null
+      };
+      
+      this.vetoGuardians.push(newGuardian);
+      return newGuardian;
+    }
+  }
+  
+  async updateVetoGuardian(id: number, isActive: boolean): Promise<VetoGuardian | undefined> {
+    try {
+      const [updatedGuardian] = await db
+        .update(veto_guardians)
+        .set({ is_active: isActive })
+        .where(eq(veto_guardians.id, id))
+        .returning();
+      
+      return updatedGuardian || undefined;
+    } catch (error) {
+      console.error(`Error updating veto guardian id ${id}:`, error);
+      // Fallback to in-memory implementation
+      const index = this.vetoGuardians.findIndex(g => g.id === id);
+      if (index === -1) return undefined;
+      
+      this.vetoGuardians[index].is_active = isActive;
+      return this.vetoGuardians[index];
+    }
+  }
+  
+  async vetoProposal(guardianId: number, proposalId: number, reason: string): Promise<VetoAction | undefined> {
+    try {
+      // First check if the guardian exists and is active
+      const guardian = await this.getVetoGuardian(guardianId);
+      if (!guardian || !guardian.is_active) {
+        return undefined;
+      }
+      
+      // Check if the proposal exists
+      const proposal = await this.getProposal(proposalId.toString());
+      if (!proposal) {
+        return undefined;
+      }
+      
+      // Create a veto action
+      const [vetoAction] = await db
+        .insert(veto_actions)
+        .values({
+          guardian_id: guardianId,
+          proposal_id: proposalId,
+          reason,
+          action_time: new Date()
+        })
+        .returning();
+      
+      // Update the proposal status to 'vetoed'
+      await db
+        .update(proposals)
+        .set({ status: 'vetoed' })
+        .where(eq(proposals.id, proposalId));
+      
+      // Increment the guardian's veto count
+      await db
+        .update(veto_guardians)
+        .set({ 
+          veto_count: sql`${veto_guardians.veto_count} + 1` 
+        })
+        .where(eq(veto_guardians.id, guardianId));
+      
+      return vetoAction;
+    } catch (error) {
+      console.error(`Error vetoing proposal id ${proposalId}:`, error);
+      // Fallback to in-memory implementation
+      const guardian = this.vetoGuardians.find(g => g.id === guardianId);
+      if (!guardian || !guardian.is_active) return undefined;
+      
+      // Increment the guardian's veto count
+      guardian.veto_count += 1;
+      
+      // Create a veto action
+      const vetoAction: VetoAction = {
+        id: this.vetoActions.length + 1,
+        guardian_id: guardianId,
+        proposal_id: proposalId,
+        reason,
+        action_time: new Date()
+      };
+      
+      this.vetoActions.push(vetoAction);
+      return vetoAction;
+    }
+  }
+
+  // User Feedback methods implementation
+  async getUserFeedback(limit: number = 50): Promise<UserFeedback[]> {
+    try {
+      const results = await db
+        .select()
+        .from(user_feedback)
+        .orderBy(desc(user_feedback.created_at))
+        .limit(limit);
+      
+      // Convert from database schema to application schema
+      return results.map(feedback => ({
+        id: feedback.id.toString(),
+        userAddress: feedback.user_address,
+        feedbackType: feedback.feedback_type,
+        content: feedback.content,
+        sentiment: feedback.sentiment,
+        category: feedback.category || undefined,
+        pageUrl: feedback.page_url || undefined,
+        browserInfo: feedback.browser_info,
+        isResolved: feedback.is_resolved,
+        createdAt: feedback.created_at,
+        resolvedAt: feedback.resolved_at || undefined,
+        resolutionNote: feedback.resolution_note || undefined
+      }));
+    } catch (error) {
+      console.error("Error fetching user feedback:", error);
+      // Return cached in-memory data on error
+      return this.userFeedback;
+    }
+  }
+  
+  async getUserFeedbackById(id: string): Promise<UserFeedback | undefined> {
+    try {
+      const numId = parseInt(id, 10);
+      const [feedback] = await db
+        .select()
+        .from(user_feedback)
+        .where(eq(user_feedback.id, numId));
+      
+      if (!feedback) return undefined;
+      
+      // Convert to application schema
+      return {
+        id: feedback.id.toString(),
+        userAddress: feedback.user_address,
+        feedbackType: feedback.feedback_type,
+        content: feedback.content,
+        sentiment: feedback.sentiment,
+        category: feedback.category || undefined,
+        pageUrl: feedback.page_url || undefined,
+        browserInfo: feedback.browser_info,
+        isResolved: feedback.is_resolved,
+        createdAt: feedback.created_at,
+        resolvedAt: feedback.resolved_at || undefined,
+        resolutionNote: feedback.resolution_note || undefined
+      };
+    } catch (error) {
+      console.error("Error fetching feedback by ID:", error);
+      // Try finding in local cache
+      return this.userFeedback.find(f => f.id === id);
+    }
+  }
+  
+  async getFeedbackByAddress(address: string, limit: number = 20): Promise<UserFeedback[]> {
+    try {
+      const results = await db
+        .select()
+        .from(user_feedback)
+        .where(eq(user_feedback.user_address, address))
+        .orderBy(desc(user_feedback.created_at))
+        .limit(limit);
+      
+      // Convert from database schema to application schema
+      return results.map(feedback => ({
+        id: feedback.id.toString(),
+        userAddress: feedback.user_address,
+        feedbackType: feedback.feedback_type,
+        content: feedback.content,
+        sentiment: feedback.sentiment,
+        category: feedback.category || undefined,
+        pageUrl: feedback.page_url || undefined,
+        browserInfo: feedback.browser_info,
+        isResolved: feedback.is_resolved,
+        createdAt: feedback.created_at,
+        resolvedAt: feedback.resolved_at || undefined,
+        resolutionNote: feedback.resolution_note || undefined
+      }));
+    } catch (error) {
+      console.error("Error fetching feedback by address:", error);
+      // Return filtered cached data on error
+      return this.userFeedback.filter(f => f.userAddress === address);
+    }
+  }
+  
+  async createFeedback(feedbackData: InsertUserFeedback): Promise<UserFeedback> {
+    try {
+      // Map application schema to database schema
+      const dbFeedback = {
+        user_address: feedbackData.user_address,
+        feedback_type: feedbackData.feedback_type,
+        content: feedbackData.content,
+        sentiment: feedbackData.sentiment,
+        category: feedbackData.category,
+        page_url: feedbackData.page_url,
+        browser_info: feedbackData.browser_info,
+        is_resolved: feedbackData.is_resolved || false,
+        resolution_note: feedbackData.resolution_note
+      };
+      
+      const [newFeedback] = await db
+        .insert(user_feedback)
+        .values(dbFeedback)
+        .returning();
+      
+      // Convert to application schema
+      const feedbackResult: UserFeedback = {
+        id: newFeedback.id.toString(),
+        userAddress: newFeedback.user_address,
+        feedbackType: newFeedback.feedback_type,
+        content: newFeedback.content,
+        sentiment: newFeedback.sentiment,
+        category: newFeedback.category || undefined,
+        pageUrl: newFeedback.page_url || undefined,
+        browserInfo: newFeedback.browser_info,
+        isResolved: newFeedback.is_resolved,
+        createdAt: newFeedback.created_at,
+        resolvedAt: newFeedback.resolved_at || undefined,
+        resolutionNote: newFeedback.resolution_note || undefined
+      };
+      
+      // Store in cache for fallback
+      this.userFeedback.push(feedbackResult);
+      
+      return feedbackResult;
+    } catch (error) {
+      console.error("Error creating feedback:", error);
+      
+      // Generate a unique ID for the in-memory fallback
+      const fallbackId = `local-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+      
+      // Create an in-memory fallback with current timestamp
+      const fallbackFeedback: UserFeedback = {
+        id: fallbackId,
+        userAddress: feedbackData.user_address,
+        feedbackType: feedbackData.feedback_type,
+        content: feedbackData.content,
+        sentiment: feedbackData.sentiment,
+        category: feedbackData.category || undefined,
+        pageUrl: feedbackData.page_url || undefined,
+        browserInfo: feedbackData.browser_info,
+        isResolved: feedbackData.is_resolved || false,
+        createdAt: new Date(),
+        resolvedAt: undefined,
+        resolutionNote: feedbackData.resolution_note || undefined
+      };
+      
+      // Store in memory for fallback
+      this.userFeedback.push(fallbackFeedback);
+      
+      return fallbackFeedback;
+    }
+  }
+  
+  async updateFeedbackStatus(id: string, isResolved: boolean, resolutionNote?: string): Promise<UserFeedback | undefined> {
+    try {
+      const numId = parseInt(id, 10);
+      const [updatedFeedback] = await db
+        .update(user_feedback)
+        .set({ 
+          is_resolved: isResolved,
+          resolution_note: resolutionNote || null,
+          resolved_at: isResolved ? new Date() : null
+        })
+        .where(eq(user_feedback.id, numId))
+        .returning();
+      
+      if (!updatedFeedback) return undefined;
+      
+      // Convert to application schema
+      const result: UserFeedback = {
+        id: updatedFeedback.id.toString(),
+        userAddress: updatedFeedback.user_address,
+        feedbackType: updatedFeedback.feedback_type,
+        content: updatedFeedback.content,
+        sentiment: updatedFeedback.sentiment,
+        category: updatedFeedback.category || undefined,
+        pageUrl: updatedFeedback.page_url || undefined,
+        browserInfo: updatedFeedback.browser_info,
+        isResolved: updatedFeedback.is_resolved,
+        createdAt: updatedFeedback.created_at,
+        resolvedAt: updatedFeedback.resolved_at || undefined,
+        resolutionNote: updatedFeedback.resolution_note || undefined
+      };
+      
+      // Update in cache for fallback
+      const index = this.userFeedback.findIndex(f => f.id === id);
+      if (index !== -1) {
+        this.userFeedback[index] = result;
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error updating feedback status:", error);
+      
+      // Try updating in local cache
+      const index = this.userFeedback.findIndex(f => f.id === id);
+      if (index !== -1) {
+        this.userFeedback[index] = {
+          ...this.userFeedback[index],
+          isResolved,
+          resolutionNote: resolutionNote || this.userFeedback[index].resolutionNote,
+          resolvedAt: isResolved ? new Date() : undefined
+        };
+        return this.userFeedback[index];
+      }
+      
+      return undefined;
+    }
+  }
+  
+  async getFeedbackStats(): Promise<{
+    total: number;
+    resolved: number;
+    unresolved: number;
+    byType: Record<string, number>;
+    bySentiment: Record<string, number>;
+  }> {
+    try {
+      const [countResult] = await db
+        .select({ 
+          total: sql<number>`count(*)`,
+          resolved: sql<number>`sum(case when ${user_feedback.is_resolved} = true then 1 else 0 end)` 
+        })
+        .from(user_feedback);
+      
+      const typeResults = await db
+        .select({
+          type: user_feedback.feedback_type,
+          count: sql<number>`count(*)`
+        })
+        .from(user_feedback)
+        .groupBy(user_feedback.feedback_type);
+      
+      const sentimentResults = await db
+        .select({
+          sentiment: user_feedback.sentiment,
+          count: sql<number>`count(*)`
+        })
+        .from(user_feedback)
+        .groupBy(user_feedback.sentiment);
+      
+      // Format type counts
+      const byType: Record<string, number> = {};
+      typeResults.forEach(row => {
+        byType[row.type] = Number(row.count);
+      });
+      
+      // Format sentiment counts
+      const bySentiment: Record<string, number> = {};
+      sentimentResults.forEach(row => {
+        bySentiment[row.sentiment] = Number(row.count);
+      });
+      
+      return {
+        total: Number(countResult.total) || 0,
+        resolved: Number(countResult.resolved) || 0,
+        unresolved: (Number(countResult.total) || 0) - (Number(countResult.resolved) || 0),
+        byType,
+        bySentiment
+      };
+    } catch (error) {
+      console.error("Error getting feedback stats:", error);
+      
+      // Generate stats from local cache as fallback
+      const total = this.userFeedback.length;
+      const resolved = this.userFeedback.filter(f => f.isResolved).length;
+      
+      // Count by type
+      const byType: Record<string, number> = {};
+      this.userFeedback.forEach(f => {
+        byType[f.feedbackType] = (byType[f.feedbackType] || 0) + 1;
+      });
+      
+      // Count by sentiment
+      const bySentiment: Record<string, number> = {};
+      this.userFeedback.forEach(f => {
+        bySentiment[f.sentiment] = (bySentiment[f.sentiment] || 0) + 1;
+      });
+      
+      return {
+        total,
+        resolved,
+        unresolved: total - resolved,
+        byType,
+        bySentiment
+      };
+    }
   }
 }
 

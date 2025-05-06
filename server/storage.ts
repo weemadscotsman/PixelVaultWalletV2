@@ -1,7 +1,7 @@
 import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as schema from '@shared/schema';
-import { and, desc, eq, or, sql } from 'drizzle-orm';
+import { and, desc, eq, or, sql, count, avg, max } from 'drizzle-orm';
 import * as sha3 from 'js-sha3';
 import {
   User, InsertUser, Transaction, Block, MiningStats,
@@ -9,7 +9,8 @@ import {
   users, wallets, transactions, blocks, mining_stats,
   mining_rewards, stakes, proposals, votes, nfts, user_feedback,
   UserFeedback, InsertUserFeedback, VetoGuardian, InsertVetoGuardian,
-  VetoAction, InsertVetoAction, veto_guardians, veto_actions
+  VetoAction, InsertVetoAction, veto_guardians, veto_actions,
+  GameLeaderboard, InsertGameLeaderboard, game_leaderboards
 } from '@shared/schema';
 
 export interface IStorage {
@@ -113,6 +114,52 @@ export interface IStorage {
 export class DatabaseStorage implements IStorage {
   // User feedback in-memory storage - will be replaced with proper DB implementation
   private userFeedback: UserFeedback[] = [];
+  
+  // In-memory game leaderboards storage, initial sample data
+  private gameLeaderboards: GameLeaderboard[] = [
+    {
+      id: 1,
+      user_id: 1,
+      wallet_address: "zk_PVX:0x1234567890abcdef1234567890abcdef12345678",
+      username: "CryptoNinja",
+      game_type: "hashlord",
+      score: 42069,
+      difficulty: 3,
+      time_spent: 600,
+      blocks_mined: 5,
+      gas_saved: null,
+      staking_rewards: null,
+      created_at: new Date(Date.now() - 86400000 * 2) // 2 days ago
+    },
+    {
+      id: 2,
+      user_id: 2,
+      wallet_address: "zk_PVX:0xabcdef1234567890abcdef1234567890abcdef12",
+      username: "BlockchainWizard",
+      game_type: "hashlord",
+      score: 38420,
+      difficulty: 2,
+      time_spent: 480,
+      blocks_mined: 4,
+      gas_saved: null,
+      staking_rewards: null,
+      created_at: new Date(Date.now() - 86400000 * 1) // 1 day ago
+    },
+    {
+      id: 3,
+      user_id: 3,
+      wallet_address: "zk_PVX:0x7890abcdef1234567890abcdef1234567890abcd",
+      username: "CipherPunk",
+      game_type: "hashlord",
+      score: 69420,
+      difficulty: 4,
+      time_spent: 720,
+      blocks_mined: 7,
+      gas_saved: null,
+      staking_rewards: null,
+      created_at: new Date(Date.now() - 86400000 * 3) // 3 days ago
+    }
+  ];
   
   // Secret Drops in-memory storage
   private secretDrops: any[] = [
