@@ -1008,6 +1008,371 @@ export class DatabaseStorage implements IStorage {
     };
   }
   
+  // Badge related methods
+  async getBadges(limit: number = 50, filterActive: boolean = true): Promise<Badge[]> {
+    try {
+      // For now, use in-memory implementation
+      let result = [...this.badges];
+      
+      if (filterActive) {
+        result = result.filter(badge => badge.is_active);
+      }
+      
+      if (limit) {
+        result = result.slice(0, limit);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error fetching badges:", error);
+      return [];
+    }
+  }
+  
+  async getBadgeById(id: number): Promise<Badge | undefined> {
+    try {
+      return this.badges.find(badge => badge.id === id);
+    } catch (error) {
+      console.error(`Error fetching badge by ID ${id}:`, error);
+      return undefined;
+    }
+  }
+  
+  async getBadgesByCategory(category: string, limit: number = 20): Promise<Badge[]> {
+    try {
+      let result = this.badges.filter(badge => 
+        badge.category === category && badge.is_active
+      );
+      
+      if (limit) {
+        result = result.slice(0, limit);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error(`Error fetching badges by category ${category}:`, error);
+      return [];
+    }
+  }
+  
+  async createBadge(badge: InsertBadge): Promise<Badge> {
+    try {
+      const newBadge: Badge = {
+        id: this.badges.length > 0 ? Math.max(...this.badges.map(b => b.id)) + 1 : 1,
+        name: badge.name,
+        description: badge.description,
+        image_url: badge.image_url,
+        category: badge.category,
+        rarity: badge.rarity,
+        requirements_json: badge.requirements_json,
+        created_at: new Date(),
+        is_active: badge.is_active ?? true
+      };
+      
+      this.badges.push(newBadge);
+      return newBadge;
+    } catch (error) {
+      console.error("Error creating badge:", error);
+      throw new Error("Failed to create badge");
+    }
+  }
+  
+  async updateBadge(id: number, badgeData: Partial<InsertBadge>): Promise<Badge | undefined> {
+    try {
+      const index = this.badges.findIndex(badge => badge.id === id);
+      if (index === -1) return undefined;
+      
+      const updatedBadge = {
+        ...this.badges[index],
+        ...badgeData
+      };
+      
+      this.badges[index] = updatedBadge;
+      return updatedBadge;
+    } catch (error) {
+      console.error(`Error updating badge with ID ${id}:`, error);
+      return undefined;
+    }
+  }
+  
+  // User badge related methods
+  async getUserBadges(userId: number): Promise<(UserBadge & { badge: Badge })[]> {
+    try {
+      return this.userBadges.filter(ub => ub.user_id === userId && !ub.is_hidden);
+    } catch (error) {
+      console.error(`Error fetching badges for user ID ${userId}:`, error);
+      return [];
+    }
+  }
+  
+  async getFeatureUserBadges(userId: number): Promise<(UserBadge & { badge: Badge })[]> {
+    try {
+      return this.userBadges.filter(ub => 
+        ub.user_id === userId && 
+        ub.is_featured && 
+        !ub.is_hidden
+      ).slice(0, 3); // Only return up to 3 featured badges
+    } catch (error) {
+      console.error(`Error fetching featured badges for user ID ${userId}:`, error);
+      return [];
+    }
+  }
+  
+  async awardBadgeToUser(userBadge: InsertUserBadge): Promise<UserBadge> {
+    try {
+      // Check if badge exists
+      const badge = await this.getBadgeById(userBadge.badge_id);
+      if (!badge) {
+        throw new Error(`Badge with ID ${userBadge.badge_id} not found`);
+      }
+      
+      // Check if user already has this badge
+      const existingBadge = this.userBadges.find(ub => 
+        ub.user_id === userBadge.user_id && 
+        ub.badge_id === userBadge.badge_id
+      );
+      
+      if (existingBadge) {
+        return existingBadge;
+      }
+      
+      // Award new badge
+      const newUserBadge: UserBadge & { badge: Badge } = {
+        id: this.userBadges.length > 0 ? Math.max(...this.userBadges.map(ub => ub.id)) + 1 : 1,
+        user_id: userBadge.user_id,
+        badge_id: userBadge.badge_id,
+        awarded_at: new Date(),
+        awarded_reason: userBadge.awarded_reason || null,
+        is_featured: userBadge.is_featured || false,
+        is_hidden: userBadge.is_hidden || false,
+        badge: badge
+      };
+      
+      this.userBadges.push(newUserBadge);
+      return newUserBadge;
+    } catch (error) {
+      console.error("Error awarding badge to user:", error);
+      throw new Error("Failed to award badge to user");
+    }
+  }
+  
+  async updateUserBadge(id: number, updates: Partial<InsertUserBadge>): Promise<UserBadge | undefined> {
+    try {
+      const index = this.userBadges.findIndex(ub => ub.id === id);
+      if (index === -1) return undefined;
+      
+      // Handle featured badge limit (max 3)
+      if (updates.is_featured) {
+        const featuredCount = this.userBadges.filter(ub => 
+          ub.user_id === this.userBadges[index].user_id && 
+          ub.is_featured && 
+          ub.id !== id
+        ).length;
+        
+        if (featuredCount >= 3) {
+          throw new Error("User can only feature up to 3 badges");
+        }
+      }
+      
+      const updatedUserBadge = {
+        ...this.userBadges[index],
+        ...updates
+      };
+      
+      this.userBadges[index] = updatedUserBadge;
+      return updatedUserBadge;
+    } catch (error) {
+      console.error(`Error updating user badge with ID ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  // Badge progress methods
+  async getBadgeProgress(userId: number, badgeId: number): Promise<BadgeProgress | undefined> {
+    try {
+      return this.badgeProgress.find(bp => 
+        bp.user_id === userId && 
+        bp.badge_id === badgeId
+      );
+    } catch (error) {
+      console.error(`Error fetching badge progress for user ${userId}, badge ${badgeId}:`, error);
+      return undefined;
+    }
+  }
+  
+  async updateBadgeProgress(userId: number, badgeId: number, progress: object): Promise<BadgeProgress> {
+    try {
+      const existing = await this.getBadgeProgress(userId, badgeId);
+      
+      if (existing) {
+        // Update existing progress
+        existing.current_progress = progress;
+        existing.last_updated = new Date();
+        return existing;
+      } else {
+        // Create new progress entry
+        const newProgress: BadgeProgress = {
+          id: this.badgeProgress.length > 0 ? Math.max(...this.badgeProgress.map(bp => bp.id)) + 1 : 1,
+          user_id: userId,
+          badge_id: badgeId,
+          current_progress: progress,
+          last_updated: new Date()
+        };
+        
+        this.badgeProgress.push(newProgress);
+        return newProgress;
+      }
+    } catch (error) {
+      console.error(`Error updating badge progress for user ${userId}, badge ${badgeId}:`, error);
+      throw new Error("Failed to update badge progress");
+    }
+  }
+  
+  async checkAndAwardBadges(userId: number): Promise<Badge[]> {
+    try {
+      const user = await this.getUser(userId);
+      if (!user) throw new Error(`User with ID ${userId} not found`);
+      
+      const userWallet = await this.getWalletByAddress(user.wallet_address);
+      if (!userWallet) throw new Error(`Wallet for user ID ${userId} not found`);
+      
+      const eligibleBadges: Badge[] = [];
+      const activeBadges = await this.getBadges(undefined, true);
+      
+      // Get existing user badges to avoid rewarding duplicates
+      const existingUserBadges = await this.getUserBadges(userId);
+      const existingBadgeIds = existingUserBadges.map(ub => ub.badge_id);
+      
+      // Check each badge's requirements
+      for (const badge of activeBadges) {
+        // Skip if user already has this badge
+        if (existingBadgeIds.includes(badge.id)) continue;
+        
+        const requirements = badge.requirements_json;
+        let meetsRequirements = false;
+        let progressData = {};
+        
+        if (!requirements || !requirements.type) continue;
+        
+        switch (requirements.type) {
+          case "join_date":
+            // Check if user joined before specified date
+            if (requirements.before) {
+              const beforeDate = new Date(requirements.before);
+              meetsRequirements = user.created_at < beforeDate;
+            }
+            break;
+            
+          case "blocks_mined":
+            // Check if user has mined enough blocks
+            const miningStats = await this.getMiningStats(user.wallet_address);
+            if (miningStats && miningStats.blocksMined >= requirements.count) {
+              meetsRequirements = true;
+            } else if (miningStats) {
+              // Update progress
+              progressData = { current: miningStats.blocksMined, target: requirements.count };
+              await this.updateBadgeProgress(userId, badge.id, progressData);
+            }
+            break;
+            
+          case "votes_cast":
+            // Check if user has voted enough times
+            const userVotes = await this.getVotes(user.wallet_address);
+            if (userVotes.length >= requirements.count) {
+              meetsRequirements = true;
+            } else {
+              // Update progress
+              progressData = { current: userVotes.length, target: requirements.count };
+              await this.updateBadgeProgress(userId, badge.id, progressData);
+            }
+            break;
+            
+          case "staking_duration":
+            // Check if user has staked for long enough
+            const userStakes = await this.getStakes(user.wallet_address);
+            const longestStakeDuration = userStakes.reduce((longest, stake) => {
+              const startDate = new Date(stake.start_time);
+              const endDate = stake.end_time ? new Date(stake.end_time) : new Date();
+              const durationDays = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
+              return Math.max(longest, durationDays);
+            }, 0);
+            
+            if (longestStakeDuration >= requirements.days) {
+              meetsRequirements = true;
+            } else {
+              // Update progress
+              progressData = { current: longestStakeDuration, target: requirements.days };
+              await this.updateBadgeProgress(userId, badge.id, progressData);
+            }
+            break;
+            
+          case "game_score":
+            // Check if user has achieved required score in specified game
+            const leaderboardEntries = await this.getLeaderboardsByUser(userId);
+            const gameEntries = leaderboardEntries.filter(entry => 
+              entry.game_type === requirements.game
+            );
+            
+            const highestScore = gameEntries.reduce((highest, entry) => 
+              Math.max(highest, entry.score)
+            , 0);
+            
+            if (highestScore >= requirements.score) {
+              meetsRequirements = true;
+            } else if (gameEntries.length > 0) {
+              // Update progress
+              progressData = { current: highestScore, target: requirements.score };
+              await this.updateBadgeProgress(userId, badge.id, progressData);
+            }
+            break;
+            
+          case "thringlet_bond":
+            // Check if user has achieved required bond level with any Thringlet
+            const userThringlets = await this.getThringletsByOwner(user.wallet_address);
+            const highestBondLevel = userThringlets.reduce((highest, thringlet) => 
+              Math.max(highest, thringlet.bondLevel || 0)
+            , 0);
+            
+            if (highestBondLevel >= requirements.level) {
+              meetsRequirements = true;
+            } else if (userThringlets.length > 0) {
+              // Update progress
+              progressData = { current: highestBondLevel, target: requirements.level };
+              await this.updateBadgeProgress(userId, badge.id, progressData);
+            }
+            break;
+            
+          case "referrals":
+            // For demo, we'll just assume the user has no referrals yet
+            progressData = { current: 0, target: requirements.count };
+            await this.updateBadgeProgress(userId, badge.id, progressData);
+            break;
+            
+          default:
+            console.warn(`Unknown badge requirement type: ${requirements.type}`);
+        }
+        
+        // If user meets requirements, award the badge
+        if (meetsRequirements) {
+          await this.awardBadgeToUser({
+            user_id: userId,
+            badge_id: badge.id,
+            awarded_reason: `Automatically awarded for meeting requirements`,
+            is_featured: false,
+            is_hidden: false
+          });
+          
+          eligibleBadges.push(badge);
+        }
+      }
+      
+      return eligibleBadges;
+    } catch (error) {
+      console.error(`Error checking and awarding badges for user ${userId}:`, error);
+      return [];
+    }
+  }
+  
   // Drops and Thringlets methods
   async getSecretDrops(): Promise<any[]> {
     return [...this.secretDrops];
