@@ -169,7 +169,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
         </div>
         
         {/* Navigation Links */}
-        <nav className="py-4 flex-grow relative z-10 bg-black bg-opacity-90">
+        <nav className="py-4 flex-grow relative z-10 bg-black bg-opacity-78">
           <ul className="space-y-1 px-2">
             {navItems.map((item) => (
               <li key={item.id} className="py-1">
@@ -201,10 +201,10 @@ export function Sidebar({ networkStats }: SidebarProps) {
             <h3 className="text-xs uppercase text-blue-400 font-semibold mb-3 pl-2 text-shadow-neon">
               Network Status
             </h3>
-            <div className="bg-black bg-opacity-90 border border-blue-800 p-4 rounded-md text-sm space-y-3 text-blue-400 shadow-md shadow-blue-900/30">
+            <div className="bg-black bg-opacity-78 border border-blue-800 p-4 rounded-md text-sm space-y-3 text-blue-400 shadow-md shadow-blue-900/30">
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Block Height:</span>
-                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">
+                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">
                   {networkStats.blockHeight.toLocaleString()}
                 </span>
               </div>
