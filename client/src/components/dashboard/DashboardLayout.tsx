@@ -151,80 +151,84 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Main Navigation */}
           <div className="flex-1 overflow-y-auto py-4 space-y-1">
             {mainNavItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a className={cn(
-                  "flex items-center px-4 py-3 text-gray-300 hover:bg-blue-900/20 cursor-pointer transition-colors group",
-                  location === item.path && "bg-blue-900/30 text-blue-300 border-l-4 border-blue-400 pl-3"
-                )}>
-                  <div className="relative">
-                    <span className={cn(
-                      "absolute -left-2 -top-2 text-[10px] w-5 h-5 flex items-center justify-center bg-blue-600 text-white rounded-full",
-                      (!item.badge || sidebarCollapsed) && "hidden"
-                    )}>
-                      {item.badge}
-                    </span>
-                    {item.icon}
+              <div key={item.path}>
+                <Link href={item.path}>
+                  <div className={cn(
+                    "flex items-center px-4 py-3 text-gray-300 hover:bg-blue-900/20 cursor-pointer transition-colors group",
+                    location === item.path && "bg-blue-900/30 text-blue-300 border-l-4 border-blue-400 pl-3"
+                  )}>
+                    <div className="relative">
+                      <span className={cn(
+                        "absolute -left-2 -top-2 text-[10px] w-5 h-5 flex items-center justify-center bg-blue-600 text-white rounded-full",
+                        (!item.badge || sidebarCollapsed) && "hidden"
+                      )}>
+                        {item.badge}
+                      </span>
+                      {item.icon}
+                    </div>
+                    
+                    {!sidebarCollapsed && (
+                      <motion.span 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="ml-3 flex-1"
+                      >
+                        {item.name}
+                      </motion.span>
+                    )}
+                    
+                    {!sidebarCollapsed && item.pageNumber && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs text-gray-400"
+                      >
+                        P{item.pageNumber}
+                      </motion.div>
+                    )}
                   </div>
-                  
-                  {!sidebarCollapsed && (
-                    <motion.span 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="ml-3 flex-1"
-                    >
-                      {item.name}
-                    </motion.span>
-                  )}
-                  
-                  {!sidebarCollapsed && item.pageNumber && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs text-gray-400"
-                    >
-                      P{item.pageNumber}
-                    </motion.div>
-                  )}
-                </a>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
           
           {/* Secondary Navigation */}
           <div className="py-4 border-t border-blue-900/40 space-y-1">
             {secondaryNavItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a className={cn(
-                  "flex items-center px-4 py-3 text-gray-400 hover:bg-blue-900/20 cursor-pointer transition-colors",
-                  location === item.path && "bg-blue-900/30 text-blue-300 border-l-4 border-blue-400 pl-3"
-                )}>
-                  <div>{item.icon}</div>
-                  
-                  {!sidebarCollapsed && (
-                    <motion.span 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="ml-3"
-                    >
-                      {item.name}
-                    </motion.span>
-                  )}
-                  
-                  {!sidebarCollapsed && item.pageNumber && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="ml-auto w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs text-gray-400"
-                    >
-                      P{item.pageNumber}
-                    </motion.div>
-                  )}
-                </a>
-              </Link>
+              <div key={item.path}>
+                <Link href={item.path}>
+                  <div className={cn(
+                    "flex items-center px-4 py-3 text-gray-400 hover:bg-blue-900/20 cursor-pointer transition-colors",
+                    location === item.path && "bg-blue-900/30 text-blue-300 border-l-4 border-blue-400 pl-3"
+                  )}>
+                    <div>{item.icon}</div>
+                    
+                    {!sidebarCollapsed && (
+                      <motion.span 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="ml-3"
+                      >
+                        {item.name}
+                      </motion.span>
+                    )}
+                    
+                    {!sidebarCollapsed && item.pageNumber && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="ml-auto w-6 h-6 rounded-full bg-gray-800 flex items-center justify-center text-xs text-gray-400"
+                      >
+                        P{item.pageNumber}
+                      </motion.div>
+                    )}
+                  </div>
+                </Link>
+              </div>
             ))}
             
             {/* Collapse Button */}
