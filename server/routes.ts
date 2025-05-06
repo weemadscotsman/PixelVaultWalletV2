@@ -425,6 +425,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Veto Guardian Routes
+  app.get("/api/governance/veto-guardians", async (req, res) => {
+    try {
+      const guardians = await storage.getVetoGuardians();
+      res.json(guardians);
+    } catch (error) {
+      console.error("Error fetching veto guardians:", error);
+      res.status(500).json({ error: "Failed to fetch veto guardians" });
+    }
+  });
+
+  app.get("/api/governance/veto-guardian/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid guardian ID" });
+      }
+      
+      const guardian = await storage.getVetoGuardian(id);
+      if (!guardian) {
+        return res.status(404).json({ error: "Veto guardian not found" });
+      }
+      
+      res.json(guardian);
+    } catch (error) {
+      console.error(`Error fetching veto guardian with ID ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to fetch veto guardian" });
+    }
+  });
+
+  app.get("/api/governance/veto-guardian/address/:address", async (req, res) => {
+    try {
+      const address = req.params.address;
+      if (!address) {
+        return res.status(400).json({ error: "Address is required" });
+      }
+      
+      const guardian = await storage.getVetoGuardianByAddress(address);
+      if (!guardian) {
+        return res.status(404).json({ error: "Veto guardian not found for this address" });
+      }
+      
+      res.json(guardian);
+    } catch (error) {
+      console.error(`Error fetching veto guardian for address ${req.params.address}:`, error);
+      res.status(500).json({ error: "Failed to fetch veto guardian" });
+    }
+  });
+
+  app.post("/api/governance/veto-guardian/create", async (req, res) => {
+    try {
+      const { address, name, description, active_until } = req.body;
+      
+      if (!address || !name) {
+        return res.status(400).json({ error: "Address and name are required" });
+      }
+      
+      // Check if there's already a guardian with this address
+      const existingGuardian = await storage.getVetoGuardianByAddress(address);
+      if (existingGuardian) {
+        return res.status(400).json({ error: "A veto guardian with this address already exists" });
+      }
+      
+      const guardianData = {
+        address,
+        name,
+        description: description || null,
+        active_until: active_until ? new Date(active_until) : new Date(Date.now() + 180 * 24 * 60 * 60 * 1000), // 6 months default
+        is_active: true,
+        appointed_at: new Date()
+      };
+      
+      const newGuardian = await storage.createVetoGuardian(guardianData);
+      res.status(201).json(newGuardian);
+    } catch (error) {
+      console.error("Error creating veto guardian:", error);
+      res.status(500).json({ error: "Failed to create veto guardian" });
+    }
+  });
+
+  app.patch("/api/governance/veto-guardian/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "Invalid guardian ID" });
+      }
+      
+      const { is_active } = req.body;
+      if (is_active === undefined) {
+        return res.status(400).json({ error: "Active status is required" });
+      }
+      
+      const guardian = await storage.updateVetoGuardian(id, is_active);
+      if (!guardian) {
+        return res.status(404).json({ error: "Veto guardian not found" });
+      }
+      
+      res.json(guardian);
+    } catch (error) {
+      console.error(`Error updating veto guardian with ID ${req.params.id}:`, error);
+      res.status(500).json({ error: "Failed to update veto guardian" });
+    }
+  });
+
+  app.post("/api/governance/proposal/:proposalId/veto", async (req, res) => {
+    try {
+      const proposalId = parseInt(req.params.proposalId, 10);
+      if (isNaN(proposalId)) {
+        return res.status(400).json({ error: "Invalid proposal ID" });
+      }
+      
+      const { guardianId, reason } = req.body;
+      if (!guardianId || !reason) {
+        return res.status(400).json({ error: "Guardian ID and reason are required" });
+      }
+      
+      const vetoAction = await storage.vetoProposal(guardianId, proposalId, reason);
+      if (!vetoAction) {
+        return res.status(400).json({ error: "Failed to veto proposal. Please check if the guardian is active and the proposal exists." });
+      }
+      
+      res.status(201).json(vetoAction);
+    } catch (error) {
+      console.error(`Error vetoing proposal ${req.params.proposalId}:`, error);
+      res.status(500).json({ error: "Failed to veto proposal" });
+    }
+  });
+
   // NFT Routes
   app.post("/api/nft/mint", async (req, res) => {
     try {
