@@ -49,36 +49,36 @@ export function Header({ isConnected }: HeaderProps) {
   };
 
   return (
-    <header className={`bg-white dark:bg-dark-card border-b border-light-border dark:border-dark-border shadow-sm sticky top-0 z-50 transition-colors duration-200 ${isScrolled ? 'shadow-md' : ''}`}>
+    <header className={`bg-black border-b border-blue-900 shadow-sm sticky top-0 z-50 transition-colors duration-200 ${isScrolled ? 'shadow-md' : ''}`}>
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-2">
           <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary pulse-shadow">
             <i className="ri-shield-keyhole-fill text-white text-xl"></i>
           </div>
-          <h1 className="text-gray-800 dark:text-white font-bold text-xl">PixelVault</h1>
-          <span className="text-xs px-2 py-1 bg-primary text-white rounded-full font-bold">PVX</span>
+          <h1 className="text-blue-400 font-bold text-xl text-shadow-neon">PixelVault</h1>
+          <span className="text-xs px-2 py-1 bg-blue-900 text-blue-400 rounded-full font-bold text-shadow-neon">PVX</span>
+          <button 
+            onClick={toggleDarkMode}
+            className="ml-4 p-2 bg-black border border-blue-500 rounded-full text-blue-400 hover:bg-gray-900 focus:outline-none transition-colors duration-200 text-shadow-neon"
+            aria-label="Toggle Matrix theme"
+          >
+            <span className="text-xs mr-1">Theme</span>
+            <i className={`fas ${isDarkMode ? 'fa-toggle-on' : 'fa-toggle-off'}`}></i>
+          </button>
         </div>
         <div className="flex items-center space-x-3">
           {isConnected && (
             <div className="hidden md:flex items-center mr-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
-              <span className="text-green-500 dark:text-green-400 text-sm font-medium">Connected</span>
+              <div className="w-2 h-2 bg-blue-500 rounded-full mr-2 animate-pulse"></div>
+              <span className="text-blue-400 text-sm font-medium text-shadow-neon">Connected</span>
             </div>
           )}
           
-          <button className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200" aria-label="Notifications">
+          <button className="p-2 rounded-full text-blue-400 hover:bg-gray-800 focus:outline-none transition-colors duration-200 text-shadow-neon" aria-label="Notifications">
             <i className="fas fa-bell"></i>
           </button>
           
-          <button 
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200"
-            aria-label="Toggle dark mode"
-          >
-            <i className={`fas ${isDarkMode ? 'fa-sun' : 'fa-moon'}`}></i>
-          </button>
-          
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold">
+          <div className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-blue-400 font-bold text-shadow-neon border border-blue-500">
             PVX
           </div>
         </div>
