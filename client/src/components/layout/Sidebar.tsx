@@ -210,23 +210,23 @@ export function Sidebar({ networkStats }: SidebarProps) {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Block Time:</span>
-                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">{networkStats.blockTime}</span>
+                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">{networkStats.blockTime}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Peers:</span>
-                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">{networkStats.peers}</span>
+                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">{networkStats.peers}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Hash Rate:</span>
-                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">{networkStats.hashRate}</span>
+                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">{networkStats.hashRate}</span>
               </div>
             </div>
           </div>
         </nav>
         
         {/* Footer */}
-        <div className="p-4 border-t border-blue-800 text-sm text-blue-400 text-shadow-neon relative z-10 bg-black bg-opacity-90">
-          <div className="bg-black bg-opacity-80 border border-blue-900/50 rounded-md p-3 shadow-inner shadow-blue-900/20">
+        <div className="p-4 border-t border-blue-800 text-sm text-blue-400 text-shadow-neon relative z-10 bg-black bg-opacity-78">
+          <div className="bg-black bg-opacity-78 border border-blue-900/50 rounded-md p-3 shadow-inner shadow-blue-900/20">
             <p className="font-medium">PixelVault v1.0.0</p>
             <p className="mt-1">PVX Zero-Knowledge Wallet</p>
           </div>
@@ -236,7 +236,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
       {/* Overlay for mobile sidebar */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-10 md:hidden" 
+          className="fixed inset-0 bg-black bg-opacity-78 z-10 md:hidden" 
           onClick={() => setSidebarOpen(false)}
         ></div>
       )}

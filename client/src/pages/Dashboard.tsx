@@ -105,7 +105,7 @@ export default function Dashboard() {
           <h3 className="text-blue-400 font-semibold mb-3 text-shadow-neon">Mining Status</h3>
           <p className="text-blue-300 font-semibold">{miningStats?.isCurrentlyMining ? 'Active' : 'Inactive'}</p>
           <div className="mt-3 flex items-center">
-            <div className="w-full bg-black bg-opacity-60 rounded-full h-2.5 border border-blue-900/50">
+            <div className="w-full bg-black bg-opacity-78 rounded-full h-2.5 border border-blue-900/50">
               <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: miningStats?.isCurrentlyMining ? '85%' : '0%' }}></div>
             </div>
             <span className="ml-2 text-xs text-blue-300">{miningStats?.isCurrentlyMining ? '85%' : '0%'}</span>
