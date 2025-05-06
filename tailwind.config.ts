@@ -23,6 +23,8 @@ export default {
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
+          light: "hsl(var(--primary-light))",
+          dark: "hsl(var(--primary-dark))",
           foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
@@ -79,10 +81,35 @@ export default {
             height: "0",
           },
         },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        flicker: {
+          'from': { opacity: '0.9' },
+          'to': { opacity: '1' },
+        },
+        pulse: {
+          '0%': { boxShadow: '0 0 10px hsl(var(--primary))' },
+          '50%': { boxShadow: '0 0 20px hsl(var(--primary)), 0 0 30px hsl(var(--primary))' },
+          '100%': { boxShadow: '0 0 10px hsl(var(--primary))' }
+        },
+        glitch: {
+          '0%': { textShadow: '2px 2px #ff00c8, -2px -2px #00ffe1' },
+          '20%': { textShadow: '-2px 2px #ff00c8, 2px -2px #00ffe1' },
+          '40%': { textShadow: '2px -2px #ff00c8, -2px 2px #00ffe1' },
+          '60%': { textShadow: '-2px -2px #ff00c8, 2px 2px #00ffe1' },
+          '80%': { textShadow: '2px 2px #ff00c8, -2px -2px #00ffe1' },
+          '100%': { textShadow: '-2px 2px #ff00c8, 2px -2px #00ffe1' }
+        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fadeIn 0.3s ease-in-out",
+        "flicker": "flicker 0.15s infinite alternate",
+        "pulse": "pulse 1.5s infinite",
+        "glitch": "glitch 2s infinite"
       },
     },
   },

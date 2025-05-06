@@ -4,6 +4,7 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import url('https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
 
 :root {
   --background: 0 0% 13%;
@@ -16,7 +17,9 @@
   --card-foreground: 0 0% 98%;
   --border: 240 3.7% 35.9%;
   --input: 20 5.9% 90%;
-  --primary: 207 90% 42%;
+  --primary: 93 59% 61%;
+  --primary-light: 252 68% 70%;
+  --primary-dark: 252 68% 43%;
   --primary-foreground: 211 100% 99%;
   --secondary: 240 3.7% 15.9%;
   --secondary-foreground: 0 0% 98%;
@@ -35,12 +38,19 @@
   
   --sidebar-background: 240 10% 15.9%;
   --sidebar-foreground: 0 0% 98%;
-  --sidebar-primary: 207 90% 42%;
+  --sidebar-primary: 93 59% 61%;
   --sidebar-primary-foreground: 211 100% 99%;
   --sidebar-accent: 165 100% 35%;
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-border: 240 3.7% 25.9%;
   --sidebar-ring: 240 4.9% 83.9%;
+  
+  --dark-bg: #181818;
+  --dark-card: #222222;
+  --dark-border: #333333;
+  --light-bg: #FFFFFF;
+  --light-card: #F7F7F7;
+  --light-border: #E5E7EB;
 }
 
 .dark {
@@ -54,7 +64,7 @@
   --card-foreground: 0 0% 98%;
   --border: 240 3.7% 35.9%;
   --input: 240 3.7% 15.9%;
-  --primary: 207 90% 42%;
+  --primary: 93 59% 61%;
   --primary-foreground: 211 100% 99%;
   --secondary: 240 3.7% 15.9%;
   --secondary-foreground: 0 0% 98%;
@@ -73,4 +83,117 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+}
+
+@layer components {
+  .page-content {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .page-content.active {
+    display: block;
+    opacity: 1;
+  }
+  
+  .terminal-output {
+    @apply mt-4 text-green-500 bg-opacity-70 bg-black p-4 border border-green-600 rounded-lg
+    text-left max-w-full min-h-[100px] whitespace-pre-wrap break-words overflow-x-auto text-sm font-mono;
+  }
+  
+  .cli-button {
+    @apply px-6 py-2 bg-emerald-700 text-white font-bold rounded-lg mt-4 transition-colors
+    duration-200 cursor-pointer hover:bg-emerald-600;
+  }
+  
+  .status-text {
+    @apply text-lime-400 text-lg mt-4;
+  }
+}
+
+@layer utilities {
+  /* Matrix Effect Background */
+  .matrix-background {
+    @apply fixed top-0 left-0 w-full h-full -z-10 opacity-15;
+  }
+  
+  /* Scrollbar Customization */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-opacity-5 bg-black rounded-md;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-opacity-50 bg-primary rounded-md;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-opacity-70 bg-primary;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    @apply bg-opacity-5 bg-white rounded-md;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-opacity-50 bg-primary-light rounded-md;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-opacity-70 bg-primary-light;
+  }
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.flicker {
+  animation: flicker 0.15s infinite alternate;
+}
+
+.pulse-shadow {
+  animation: pulse 1.5s infinite;
+}
+
+/* Glitch Effect */
+.glitch {
+  animation: glitch 2s infinite;
+}
+
+/* Neon Glow */
+.neon {
+  text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 40px #00FF00;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes flicker {
+  from { opacity: 0.9; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 10px theme('colors.primary.DEFAULT'); }
+  50% { box-shadow: 0 0 20px theme('colors.primary.DEFAULT'), 0 0 30px theme('colors.primary.DEFAULT'); }
+  100% { box-shadow: 0 0 10px theme('colors.primary.DEFAULT'); }
+}
+
+@keyframes glitch {
+  0% { text-shadow: 2px 2px #ff00c8, -2px -2px #00ffe1; }
+  20% { text-shadow: -2px 2px #ff00c8, 2px -2px #00ffe1; }
+  40% { text-shadow: 2px -2px #ff00c8, -2px 2px #00ffe1; }
+  60% { text-shadow: -2px -2px #ff00c8, 2px 2px #00ffe1; }
+  80% { text-shadow: 2px 2px #ff00c8, -2px -2px #00ffe1; }
+  100% { text-shadow: -2px 2px #ff00c8, 2px -2px #00ffe1; }
 }
