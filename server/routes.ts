@@ -9,6 +9,7 @@ import { StakingService } from "./services/staking";
 import { NFTService } from "./services/nft";
 import { thringletService } from "./services/thringlet";
 import badgeRoutes from "./routes/badge-routes";
+import utrRoutes from "./routes/utr-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
@@ -20,6 +21,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register badge routes
   app.use('/api', badgeRoutes);
+  
+  // Register UTR (Universal Transaction Registry) routes
+  app.use('/api', utrRoutes);
 
   // Network and Blockchain Routes
   app.get("/api/network/stats", async (req, res) => {

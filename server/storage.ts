@@ -844,6 +844,144 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
+  // UTR (Universal Transaction Registry) methods
+  async createUTREntry(entry: InsertUTR): Promise<UTR> {
+    const newEntry: UTR = {
+      id: this.utrEntries.length + 1,
+      tx_id: entry.tx_id,
+      tx_type: entry.tx_type,
+      from_address: entry.from_address,
+      to_address: entry.to_address,
+      amount: entry.amount,
+      asset_type: entry.asset_type,
+      asset_id: entry.asset_id,
+      block_height: entry.block_height,
+      status: entry.status,
+      timestamp: new Date(),
+      metadata: entry.metadata,
+      zk_proof: entry.zk_proof,
+      signature: entry.signature,
+      gas_fee: entry.gas_fee,
+      verified: entry.verified ?? false
+    };
+    
+    this.utrEntries.push(newEntry);
+    return newEntry;
+  }
+  
+  async getUTRByTxId(txId: string): Promise<UTR | undefined> {
+    return this.utrEntries.find(entry => entry.tx_id === txId);
+  }
+  
+  async getUTREntries(limit: number = 50): Promise<UTR[]> {
+    return [...this.utrEntries]
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+  
+  async getUTREntriesByAddress(address: string, asReceiver: boolean = false, limit: number = 20): Promise<UTR[]> {
+    return [...this.utrEntries]
+      .filter(entry => {
+        if (asReceiver) {
+          return entry.to_address === address;
+        }
+        return entry.from_address === address || entry.to_address === address;
+      })
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+  
+  async getUTREntriesByType(txType: string, limit: number = 20): Promise<UTR[]> {
+    return [...this.utrEntries]
+      .filter(entry => entry.tx_type === txType)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+  
+  async getUTREntriesByAsset(assetType: string, assetId?: string, limit: number = 20): Promise<UTR[]> {
+    return [...this.utrEntries]
+      .filter(entry => {
+        if (assetId) {
+          return entry.asset_type === assetType && entry.asset_id === assetId;
+        }
+        return entry.asset_type === assetType;
+      })
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .slice(0, limit);
+  }
+  
+  async updateUTREntryStatus(txId: string, status: string, metadata?: any): Promise<UTR | undefined> {
+    const entryIndex = this.utrEntries.findIndex(entry => entry.tx_id === txId);
+    if (entryIndex === -1) return undefined;
+    
+    // Create a new entry with updated status
+    const updatedEntry = {
+      ...this.utrEntries[entryIndex],
+      status,
+      metadata: metadata ? { ...this.utrEntries[entryIndex].metadata, ...metadata } : this.utrEntries[entryIndex].metadata
+    };
+    
+    // Update the entry in the array
+    this.utrEntries[entryIndex] = updatedEntry;
+    return updatedEntry;
+  }
+  
+  async verifyUTREntry(txId: string, verified: boolean): Promise<UTR | undefined> {
+    const entryIndex = this.utrEntries.findIndex(entry => entry.tx_id === txId);
+    if (entryIndex === -1) return undefined;
+    
+    // Create a new entry with updated verified status
+    const updatedEntry = {
+      ...this.utrEntries[entryIndex],
+      verified
+    };
+    
+    // Update the entry in the array
+    this.utrEntries[entryIndex] = updatedEntry;
+    return updatedEntry;
+  }
+  
+  async getUTRStats(): Promise<{
+    total: number;
+    pending: number;
+    confirmed: number;
+    failed: number;
+    vetoed: number;
+    byType: Record<string, number>;
+    byAsset: Record<string, number>;
+  }> {
+    const byType: Record<string, number> = {};
+    const byAsset: Record<string, number> = {};
+    let pending = 0;
+    let confirmed = 0;
+    let failed = 0;
+    let vetoed = 0;
+    
+    for (const entry of this.utrEntries) {
+      // Count by status
+      if (entry.status === 'pending') pending++;
+      else if (entry.status === 'confirmed') confirmed++;
+      else if (entry.status === 'failed') failed++;
+      else if (entry.status === 'vetoed') vetoed++;
+      
+      // Count by transaction type
+      byType[entry.tx_type] = (byType[entry.tx_type] || 0) + 1;
+      
+      // Count by asset type
+      byAsset[entry.asset_type] = (byAsset[entry.asset_type] || 0) + 1;
+    }
+    
+    return {
+      total: this.utrEntries.length,
+      pending,
+      confirmed,
+      failed,
+      vetoed,
+      byType,
+      byAsset
+    };
+  }
+  
   async getNFTs(): Promise<any[]> {
     const nftRecords = await db
       .select()
