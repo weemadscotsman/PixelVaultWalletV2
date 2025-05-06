@@ -3,6 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { HashlordGame } from '@/components/learning/HashlordGame';
+import { GasEscapeGame } from '@/components/learning/GasEscapeGame';
 import { GraduationCap, Zap, Fuel, Wallet } from 'lucide-react';
 
 export default function LearningPage() {
@@ -52,13 +53,7 @@ export default function LearningPage() {
             </TabsContent>
             
             <TabsContent value="gasescape">
-              <div className="flex flex-col items-center justify-center h-64">
-                <Fuel className="w-16 h-16 text-blue-400 mb-4" />
-                <h3 className="text-xl font-bold text-blue-300">Gas Escape Game</h3>
-                <p className="text-gray-400 max-w-md text-center mt-2">
-                  Coming soon! Learn how gas fees work and optimize your transactions through this interactive game.
-                </p>
-              </div>
+              <GasEscapeGame />
             </TabsContent>
             
             <TabsContent value="stakingwars">
