@@ -112,7 +112,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
   return (
     <>
       {/* Mobile Header (visible on small screens) */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-black bg-opacity-95 border-b border-blue-800 relative shadow-md shadow-blue-900/30">
+      <div className="md:hidden flex items-center justify-between p-4 bg-black bg-opacity-78 border-b border-blue-800 relative shadow-md shadow-blue-900/30">
         {/* Matrix effect canvas for mobile header */}
         <canvas 
           className="absolute inset-0 z-0 pointer-events-none opacity-30"
@@ -137,7 +137,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
       {/* Sidebar - Responsive */}
       <aside 
         className={cn(
-          "z-20 flex-shrink-0 bg-black bg-opacity-95 relative border-r border-blue-800",
+          "z-20 flex-shrink-0 bg-black bg-opacity-78 relative border-r border-blue-800",
           "transition-all duration-300 md:relative flex flex-col overflow-y-auto",
           "w-64 md:flex shadow-lg shadow-blue-900/30",
           sidebarOpen ? "block fixed inset-0 md:relative" : "hidden"
@@ -149,7 +149,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
           className="absolute inset-0 z-0 pointer-events-none opacity-30"
         />
         {/* Sidebar Header (hidden on mobile) */}
-        <div className="hidden md:flex items-center p-4 border-b border-blue-800 relative z-10 bg-black bg-opacity-90">
+        <div className="hidden md:flex items-center p-4 border-b border-blue-800 relative z-10 bg-black bg-opacity-78">
           <div className="flex items-center">
             <div className="flex items-center justify-center w-10 h-10 rounded-md bg-blue-800 shadow-md shadow-blue-900/50">
               <i className="ri-shield-keyhole-fill text-white text-xl"></i>
@@ -159,7 +159,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
         </div>
         
         {/* Close button for mobile */}
-        <div className="md:hidden flex justify-end p-2 bg-black bg-opacity-90">
+        <div className="md:hidden flex justify-end p-2 bg-black bg-opacity-78">
           <button 
             onClick={() => setSidebarOpen(false)} 
             className="text-blue-400 focus:outline-none p-2 hover:text-blue-300 text-shadow-neon"
