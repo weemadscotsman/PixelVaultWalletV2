@@ -605,7 +605,7 @@ export function AdvancedDropTerminal() {
   }, []);
   
   // CSS classes for visual effects
-  const terminalClasses = `w-full h-full border border-[#00a2ff] bg-black/80 text-[#00a2ff] shadow-[0_0_15px_rgba(0,162,255,0.5)] ${isGlitched ? 'animate-glitch' : ''}`;
+  const terminalClasses = `w-full h-full border border-[#00a2ff] bg-black/78 text-[#00a2ff] shadow-[0_0_15px_rgba(0,162,255,0.5)] ${isGlitched ? 'animate-glitch' : ''}`;
   
   // Add glitch animation if needed
   const glitchStyle = isGlitched ? {

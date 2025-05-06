@@ -71,7 +71,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // Secret Drops in-memory storage
+  // In-memory storage for drops and thringlets
   private secretDrops: any[] = [
     {
       id: "drop-001",
