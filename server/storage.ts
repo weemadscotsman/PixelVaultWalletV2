@@ -57,6 +57,16 @@ export interface IStorage {
   mintNFT(nft: any): Promise<any>;
   transferNFT(id: string, fromAddress: string, toAddress: string): Promise<boolean>;
   
+  // Drops and Thringlets methods
+  getSecretDrops(): Promise<any[]>;
+  getSecretDropByCode(code: string): Promise<any | undefined>;
+  createSecretDrop(drop: any): Promise<any>;
+  updateSecretDrop(drop: any): Promise<any>;
+  getThringletsByOwner(ownerAddress: string): Promise<any[]>;
+  getThringlet(id: string): Promise<any | undefined>;
+  createThringlet(thringlet: any): Promise<any>;
+  updateThringlet(thringlet: any): Promise<any>;
+  
   // Network stats
   getNetworkStats(): Promise<NetworkStats>;
 }
