@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState, useRef } from "react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { MobileNavigation } from "./MobileNavigation";
@@ -17,6 +17,62 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
     peers: 24,
     hashRate: "12.4 TH/s"
   });
+  
+  const matrixCanvasRef = useRef<HTMLCanvasElement>(null);
+  const secondaryEffectRef = useRef<HTMLCanvasElement>(null);
+  
+  // Matrix rain effect
+  useEffect(() => {
+    if (!matrixCanvasRef.current) return;
+    
+    const canvas = matrixCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const fontSize = 10;
+    const columns = Math.floor(canvas.width / fontSize);
+    
+    const drops: number[] = [];
+    for (let i = 0; i < columns; i++) {
+      drops[i] = 1;
+    }
+    
+    const matrix = () => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.fillStyle = '#0f0';
+      ctx.font = fontSize + 'px monospace';
+      
+      for (let i = 0; i < drops.length; i++) {
+        const text = String.fromCharCode(Math.floor(Math.random() * 128));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+          drops[i] = 0;
+        }
+        
+        drops[i]++;
+      }
+    };
+    
+    const matrixInterval = setInterval(matrix, 35);
+    
+    const handleResize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    return () => {
+      clearInterval(matrixInterval);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     // Fetch real network stats when API is available
@@ -36,15 +92,18 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
+      {/* Matrix background effect */}
+      <canvas ref={matrixCanvasRef} className="matrix-background"></canvas>
+      <canvas ref={secondaryEffectRef} id="bananaCanvas" className="fixed top-0 left-0 w-full h-full -z-[5] opacity-20"></canvas>
+      
       <Header isConnected={isConnected} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar networkStats={networkStats} />
         
-        <main className="flex-1 overflow-auto bg-background p-4">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-dark-bg fade-in">
           <div className="container mx-auto space-y-6">
-            <MobileNavigation />
             {children}
           </div>
         </main>
