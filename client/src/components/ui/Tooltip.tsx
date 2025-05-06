@@ -167,7 +167,7 @@ export function Tooltip({ term, children, width = 'medium', position = 'top', hi
           style={{ boxShadow: '0 0 10px rgba(0, 255, 0, 0.3)' }}
         >
           <div className="font-bold text-green-400 mb-1">{term}</div>
-          <p>{definition}</p>
+          <div>{definition}</div>
         </div>
       )}
     </>

@@ -385,11 +385,11 @@ export default function Dashboard() {
       
       {/* Blockchain terminology example in the footer */}
       <div className="fixed bottom-5 right-5 bg-black bg-opacity-80 p-3 rounded-lg border border-green-500 text-xs text-gray-400 max-w-xs">
-        <p>
+        <div>
           Hover over highlighted terms like <Tooltip term="blockchain" highlightStyle="dotted">blockchain</Tooltip>,{" "}
           <Tooltip term="zero-knowledge proof" highlightStyle="glow">zero-knowledge proof</Tooltip>, or{" "}
           <Tooltip term="consensus" highlightStyle="underline">consensus</Tooltip> to learn more.
-        </p>
+        </div>
       </div>
     </PageLayout>
   );
