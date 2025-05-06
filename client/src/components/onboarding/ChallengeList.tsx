@@ -34,14 +34,14 @@ export function ChallengeList({ challenges, onSelect, userProgress }: ChallengeL
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-green-400 neon">Blockchain Learning Challenges</h2>
+        <h2 className="text-2xl font-bold text-blue-400 text-shadow-neon">Blockchain Learning Challenges</h2>
         
         <div className="flex items-center space-x-4">
           <div className="text-gray-400">
-            <span className="font-bold text-green-400">{userProgress.totalPoints}</span> Points
+            <span className="font-bold text-blue-400 text-shadow-neon">{userProgress.totalPoints}</span> Points
           </div>
           <div className="text-gray-400">
-            Level <span className="font-bold text-green-400">{userProgress.level}</span>
+            Level <span className="font-bold text-blue-400 text-shadow-neon">{userProgress.level}</span>
           </div>
         </div>
       </div>

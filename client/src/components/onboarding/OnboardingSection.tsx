@@ -410,8 +410,8 @@ export function OnboardingSection() {
       {/* Welcome Modal */}
       {showWelcomeModal && (
         <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-black border border-green-500 rounded-lg p-6 max-w-2xl w-full">
-            <h2 className="text-2xl font-bold text-green-400 mb-4 neon">Welcome to the PIXELVAULT Learning Center!</h2>
+          <div className="bg-black border border-blue-500 rounded-lg p-6 max-w-2xl w-full shadow-lg shadow-blue-900/20">
+            <h2 className="text-2xl font-bold text-blue-400 mb-4 text-shadow-neon">Welcome to the PIXELVAULT Learning Center!</h2>
             <p className="text-gray-300 mb-4">
               Get started with blockchain technology through our gamified learning experience. 
               Complete challenges to earn PVX tokens, NFTs, and achievement badges.
@@ -422,7 +422,7 @@ export function OnboardingSection() {
             </p>
             <div className="flex justify-end">
               <button 
-                className="bg-green-700 hover:bg-green-600 text-white px-6 py-2 rounded-md"
+                className="bg-blue-700 hover:bg-blue-600 text-white px-6 py-2 rounded-md text-shadow-neon"
                 onClick={() => setShowWelcomeModal(false)}
               >
                 Start Learning
@@ -435,7 +435,7 @@ export function OnboardingSection() {
       {selectedChallenge ? (
         <div>
           <button 
-            className="mb-4 flex items-center text-green-400 hover:text-green-300"
+            className="mb-4 flex items-center text-blue-400 hover:text-blue-300 text-shadow-neon"
             onClick={() => setSelectedChallengeId(null)}
           >
             <span className="mr-2">←</span>
