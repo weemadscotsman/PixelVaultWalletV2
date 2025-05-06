@@ -283,7 +283,7 @@ const blockchainChallenges: Challenge[] = [
           'To connect different blockchains together'
         ],
         correctIndex: 2,
-        explanation: 'Consensus mechanisms are protocols that ensure all nodes in a blockchain network agree on the validity of transactions and the order in which they're added to the blockchain. They solve the problem of trust in a decentralized network where participants don't necessarily know or trust each other.'
+        explanation: "Consensus mechanisms are protocols that ensure all nodes in a blockchain network agree on the validity of transactions and the order in which they're added to the blockchain. They solve the problem of trust in a decentralized network where participants don't necessarily know or trust each other."
       },
       {
         question: 'What is the main criticism of Proof of Work (PoW) consensus?',

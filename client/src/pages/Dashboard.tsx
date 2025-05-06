@@ -10,6 +10,9 @@ import { useStaking } from "@/hooks/use-staking";
 import { useNFT } from "@/hooks/use-nft";
 import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import { Terminal } from "@/components/ui/Terminal";
+import { OnboardingSection } from "@/components/onboarding/OnboardingSection";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function Dashboard() {
   const { wallet, loadWalletFromStorage } = useWallet();
@@ -367,6 +370,26 @@ export default function Dashboard() {
             </table>
           </div>
         </div>
+      </div>
+      
+      {/* Learning/Onboarding Section */}
+      <div className={activeSection === "learn" ? "block" : "hidden"}>
+        <h2 className="text-2xl font-bold text-green-400 mb-6 neon">Learning Center</h2>
+        <OnboardingSection />
+      </div>
+      
+      {/* Theme Toggle in the top-right corner */}
+      <div className="fixed top-5 right-5 z-50">
+        <ThemeToggle />
+      </div>
+      
+      {/* Blockchain terminology example in the footer */}
+      <div className="fixed bottom-5 right-5 bg-black bg-opacity-80 p-3 rounded-lg border border-green-500 text-xs text-gray-400 max-w-xs">
+        <p>
+          Hover over highlighted terms like <Tooltip term="blockchain" highlightStyle="dotted">blockchain</Tooltip>,{" "}
+          <Tooltip term="zero-knowledge proof" highlightStyle="glow">zero-knowledge proof</Tooltip>, or{" "}
+          <Tooltip term="consensus" highlightStyle="underline">consensus</Tooltip> to learn more.
+        </p>
       </div>
     </PageLayout>
   );
