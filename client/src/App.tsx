@@ -9,7 +9,9 @@ import LearningPage from "@/pages/learning-page";
 import WalletPage from "@/pages/WalletPage";
 import BlockchainPage from "@/pages/BlockchainPage";
 import StakingPage from "@/pages/StakingPage";
+import GovernancePage from "@/pages/GovernancePage";
 import ThringletsPage from "@/pages/ThringletsPage";
+import DropsPage from "@/pages/DropsPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
@@ -22,9 +24,9 @@ function Router() {
       <Route path="/wallet" component={WalletPage} />
       <Route path="/blockchain" component={BlockchainPage} />
       <Route path="/staking" component={StakingPage} />
-      <Route path="/governance" component={() => <HomePage />} />
+      <Route path="/governance" component={GovernancePage} />
       <Route path="/thringlets" component={ThringletsPage} />
-      <Route path="/drops" component={() => <HomePage />} />
+      <Route path="/drops" component={DropsPage} />
       <Route path="/terminal" component={() => <HomePage />} />
       <Route path="/profile" component={() => <HomePage />} />
       <Route path="/settings" component={() => <HomePage />} />
