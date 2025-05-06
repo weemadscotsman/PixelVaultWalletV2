@@ -116,6 +116,100 @@
   /* Matrix Effect Background */
   .matrix-background {
     @apply fixed top-0 left-0 w-full h-full -z-10 opacity-15;
+    background: linear-gradient(rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.95)), 
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='10' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='20' y='20' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='40' y='30' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='60' y='40' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='80' y='50' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='0' y='60' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='20' y='70' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='40' y='80' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='60' y='90' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='80' y='100' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3C/svg%3E");
+    animation: matrix-scroll 20s linear infinite;
+  }
+  
+  .matrix-rain {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -5;
+    opacity: 0.2;
+  }
+  
+  .matrix-rain canvas {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Terminal Styling */
+  .terminal {
+    @apply bg-black bg-opacity-80 border border-green-500 rounded-md p-4 font-mono text-green-500;
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  }
+  
+  .terminal-header {
+    @apply flex items-center justify-between pb-2 mb-3 border-b border-green-800;
+  }
+  
+  .terminal-title {
+    @apply text-green-300 text-sm uppercase tracking-wider;
+  }
+  
+  .terminal-controls {
+    @apply flex gap-2;
+  }
+  
+  .terminal-controls span {
+    @apply w-3 h-3 rounded-full;
+  }
+  
+  .terminal-red {
+    @apply bg-red-500;
+  }
+  
+  .terminal-yellow {
+    @apply bg-yellow-500;
+  }
+  
+  .terminal-green {
+    @apply bg-green-500;
+  }
+  
+  .terminal-prompt {
+    @apply text-green-400 flex gap-2 mb-2;
+  }
+  
+  .terminal-prompt::before {
+    content: "$";
+    @apply text-green-600;
+  }
+  
+  .terminal-cursor {
+    display: inline-block;
+    width: 0.6em;
+    height: 1em;
+    background-color: #00FF00;
+    animation: blink 1s step-end infinite;
+  }
+  
+  /* Pixel/Microchip Grid */
+  .pixel-grid {
+    background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    @apply bg-black bg-opacity-90 rounded-md;
+  }
+  
+  /* Power Button Glow */
+  .power-button {
+    @apply relative inline-flex items-center justify-center w-12 h-12 rounded-full 
+           bg-gray-900 text-green-500 transition-all duration-300 cursor-pointer;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+  }
+  
+  .power-button:hover, .power-button.active {
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.9);
+    @apply text-green-400;
+  }
+  
+  .power-button .icon {
+    @apply text-2xl;
   }
   
   /* Scrollbar Customization */
@@ -196,4 +290,29 @@
   60% { text-shadow: -2px -2px #ff00c8, 2px 2px #00ffe1; }
   80% { text-shadow: 2px 2px #ff00c8, -2px -2px #00ffe1; }
   100% { text-shadow: -2px 2px #ff00c8, 2px -2px #00ffe1; }
+}
+
+@keyframes matrix-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 1000px; }
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes scan-line {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+@keyframes matrix-rain {
+  0% { top: -10%; }
+  100% { top: 100%; }
 }

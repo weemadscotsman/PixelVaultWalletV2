@@ -28,6 +28,7 @@ export function useMining() {
     reserve: number;
   } | null>(null);
   const [miningRewards, setMiningRewards] = useState<MiningReward[]>([]);
+  const [miningStats, setMiningStats] = useState<MiningStats | null>(null);
 
   // Reference to the miner instance
   const minerRef = useRef<WebWorkerMiner | null>(null);
@@ -75,6 +76,7 @@ export function useMining() {
     enabled: !!wallet,
     onSuccess: (data: MiningStats) => {
       if (data) {
+        setMiningStats(data);
         setBlocksMined(data.blocksMined);
         if (data.isCurrentlyMining && !isMining) {
           setIsMining(true);
@@ -285,5 +287,6 @@ export function useMining() {
     nextHalvingEstimate,
     rewardDistribution,
     miningRewards,
+    miningStats,
   };
 }
