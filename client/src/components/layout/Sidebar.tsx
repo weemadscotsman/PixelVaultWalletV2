@@ -41,6 +41,9 @@ export function Sidebar({ networkStats }: SidebarProps) {
     { id: "#staking", icon: "fa-layer-group", label: "Staking" },
     { id: "#governance", icon: "fa-landmark", label: "Governance" },
     { id: "#nft", icon: "fa-image", label: "NFT Minting" },
+    { id: "#games", icon: "fa-gamepad", label: "Game Center" },
+    { id: "#drops", icon: "fa-gift", label: "Exclusive Drops" },
+    { id: "#market", icon: "fa-chart-line", label: "Market Stats" },
   ];
 
   return (

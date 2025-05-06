@@ -19,6 +19,29 @@ export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("wallet");
   const [terminalOutput, setTerminalOutput] = useState("PIXELVAULT TERMINAL v1.0\n> Loading system...\n> Welcome to PIXELVAULT secure blockchain interface\n> Type 'help' for available commands\n>");
 
+  // Handle hash change from sidebar navigation
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash) {
+        // Remove the # symbol to get the section name
+        const section = hash.substring(1);
+        setActiveSection(section);
+      }
+    };
+
+    // Set initial section based on hash (if any)
+    handleHashChange();
+
+    // Add event listener for hash changes
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
+
   useEffect(() => {
     // Load wallet from storage on initial render
     loadWalletFromStorage();
@@ -74,58 +97,7 @@ export default function Dashboard() {
       {/* Matrix Background Effect */}
       <MatrixBackground />
       
-      {/* Quick Navigation Tabs */}
-      <div className="flex flex-wrap mb-6 bg-black bg-opacity-40 p-2 rounded-lg">
-        <button 
-          onClick={() => setActiveSection("wallet")} 
-          className={`px-4 py-2 rounded-md mr-2 mb-1 ${activeSection === "wallet" ? 
-            "bg-primary text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-        >
-          <i className="ri-wallet-3-line mr-2"></i>Wallet
-        </button>
-        <button 
-          onClick={() => setActiveSection("mining")} 
-          className={`px-4 py-2 rounded-md mr-2 mb-1 ${activeSection === "mining" ? 
-            "bg-primary text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-        >
-          <i className="ri-cpu-line mr-2"></i>Mining
-        </button>
-        <button 
-          onClick={() => setActiveSection("staking")} 
-          className={`px-4 py-2 rounded-md mr-2 mb-1 ${activeSection === "staking" ? 
-            "bg-primary text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-        >
-          <i className="ri-coins-line mr-2"></i>Staking
-        </button>
-        <button 
-          onClick={() => setActiveSection("nft")} 
-          className={`px-4 py-2 rounded-md mr-2 mb-1 ${activeSection === "nft" ? 
-            "bg-primary text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-        >
-          <i className="ri-gallery-line mr-2"></i>NFTs
-        </button>
-        <button 
-          onClick={() => setActiveSection("games")} 
-          className={`px-4 py-2 rounded-md mr-2 mb-1 ${activeSection === "games" ? 
-            "bg-primary text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-        >
-          <i className="ri-gamepad-line mr-2"></i>Game Center
-        </button>
-        <button 
-          onClick={() => setActiveSection("drops")} 
-          className={`px-4 py-2 rounded-md mr-2 mb-1 ${activeSection === "drops" ? 
-            "bg-primary text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-        >
-          <i className="ri-gift-line mr-2"></i>Exclusive Drops
-        </button>
-        <button 
-          onClick={() => setActiveSection("market")} 
-          className={`px-4 py-2 rounded-md mb-1 ${activeSection === "market" ? 
-            "bg-primary text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"}`}
-        >
-          <i className="ri-line-chart-line mr-2"></i>Market Stats
-        </button>
-      </div>
+      {/* No top navigation tabs needed since we're using the sidebar */}
       
       {/* Main Dashboard Panels */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
