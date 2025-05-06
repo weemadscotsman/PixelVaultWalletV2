@@ -113,7 +113,7 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
       
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3">
-          <div className="bg-black bg-opacity-80 border border-blue-500 rounded-lg overflow-hidden shadow-md shadow-blue-900/20">
+          <div className="bg-black bg-opacity-90 border border-blue-500 rounded-lg overflow-hidden shadow-md shadow-blue-900/40">
             <div className="p-4 border-b border-blue-900">
               <h3 className="text-blue-400 font-medium text-shadow-neon">Challenge Progress</h3>
               <p className="text-gray-400 text-sm">
@@ -134,8 +134,8 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
                       key={index}
                       className={`p-3 border rounded-md cursor-pointer transition-colors ${
                         selectedOption === index
-                          ? 'border-blue-500 bg-blue-900 bg-opacity-20'
-                          : 'border-gray-700 hover:border-gray-500'
+                          ? 'border-blue-500 bg-blue-900 bg-opacity-40 shadow-inner shadow-blue-900'
+                          : 'border-gray-700 hover:border-blue-500/50'
                       }`}
                       onClick={() => handleOptionSelect(index)}
                     >
@@ -152,8 +152,16 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
                 </div>
                 
                 {showExplanation && (
-                  <div className={`p-4 rounded-md ${isCorrect ? 'bg-blue-900 bg-opacity-20' : 'bg-red-900 bg-opacity-20'}`}>
-                    <p className={`text-sm ${isCorrect ? 'text-blue-400' : 'text-red-400'}`}>
+                  <div className={`p-4 rounded-md shadow-md ${
+                    isCorrect 
+                      ? 'bg-blue-900 bg-opacity-40 border border-blue-500/50' 
+                      : 'bg-red-900 bg-opacity-40 border border-red-500/50'
+                  }`}>
+                    <p className={`text-sm font-medium ${
+                      isCorrect 
+                        ? 'text-blue-300 text-shadow-neon' 
+                        : 'text-red-300'
+                    }`}>
                       {isCorrect ? '✓ Correct! ' : '✗ Incorrect. '} 
                       {currentQuestion.explanation}
                     </p>
@@ -162,7 +170,7 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
               </div>
             </div>
             
-            <div className="p-4 border-t border-green-900 flex justify-between">
+            <div className="p-4 border-t border-blue-900 flex justify-between">
               <button 
                 className={`px-4 py-2 rounded-md border ${
                   currentStep === 0 
@@ -187,7 +195,7 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
                     className={`px-4 py-2 rounded-md ${
                       selectedOption === null 
                         ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
-                        : 'bg-green-700 hover:bg-green-600 text-white'
+                        : 'bg-blue-700 hover:bg-blue-600 text-white text-shadow-neon'
                     }`}
                     disabled={selectedOption === null}
                     onClick={handleSubmitAnswer}
@@ -196,7 +204,7 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
                   </button>
                 ) : (
                   <button 
-                    className="px-4 py-2 rounded-md bg-green-700 hover:bg-green-600 text-white"
+                    className="px-4 py-2 rounded-md bg-blue-700 hover:bg-blue-600 text-white text-shadow-neon"
                     onClick={handleNextStep}
                   >
                     {currentStep < challenge.steps.length - 1 ? 'Next Question' : 'Complete Challenge'}
@@ -208,9 +216,9 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
         </div>
         
         <div className="lg:col-span-2">
-          <div className="bg-black bg-opacity-80 border border-green-500 rounded-lg overflow-hidden h-full">
-            <div className="p-4 border-b border-green-900">
-              <h3 className="text-green-400 font-medium">Learning Terminal</h3>
+          <div className="bg-black bg-opacity-90 border border-blue-500 rounded-lg overflow-hidden h-full shadow-md shadow-blue-900/30">
+            <div className="p-4 border-b border-blue-900">
+              <h3 className="text-blue-400 font-medium text-shadow-neon">Learning Terminal</h3>
               <p className="text-gray-400 text-sm">
                 Execute commands and see outputs
               </p>
@@ -228,21 +236,21 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
         </div>
       </div>
       
-      <div className="bg-black bg-opacity-80 border border-green-500 rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-green-900">
-          <h3 className="text-green-400 font-medium">Reward</h3>
+      <div className="bg-black bg-opacity-90 border border-blue-500 rounded-lg overflow-hidden shadow-md shadow-blue-900/40">
+        <div className="p-4 border-b border-blue-900">
+          <h3 className="text-blue-400 font-medium text-shadow-neon">Reward</h3>
         </div>
         <div className="p-4">
           <div className="flex items-center space-x-4">
-            <div className="flex-shrink-0 p-3 bg-green-900 bg-opacity-20 rounded-md">
+            <div className="flex-shrink-0 p-3 bg-blue-900 bg-opacity-30 rounded-md">
               {challenge.reward.type === 'token' && (
-                <div className="text-2xl text-green-400">🪙</div>
+                <div className="text-2xl text-blue-400 text-shadow-neon">🪙</div>
               )}
               {challenge.reward.type === 'nft' && (
-                <div className="text-2xl text-green-400">🖼️</div>
+                <div className="text-2xl text-blue-400 text-shadow-neon">🖼️</div>
               )}
               {challenge.reward.type === 'badge' && (
-                <div className="text-2xl text-green-400">🏆</div>
+                <div className="text-2xl text-blue-400 text-shadow-neon">🏆</div>
               )}
             </div>
             <div>
