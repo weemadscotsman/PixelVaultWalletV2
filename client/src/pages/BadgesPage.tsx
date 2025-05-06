@@ -74,12 +74,14 @@ export default function BadgesPage() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
                 <div className="flex items-center gap-3">
-                  <ProgressCircle value={(badgeStats.earned / badgeStats.total) * 100} size="lg" 
+                  <ProgressCircle 
+                    value={badgeStats.total > 0 ? (badgeStats.earned / badgeStats.total) * 100 : 0} 
+                    size="lg" 
                     className="text-blue-500"
                     strokeWidth={8}
                   >
                     <span className="text-lg font-bold">
-                      {Math.round((badgeStats.earned / badgeStats.total) * 100)}%
+                      {badgeStats.total > 0 ? Math.round((badgeStats.earned / badgeStats.total) * 100) : 0}%
                     </span>
                   </ProgressCircle>
                   <div>

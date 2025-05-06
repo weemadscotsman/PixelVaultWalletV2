@@ -26,7 +26,9 @@ export function ProgressCircle({
   const circleSize = sizeMap[size];
   const radius = (circleSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (value / 100) * circumference;
+  // Handle edge cases where value might be null, undefined, or NaN
+  const progressValue = typeof value === 'number' && !isNaN(value) ? value : 0;
+  const offset = circumference - (progressValue / 100) * circumference;
   
   return (
     <div
