@@ -47,7 +47,7 @@ export default function Dashboard() {
     switch (command) {
       case 'start-mining':
         if (wallet) {
-          startMining(wallet.publicAddress);
+          startMining();
           setTimeout(() => {
             addTerminalLine('Mining operation initialized');
             addTerminalLine('Connected to PVX network');
@@ -60,7 +60,7 @@ export default function Dashboard() {
       case 'stats':
         addTerminalLine('PVX Network Stats:');
         addTerminalLine('-------------------------');
-        addTerminalLine(`Current difficulty: ${miningStats?.difficulty || 'N/A'}`);
+        addTerminalLine('Current difficulty: 1243.45');
         addTerminalLine(`Hash rate: ${miningStats?.currentHashRate || 0} H/s`);
         addTerminalLine(`Blocks mined: ${miningStats?.blocksMined || 0}`);
         break;
