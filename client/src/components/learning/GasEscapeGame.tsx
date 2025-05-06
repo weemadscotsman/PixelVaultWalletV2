@@ -88,7 +88,7 @@ export function GasEscapeGame() {
   const { toast } = useToast();
   const blockTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  const MAX_TX_PER_LEVEL = {
+  const MAX_TX_PER_LEVEL: Record<number, number> = {
     1: 5,
     2: 8, 
     3: 10,
@@ -666,7 +666,7 @@ export function GasEscapeGame() {
               </p>
               <Progress 
                 value={(userTxs.length / MAX_TX_PER_LEVEL[level]) * 100} 
-                className="h-2 mt-1 bg-blue-900/20"
+                className="h-2 mt-1 bg-blue-900/20 [&>div]:bg-blue-500"
               />
             </div>
           </CardContent>
