@@ -1,201 +1,118 @@
-import React, { useState } from 'react';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { HashlordGame } from './HashlordGame';
-import { Cpu, BarChart2, Zap, Network, Shield, AlertTriangle } from 'lucide-react';
-import { GameType } from '@/lib/game-engine';
+import React, { useEffect, useRef, useState } from 'react';
 
-export function LearningTerminal() {
-  const [activeTab, setActiveTab] = useState<string>(GameType.HASHLORD);
+interface LearningTerminalProps {
+  x: {
+    command: string;
+    history: string[];
+    output: string;
+    isProcessing: boolean;
+    isMining: boolean;
+    miningStatus: string;
+    onExecuteCommand: (command: string) => void;
+  }
+}
+
+export function LearningTerminal({ x }: LearningTerminalProps) {
+  const outputRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [command, setCommand] = useState('');
+  
+  // Auto-scroll to bottom when output changes
+  useEffect(() => {
+    if (outputRef.current) {
+      outputRef.current.scrollTop = outputRef.current.scrollHeight;
+    }
+  }, [x.output, x.history]);
+  
+  // Focus input field on mount and when processing finishes
+  useEffect(() => {
+    if (!x.isProcessing && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [x.isProcessing]);
+  
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && command.trim() && !x.isProcessing) {
+      x.onExecuteCommand(command);
+      setCommand('');
+    }
+  };
   
   return (
-    <Card className="bg-card/90 backdrop-blur-sm border-gray-800">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <div>
-            <CardTitle className="text-shadow-neon flex items-center gap-2">
-              <Cpu className="h-5 w-5 text-primary" />
-              INTERACTIVE BLOCKCHAIN LEARNING
-            </CardTitle>
-            <CardDescription>
-              Learn how blockchain works through immersive, playable simulations
-            </CardDescription>
-          </div>
+    <div className="terminal-panel h-full flex flex-col">
+      <div className="terminal-header flex justify-between items-center mb-3 border-b border-blue-900/50 pb-2">
+        <div className="terminal-title text-blue-400 text-sm uppercase tracking-wider">
+          PVX Blockchain Terminal
         </div>
-      </CardHeader>
+        <div className="terminal-controls flex gap-2">
+          <span className="w-3 h-3 rounded-full bg-red-500"></span>
+          <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
+          <span className="w-3 h-3 rounded-full bg-green-500"></span>
+        </div>
+      </div>
       
-      <CardContent className="pt-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full grid grid-cols-5 bg-background/60 border border-gray-800 mb-4">
-            <TabsTrigger 
-              value={GameType.HASHLORD} 
-              className="data-[state=active]:bg-primary-dark/30 data-[state=active]:text-primary-light data-[state=active]:border-b-2 data-[state=active]:border-primary text-xs"
-            >
-              <div className="flex flex-col items-center gap-1 py-1">
-                <BarChart2 className="h-4 w-4" />
-                <span>Hashlord</span>
-              </div>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value={GameType.GAS_ESCAPE} 
-              className="data-[state=active]:bg-primary-dark/30 data-[state=active]:text-primary-light data-[state=active]:border-b-2 data-[state=active]:border-primary text-xs"
-            >
-              <div className="flex flex-col items-center gap-1 py-1">
-                <Zap className="h-4 w-4" />
-                <span>Gas Escape</span>
-              </div>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value={GameType.STAKING_WARS} 
-              className="data-[state=active]:bg-primary-dark/30 data-[state=active]:text-primary-light data-[state=active]:border-b-2 data-[state=active]:border-primary text-xs"
-              disabled
-            >
-              <div className="flex flex-col items-center gap-1 py-1">
-                <Shield className="h-4 w-4" />
-                <span>Staking Wars</span>
-              </div>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value={GameType.PACKET_PANIC} 
-              className="data-[state=active]:bg-primary-dark/30 data-[state=active]:text-primary-light data-[state=active]:border-b-2 data-[state=active]:border-primary text-xs"
-              disabled
-            >
-              <div className="flex flex-col items-center gap-1 py-1">
-                <Network className="h-4 w-4" />
-                <span>Packet Panic</span>
-              </div>
-            </TabsTrigger>
-            
-            <TabsTrigger 
-              value={GameType.RUG_GAME} 
-              className="data-[state=active]:bg-primary-dark/30 data-[state=active]:text-primary-light data-[state=active]:border-b-2 data-[state=active]:border-primary text-xs"
-              disabled
-            >
-              <div className="flex flex-col items-center gap-1 py-1">
-                <AlertTriangle className="h-4 w-4" />
-                <span>Rug Game</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value={GameType.HASHLORD} className="mt-0">
-            <HashlordGame />
-          </TabsContent>
-          
-          <TabsContent value={GameType.GAS_ESCAPE} className="mt-0">
-            <Card className="border-gray-800 bg-background/70 backdrop-blur-sm">
-              <CardHeader className="border-b border-gray-800 pb-3">
-                <CardTitle className="text-shadow-neon flex items-center gap-2">
-                  <Zap className="h-5 w-5 text-primary" />
-                  <span>GAS ESCAPE</span>
-                </CardTitle>
-                <CardDescription>Transaction Fee Simulator · Coming Soon</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="pt-6 pb-8">
-                <div className="text-center py-12 space-y-4">
-                  <div className="font-mono text-primary-light text-xl">GAME UNDER DEVELOPMENT</div>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    This simulation will teach you how gas fees work in blockchain networks
-                    by dodging spikes and mining blocks to get your transaction through.
-                  </p>
-                  <div className="text-xs text-muted-foreground/60 mt-8">
-                    Check back soon - this feature is being deployed in the next update
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value={GameType.STAKING_WARS} className="mt-0">
-            <Card className="border-gray-800 bg-background/70 backdrop-blur-sm">
-              <CardHeader className="border-b border-gray-800 pb-3">
-                <CardTitle className="text-shadow-neon flex items-center gap-2">
-                  <Shield className="h-5 w-5 text-primary" />
-                  <span>STAKING WARS</span>
-                </CardTitle>
-                <CardDescription>Validator Simulation · Coming Soon</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="pt-6 pb-8">
-                <div className="text-center py-12 space-y-4">
-                  <div className="font-mono text-primary-light text-xl">GAME UNDER DEVELOPMENT</div>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    This simulation will teach you how Proof-of-Stake governance works
-                    by competing with other validators to participate in blockchain consensus.
-                  </p>
-                  <div className="text-xs text-muted-foreground/60 mt-8">
-                    Check back soon - this feature is being deployed in the next update
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value={GameType.PACKET_PANIC} className="mt-0">
-            <Card className="border-gray-800 bg-background/70 backdrop-blur-sm">
-              <CardHeader className="border-b border-gray-800 pb-3">
-                <CardTitle className="text-shadow-neon flex items-center gap-2">
-                  <Network className="h-5 w-5 text-primary" />
-                  <span>PACKET PANIC</span>
-                </CardTitle>
-                <CardDescription>Network Mempool Simulation · Coming Soon</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="pt-6 pb-8">
-                <div className="text-center py-12 space-y-4">
-                  <div className="font-mono text-primary-light text-xl">GAME UNDER DEVELOPMENT</div>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    This simulation will teach you how blockchain networks process transactions
-                    by routing through congested nodes during high network activity.
-                  </p>
-                  <div className="text-xs text-muted-foreground/60 mt-8">
-                    Check back soon - this feature is being deployed in the next update
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value={GameType.RUG_GAME} className="mt-0">
-            <Card className="border-gray-800 bg-background/70 backdrop-blur-sm">
-              <CardHeader className="border-b border-gray-800 pb-3">
-                <CardTitle className="text-shadow-neon flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-primary" />
-                  <span>THE RUG GAME</span>
-                </CardTitle>
-                <CardDescription>Wallet Security Simulator · Coming Soon</CardDescription>
-              </CardHeader>
-              
-              <CardContent className="pt-6 pb-8">
-                <div className="text-center py-12 space-y-4">
-                  <div className="font-mono text-primary-light text-xl">GAME UNDER DEVELOPMENT</div>
-                  <p className="text-muted-foreground max-w-md mx-auto">
-                    This simulation will teach you how to avoid malicious smart contracts
-                    by identifying red flags in suspicious airdrops and contract interactions.
-                  </p>
-                  <div className="text-xs text-muted-foreground/60 mt-8">
-                    Check back soon - this feature is being deployed in the next update
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-        
-        <div className="text-xs text-center text-muted-foreground/60 mt-4 italic">
-          You learn by playing. You retain by surviving. You remember because it was fun AND terrifying.
+      <div 
+        ref={outputRef}
+        className="terminal-output flex-1 overflow-y-auto text-sm font-mono mb-4"
+        style={{ maxHeight: '300px' }}
+      >
+        {/* Terminal welcome */}
+        <div className="text-green-400 mb-4">
+          <div>===================================</div>
+          <div>PVX Network Terminal v0.9.0</div>
+          <div>Secure Blockchain Interface</div>
+          <div>===================================</div>
+          <div className="text-gray-400 text-xs mt-1">Type 'help' for available commands</div>
         </div>
-      </CardContent>
-    </Card>
+        
+        {/* Command history */}
+        {x.history.map((item, index) => (
+          <div key={index} className="mb-2">
+            <div className="terminal-prompt text-blue-400 flex gap-2">
+              <span className="text-blue-600">$</span>
+              <span>{item}</span>
+            </div>
+          </div>
+        ))}
+        
+        {/* Current output */}
+        {x.output && (
+          <div className="text-gray-300 mb-2 whitespace-pre-wrap">
+            {x.output}
+          </div>
+        )}
+        
+        {/* Mining status */}
+        {x.isMining && (
+          <div className="my-2">
+            <div className="text-yellow-400">[MINING OPERATION ACTIVE]</div>
+            <div className="text-gray-400 text-xs">{x.miningStatus}</div>
+          </div>
+        )}
+        
+        {/* Processing indicator */}
+        {x.isProcessing && (
+          <div className="flex items-center text-cyan-500 mt-2">
+            <span>Processing</span>
+            <span className="animate-pulse ml-1">...</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Command input */}
+      <div className="terminal-input-line flex items-center">
+        <div className="text-blue-600 mr-2">$</div>
+        <input
+          ref={inputRef}
+          type="text"
+          className="bg-transparent border-none outline-none flex-1 text-sm font-mono text-blue-300"
+          placeholder="Enter command..."
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={x.isProcessing}
+        />
+      </div>
+    </div>
   );
 }
