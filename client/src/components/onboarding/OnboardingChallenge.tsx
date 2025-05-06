@@ -94,7 +94,7 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-green-400 neon">{challenge.title}</h2>
+          <h2 className="text-2xl font-bold text-blue-400 text-shadow-neon">{challenge.title}</h2>
           <p className="text-gray-400">{challenge.description}</p>
         </div>
         <div className="flex items-center space-x-3">
@@ -113,14 +113,14 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
       
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         <div className="lg:col-span-3">
-          <div className="bg-black bg-opacity-80 border border-green-500 rounded-lg overflow-hidden">
-            <div className="p-4 border-b border-green-900">
-              <h3 className="text-green-400 font-medium">Challenge Progress</h3>
+          <div className="bg-black bg-opacity-80 border border-blue-500 rounded-lg overflow-hidden shadow-md shadow-blue-900/20">
+            <div className="p-4 border-b border-blue-900">
+              <h3 className="text-blue-400 font-medium text-shadow-neon">Challenge Progress</h3>
               <p className="text-gray-400 text-sm">
                 Step {currentStep + 1} of {challenge.steps.length}
               </p>
               <div className="mt-2 w-full bg-gray-800 rounded-full h-2.5">
-                <div className="bg-green-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
+                <div className="bg-blue-500 h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
               </div>
             </div>
             
@@ -134,14 +134,14 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
                       key={index}
                       className={`p-3 border rounded-md cursor-pointer transition-colors ${
                         selectedOption === index
-                          ? 'border-green-500 bg-green-900 bg-opacity-20'
+                          ? 'border-blue-500 bg-blue-900 bg-opacity-20'
                           : 'border-gray-700 hover:border-gray-500'
                       }`}
                       onClick={() => handleOptionSelect(index)}
                     >
                       <div className="flex items-center">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-3 ${
-                          selectedOption === index ? 'bg-green-500' : 'bg-gray-700'
+                          selectedOption === index ? 'bg-blue-500' : 'bg-gray-700'
                         }`}>
                           {selectedOption === index && <span className="text-white">✓</span>}
                         </div>
@@ -152,8 +152,8 @@ export function OnboardingChallenge({ challenge, onComplete }: OnboardingChallen
                 </div>
                 
                 {showExplanation && (
-                  <div className={`p-4 rounded-md ${isCorrect ? 'bg-green-900 bg-opacity-20' : 'bg-red-900 bg-opacity-20'}`}>
-                    <p className={`text-sm ${isCorrect ? 'text-green-400' : 'text-red-400'}`}>
+                  <div className={`p-4 rounded-md ${isCorrect ? 'bg-blue-900 bg-opacity-20' : 'bg-red-900 bg-opacity-20'}`}>
+                    <p className={`text-sm ${isCorrect ? 'text-blue-400' : 'text-red-400'}`}>
                       {isCorrect ? '✓ Correct! ' : '✗ Incorrect. '} 
                       {currentQuestion.explanation}
                     </p>

@@ -47,27 +47,27 @@ export function ChallengeList({ challenges, onSelect, userProgress }: ChallengeL
       </div>
       
       {/* Filter Tabs */}
-      <div className="flex space-x-2 border-b border-gray-800 pb-2">
+      <div className="flex space-x-2 border-b border-blue-900 pb-2">
         <button 
-          className={`px-3 py-1 rounded-md ${filter === 'all' ? 'bg-green-700 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
+          className={`px-3 py-1 rounded-md ${filter === 'all' ? 'bg-blue-700 text-white text-shadow-neon' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
           onClick={() => setFilter('all')}
         >
           All
         </button>
         <button 
-          className={`px-3 py-1 rounded-md ${filter === 'beginner' ? 'bg-green-700 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
+          className={`px-3 py-1 rounded-md ${filter === 'beginner' ? 'bg-blue-700 text-white text-shadow-neon' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
           onClick={() => setFilter('beginner')}
         >
           Beginner
         </button>
         <button 
-          className={`px-3 py-1 rounded-md ${filter === 'intermediate' ? 'bg-green-700 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
+          className={`px-3 py-1 rounded-md ${filter === 'intermediate' ? 'bg-blue-700 text-white text-shadow-neon' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
           onClick={() => setFilter('intermediate')}
         >
           Intermediate
         </button>
         <button 
-          className={`px-3 py-1 rounded-md ${filter === 'advanced' ? 'bg-green-700 text-white' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
+          className={`px-3 py-1 rounded-md ${filter === 'advanced' ? 'bg-blue-700 text-white text-shadow-neon' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'}`}
           onClick={() => setFilter('advanced')}
         >
           Advanced
@@ -82,7 +82,7 @@ export function ChallengeList({ challenges, onSelect, userProgress }: ChallengeL
           return (
             <div 
               key={challenge.id} 
-              className={`bg-black bg-opacity-80 rounded-lg border ${isCompleted ? 'border-green-500' : 'border-gray-700'} overflow-hidden hover:border-green-500 transition-colors cursor-pointer`}
+              className={`bg-black bg-opacity-80 rounded-lg border ${isCompleted ? 'border-blue-500' : 'border-gray-700'} overflow-hidden hover:border-blue-500 transition-colors cursor-pointer shadow-md ${isCompleted ? 'shadow-blue-900/30' : ''}`}
               onClick={() => onSelect(challenge.id)}
             >
               <div className="p-4">
@@ -97,12 +97,12 @@ export function ChallengeList({ challenges, onSelect, userProgress }: ChallengeL
                 
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <span className="text-green-400 font-bold">{challenge.points}</span>
+                    <span className="text-blue-400 font-bold text-shadow-neon">{challenge.points}</span>
                     <span className="text-gray-400 ml-1">Points</span>
                   </div>
                   
                   {isCompleted ? (
-                    <div className="flex items-center text-green-500">
+                    <div className="flex items-center text-blue-500">
                       <span className="mr-1">✓</span>
                       <span>Completed</span>
                     </div>
@@ -115,7 +115,7 @@ export function ChallengeList({ challenges, onSelect, userProgress }: ChallengeL
                 </div>
               </div>
               
-              <div className={`h-1 ${isCompleted ? 'bg-green-500' : 'bg-gray-700'}`}></div>
+              <div className={`h-1 ${isCompleted ? 'bg-blue-500' : 'bg-gray-700'}`}></div>
             </div>
           );
         })}
