@@ -708,6 +708,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Game Leaderboard Routes
+  app.get("/api/leaderboards/:gameType", async (req, res) => {
+    try {
+      const { gameType } = req.params;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const leaderboards = await storage.getGameLeaderboards(gameType, limit);
+      res.json(leaderboards);
+    } catch (error) {
+      console.error("Error fetching leaderboards:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboards" });
+    }
+  });
+  
+  app.get("/api/leaderboards/top/:gameType", async (req, res) => {
+    try {
+      const { gameType } = req.params;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const topScores = await storage.getTopScores(gameType, limit);
+      res.json(topScores);
+    } catch (error) {
+      console.error("Error fetching top scores:", error);
+      res.status(500).json({ error: "Failed to fetch top scores" });
+    }
+  });
+  
+  app.get("/api/leaderboards/recent", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 20;
+      const recentScores = await storage.getRecentScores(limit);
+      res.json(recentScores);
+    } catch (error) {
+      console.error("Error fetching recent scores:", error);
+      res.status(500).json({ error: "Failed to fetch recent scores" });
+    }
+  });
+  
+  app.get("/api/leaderboards/user/:userId", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const userScores = await storage.getLeaderboardsByUser(userId);
+      res.json(userScores);
+    } catch (error) {
+      console.error("Error fetching user scores:", error);
+      res.status(500).json({ error: "Failed to fetch user scores" });
+    }
+  });
+  
+  app.get("/api/leaderboards/wallet/:walletAddress", async (req, res) => {
+    try {
+      const { walletAddress } = req.params;
+      const walletScores = await storage.getLeaderboardsByWalletAddress(walletAddress);
+      res.json(walletScores);
+    } catch (error) {
+      console.error("Error fetching wallet scores:", error);
+      res.status(500).json({ error: "Failed to fetch wallet scores" });
+    }
+  });
+  
+  app.get("/api/leaderboards/stats/:gameType", async (req, res) => {
+    try {
+      const { gameType } = req.params;
+      const stats = await storage.getGameStats(gameType);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching game stats:", error);
+      res.status(500).json({ error: "Failed to fetch game stats" });
+    }
+  });
+  
+  app.post("/api/leaderboards/score", async (req, res) => {
+    try {
+      const scoreData = req.body;
+      const result = await storage.addGameScore(scoreData);
+      res.status(201).json(result);
+    } catch (error) {
+      console.error("Error adding game score:", error);
+      res.status(500).json({ error: "Failed to add game score" });
+    }
+  });
+  
+  app.get("/api/leaderboards/rank/:userId/:gameType", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { gameType } = req.params;
+      const rank = await storage.getUserRank(userId, gameType);
+      res.json({ rank });
+    } catch (error) {
+      console.error("Error fetching user rank:", error);
+      res.status(500).json({ error: "Failed to fetch user rank" });
+    }
+  });
+
   // User Feedback Routes
   app.get("/api/feedback", async (req, res) => {
     try {
