@@ -278,3 +278,60 @@ export type VetoGuardian = typeof veto_guardians.$inferSelect;
 
 export type InsertVetoAction = z.infer<typeof insertVetoActionSchema>;
 export type VetoAction = typeof veto_actions.$inferSelect;
+
+// Badge definitions table
+export const badges = pgTable("badges", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  image_url: text("image_url").notNull(),
+  category: text("category").notNull(), // "governance", "mining", "staking", "social", "game", "thringlet", "special"
+  rarity: text("rarity").notNull(), // "common", "uncommon", "rare", "epic", "legendary"
+  requirements_json: json("requirements_json"), // Specific requirements to earn the badge
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  is_active: boolean("is_active").notNull().default(true),
+});
+
+export const insertBadgeSchema = createInsertSchema(badges).omit({
+  id: true,
+  created_at: true,
+});
+
+// User badges table - many-to-many relationship between users and badges
+export const user_badges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull().references(() => users.id),
+  badge_id: integer("badge_id").notNull().references(() => badges.id),
+  awarded_at: timestamp("awarded_at").notNull().defaultNow(),
+  awarded_reason: text("awarded_reason"),
+  is_featured: boolean("is_featured").notNull().default(false), // User can feature up to 3 badges on profile
+  is_hidden: boolean("is_hidden").notNull().default(false), // User can hide badges they don't want to display
+});
+
+export const insertUserBadgeSchema = createInsertSchema(user_badges).omit({
+  id: true,
+  awarded_at: true,
+});
+
+// Badge progress tracking table
+export const badge_progress = pgTable("badge_progress", {
+  id: serial("id").primaryKey(),
+  user_id: integer("user_id").notNull().references(() => users.id),
+  badge_id: integer("badge_id").notNull().references(() => badges.id),
+  current_progress: json("current_progress").notNull(), // Stored as JSON to handle different badge requirements
+  last_updated: timestamp("last_updated").notNull().defaultNow(),
+});
+
+export const insertBadgeProgressSchema = createInsertSchema(badge_progress).omit({
+  id: true,
+  last_updated: true,
+});
+
+export type InsertBadge = z.infer<typeof insertBadgeSchema>;
+export type Badge = typeof badges.$inferSelect;
+
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+export type UserBadge = typeof user_badges.$inferSelect;
+
+export type InsertBadgeProgress = z.infer<typeof insertBadgeProgressSchema>;
+export type BadgeProgress = typeof badge_progress.$inferSelect;

@@ -109,6 +109,24 @@ export interface IStorage {
   
   // Network stats
   getNetworkStats(): Promise<NetworkStats>;
+  
+  // Badge related methods
+  getBadges(limit?: number, filterActive?: boolean): Promise<Badge[]>;
+  getBadgeById(id: number): Promise<Badge | undefined>;
+  getBadgesByCategory(category: string, limit?: number): Promise<Badge[]>;
+  createBadge(badge: InsertBadge): Promise<Badge>;
+  updateBadge(id: number, badgeData: Partial<InsertBadge>): Promise<Badge | undefined>;
+  
+  // User badge related methods
+  getUserBadges(userId: number): Promise<(UserBadge & { badge: Badge })[]>;
+  getFeatureUserBadges(userId: number): Promise<(UserBadge & { badge: Badge })[]>;
+  awardBadgeToUser(userBadge: InsertUserBadge): Promise<UserBadge>;
+  updateUserBadge(id: number, updates: Partial<InsertUserBadge>): Promise<UserBadge | undefined>;
+  
+  // Badge progress methods
+  getBadgeProgress(userId: number, badgeId: number): Promise<BadgeProgress | undefined>;
+  updateBadgeProgress(userId: number, badgeId: number, progress: object): Promise<BadgeProgress>;
+  checkAndAwardBadges(userId: number): Promise<Badge[]>; // Checks for badge eligibility and awards any earned badges
 }
 
 export class DatabaseStorage implements IStorage {
@@ -221,6 +239,90 @@ export class DatabaseStorage implements IStorage {
   // In-memory veto guardians for testing
   private vetoGuardians: VetoGuardian[] = [];
   private vetoActions: VetoAction[] = [];
+  
+  // In-memory badge storage
+  private badges: Badge[] = [
+    {
+      id: 1,
+      name: "Early Adopter",
+      description: "One of the first 1000 users to join PVX platform",
+      image_url: "/badges/early-adopter.svg",
+      category: "special",
+      rarity: "rare",
+      requirements_json: { type: "join_date", before: "2025-06-01" },
+      created_at: new Date(),
+      is_active: true
+    },
+    {
+      id: 2,
+      name: "Mining Pioneer",
+      description: "Mined over 10 blocks in the PVX network",
+      image_url: "/badges/mining-pioneer.svg",
+      category: "mining",
+      rarity: "uncommon",
+      requirements_json: { type: "blocks_mined", count: 10 },
+      created_at: new Date(),
+      is_active: true
+    },
+    {
+      id: 3,
+      name: "Governance Participant",
+      description: "Voted on at least 5 governance proposals",
+      image_url: "/badges/governance-participant.svg", 
+      category: "governance",
+      rarity: "common",
+      requirements_json: { type: "votes_cast", count: 5 },
+      created_at: new Date(),
+      is_active: true
+    },
+    {
+      id: 4,
+      name: "Diamond Hands",
+      description: "Staked PVX tokens for at least 90 days",
+      image_url: "/badges/diamond-hands.svg",
+      category: "staking",
+      rarity: "epic",
+      requirements_json: { type: "staking_duration", days: 90 },
+      created_at: new Date(),
+      is_active: true
+    },
+    {
+      id: 5,
+      name: "Hashlord Master",
+      description: "Scored over 100,000 points in the Hashlord game",
+      image_url: "/badges/hashlord-master.svg",
+      category: "game",
+      rarity: "legendary",
+      requirements_json: { type: "game_score", game: "hashlord", score: 100000 },
+      created_at: new Date(),
+      is_active: true
+    },
+    {
+      id: 6,
+      name: "Thringlet Whisperer",
+      description: "Reached maximum bond level with a Thringlet",
+      image_url: "/badges/thringlet-whisperer.svg",
+      category: "thringlet",
+      rarity: "epic",
+      requirements_json: { type: "thringlet_bond", level: 10 },
+      created_at: new Date(),
+      is_active: true
+    },
+    {
+      id: 7,
+      name: "Social Butterfly",
+      description: "Invited 5 friends who joined the platform",
+      image_url: "/badges/social-butterfly.svg",
+      category: "social",
+      rarity: "uncommon",
+      requirements_json: { type: "referrals", count: 5 },
+      created_at: new Date(),
+      is_active: true
+    }
+  ];
+  
+  private userBadges: (UserBadge & { badge: Badge })[] = [];
+  private badgeProgress: BadgeProgress[] = [];
   
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
