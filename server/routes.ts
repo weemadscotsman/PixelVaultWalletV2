@@ -8,6 +8,7 @@ import { MiningService } from "./services/mining";
 import { StakingService } from "./services/staking";
 import { NFTService } from "./services/nft";
 import { thringletService } from "./services/thringlet";
+import badgeRoutes from "./routes/badge-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
@@ -16,6 +17,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const miningService = new MiningService(storage);
   const stakingService = new StakingService(storage);
   const nftService = new NFTService(storage);
+  
+  // Register badge routes
+  app.use('/api', badgeRoutes);
 
   // Network and Blockchain Routes
   app.get("/api/network/stats", async (req, res) => {
