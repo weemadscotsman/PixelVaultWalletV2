@@ -263,7 +263,134 @@ export class DatabaseStorage implements IStorage {
   private vetoActions: VetoAction[] = [];
   
   // In-memory UTR storage
-  private utrEntries: UTR[] = [];
+  private utrEntries: UTR[] = [
+    {
+      id: 1,
+      tx_id: "0x7f0cb934ee2b4851a7d0c10984c4adf61ae7b1bce911b4fa864e9a658d4c797a",
+      tx_type: "transfer",
+      from_address: "0x58a42d5c19c6066dda35e274f7f08aaca541c1b0",
+      to_address: "0x89d3c5b547617b3f07b16287403e129bd93399f1",
+      amount: "5000000",
+      asset_type: "token",
+      asset_id: "PVX",
+      block_height: 3421868,
+      status: "confirmed",
+      timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+      metadata: { note: "Payment for services" },
+      zk_proof: "zk_proof_hash_placeholder_for_demo_purposes_only",
+      signature: "0x4a293833d0e083cd24dd106825c4c193cec8836c6273a1692cf7e2a0a5521675",
+      gas_fee: "0.000125",
+      verified: true
+    },
+    {
+      id: 2,
+      tx_id: "0x9e76198c5a5b859704d4d5998f92227ed1c7f71542e4a971e95eb5b8c36940dc",
+      tx_type: "mining_reward",
+      from_address: "zk_PVX:mining",
+      to_address: "0x58a42d5c19c6066dda35e274f7f08aaca541c1b0",
+      amount: "150000000",
+      asset_type: "token",
+      asset_id: "PVX",
+      block_height: 3421868,
+      status: "confirmed",
+      timestamp: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
+      metadata: { note: "Block reward for #3421868" },
+      zk_proof: "zk_proof_hash_placeholder_for_demo_purposes_only",
+      signature: "0x5b2a4e9c8d0f7b32e6c14a9d5f2b83c1e7d6f8a0b3c9e2d4f6a8b0c2d4e6f8a0",
+      gas_fee: "0",
+      verified: true
+    },
+    {
+      id: 3,
+      tx_id: "0x3a0edc0653f1faa39a9e62d9731a91d7c207d569bf8acac477139cf8eed01463",
+      tx_type: "stake",
+      from_address: "0x89d3c5b547617b3f07b16287403e129bd93399f1",
+      to_address: "zk_PVX:staking",
+      amount: "10000000000",
+      asset_type: "token",
+      asset_id: "PVX",
+      block_height: 3421865,
+      status: "confirmed",
+      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      metadata: { note: "30-day staking position", duration_days: 30 },
+      zk_proof: "zk_proof_hash_placeholder_for_demo_purposes_only",
+      signature: "0x7d9e2c4b6a8f0d3e5c1b7a9f2e4d6c8b0a2f4e6d8c0a2f4e6d8c0a2f4e6d8c0a",
+      gas_fee: "0.000278",
+      verified: true
+    },
+    {
+      id: 4,
+      tx_id: "0x1e5a45bd1d71f7e0c77e58b875e8a64b45a71cd0a723a6655481cd7605a29e51",
+      tx_type: "dex_swap",
+      from_address: "0x73b5b51087633f83a3c2737ed8bf3f8f9a632ef3",
+      to_address: "zk_PVX:dex:swap",
+      amount: "750000000",
+      asset_type: "token",
+      asset_id: "PVX",
+      block_height: 3421863,
+      status: "confirmed",
+      timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
+      metadata: { note: "Swap 750 PVX for 2.25 USDC", target_asset: "USDC", target_amount: "2.25" },
+      zk_proof: "zk_proof_hash_placeholder_for_demo_purposes_only",
+      signature: "0x9c1e3d5f7b9a2c4e6d8f0b2a4c6e8d0f2b4a6c8e0d2f4a6c8e0d2f4a6c8e0d2f4",
+      gas_fee: "0.000346",
+      verified: true
+    },
+    {
+      id: 5,
+      tx_id: "0x4f91c3f1b7c43ac9d875a33fca6a0058ef44ab8e09bfcc4350f93eeb6c29ca47",
+      tx_type: "governance_vote",
+      from_address: "0x58a42d5c19c6066dda35e274f7f08aaca541c1b0",
+      to_address: "zk_PVX:governance",
+      amount: "0",
+      asset_type: "vote",
+      asset_id: "proposal:1",
+      block_height: 3421859,
+      status: "confirmed",
+      timestamp: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+      metadata: { note: "Vote YES on Proposal #1", vote: "YES" },
+      zk_proof: "zk_proof_hash_placeholder_for_demo_purposes_only",
+      signature: "0x2d4f6a8c0e2b4d6f8a0c2e4b6d8a0f2c4e6b8a0d2f4c6e8a0b2d4f6a8c0e2b4d6",
+      gas_fee: "0.000122",
+      verified: true
+    },
+    {
+      id: 6,
+      tx_id: "0x8b67c2d91e4a35f80c91e7d52a6f8c01b45d7a3e6c9f0b2d4a68c0e2f4a6c8e0",
+      tx_type: "nft_mint",
+      from_address: "0x0000000000000000000000000000000000000000",
+      to_address: "0x58a42d5c19c6066dda35e274f7f08aaca541c1b0",
+      amount: "1",
+      asset_type: "nft",
+      asset_id: "thringlet:1",
+      block_height: 3421855,
+      status: "confirmed",
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+      metadata: { name: "Alpha Thringlet #1", description: "Genesis Thringlet with special abilities" },
+      zk_proof: "zk_proof_hash_placeholder_for_demo_purposes_only",
+      signature: "0x1a3c5e7f9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7f9b1d3f5",
+      gas_fee: "0.00193",
+      verified: true
+    },
+    {
+      id: 7,
+      tx_id: "0xd2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d8a0f2c4e6b8a0d2f4c6e8a0b2d4",
+      tx_type: "transfer",
+      from_address: "0x73b5b51087633f83a3c2737ed8bf3f8f9a632ef3",
+      to_address: "0x89d3c5b547617b3f07b16287403e129bd93399f1",
+      amount: "250000000",
+      asset_type: "token",
+      asset_id: "PVX",
+      block_height: null,
+      status: "pending",
+      timestamp: new Date(Date.now() - 1 * 60 * 1000), // 1 minute ago
+      metadata: { note: "Payment for consulting services" },
+      zk_proof: "zk_proof_hash_placeholder_for_demo_purposes_only",
+      signature: "0xf1a3c5e7f9b1d3f5a7c9e1b3d5f7a9c1e3b5d7f9a1c3e5b7d9f1a3c5e7f9b1d3",
+      gas_fee: "0.000125",
+      verified: false
+    }
+  ];
   
   // In-memory badge storage
   private badges: Badge[] = [
