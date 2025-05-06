@@ -894,6 +894,163 @@ export class DatabaseStorage implements IStorage {
     this.thringlets[index] = thringlet;
     return thringlet;
   }
+  
+  // Veto Guardian methods implementation
+  async getVetoGuardians(): Promise<VetoGuardian[]> {
+    try {
+      const guardians = await db
+        .select()
+        .from(veto_guardians)
+        .orderBy(desc(veto_guardians.appointed_at));
+      
+      return guardians;
+    } catch (error) {
+      console.error("Error fetching veto guardians:", error);
+      return this.vetoGuardians; // Fallback to in-memory data
+    }
+  }
+  
+  async getVetoGuardian(id: number): Promise<VetoGuardian | undefined> {
+    try {
+      const [guardian] = await db
+        .select()
+        .from(veto_guardians)
+        .where(eq(veto_guardians.id, id));
+      
+      return guardian || undefined;
+    } catch (error) {
+      console.error(`Error fetching veto guardian id ${id}:`, error);
+      return this.vetoGuardians.find(g => g.id === id);
+    }
+  }
+  
+  async getVetoGuardianByAddress(address: string): Promise<VetoGuardian | undefined> {
+    try {
+      const [guardian] = await db
+        .select()
+        .from(veto_guardians)
+        .where(eq(veto_guardians.address, address));
+      
+      return guardian || undefined;
+    } catch (error) {
+      console.error(`Error fetching veto guardian for address ${address}:`, error);
+      return this.vetoGuardians.find(g => g.address === address);
+    }
+  }
+  
+  async createVetoGuardian(guardian: InsertVetoGuardian): Promise<VetoGuardian> {
+    try {
+      const [newGuardian] = await db
+        .insert(veto_guardians)
+        .values({
+          ...guardian,
+          veto_count: 0,
+          appointed_at: guardian.appointed_at || new Date()
+        })
+        .returning();
+      
+      return newGuardian;
+    } catch (error) {
+      console.error("Error creating veto guardian:", error);
+      // Fallback to in-memory implementation
+      const newGuardian: VetoGuardian = {
+        id: this.vetoGuardians.length + 1,
+        address: guardian.address,
+        name: guardian.name,
+        appointed_at: guardian.appointed_at || new Date(),
+        active_until: guardian.active_until,
+        is_active: guardian.is_active === undefined ? true : guardian.is_active,
+        veto_count: 0,
+        description: guardian.description || null
+      };
+      
+      this.vetoGuardians.push(newGuardian);
+      return newGuardian;
+    }
+  }
+  
+  async updateVetoGuardian(id: number, isActive: boolean): Promise<VetoGuardian | undefined> {
+    try {
+      const [updatedGuardian] = await db
+        .update(veto_guardians)
+        .set({ is_active: isActive })
+        .where(eq(veto_guardians.id, id))
+        .returning();
+      
+      return updatedGuardian || undefined;
+    } catch (error) {
+      console.error(`Error updating veto guardian id ${id}:`, error);
+      // Fallback to in-memory implementation
+      const index = this.vetoGuardians.findIndex(g => g.id === id);
+      if (index === -1) return undefined;
+      
+      this.vetoGuardians[index].is_active = isActive;
+      return this.vetoGuardians[index];
+    }
+  }
+  
+  async vetoProposal(guardianId: number, proposalId: number, reason: string): Promise<VetoAction | undefined> {
+    try {
+      // First check if the guardian exists and is active
+      const guardian = await this.getVetoGuardian(guardianId);
+      if (!guardian || !guardian.is_active) {
+        return undefined;
+      }
+      
+      // Check if the proposal exists
+      const proposal = await this.getProposal(proposalId.toString());
+      if (!proposal) {
+        return undefined;
+      }
+      
+      // Create a veto action
+      const [vetoAction] = await db
+        .insert(veto_actions)
+        .values({
+          guardian_id: guardianId,
+          proposal_id: proposalId,
+          reason,
+          action_time: new Date()
+        })
+        .returning();
+      
+      // Update the proposal status to 'vetoed'
+      await db
+        .update(proposals)
+        .set({ status: 'vetoed' })
+        .where(eq(proposals.id, proposalId));
+      
+      // Increment the guardian's veto count
+      await db
+        .update(veto_guardians)
+        .set({ 
+          veto_count: sql`${veto_guardians.veto_count} + 1` 
+        })
+        .where(eq(veto_guardians.id, guardianId));
+      
+      return vetoAction;
+    } catch (error) {
+      console.error(`Error vetoing proposal id ${proposalId}:`, error);
+      // Fallback to in-memory implementation
+      const guardian = this.vetoGuardians.find(g => g.id === guardianId);
+      if (!guardian || !guardian.is_active) return undefined;
+      
+      // Increment the guardian's veto count
+      guardian.veto_count += 1;
+      
+      // Create a veto action
+      const vetoAction: VetoAction = {
+        id: this.vetoActions.length + 1,
+        guardian_id: guardianId,
+        proposal_id: proposalId,
+        reason,
+        action_time: new Date()
+      };
+      
+      this.vetoActions.push(vetoAction);
+      return vetoAction;
+    }
+  }
 
   // User Feedback methods implementation
   async getUserFeedback(limit: number = 50): Promise<UserFeedback[]> {
