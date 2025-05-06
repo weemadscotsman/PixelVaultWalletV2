@@ -97,21 +97,26 @@ export function Sidebar({ networkStats }: SidebarProps) {
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.id} className="px-2 py-1">
-                <Link href={`/${item.id}`}>
-                  <a
-                    href={item.id}
-                    className={cn(
-                      "flex items-center px-4 py-3 rounded-lg transition-colors duration-200",
-                      isActive(item.id)
-                        ? "bg-primary text-white" 
-                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    )}
-                    onClick={() => window.innerWidth < 768 && setSidebarOpen(false)}
-                  >
-                    <i className={`fas ${item.icon} w-5 text-center`}></i>
-                    <span className="ml-3">{item.label}</span>
-                  </a>
-                </Link>
+                <div 
+                  className={cn(
+                    "flex items-center px-4 py-3 rounded-lg transition-colors duration-200 cursor-pointer",
+                    isActive(item.id)
+                      ? "bg-primary text-white" 
+                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  )}
+                  onClick={() => {
+                    // Set hash for navigation
+                    window.location.hash = item.id;
+                    
+                    // Close sidebar on mobile
+                    if (window.innerWidth < 768) {
+                      setSidebarOpen(false);
+                    }
+                  }}
+                >
+                  <i className={`fas ${item.icon} w-5 text-center`}></i>
+                  <span className="ml-3">{item.label}</span>
+                </div>
               </li>
             ))}
           </ul>

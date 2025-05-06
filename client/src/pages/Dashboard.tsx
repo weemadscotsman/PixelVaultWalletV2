@@ -14,13 +14,22 @@ import { OnboardingSection } from "@/components/onboarding/OnboardingSection";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
-export default function Dashboard() {
+interface DashboardProps {
+  activeTab?: string;
+}
+
+export default function Dashboard({ activeTab = 'dashboard' }: DashboardProps) {
   const { wallet, loadWalletFromStorage } = useWallet();
   const { stopMining, miningStats, startMining } = useMining();
   const { initializeStaking } = useStaking();
   const { initializeNFTs } = useNFT();
-  const [activeSection, setActiveSection] = useState("wallet");
+  const [activeSection, setActiveSection] = useState(activeTab);
   const [terminalOutput, setTerminalOutput] = useState("PIXELVAULT TERMINAL v1.0\n> Loading system...\n> Welcome to PIXELVAULT secure blockchain interface\n> Type 'help' for available commands\n>");
+
+  // Set active section when activeTab changes (from router)
+  useEffect(() => {
+    setActiveSection(activeTab);
+  }, [activeTab]);
 
   // Handle hash change from sidebar navigation
   useEffect(() => {
@@ -32,9 +41,6 @@ export default function Dashboard() {
         setActiveSection(section);
       }
     };
-
-    // Set initial section based on hash (if any)
-    handleHashChange();
 
     // Add event listener for hash changes
     window.addEventListener('hashchange', handleHashChange);
@@ -378,9 +384,12 @@ export default function Dashboard() {
         <OnboardingSection />
       </div>
       
-      {/* Theme Toggle in the top-right corner */}
-      <div className="fixed top-5 right-5 z-50">
-        <ThemeToggle />
+      {/* Theme Toggle in the top-right corner - with improved visibility */}
+      <div className="fixed top-5 right-5 z-50 bg-black bg-opacity-50 p-2 rounded-md border border-green-500">
+        <div className="flex items-center">
+          <span className="text-green-400 mr-2 text-xs">Theme</span>
+          <ThemeToggle />
+        </div>
       </div>
       
       {/* Blockchain terminology example in the footer */}
