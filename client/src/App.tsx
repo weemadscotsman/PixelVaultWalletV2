@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
+import LearningPage from "@/pages/LearningPage";
 import { ThemeProvider } from "next-themes";
 import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
@@ -14,6 +15,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
+      <Route path="/learn" component={LearningPage} />
       <Route component={NotFound} />
     </Switch>
   );
