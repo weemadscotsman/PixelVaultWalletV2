@@ -5,9 +5,16 @@ interface TerminalProps {
   output: string;
   className?: string;
   isRunning?: boolean;
+  showControls?: boolean;
 }
 
-export function Terminal({ title = "Terminal", output, className = "", isRunning = false }: TerminalProps) {
+export function Terminal({ 
+  title = "PIXELVAULT TERMINAL", 
+  output, 
+  className = "", 
+  isRunning = false,
+  showControls = true 
+}: TerminalProps) {
   const [cursorVisible, setCursorVisible] = useState(true);
   const terminalRef = useRef<HTMLDivElement>(null);
   
@@ -31,16 +38,18 @@ export function Terminal({ title = "Terminal", output, className = "", isRunning
   
   return (
     <div className={`terminal ${className}`}>
-      <div className="terminal-header">
-        <div className="terminal-title">
-          {title}
+      {showControls && (
+        <div className="terminal-header">
+          <div className="terminal-title neon">
+            {title}
+          </div>
+          <div className="terminal-controls">
+            <span className="terminal-red"></span>
+            <span className="terminal-yellow"></span>
+            <span className="terminal-green"></span>
+          </div>
         </div>
-        <div className="terminal-controls">
-          <span className="terminal-red"></span>
-          <span className="terminal-yellow"></span>
-          <span className="terminal-green"></span>
-        </div>
-      </div>
+      )}
       
       <div className="terminal-content" ref={terminalRef}>
         <pre className="whitespace-pre-wrap text-sm leading-relaxed">

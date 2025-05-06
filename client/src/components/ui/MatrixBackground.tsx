@@ -15,7 +15,7 @@ export function MatrixBackground() {
     canvas.height = window.innerHeight;
     
     // Matrix characters (binary plus some crypto symbols)
-    const chars = "01ΦΨΣΩμλ";
+    const chars = "01ΦΨΣΩμλBTC ETH PVX";
     const fontSize = 14;
     const columns = Math.floor(canvas.width / fontSize);
     
@@ -31,12 +31,13 @@ export function MatrixBackground() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Green text
-      ctx.fillStyle = '#0F0';
-      ctx.font = `${fontSize}px monospace`;
-      
-      // Draw each column
+      // Green text with varying brightness
       for (let i = 0; i < drops.length; i++) {
+        // Randomize brightness for more realistic effect
+        const brightness = Math.random() * 50 + 50; // 50-100%
+        ctx.fillStyle = `rgba(0, ${brightness + 100}, 0, 0.9)`;
+        ctx.font = `${fontSize}px monospace`;
+        
         // Random character
         const char = chars[Math.floor(Math.random() * chars.length)];
         
@@ -53,8 +54,8 @@ export function MatrixBackground() {
       }
     };
     
-    // Set up animation
-    const interval = setInterval(draw, 50);
+    // Set up animation with improved frame rate
+    const interval = setInterval(draw, 35);
     
     // Handle window resize
     const handleResize = () => {
@@ -79,5 +80,5 @@ export function MatrixBackground() {
     };
   }, []);
   
-  return <canvas ref={canvasRef} className="matrix-rain" />;
+  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10 opacity-15" />;
 }

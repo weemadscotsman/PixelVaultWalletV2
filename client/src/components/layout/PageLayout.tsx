@@ -92,17 +92,14 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-200">
-      {/* Matrix background effect */}
-      <canvas ref={matrixCanvasRef} className="matrix-background"></canvas>
-      <canvas ref={secondaryEffectRef} id="bananaCanvas" className="fixed top-0 left-0 w-full h-full -z-[5] opacity-20"></canvas>
-      
+    <div className="min-h-screen flex flex-col bg-black text-foreground transition-colors duration-200">
+      {/* Remove the canvas for matrix since we're using the standalone MatrixBackground component now */}
       <Header isConnected={isConnected} />
       
       <div className="flex flex-1 overflow-hidden">
         <Sidebar networkStats={networkStats} />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-50 dark:bg-dark-bg fade-in">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-900 bg-opacity-80 fade-in">
           <div className="container mx-auto space-y-6">
             {children}
           </div>
