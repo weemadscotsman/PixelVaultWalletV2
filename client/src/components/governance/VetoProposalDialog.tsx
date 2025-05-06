@@ -105,31 +105,38 @@ export function VetoProposalDialog({ proposalId, proposalTitle }: VetoProposalDi
         <Button 
           variant="destructive" 
           size="sm"
-          className="gap-2"
+          className="gap-2 bg-red-900/80 border border-red-500/30 hover:bg-red-800/90 text-shadow-neon"
           disabled={!hasAccessToGuardian}
         >
           <ShieldX className="h-4 w-4" />
           <span>Veto</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-background/95 border-gray-800 border-2 shadow-[0_0_15px_rgba(0,128,255,0.15)]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-            <span>Veto Proposal</span>
+          <DialogTitle className="flex items-center gap-2 text-shadow-neon">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <span className="font-mono tracking-tight">SYSPROTOCOL://VETO_COMMAND</span>
           </DialogTitle>
-          <DialogDescription>
-            You are about to veto proposal: <span className="font-medium">{proposalTitle}</span>
+          <DialogDescription className="opacity-80">
+            <code className="text-primary-light font-mono text-xs">{"> VETO_TARGET:"}</code> 
+            <span className="font-mono text-white ml-1">{proposalTitle}</span>
+            <p className="text-xs mt-1 text-muted-foreground">Veto guardians may override network consensus under critical conditions</p>
           </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-2">
-            <div className="bg-destructive/10 border border-destructive/20 p-4 rounded-md">
-              <p className="text-sm text-destructive/80">
-                <strong>Warning:</strong> Vetoing a proposal is a serious action that should only be 
-                taken when a proposal poses a significant risk to the network.
-              </p>
+            <div className="bg-red-950/40 border border-red-500/30 p-4 rounded-md backdrop-blur-sm">
+              <div className="flex gap-2 items-start">
+                <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5" />
+                <div>
+                  <p className="text-sm text-red-400 font-medium mb-1 text-shadow-neon">CRITICAL ALERT: BLOCKCHAIN SECURITY OVERRIDE</p>
+                  <p className="text-xs text-red-300/80 leading-tight">
+                    Guardian veto authority can only be exercised in response to malicious, network-destabilizing protocol risks. All vetoes are permanently recorded on-chain with your guardian identity.
+                  </p>
+                </div>
+              </div>
             </div>
             
             <FormField
@@ -137,18 +144,20 @@ export function VetoProposalDialog({ proposalId, proposalTitle }: VetoProposalDi
               name="guardianId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Guardian Authority</FormLabel>
+                  <FormLabel className="text-primary-light text-xs uppercase font-mono tracking-wide">
+                    <span className="font-mono text-xs text-primary-light">{">>"}</span> GUARDIAN_AUTHORITY
+                  </FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                     disabled={loadingGuardians || activeGuardians.length === 0}
                   >
                     <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a guardian" />
+                      <SelectTrigger className="bg-background/70 border-gray-700 focus:ring-primary/30">
+                        <SelectValue placeholder="SELECT GUARDIAN IDENTITY" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="bg-background/90 border-gray-700">
                       {activeGuardians.map((guardian) => (
                         <SelectItem 
                           key={guardian.id} 
@@ -157,16 +166,16 @@ export function VetoProposalDialog({ proposalId, proposalTitle }: VetoProposalDi
                         >
                           <div className="flex items-center gap-2">
                             <ShieldCheck className="h-4 w-4 text-primary" />
-                            <span>{guardian.name}</span>
+                            <span className="font-mono text-white">{guardian.name}</span>
                           </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    Select which guardian authority to use for the veto
+                  <FormDescription className="text-xs text-muted-foreground/70">
+                    Authenticate with a qualified guardian identity
                   </FormDescription>
-                  <FormMessage />
+                  <FormMessage className="text-red-400 text-xs" />
                 </FormItem>
               )}
             />
@@ -176,40 +185,53 @@ export function VetoProposalDialog({ proposalId, proposalTitle }: VetoProposalDi
               name="reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Veto Reason</FormLabel>
+                  <FormLabel className="text-primary-light text-xs uppercase font-mono tracking-wide">
+                    <span className="font-mono text-xs text-primary-light">{">>"}</span> VETO_REASONING
+                  </FormLabel>
                   <FormControl>
                     <Textarea 
-                      placeholder="Explain why this proposal must be vetoed..."
-                      className="resize-none min-h-[100px]"
+                      placeholder="INPUT SECURITY REASONING [REQUIRED]: Details will be permanently recorded on-chain"
+                      className="resize-none min-h-[120px] bg-background/70 border-gray-700 font-mono text-sm focus:ring-primary/30"
                       {...field} 
                     />
                   </FormControl>
-                  <FormDescription>
-                    Provide a clear reason for vetoing this proposal
+                  <FormDescription className="text-xs text-muted-foreground/70">
+                    Provide detailed security justification for the blockchain record
                   </FormDescription>
-                  <FormMessage />
+                  <FormMessage className="text-red-400 text-xs" />
                 </FormItem>
               )}
             />
             
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                variant="destructive"
-                disabled={vetoMutation.isPending}
-                className="gap-2"
-              >
-                {vetoMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                Confirm Veto
-              </Button>
-            </DialogFooter>
+            <div className="flex justify-between items-center pt-4 border-t border-gray-800">
+              <div className="text-xs text-muted-foreground/60 font-mono">
+                {vetoMutation.isPending ? (
+                  <span className="text-primary-light animate-pulse">EXECUTING VETO PROTOCOL...</span>
+                ) : (
+                  <span>AUTH: {myGuardian?.name || "UNKNOWN"}</span>
+                )}
+              </div>
+              
+              <div className="space-x-2">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  onClick={() => setOpen(false)}
+                  className="border border-gray-700 text-white hover:bg-background/80"
+                >
+                  ABORT
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="destructive"
+                  disabled={vetoMutation.isPending}
+                  className="bg-red-900/70 border border-red-500/30 hover:bg-red-800/90 text-shadow-neon gap-2"
+                >
+                  {vetoMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  EXECUTE VETO
+                </Button>
+              </div>
+            </div>
           </form>
         </Form>
       </DialogContent>
