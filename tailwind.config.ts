@@ -109,6 +109,7 @@ export default {
         "fade-in": "fadeIn 0.3s ease-in-out",
         "flicker": "flicker 0.15s infinite alternate",
         "pulse": "pulse 1.5s infinite",
+        "pulse-slow": "pulse 4s infinite ease-in-out",
         "glitch": "glitch 2s infinite"
       },
     },

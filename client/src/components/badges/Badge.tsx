@@ -1,7 +1,12 @@
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { Lock } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 
 interface BadgeProps {
   name: string;
@@ -14,31 +19,6 @@ interface BadgeProps {
   onClick?: () => void;
 }
 
-// Rarity color mappings
-const rarityColors = {
-  common: 'border-gray-400 bg-gray-400/10',
-  uncommon: 'border-green-500 bg-green-500/10',
-  rare: 'border-blue-500 bg-blue-500/10',
-  epic: 'border-purple-500 bg-purple-500/10',
-  legendary: 'border-orange-500 bg-orange-500/10'
-};
-
-// Rarity glow mappings
-const rarityGlow = {
-  common: '',
-  uncommon: 'shadow-[0_0_5px_1px_rgba(34,197,94,0.3)]',
-  rare: 'shadow-[0_0_5px_1px_rgba(59,130,246,0.3)]',
-  epic: 'shadow-[0_0_8px_2px_rgba(168,85,247,0.4)]',
-  legendary: 'shadow-[0_0_10px_3px_rgba(249,115,22,0.5)]'
-};
-
-// Size mappings
-const sizeClasses = {
-  sm: 'w-12 h-12',
-  md: 'w-16 h-16',
-  lg: 'w-20 h-20'
-};
-
 const Badge: React.FC<BadgeProps> = ({
   name,
   description,
@@ -49,16 +29,42 @@ const Badge: React.FC<BadgeProps> = ({
   awardedReason,
   onClick
 }) => {
+  // Size classes for different badge sizes
+  const sizeClasses = {
+    sm: 'w-12 h-12 border-[2px]',
+    md: 'w-16 h-16 border-[2px]',
+    lg: 'w-24 h-24 border-[3px]'
+  };
+  
+  // Color classes for different badge rarities
+  const rarityColors = {
+    common: 'border-gray-400 bg-gray-800/90',
+    uncommon: 'border-green-500 bg-green-950/90',
+    rare: 'border-blue-500 bg-blue-950/90',
+    epic: 'border-purple-500 bg-purple-950/90',
+    legendary: 'border-orange-500 bg-orange-950/90'
+  };
+  
+  // Glow effects for different badge rarities
+  const rarityGlow = {
+    common: '',
+    uncommon: 'shadow-sm shadow-green-500/30',
+    rare: 'shadow-md shadow-blue-500/40',
+    epic: 'shadow-lg shadow-purple-500/50',
+    legendary: 'shadow-xl shadow-orange-500/60'
+  };
+  
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div 
             className={cn(
-              'relative flex items-center justify-center rounded-full cursor-pointer transition-transform transform hover:scale-110',
+              'relative flex items-center justify-center rounded-full cursor-pointer transition-all duration-300 transform hover:scale-110',
               sizeClasses[size],
               isLocked ? 'border-gray-600 bg-gray-800/50' : rarityColors[rarity],
-              !isLocked && rarityGlow[rarity]
+              !isLocked && rarityGlow[rarity],
+              !isLocked && rarity !== 'common' && 'animate-pulse-slow'
             )}
             onClick={onClick}
           >
