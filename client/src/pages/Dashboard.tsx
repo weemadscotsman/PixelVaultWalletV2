@@ -12,7 +12,6 @@ import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import { Terminal } from "@/components/ui/Terminal";
 import { OnboardingSection } from "@/components/onboarding/OnboardingSection";
 import { Tooltip } from "@/components/ui/Tooltip";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 export default function Dashboard() {
   const { wallet, loadWalletFromStorage } = useWallet();
@@ -375,13 +374,7 @@ export default function Dashboard() {
         <OnboardingSection />
       </div>
       
-      {/* Theme Toggle in the top-right corner - with improved visibility */}
-      <div className="fixed top-5 right-5 z-50 bg-black bg-opacity-50 p-2 rounded-md border border-green-500">
-        <div className="flex items-center">
-          <span className="text-green-400 mr-2 text-xs">Theme</span>
-          <ThemeToggle />
-        </div>
-      </div>
+
       
       {/* Blockchain terminology example in the footer */}
       <div className="fixed bottom-5 right-5 bg-black bg-opacity-80 p-3 rounded-lg border border-green-500 text-xs text-gray-400 max-w-xs">
