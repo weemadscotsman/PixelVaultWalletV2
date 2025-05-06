@@ -138,7 +138,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] bg-black bg-opacity-95 border-blue-400 text-blue-50 backdrop-blur-lg shadow-neon">
+      <DialogContent className="sm:max-w-[500px] bg-black bg-opacity-78 border-blue-400 text-blue-50 backdrop-blur-lg shadow-neon">
         <DialogHeader>
           <DialogTitle className="text-xl text-shadow-neon">Share Your Feedback</DialogTitle>
           <DialogDescription className="text-blue-100">
@@ -159,11 +159,11 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-blue-500 bg-blue-900 bg-opacity-20">
+                      <SelectTrigger className="border-blue-500 bg-black bg-opacity-78">
                         <SelectValue placeholder="Select feedback type" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-black border-blue-500">
+                    <SelectContent className="bg-black bg-opacity-78 border-blue-500">
                       <SelectItem value="bug" className="flex items-center">
                         <div className="flex items-center gap-2">
                           <Bug className="h-4 w-4 text-red-500" />
@@ -204,7 +204,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
                   <FormControl>
                     <Textarea
                       placeholder="Share your thoughts, describe the issue, or suggest an improvement..."
-                      className="min-h-[120px] border-blue-500 bg-blue-900 bg-opacity-20 focus:border-blue-400"
+                      className="min-h-[120px] border-blue-500 bg-black bg-opacity-78 focus:border-blue-400 text-shadow-neon"
                       {...field}
                     />
                   </FormControl>
@@ -227,11 +227,11 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-blue-500 bg-blue-900 bg-opacity-20">
+                      <SelectTrigger className="border-blue-500 bg-black bg-opacity-78">
                         <SelectValue placeholder="Select your sentiment" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="bg-black border-blue-500">
+                    <SelectContent className="bg-black bg-opacity-78 border-blue-500">
                       <SelectItem value="positive">
                         <div className="flex items-center gap-2">
                           <span className="text-green-500">😊</span>
@@ -266,7 +266,7 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
                   <FormControl>
                     <Input
                       placeholder="e.g., Wallet, Mining, Staking, UI, Performance..."
-                      className="border-blue-500 bg-blue-900 bg-opacity-20 focus:border-blue-400"
+                      className="border-blue-500 bg-black bg-opacity-78 focus:border-blue-400 text-shadow-neon"
                       {...field}
                     />
                   </FormControl>
@@ -280,13 +280,13 @@ export function FeedbackDialog({ open, onOpenChange }: FeedbackDialogProps) {
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-blue-500 hover:bg-blue-900 hover:bg-opacity-30"
+                className="border-blue-500 bg-black bg-opacity-78 hover:bg-blue-900 hover:bg-opacity-30 text-shadow-neon"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="bg-black bg-opacity-78 border border-blue-500 hover:bg-blue-900 hover:bg-opacity-30 text-shadow-neon"
                 disabled={submitFeedbackMutation.isPending}
               >
                 {submitFeedbackMutation.isPending ? "Submitting..." : "Submit Feedback"}
