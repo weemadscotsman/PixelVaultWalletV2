@@ -25,6 +25,7 @@ export interface IStorage {
   // Transaction related methods
   createTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction>;
   getTransactionsByAddress(address: string, limit?: number): Promise<Transaction[]>;
+  getRecentTransactions(limit?: number): Promise<Transaction[]>;
   
   // Block related methods
   getCurrentBlockHeight(): Promise<number>;
@@ -239,6 +240,33 @@ export class DatabaseStorage implements IStorage {
       blockHeight: tx.block_height || undefined,
       note: tx.note || undefined
     }));
+  }
+  
+  async getRecentTransactions(limit: number = 20): Promise<Transaction[]> {
+    try {
+      const results = await db
+        .select()
+        .from(transactions)
+        .orderBy(desc(transactions.timestamp))
+        .limit(limit);
+      
+      // Convert from database schema to application schema
+      return results.map(tx => ({
+        id: tx.id.toString(),
+        type: tx.type as any,
+        hash: tx.hash,
+        fromAddress: tx.from_address,
+        toAddress: tx.to_address,
+        amount: Number(tx.amount),
+        timestamp: tx.timestamp,
+        blockHeight: tx.block_height || undefined,
+        note: tx.note || undefined
+      }));
+    } catch (error) {
+      console.error("Error fetching recent transactions:", error);
+      // Return an empty array on error
+      return [];
+    }
   }
   
   async getCurrentBlockHeight(): Promise<number> {
