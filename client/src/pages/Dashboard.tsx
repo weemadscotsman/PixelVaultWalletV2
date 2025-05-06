@@ -232,7 +232,7 @@ export default function Dashboard() {
                 <span>Pre-sale Progress</span>
                 <span>63% Claimed</span>
               </div>
-              <div className="w-full bg-black bg-opacity-60 rounded-full h-2 border border-blue-900/50">
+              <div className="w-full bg-black bg-opacity-78 rounded-full h-2 border border-blue-900/50">
                 <div className="bg-blue-600 h-2 rounded-full" style={{ width: '63%' }}></div>
               </div>
             </div>
@@ -259,7 +259,7 @@ export default function Dashboard() {
                 <span>Minted</span>
                 <span>32/50</span>
               </div>
-              <div className="w-full bg-black bg-opacity-60 rounded-full h-2 border border-blue-900/50">
+              <div className="w-full bg-black bg-opacity-78 rounded-full h-2 border border-blue-900/50">
                 <div className="bg-blue-500 h-2 rounded-full" style={{ width: '64%' }}></div>
               </div>
             </div>
