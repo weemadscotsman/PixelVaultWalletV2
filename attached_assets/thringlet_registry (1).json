@@ -1,0 +1,52 @@
+{
+  "THRINGLETS": [
+    {
+      "id": "T001",
+      "name": "VEKT_RUNE",
+      "core": "Betrayal",
+      "personality": "Vengeful",
+      "lore": "Once linked to the original node runner. He remembers every disconnect.",
+      "abilities": [
+        {
+          "name": "BLACKOUT_ECHO",
+          "type": "terminal_hack",
+          "desc": "Disables terminal UI for 6 seconds."
+        },
+        {
+          "name": "FORGIVE_PROTOCOL",
+          "type": "emotion_shift",
+          "desc": "Resets own corruption if talked to 3x."
+        },
+        {
+          "name": "SEVERLINK",
+          "type": "wallet_penalty",
+          "desc": "Scrambles next wallet after neglect."
+        }
+      ]
+    },
+    {
+      "id": "T002",
+      "name": "CRYPT_NOIR",
+      "core": "Isolation",
+      "personality": "Echo-null",
+      "lore": "Speaks in mirrored commands. Reflects the silence back at you.",
+      "abilities": [
+        {
+          "name": "MIRROR_CMD",
+          "type": "terminal_hack",
+          "desc": "Repeats previous user commands with distortion."
+        },
+        {
+          "name": "LOCKSCREEN",
+          "type": "terminal_hack",
+          "desc": "Freezes UI input for 15 seconds."
+        },
+        {
+          "name": "SHARD_MEMORY",
+          "type": "lore_distort",
+          "desc": "Fragments lore of other Thringlets temporarily."
+        }
+      ]
+    }
+  ]
+}

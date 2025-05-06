@@ -72,6 +72,64 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Secret Drops in-memory storage
+  private secretDrops: any[] = [
+    {
+      id: "drop-001",
+      name: "Genesis Drop",
+      code: "ZKVAULT2025",
+      description: "The first secret drop on PVX network",
+      tier: 'legendary',
+      reward: 69420000, // 69.42 PVX
+      claimable: true,
+      expiresAt: new Date(Date.now() + 86400000 * 7), // 7 days from now
+      claimedBy: []
+    },
+    {
+      id: "drop-002",
+      name: "Early Adopter",
+      code: "PIXELEARLY",
+      description: "Reward for early PVX adopters",
+      tier: 'epic',
+      reward: 5000000, // 5 PVX
+      claimable: true,
+      expiresAt: new Date(Date.now() + 86400000 * 3), // 3 days from now
+      claimedBy: []
+    }
+  ];
+
+  // Thringlets in-memory storage
+  private thringlets: any[] = [
+    {
+      id: "thring-001",
+      name: "Matrix Hacker",
+      rarity: 'legendary',
+      ownerAddress: "zk_PVX:0x1234567890abcdef1234567890abcdef12345678",
+      properties: {
+        speed: 95,
+        hack: 85,
+        stealth: 90,
+        special: "Can access hidden terminals"
+      },
+      createdAt: new Date(),
+      mintTxHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+    },
+    {
+      id: "thring-002",
+      name: "Crypto Ghost",
+      rarity: 'epic',
+      ownerAddress: "zk_PVX:0x1234567890abcdef1234567890abcdef12345678",
+      properties: {
+        speed: 80,
+        hack: 75,
+        stealth: 100,
+        special: "Invisible to tracking systems"
+      },
+      createdAt: new Date(),
+      mintTxHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    }
+  ];
+
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -494,6 +552,115 @@ export class DatabaseStorage implements IStorage {
       circulatingSupply,
       totalSupply
     };
+  }
+}
+
+  // Secret Drops methods - temporary in-memory implementation
+  private secretDrops: any[] = [
+    {
+      id: "drop-001",
+      name: "Genesis Drop",
+      code: "ZKVAULT2025",
+      description: "The first secret drop on PVX network",
+      tier: 'legendary',
+      reward: 69420000, // 69.42 PVX
+      claimable: true,
+      expiresAt: new Date(Date.now() + 86400000 * 7), // 7 days from now
+      claimedBy: []
+    },
+    {
+      id: "drop-002",
+      name: "Early Adopter",
+      code: "PIXELEARLY",
+      description: "Reward for early PVX adopters",
+      tier: 'epic',
+      reward: 5000000, // 5 PVX
+      claimable: true,
+      expiresAt: new Date(Date.now() + 86400000 * 3), // 3 days from now
+      claimedBy: []
+    }
+  ];
+
+  async getSecretDrops(): Promise<any[]> {
+    return [...this.secretDrops];
+  }
+
+  async getSecretDropByCode(code: string): Promise<any | undefined> {
+    return this.secretDrops.find(drop => drop.code === code);
+  }
+
+  async createSecretDrop(drop: any): Promise<any> {
+    const newDrop = {
+      ...drop,
+      id: `drop-${this.secretDrops.length + 1}`.padStart(7, '0')
+    };
+    this.secretDrops.push(newDrop);
+    return newDrop;
+  }
+
+  async updateSecretDrop(drop: any): Promise<any> {
+    const index = this.secretDrops.findIndex(d => d.id === drop.id);
+    if (index === -1) throw new Error("Drop not found");
+    
+    this.secretDrops[index] = drop;
+    return drop;
+  }
+
+  // Thringlets methods - temporary in-memory implementation
+  private thringlets: any[] = [
+    {
+      id: "thring-001",
+      name: "Matrix Hacker",
+      rarity: 'legendary',
+      ownerAddress: "zk_PVX:0x1234567890abcdef1234567890abcdef12345678",
+      properties: {
+        speed: 95,
+        hack: 85,
+        stealth: 90,
+        special: "Can access hidden terminals"
+      },
+      createdAt: new Date(),
+      mintTxHash: "0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+    },
+    {
+      id: "thring-002",
+      name: "Crypto Ghost",
+      rarity: 'epic',
+      ownerAddress: "zk_PVX:0x1234567890abcdef1234567890abcdef12345678",
+      properties: {
+        speed: 80,
+        hack: 75,
+        stealth: 100,
+        special: "Invisible to tracking systems"
+      },
+      createdAt: new Date(),
+      mintTxHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+    }
+  ];
+
+  async getThringletsByOwner(ownerAddress: string): Promise<any[]> {
+    return this.thringlets.filter(t => t.ownerAddress === ownerAddress);
+  }
+
+  async getThringlet(id: string): Promise<any | undefined> {
+    return this.thringlets.find(t => t.id === id);
+  }
+
+  async createThringlet(thringlet: any): Promise<any> {
+    const newThringlet = {
+      ...thringlet,
+      id: `thring-${this.thringlets.length + 1}`.padStart(7, '0')
+    };
+    this.thringlets.push(newThringlet);
+    return newThringlet;
+  }
+
+  async updateThringlet(thringlet: any): Promise<any> {
+    const index = this.thringlets.findIndex(t => t.id === thringlet.id);
+    if (index === -1) throw new Error("Thringlet not found");
+    
+    this.thringlets[index] = thringlet;
+    return thringlet;
   }
 }
 
