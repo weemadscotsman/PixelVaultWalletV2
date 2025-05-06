@@ -3,9 +3,11 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useStaking } from "@/hooks/use-staking";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/hooks/use-toast";
+import { VetoGuardiansPanel } from "@/components/governance/VetoGuardiansPanel";
 import { useState } from "react";
 import { ProposalCard } from "./ProposalCard";
 
@@ -69,32 +71,57 @@ export function GovernancePanel() {
           </div>
         </div>
         
-        {/* Active Proposals */}
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <h4 className="text-sm uppercase text-gray-400">Active Proposals</h4>
-            {proposals.length > 2 && (
-              <Button 
-                variant="link" 
-                className="text-xs text-primary hover:text-primary-light"
-              >
-                View All
-              </Button>
-            )}
-          </div>
+        {/* Governance Tabs */}
+        <Tabs defaultValue="proposals" className="w-full">
+          <TabsList className="w-full mb-3 bg-background/60 text-shadow-neon">
+            <TabsTrigger 
+              value="proposals" 
+              className="data-[state=active]:bg-primary-dark/30 data-[state=active]:text-primary-light data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              Active Proposals
+            </TabsTrigger>
+            <TabsTrigger 
+              value="veto" 
+              className="data-[state=active]:bg-primary-dark/30 data-[state=active]:text-primary-light data-[state=active]:border-b-2 data-[state=active]:border-primary"
+            >
+              Veto Guardians
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="space-y-4">
-            {proposals.length > 0 ? (
-              proposals.slice(0, 2).map((proposal) => (
-                <ProposalCard key={proposal.id} proposal={proposal} />
-              ))
-            ) : (
-              <div className="text-center py-6 text-gray-400 italic bg-background rounded-md">
-                No active proposals at this time
-              </div>
-            )}
-          </div>
-        </div>
+          <TabsContent value="proposals" className="space-y-4 mt-0">
+            <div className="flex justify-between items-center">
+              <h4 className="text-sm uppercase text-gray-400">PIXELVAULT // GOVERNANCE</h4>
+              {proposals.length > 2 && (
+                <Button 
+                  variant="link" 
+                  className="text-xs text-primary hover:text-primary-light"
+                >
+                  View All
+                </Button>
+              )}
+            </div>
+            
+            <div className="space-y-4">
+              {proposals.length > 0 ? (
+                proposals.slice(0, 2).map((proposal) => (
+                  <ProposalCard key={proposal.id} proposal={proposal} />
+                ))
+              ) : (
+                <div className="text-center py-6 text-gray-400 italic bg-background/80 rounded-md border border-gray-800 text-shadow-neon">
+                  <code>{'>'} No active proposals found in mempool</code>
+                  <p className="mt-2 text-xs text-muted-foreground">Create a proposal to initiate network-wide voting</p>
+                </div>
+              )}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="veto" className="mt-0">
+            <div className="text-xs text-muted-foreground mb-3 bg-background/80 p-2 rounded-md border border-gray-800 text-shadow-neon">
+              <code className="text-primary-light">SYSTEM://</code> Veto guardians are entrusted with emergency powers to protect the network from malicious proposals
+            </div>
+            <VetoGuardiansPanel />
+          </TabsContent>
+        </Tabs>
         
         {/* Create Proposal */}
         <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>

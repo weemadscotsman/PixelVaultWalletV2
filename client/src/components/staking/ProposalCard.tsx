@@ -4,10 +4,14 @@ import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { useStaking } from "@/hooks/use-staking";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/hooks/use-toast";
+import { useVetoGuardianByAddress } from "@/hooks/use-veto-guardian";
 import { Proposal, VoteOption } from "@/types/blockchain";
+import { VetoProposalDialog } from "../governance/VetoProposalDialog";
+import { ShieldCheck } from "lucide-react";
 
 interface ProposalCardProps {
   proposal: Proposal;
@@ -17,10 +21,14 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
   const { vote, hasVoted } = useStaking();
   const { wallet } = useWallet();
   const { toast } = useToast();
+  const { data: userGuardian, isLoading: guardianLoading } = useVetoGuardianByAddress(wallet?.publicAddress);
   
   const [showVoteDialog, setShowVoteDialog] = useState(false);
   const [selectedOption, setSelectedOption] = useState<VoteOption>(VoteOption.YES);
   const [isVoting, setIsVoting] = useState(false);
+  
+  // Check if user is a veto guardian
+  const isVetoGuardian = !!userGuardian && userGuardian.is_active;
   
   // Calculate remaining days
   const endDate = new Date(proposal.endTime);
@@ -95,56 +103,68 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
           </div>
         </div>
         
-        <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="link" 
-              className="text-primary hover:text-primary-light text-sm p-0"
-              disabled={userHasVoted || !wallet}
-            >
-              {userHasVoted ? "Voted" : "Vote"}
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Vote on Proposal</DialogTitle>
-              <DialogDescription>
-                {proposal.title}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <RadioGroup value={selectedOption} onValueChange={(value) => setSelectedOption(value as VoteOption)}>
-                <div className="flex items-center space-x-2 mb-2">
-                  <RadioGroupItem value={VoteOption.YES} id="vote-yes" />
-                  <Label htmlFor="vote-yes">Yes, I support this proposal</Label>
-                </div>
-                <div className="flex items-center space-x-2 mb-2">
-                  <RadioGroupItem value={VoteOption.NO} id="vote-no" />
-                  <Label htmlFor="vote-no">No, I do not support this proposal</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value={VoteOption.ABSTAIN} id="vote-abstain" />
-                  <Label htmlFor="vote-abstain">Abstain (count towards quorum only)</Label>
-                </div>
-              </RadioGroup>
-            </div>
-            <div className="flex justify-end">
+        <div className="flex items-center space-x-2">
+          {isVetoGuardian && (
+            <>
+              <VetoProposalDialog 
+                proposalId={parseInt(proposal.id)}
+                proposalTitle={proposal.title}
+              />
+              <Separator orientation="vertical" className="h-4" />
+            </>
+          )}
+          
+          <Dialog open={showVoteDialog} onOpenChange={setShowVoteDialog}>
+            <DialogTrigger asChild>
               <Button 
-                onClick={handleVote} 
-                disabled={isVoting}
+                variant="link" 
+                className="text-primary hover:text-primary-light text-sm p-0"
+                disabled={userHasVoted || !wallet}
               >
-                {isVoting ? (
-                  <>
-                    <i className="ri-loader-4-line animate-spin mr-2"></i>
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Vote"
-                )}
+                {userHasVoted ? "Voted" : "Vote"}
               </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Vote on Proposal</DialogTitle>
+                <DialogDescription>
+                  {proposal.title}
+                </DialogDescription>
+              </DialogHeader>
+              <div className="py-4">
+                <RadioGroup value={selectedOption} onValueChange={(value) => setSelectedOption(value as VoteOption)}>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <RadioGroupItem value={VoteOption.YES} id="vote-yes" />
+                    <Label htmlFor="vote-yes">Yes, I support this proposal</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <RadioGroupItem value={VoteOption.NO} id="vote-no" />
+                    <Label htmlFor="vote-no">No, I do not support this proposal</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value={VoteOption.ABSTAIN} id="vote-abstain" />
+                    <Label htmlFor="vote-abstain">Abstain (count towards quorum only)</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+              <div className="flex justify-end">
+                <Button 
+                  onClick={handleVote} 
+                  disabled={isVoting}
+                >
+                  {isVoting ? (
+                    <>
+                      <i className="ri-loader-4-line animate-spin mr-2"></i>
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Vote"
+                  )}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </div>
   );

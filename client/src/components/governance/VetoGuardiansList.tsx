@@ -20,9 +20,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   useVetoGuardians, 
-  useUpdateVetoGuardian,
-  VetoGuardian
+  useUpdateVetoGuardian
 } from "@/hooks/use-veto-guardian";
+import type { VetoGuardian } from "@shared/schema";
 import { Loader2, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 
 export function VetoGuardiansList() {
