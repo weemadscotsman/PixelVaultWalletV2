@@ -192,6 +192,37 @@ export type Vote = typeof votes.$inferSelect;
 export type InsertNFT = z.infer<typeof insertNFTSchema>;
 export type NFT = typeof nfts.$inferSelect;
 
+// Veto Guardian table
+export const veto_guardians = pgTable("veto_guardians", {
+  id: serial("id").primaryKey(),
+  address: text("address").notNull().unique(),
+  name: text("name").notNull(),
+  appointed_at: timestamp("appointed_at").notNull().defaultNow(),
+  active_until: timestamp("active_until").notNull(),
+  is_active: boolean("is_active").notNull().default(true),
+  veto_count: integer("veto_count").notNull().default(0),
+  description: text("description"), // Optional description of guardian's role
+});
+
+export const insertVetoGuardianSchema = createInsertSchema(veto_guardians).omit({
+  id: true,
+  veto_count: true,
+});
+
+// Veto Actions table
+export const veto_actions = pgTable("veto_actions", {
+  id: serial("id").primaryKey(),
+  guardian_id: integer("guardian_id").notNull(),
+  proposal_id: integer("proposal_id").notNull(),
+  reason: text("reason").notNull(),
+  action_time: timestamp("action_time").notNull().defaultNow(),
+});
+
+export const insertVetoActionSchema = createInsertSchema(veto_actions).omit({
+  id: true,
+  action_time: true,
+});
+
 // User Feedback table
 export const user_feedback = pgTable("user_feedback", {
   id: serial("id").primaryKey(),
@@ -216,3 +247,10 @@ export const insertUserFeedbackSchema = createInsertSchema(user_feedback).omit({
 
 export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
 export type UserFeedback = typeof user_feedback.$inferSelect;
+
+// Types for veto guardian tables
+export type InsertVetoGuardian = z.infer<typeof insertVetoGuardianSchema>;
+export type VetoGuardian = typeof veto_guardians.$inferSelect;
+
+export type InsertVetoAction = z.infer<typeof insertVetoActionSchema>;
+export type VetoAction = typeof veto_actions.$inferSelect;

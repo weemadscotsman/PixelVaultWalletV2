@@ -8,7 +8,8 @@ import {
   MiningReward, Stake, Proposal, VoteOption, NFT, NetworkStats,
   users, wallets, transactions, blocks, mining_stats,
   mining_rewards, stakes, proposals, votes, nfts, user_feedback,
-  UserFeedback, InsertUserFeedback
+  UserFeedback, InsertUserFeedback, VetoGuardian, InsertVetoGuardian,
+  VetoAction, InsertVetoAction, veto_guardians, veto_actions
 } from '@shared/schema';
 
 export interface IStorage {
@@ -50,6 +51,14 @@ export interface IStorage {
   createProposal(proposal: Omit<Proposal, 'id'>): Promise<Proposal>;
   getVotes(address: string): Promise<{proposalId: string, option: VoteOption}[]>;
   vote(address: string, proposalId: string, option: VoteOption): Promise<boolean>;
+  
+  // Veto Guardian related methods
+  getVetoGuardians(): Promise<VetoGuardian[]>;
+  getVetoGuardian(id: number): Promise<VetoGuardian | undefined>;
+  getVetoGuardianByAddress(address: string): Promise<VetoGuardian | undefined>;
+  createVetoGuardian(guardian: InsertVetoGuardian): Promise<VetoGuardian>;
+  updateVetoGuardian(id: number, isActive: boolean): Promise<VetoGuardian | undefined>;
+  vetoProposal(guardianId: number, proposalId: number, reason: string): Promise<VetoAction | undefined>;
   
   // NFT related methods
   getNFTs(): Promise<any[]>;
@@ -146,6 +155,10 @@ export class DatabaseStorage implements IStorage {
       mintTxHash: "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
     }
   ];
+  
+  // In-memory veto guardians for testing
+  private vetoGuardians: VetoGuardian[] = [];
+  private vetoActions: VetoAction[] = [];
   
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
