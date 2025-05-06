@@ -14,22 +14,13 @@ import { OnboardingSection } from "@/components/onboarding/OnboardingSection";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
-interface DashboardProps {
-  activeTab?: string;
-}
-
-export default function Dashboard({ activeTab = 'dashboard' }: DashboardProps) {
+export default function Dashboard() {
   const { wallet, loadWalletFromStorage } = useWallet();
   const { stopMining, miningStats, startMining } = useMining();
   const { initializeStaking } = useStaking();
   const { initializeNFTs } = useNFT();
-  const [activeSection, setActiveSection] = useState(activeTab);
+  const [activeSection, setActiveSection] = useState("dashboard");
   const [terminalOutput, setTerminalOutput] = useState("PIXELVAULT TERMINAL v1.0\n> Loading system...\n> Welcome to PIXELVAULT secure blockchain interface\n> Type 'help' for available commands\n>");
-
-  // Set active section when activeTab changes (from router)
-  useEffect(() => {
-    setActiveSection(activeTab);
-  }, [activeTab]);
 
   // Handle hash change from sidebar navigation
   useEffect(() => {

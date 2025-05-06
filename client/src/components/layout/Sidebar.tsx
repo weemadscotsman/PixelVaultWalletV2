@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 
 interface NetworkStatsType {
@@ -14,7 +13,6 @@ interface SidebarProps {
 }
 
 export function Sidebar({ networkStats }: SidebarProps) {
-  const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
   // Handle window resize
@@ -32,7 +30,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
   }, []);
 
   const isActive = (hash: string) => {
-    return location === "/" && window.location.hash === hash;
+    return window.location.hash === hash;
   };
 
   const navItems = [
