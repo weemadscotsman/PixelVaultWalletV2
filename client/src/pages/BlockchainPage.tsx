@@ -148,7 +148,11 @@ export default function BlockchainPage() {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-                <Button variant="outline" className="w-full border-blue-900/50 text-blue-300">
+                <Button 
+                  variant="outline" 
+                  className="w-full border-blue-900/50 text-blue-300"
+                  onClick={() => window.location.href = '/blocks'}
+                >
                   View All Blocks
                 </Button>
               </CardFooter>

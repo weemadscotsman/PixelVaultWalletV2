@@ -637,11 +637,14 @@ export function Dashboard() {
                       + {formatCurrency(learningData.earnedRewards)}
                     </p>
                   </div>
-                  <Link href="/learning">
-                    <Button variant="outline" size="sm" className="h-7 text-xs border-yellow-900/50 text-yellow-400">
-                      View All
-                    </Button>
-                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 text-xs border-yellow-900/50 text-yellow-400"
+                    onClick={() => window.location.href = '/learning'}
+                  >
+                    View All
+                  </Button>
                 </div>
               </div>
             </div>
@@ -660,12 +663,15 @@ export function Dashboard() {
       <div className="mt-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-bold text-blue-300">Quick Actions</h3>
-          <Link href="/">
-            <Button variant="ghost" size="sm" className="text-blue-400 flex items-center gap-1">
-              <span>View All</span>
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </Link>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-blue-400 flex items-center gap-1"
+            onClick={() => window.location.href = '/'}
+          >
+            <span>View All</span>
+            <ChevronRight className="w-4 h-4" />
+          </Button>
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">

@@ -95,6 +95,7 @@ export function GovernancePanel() {
                 <Button 
                   variant="link" 
                   className="text-xs text-primary hover:text-primary-light"
+                  onClick={() => window.location.href = '/governance'}
                 >
                   View All
                 </Button>
