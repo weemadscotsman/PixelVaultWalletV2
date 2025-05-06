@@ -18,6 +18,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import VetoGuardianSection from '@/components/governance/VetoGuardianSection';
+import VetoProposalDialog from '@/components/governance/VetoProposalDialog';
 
 // Example governance data
 const governanceData = {
@@ -115,6 +117,8 @@ const governanceData = {
 export default function GovernancePage() {
   const [activeTab, setActiveTab] = useState<'active' | 'passed' | 'rejected'>('active');
   const [selectedProposal, setSelectedProposal] = useState(governanceData.proposals.find(p => p.status === 'Active'));
+  const [isVetoDialogOpen, setIsVetoDialogOpen] = useState(false);
+  const [currentGuardianId, setCurrentGuardianId] = useState<number>(governanceData.vetoGuardians[0]?.id);
   
   const formatTimeRemaining = (date: Date) => {
     const now = new Date();
@@ -474,10 +478,25 @@ export default function GovernancePage() {
                             <p className="text-sm text-gray-400 mb-3">
                               As a Veto Guardian, you have the power to veto this proposal if you believe it is harmful to the network.
                             </p>
-                            <Button variant="destructive" className="bg-red-700 hover:bg-red-600 text-white">
+                            <Button 
+                              variant="destructive" 
+                              className="bg-red-700 hover:bg-red-600 text-white"
+                              onClick={() => setIsVetoDialogOpen(true)}
+                            >
                               Veto Proposal
                             </Button>
                           </div>
+                        )}
+                        
+                        {/* Veto Proposal Dialog */}
+                        {selectedProposal && (
+                          <VetoProposalDialog
+                            isOpen={isVetoDialogOpen}
+                            onClose={() => setIsVetoDialogOpen(false)}
+                            proposalId={selectedProposal.id}
+                            proposalTitle={selectedProposal.title}
+                            guardianId={currentGuardianId}
+                          />
                         )}
                       </>
                     )}
@@ -530,6 +549,11 @@ export default function GovernancePage() {
               </Card>
             )}
           </div>
+        </div>
+        
+        {/* Add Veto Guardian section */}
+        <div className="mt-6">
+          <VetoGuardianSection />
         </div>
       </div>
     </DashboardLayout>
