@@ -15,7 +15,8 @@ import {
   BookOpen,
   UserCircle,
   Cpu,
-  Medal
+  Medal,
+  Database
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -53,6 +54,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       name: 'Blockchain',
       icon: <Blocks className="w-5 h-5" />,
       path: '/blockchain',
+      pageNumber: 3
+    },
+    {
+      name: 'UTR Explorer',
+      icon: <Database className="w-5 h-5" />,
+      path: '/utr',
       pageNumber: 3
     },
     {
