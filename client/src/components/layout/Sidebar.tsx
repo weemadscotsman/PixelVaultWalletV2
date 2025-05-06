@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface NetworkStatsType {
   blockHeight: number;
@@ -113,18 +112,22 @@ export function Sidebar({ networkStats }: SidebarProps) {
   return (
     <>
       {/* Mobile Header (visible on small screens) */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-white dark:bg-dark-card border-b border-light-border dark:border-dark-border">
-        <div className="flex items-center">
+      <div className="md:hidden flex items-center justify-between p-4 bg-black border-b border-green-900 relative">
+        {/* Matrix effect canvas for mobile header */}
+        <canvas 
+          className="absolute inset-0 z-0 pointer-events-none opacity-50"
+          ref={sidebarCanvasRef}
+        />
+        <div className="flex items-center z-10">
           <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
             <i className="ri-shield-keyhole-fill text-white text-xl"></i>
           </div>
-          <h1 className="ml-3 text-xl font-bold text-gray-800 dark:text-white">PixelVault</h1>
+          <h1 className="ml-3 text-xl font-bold text-white">PixelVault</h1>
         </div>
-        <div className="flex items-center space-x-3">
-          <ThemeToggle />
+        <div className="flex items-center space-x-3 z-10">
           <button 
             onClick={() => setSidebarOpen(!sidebarOpen)} 
-            className="text-gray-500 dark:text-gray-300 focus:outline-none"
+            className="text-green-400 focus:outline-none"
           >
             <i className={`fas ${sidebarOpen ? 'fa-times' : 'fa-bars'}`}></i>
           </button>
@@ -146,14 +149,13 @@ export function Sidebar({ networkStats }: SidebarProps) {
           className="absolute inset-0 z-0 pointer-events-none opacity-50"
         />
         {/* Sidebar Header (hidden on mobile) */}
-        <div className="hidden md:flex items-center justify-between p-4 border-b border-light-border dark:border-dark-border">
+        <div className="hidden md:flex items-center p-4 border-b border-green-900 relative z-10">
           <div className="flex items-center">
             <div className="flex items-center justify-center w-10 h-10 rounded-md bg-primary">
               <i className="ri-shield-keyhole-fill text-white text-xl"></i>
             </div>
-            <h1 className="ml-3 text-xl font-bold text-gray-800 dark:text-white">PixelVault</h1>
+            <h1 className="ml-3 text-xl font-bold text-white">PixelVault</h1>
           </div>
-          <ThemeToggle />
         </div>
         
         {/* Close button for mobile */}
@@ -167,7 +169,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
         </div>
         
         {/* Navigation Links */}
-        <nav className="py-4 flex-grow">
+        <nav className="py-4 flex-grow relative z-10">
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.id} className="px-2 py-1">
@@ -175,8 +177,8 @@ export function Sidebar({ networkStats }: SidebarProps) {
                   className={cn(
                     "flex items-center px-4 py-3 rounded-lg transition-colors duration-200 cursor-pointer",
                     isActive(item.id)
-                      ? "bg-primary text-white" 
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      ? "bg-primary bg-opacity-90 text-white" 
+                      : "text-green-400 hover:bg-black hover:bg-opacity-50 hover:text-green-300"
                   )}
                   onClick={() => {
                     // Set hash for navigation
@@ -195,11 +197,11 @@ export function Sidebar({ networkStats }: SidebarProps) {
             ))}
           </ul>
 
-          <div className="mt-8 px-4">
-            <h3 className="text-xs uppercase text-gray-500 dark:text-gray-400 font-medium mb-2">
+          <div className="mt-8 px-4 relative z-10">
+            <h3 className="text-xs uppercase text-green-500 font-medium mb-2">
               Network Status
             </h3>
-            <div className="bg-gray-100 dark:bg-dark-bg p-3 rounded-md text-sm space-y-2 text-gray-800 dark:text-gray-300">
+            <div className="bg-black bg-opacity-70 border border-green-900 p-3 rounded-md text-sm space-y-2 text-green-400">
               <div className="flex justify-between">
                 <span>Block Height:</span>
                 <span className="font-mono font-medium">
@@ -223,7 +225,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
         </nav>
         
         {/* Footer */}
-        <div className="p-4 border-t border-light-border dark:border-dark-border text-sm text-gray-500 dark:text-gray-400">
+        <div className="p-4 border-t border-green-900 text-sm text-green-500 relative z-10">
           <p>PixelVault v1.0.0</p>
           <p className="mt-1">PVX Zero-Knowledge Wallet</p>
         </div>
