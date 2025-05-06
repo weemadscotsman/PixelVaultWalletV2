@@ -12,12 +12,15 @@ import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import { Terminal } from "@/components/ui/Terminal";
 import { OnboardingSection } from "@/components/onboarding/OnboardingSection";
 import { Tooltip } from "@/components/ui/tooltip";
+import { TransactionFlowVisualizer } from "@/components/visualization/TransactionFlowVisualizer";
+import { useTransactionHistory } from "@/hooks/use-transaction-history";
 
 export default function Dashboard() {
   const { wallet, loadWalletFromStorage } = useWallet();
   const { stopMining, miningStats, startMining } = useMining();
   const { initializeStaking } = useStaking();
   const { initializeNFTs } = useNFT();
+  const { data: recentTransactions = [] } = useTransactionHistory(10);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [terminalOutput, setTerminalOutput] = useState("PIXELVAULT TERMINAL v1.0\n> Loading system...\n> Welcome to PIXELVAULT secure blockchain interface\n> Type 'help' for available commands\n>");
 
@@ -131,26 +134,41 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Terminal Console */}
-      <div className="mb-6">
-        <Terminal 
-          output={terminalOutput} 
-          isRunning={true} 
-          className="min-h-[200px] max-h-[300px] overflow-y-auto border-blue-800 shadow-lg shadow-blue-900/30 bg-opacity-78" 
-        />
-        <div className="flex mt-4 space-x-2">
-          <button 
-            onClick={() => handleQuickCommand('start-mining')} 
-            className="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors shadow-md shadow-blue-900/30 border border-blue-600"
-          >
-            Start Mining
-          </button>
-          <button 
-            onClick={() => handleQuickCommand('stats')} 
-            className="bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors shadow-md shadow-blue-900/30 border border-blue-700"
-          >
-            Network Stats
-          </button>
+      {/* Transaction Flow Visualization */}
+      <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="md:col-span-1">
+          <div className="bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
+            <h3 className="text-blue-400 font-semibold mb-3 text-shadow-neon">Live Transactions</h3>
+            <div className="h-[300px]">
+              <TransactionFlowVisualizer 
+                transactions={recentTransactions} 
+                maxDisplay={8}
+                animationSpeed={1.2}
+              />
+            </div>
+          </div>
+        </div>
+        
+        <div className="md:col-span-1">
+          <Terminal 
+            output={terminalOutput} 
+            isRunning={true} 
+            className="min-h-[300px] max-h-[300px] overflow-y-auto border-blue-800 shadow-lg shadow-blue-900/30 bg-opacity-78" 
+          />
+          <div className="flex mt-4 space-x-2">
+            <button 
+              onClick={() => handleQuickCommand('start-mining')} 
+              className="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors shadow-md shadow-blue-900/30 border border-blue-600"
+            >
+              Start Mining
+            </button>
+            <button 
+              onClick={() => handleQuickCommand('stats')} 
+              className="bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors shadow-md shadow-blue-900/30 border border-blue-700"
+            >
+              Network Stats
+            </button>
+          </div>
         </div>
       </div>
       

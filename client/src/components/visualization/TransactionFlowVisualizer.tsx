@@ -57,6 +57,60 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   const animationFrameRef = useRef<number>(0);
   const nodesRef = useRef<Record<string, TransactionNode>>({});
   
+  // Add demo transactions if no real transactions are provided
+  const allTransactions = transactions.length > 0 ? transactions : [
+    {
+      id: "tx_1",
+      hash: "0x7f0cb934ee2b4851a7d0c10984c4adf61ae7b1bce911b4fa864e9a658d4c797a",
+      type: "transfer",
+      fromAddress: "0x58a42d5c19c6066dda35e274f7f08aaca541c1b0",
+      toAddress: "0x89d3c5b547617b3f07b16287403e129bd93399f1",
+      amount: 5000000,
+      timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+      note: "Payment for services"
+    },
+    {
+      id: "tx_2",
+      hash: "0x9e76198c5a5b859704d4d5998f92227ed1c7f71542e4a971e95eb5b8c36940dc",
+      type: "mining_reward",
+      fromAddress: "zk_PVX:mining",
+      toAddress: "0x58a42d5c19c6066dda35e274f7f08aaca541c1b0",
+      amount: 150000000,
+      timestamp: new Date(Date.now() - 10 * 60 * 1000), // 10 minutes ago
+      note: "Block reward for #3421868"
+    },
+    {
+      id: "tx_3",
+      hash: "0x3a0edc0653f1faa39a9e62d9731a91d7c207d569bf8acac477139cf8eed01463",
+      type: "stake",
+      fromAddress: "0x89d3c5b547617b3f07b16287403e129bd93399f1",
+      toAddress: "zk_PVX:staking",
+      amount: 10000000000,
+      timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 minutes ago
+      note: "30-day staking position"
+    },
+    {
+      id: "tx_4",
+      hash: "0x1e5a45bd1d71f7e0c77e58b875e8a64b45a71cd0a723a6655481cd7605a29e51",
+      type: "dex_swap",
+      fromAddress: "0x73b5b51087633f83a3c2737ed8bf3f8f9a632ef3",
+      toAddress: "zk_PVX:dex:swap",
+      amount: 750000000,
+      timestamp: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
+      note: "Swap 750 PVX for 2.25 USDC"
+    },
+    {
+      id: "tx_5",
+      hash: "0x4f91c3f1b7c43ac9d875a33fca6a0058ef44ab8e09bfcc4350f93eeb6c29ca47",
+      type: "governance_vote",
+      fromAddress: "0x58a42d5c19c6066dda35e274f7f08aaca541c1b0",
+      toAddress: "zk_PVX:governance",
+      amount: 0,
+      timestamp: new Date(Date.now() - 60 * 60 * 1000), // 1 hour ago
+      note: "Vote YES on Proposal #1"
+    }
+  ];
+  
   // Initialize canvas dimensions based on container
   useEffect(() => {
     if (containerRef.current) {
@@ -82,12 +136,12 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   // Update visible transactions
   useEffect(() => {
     // Take the most recent transactions up to maxDisplay
-    const recent = [...transactions]
+    const recent = [...allTransactions]
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, maxDisplay);
     
     setVisibleTransactions(recent);
-  }, [transactions, maxDisplay]);
+  }, [allTransactions, maxDisplay]);
 
   // Create node and connection network
   useEffect(() => {
