@@ -13,8 +13,13 @@ export class MiningService {
    * Get the current block reward
    */
   async getCurrentBlockReward(): Promise<number> {
-    const blockHeight = await this.storage.getCurrentBlockHeight();
-    return calculateBlockReward(blockHeight);
+    try {
+      const blockHeight = await this.storage.getCurrentBlockHeight();
+      return calculateBlockReward(blockHeight);
+    } catch (error) {
+      console.error("Error getting current block reward:", error);
+      return 150; // Default fallback value
+    }
   }
 
   /**
@@ -25,36 +30,46 @@ export class MiningService {
     total: number;
     nextEstimate: string;
   }> {
-    const blockHeight = await this.storage.getCurrentBlockHeight();
-    const halvingInterval = 210000; // Per PVX specs, same as Bitcoin
-    
-    const currentHalvingPeriod = Math.floor(blockHeight / halvingInterval);
-    const nextHalvingHeight = (currentHalvingPeriod + 1) * halvingInterval;
-    
-    const current = blockHeight % halvingInterval;
-    const total = halvingInterval;
-    
-    // Estimate next halving (assuming 15 seconds per block)
-    const blocksRemaining = nextHalvingHeight - blockHeight;
-    const secondsRemaining = blocksRemaining * 15;
-    const daysRemaining = Math.ceil(secondsRemaining / (60 * 60 * 24));
-    
-    let nextEstimate: string;
-    if (daysRemaining > 365) {
-      const years = Math.floor(daysRemaining / 365);
-      nextEstimate = `~${years} ${years === 1 ? 'year' : 'years'}`;
-    } else if (daysRemaining > 30) {
-      const months = Math.floor(daysRemaining / 30);
-      nextEstimate = `~${months} ${months === 1 ? 'month' : 'months'}`;
-    } else {
-      nextEstimate = `~${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}`;
+    try {
+      const blockHeight = await this.storage.getCurrentBlockHeight();
+      const halvingInterval = 210000; // Per PVX specs, same as Bitcoin
+      
+      const currentHalvingPeriod = Math.floor(blockHeight / halvingInterval);
+      const nextHalvingHeight = (currentHalvingPeriod + 1) * halvingInterval;
+      
+      const current = blockHeight % halvingInterval;
+      const total = halvingInterval;
+      
+      // Estimate next halving (assuming 15 seconds per block)
+      const blocksRemaining = nextHalvingHeight - blockHeight;
+      const secondsRemaining = blocksRemaining * 15;
+      const daysRemaining = Math.ceil(secondsRemaining / (60 * 60 * 24));
+      
+      let nextEstimate: string;
+      if (daysRemaining > 365) {
+        const years = Math.floor(daysRemaining / 365);
+        nextEstimate = `~${years} ${years === 1 ? 'year' : 'years'}`;
+      } else if (daysRemaining > 30) {
+        const months = Math.floor(daysRemaining / 30);
+        nextEstimate = `~${months} ${months === 1 ? 'month' : 'months'}`;
+      } else {
+        nextEstimate = `~${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}`;
+      }
+      
+      return {
+        current,
+        total,
+        nextEstimate
+      };
+    } catch (error) {
+      console.error("Error getting halving progress:", error);
+      // Return default fallback values
+      return {
+        current: 0,
+        total: 210000,
+        nextEstimate: "~4 years"
+      };
     }
-    
-    return {
-      current,
-      total,
-      nextEstimate
-    };
   }
 
   /**
@@ -66,14 +81,25 @@ export class MiningService {
     staking: number;
     reserve: number;
   }> {
-    const blockReward = await this.getCurrentBlockReward();
-    
-    return {
-      miner: blockReward * 0.5, // 50% to miner
-      governance: blockReward * 0.25, // 25% to governance
-      staking: blockReward * 0.15, // 15% to staking pool
-      reserve: blockReward * 0.1 // 10% to vault reserve
-    };
+    try {
+      const blockReward = await this.getCurrentBlockReward();
+      
+      return {
+        miner: blockReward * 0.5, // 50% to miner
+        governance: blockReward * 0.25, // 25% to governance
+        staking: blockReward * 0.15, // 15% to staking pool
+        reserve: blockReward * 0.1 // 10% to vault reserve
+      };
+    } catch (error) {
+      console.error("Error getting reward distribution:", error);
+      // Return default fallback values
+      return {
+        miner: 75,
+        governance: 37.5,
+        staking: 22.5,
+        reserve: 15
+      };
+    }
   }
 
   /**

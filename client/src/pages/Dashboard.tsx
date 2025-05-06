@@ -316,15 +316,15 @@ export default function Dashboard() {
               </li>
               <li className="flex justify-between items-center">
                 <span className="text-blue-300">24h Volume:</span>
-                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">1.25M PVX</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">1.25M PVX</span>
               </li>
               <li className="flex justify-between items-center">
                 <span className="text-blue-300">Circulating Supply:</span>
-                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">420M PVX</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">420M PVX</span>
               </li>
               <li className="flex justify-between items-center">
                 <span className="text-blue-300">Market Cap:</span>
-                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">$143.64M</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">$143.64M</span>
               </li>
             </ul>
           </div>
