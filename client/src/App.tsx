@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/Dashboard";
 import { ThemeProvider } from "next-themes";
 import { MatrixBackground } from "@/components/ui/MatrixBackground";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 
 // Router component
 function Router() {
@@ -29,6 +30,7 @@ function App() {
         <TooltipProvider>
           <MatrixBackground />
           <Toaster />
+          <FeedbackButton />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

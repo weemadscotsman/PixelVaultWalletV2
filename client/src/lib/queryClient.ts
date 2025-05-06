@@ -55,3 +55,17 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Add a generic fetch query method to use in our hooks
+queryClient.fetchQuery = async function<T>(url: string): Promise<T> {
+  const res = await fetch(url, {
+    credentials: "include",
+  });
+  
+  if (!res.ok) {
+    const text = (await res.text()) || res.statusText;
+    throw new Error(`${res.status}: ${text}`);
+  }
+  
+  return await res.json();
+};
