@@ -287,10 +287,16 @@ export class Thringlet {
   getAppearance(): { color: string, icon: string } {
     const emotionLabel = this.getEmotionLabel();
     
-    return {
-      color: EMOTION_COLORS[emotionLabel] || EMOTION_COLORS['Neutral'],
-      icon: EMOTION_ICONS[emotionLabel] || EMOTION_ICONS['Neutral']
-    };
+    // Type safety for emotion-based styling
+    const color = emotionLabel in EMOTION_COLORS 
+      ? EMOTION_COLORS[emotionLabel as keyof typeof EMOTION_COLORS]
+      : EMOTION_COLORS.Neutral;
+    
+    const icon = emotionLabel in EMOTION_ICONS
+      ? EMOTION_ICONS[emotionLabel as keyof typeof EMOTION_ICONS]
+      : EMOTION_ICONS.Neutral;
+    
+    return { color, icon };
   }
 
   /**
@@ -362,9 +368,10 @@ export class ThringletManager {
    * Should be called periodically
    */
   processAllTimeDecay(): void {
-    for (const thringlet of this.thringlets.values()) {
+    // Use Array.from to avoid MapIterator issues
+    Array.from(this.thringlets.values()).forEach(thringlet => {
       thringlet.processTimeDecay();
-    }
+    });
     this.saveToLocalStorage();
   }
   
