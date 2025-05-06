@@ -409,20 +409,22 @@ export function OnboardingSection() {
     <div className="space-y-8">
       {/* Welcome Modal */}
       {showWelcomeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-          <div className="bg-black border border-blue-500 rounded-lg p-6 max-w-2xl w-full shadow-lg shadow-blue-900/20">
+        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50">
+          <div className="bg-black bg-opacity-90 border border-blue-500 rounded-lg p-8 max-w-2xl w-full shadow-lg shadow-blue-900/40 backdrop-blur-sm">
             <h2 className="text-2xl font-bold text-blue-400 mb-4 text-shadow-neon">Welcome to the PIXELVAULT Learning Center!</h2>
-            <p className="text-gray-300 mb-4">
-              Get started with blockchain technology through our gamified learning experience. 
-              Complete challenges to earn PVX tokens, NFTs, and achievement badges.
-            </p>
-            <p className="text-gray-300 mb-6">
-              Start with the beginner challenges and work your way up to the advanced topics. 
-              Your progress will be saved automatically so you can continue learning at your own pace.
-            </p>
+            <div className="border-l-4 border-blue-500 pl-4 mb-6">
+              <p className="text-gray-300 mb-4">
+                Get started with blockchain technology through our gamified learning experience. 
+                Complete challenges to earn PVX tokens, NFTs, and achievement badges.
+              </p>
+              <p className="text-gray-300">
+                Start with the beginner challenges and work your way up to the advanced topics. 
+                Your progress will be saved automatically so you can continue learning at your own pace.
+              </p>
+            </div>
             <div className="flex justify-end">
               <button 
-                className="bg-blue-700 hover:bg-blue-600 text-white px-6 py-2 rounded-md text-shadow-neon"
+                className="bg-blue-700 hover:bg-blue-600 text-white px-6 py-3 rounded-md text-shadow-neon shadow-md shadow-blue-900/30 border border-blue-500/50 transition-all"
                 onClick={() => setShowWelcomeModal(false)}
               >
                 Start Learning
@@ -435,11 +437,11 @@ export function OnboardingSection() {
       {selectedChallenge ? (
         <div>
           <button 
-            className="mb-4 flex items-center text-blue-400 hover:text-blue-300 text-shadow-neon"
+            className="mb-6 flex items-center px-4 py-2 bg-black bg-opacity-90 border border-blue-500/50 rounded-md text-blue-400 hover:text-blue-300 text-shadow-neon shadow-md shadow-blue-900/20 transition-all hover:bg-blue-900/20"
             onClick={() => setSelectedChallengeId(null)}
           >
-            <span className="mr-2">←</span>
-            <span>Back to Challenges</span>
+            <span className="mr-2 text-xl">←</span>
+            <span className="font-medium">Back to Challenges</span>
           </button>
           
           <OnboardingChallenge
