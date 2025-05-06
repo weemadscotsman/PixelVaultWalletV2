@@ -200,28 +200,35 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
     const ctx = canvasRef.current.getContext('2d');
     if (!ctx) return;
     
+    // Use a local ref for animation state to avoid re-renders
+    const animationState = {
+      connections: [...connections],
+      allCompleted: false
+    };
+    
     const animate = () => {
       if (!canvasRef.current) return;
       
       ctx.clearRect(0, 0, dimensions.width, dimensions.height);
       
       // Draw connections (lines with animated flow)
-      let allCompleted = true;
-      setConnections(prev => prev.map(conn => {
+      animationState.allCompleted = true;
+      
+      animationState.connections = animationState.connections.map(conn => {
         if (conn.progress < 1) {
           const newProgress = conn.progress + 0.005 * conn.speed * animationSpeed;
           if (newProgress < 1) {
-            allCompleted = false;
+            animationState.allCompleted = false;
             return { ...conn, progress: newProgress };
           } else {
             return { ...conn, progress: 1, completed: true };
           }
         }
         return conn;
-      }));
+      });
       
       // Draw the connections
-      connections.forEach(conn => {
+      animationState.connections.forEach(conn => {
         drawConnection(ctx, conn);
       });
       
@@ -231,14 +238,15 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
       });
       
       // Continue animation if not all connections are completed
-      if (!allCompleted) {
+      if (!animationState.allCompleted) {
         animationFrameRef.current = requestAnimationFrame(animate);
       } else {
         // Reset progress after a delay to loop the animation
         setTimeout(() => {
-          setConnections(prev => 
-            prev.map(conn => ({ ...conn, progress: 0, completed: false }))
-          );
+          animationState.connections = animationState.connections.map(conn => ({ 
+            ...conn, progress: 0, completed: false 
+          }));
+          animationState.allCompleted = false;
           animationFrameRef.current = requestAnimationFrame(animate);
         }, 2000);
       }
@@ -249,9 +257,40 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
     return () => {
       cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [connections, dimensions, animationSpeed]);
+  }, [dimensions, animationSpeed, connections.length]); // Only depend on dimensions and config, not connections
 
   // Utility functions for visual styling
+  const hexToRgba = (color: string, alpha: number) => {
+    // If already RGB format
+    if (color.startsWith('rgb')) {
+      const rgbMatch = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (rgbMatch) {
+        const [_, r, g, b] = rgbMatch;
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+      }
+    }
+    
+    // If hex format
+    let hex = color;
+    if (hex.startsWith('#')) {
+      hex = hex.slice(1);
+    }
+    
+    // Convert hex to RGB
+    let r, g, b;
+    if (hex.length === 3) {
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    } else {
+      r = parseInt(hex.slice(0, 2), 16);
+      g = parseInt(hex.slice(2, 4), 16);
+      b = parseInt(hex.slice(4, 6), 16);
+    }
+    
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
   const getAddressColor = (address: string) => {
     if (address.startsWith('zk_PVX:')) {
       return '#00ffcc';
@@ -308,8 +347,8 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
       node.x, node.y, node.radius,
       node.x, node.y, node.radius + 8
     );
-    gradient.addColorStop(0, `${node.color}70`); // semi-transparent
-    gradient.addColorStop(1, `${node.color}00`); // transparent
+    gradient.addColorStop(0, hexToRgba(node.color, 0.7)); // semi-transparent
+    gradient.addColorStop(1, hexToRgba(node.color, 0)); // transparent
     ctx.fillStyle = gradient;
     ctx.fill();
   };
@@ -321,7 +360,7 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(end.x, end.y);
-    ctx.strokeStyle = `${color}30`; // semi-transparent base line
+    ctx.strokeStyle = hexToRgba(color, 0.3); // semi-transparent base line
     ctx.lineWidth = width;
     ctx.stroke();
     
@@ -336,7 +375,7 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
       currentX, currentY, pulseSize
     );
     gradient.addColorStop(0, color);
-    gradient.addColorStop(1, `${color}00`); // transparent
+    gradient.addColorStop(1, hexToRgba(color, 0)); // transparent
     
     ctx.beginPath();
     ctx.arc(currentX, currentY, pulseSize, 0, Math.PI * 2);
@@ -355,7 +394,7 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     ctx.lineTo(currentX, currentY);
-    ctx.strokeStyle = `${color}50`; // semi-transparent
+    ctx.strokeStyle = hexToRgba(color, 0.5); // semi-transparent
     ctx.lineWidth = width + 2;
     ctx.stroke();
   };
@@ -386,7 +425,7 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
               >
                 <div className="flex items-center gap-3">
                   <div className="p-1.5 rounded-full" style={{ 
-                    backgroundColor: getTransactionColor(tx.type) + '20',
+                    backgroundColor: hexToRgba(getTransactionColor(tx.type), 0.2),
                     border: `1px solid ${getTransactionColor(tx.type)}` 
                   }}>
                     <IconComponent className="h-4 w-4" style={{ color: getTransactionColor(tx.type) }} />
