@@ -202,7 +202,7 @@ export default function Dashboard() {
           
           {/* Game Card 3 */}
           <div className="bg-black bg-opacity-78 rounded-lg shadow-lg shadow-blue-900/30 overflow-hidden border border-blue-800">
-            <div className="h-48 bg-black bg-opacity-90 flex items-center justify-center">
+            <div className="h-48 bg-black bg-opacity-78 flex items-center justify-center">
               <p className="text-blue-400 text-lg text-shadow-neon">PVX Crypto Racer</p>
             </div>
             <div className="p-4">
@@ -284,7 +284,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2 bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
             <h3 className="text-lg font-semibold text-blue-400 mb-4 text-shadow-neon">PVX Price Chart</h3>
-            <div className="h-64 bg-black bg-opacity-90 rounded border border-blue-900/50 flex items-center justify-center shadow-inner shadow-blue-900/20">
+            <div className="h-64 bg-black bg-opacity-78 rounded border border-blue-900/50 flex items-center justify-center shadow-inner shadow-blue-900/20">
               <div className="w-full h-full p-4 flex items-end">
                 {/* Simple price chart bars */}
                 <div className="flex-1 h-[30%] bg-blue-600 mx-1"></div>
@@ -308,11 +308,11 @@ export default function Dashboard() {
             <ul className="space-y-4">
               <li className="flex justify-between items-center">
                 <span className="text-blue-300">Current Price:</span>
-                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">$0.342</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">$0.342</span>
               </li>
               <li className="flex justify-between items-center">
                 <span className="text-blue-300">24h Change:</span>
-                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">+5.2%</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">+5.2%</span>
               </li>
               <li className="flex justify-between items-center">
                 <span className="text-blue-300">24h Volume:</span>
@@ -336,7 +336,7 @@ export default function Dashboard() {
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr className="bg-black bg-opacity-90 text-left border-b border-blue-900/50">
+                <tr className="bg-black bg-opacity-78 text-left border-b border-blue-900/50">
                   <th className="py-2 px-4 text-blue-400 font-medium">Type</th>
                   <th className="py-2 px-4 text-blue-400 font-medium">Amount</th>
                   <th className="py-2 px-4 text-blue-400 font-medium">Hash</th>

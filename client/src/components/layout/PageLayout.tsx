@@ -99,7 +99,7 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
       <div className="flex flex-1 overflow-hidden">
         <Sidebar networkStats={networkStats} />
         
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-900 bg-opacity-80 fade-in">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-gray-900 bg-opacity-78 fade-in">
           <div className="container mx-auto space-y-6">
             {children}
           </div>
