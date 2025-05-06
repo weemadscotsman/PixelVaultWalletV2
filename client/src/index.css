@@ -6,6 +6,237 @@
 @tailwind components;
 @tailwind utilities;
 
+/* PVX Blockchain System Custom Styles */
+
+/* Base Theme Overrides */
+:root {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 217.2 91.2% 59.8%;
+  --primary-foreground: 222.2 47.4% 11.2%;
+  --secondary: 217.2 32.6% 17.5%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217.2 32.6% 17.5%;
+  --muted-foreground: 215 20.2% 65.1%;
+  --accent: 217.2 32.6% 17.5%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 210 40% 98%;
+  --border: 217.2 32.6% 17.5%;
+  --input: 217.2 32.6% 17.5%;
+  --ring: 224.3 76.3% 48%;
+}
+
+body {
+  background-color: #050505;
+  color: #eaeaea;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Matrix Rain Effect */
+.matrix-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* Cyberpunk Terminal Panel */
+.terminal-panel {
+  background-color: rgba(0, 0, 0, 0.78); /* 78% opacity for panels */
+  border: 1px solid rgba(25, 118, 210, 0.5);
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(32, 159, 255, 0.15);
+  padding: 1rem;
+}
+
+/* Sidebar panel */
+.sidebar-panel {
+  background-color: rgba(0, 0, 0, 0.95); /* 95% opacity for sidebar */
+  border-right: 1px solid rgba(25, 118, 210, 0.5);
+}
+
+/* Neon text effect */
+.text-shadow-neon {
+  color: #5bbaf9;
+  text-shadow: 0 0 5px rgba(91, 186, 249, 0.7), 0 0 10px rgba(91, 186, 249, 0.5);
+}
+
+.text-shadow-neon-green {
+  color: #5bf970;
+  text-shadow: 0 0 5px rgba(91, 249, 112, 0.7), 0 0 10px rgba(91, 249, 112, 0.5);
+}
+
+.text-shadow-neon-red {
+  color: #f95b5b;
+  text-shadow: 0 0 5px rgba(249, 91, 91, 0.7), 0 0 10px rgba(249, 91, 91, 0.5);
+}
+
+/* Terminal text style */
+.terminal-text {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #d1e8fd;
+  line-height: 1.5;
+}
+
+/* Terminal cursor */
+.terminal-cursor {
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background-color: #5bbaf9;
+  animation: terminal-blink 1s step-end infinite;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+@keyframes terminal-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Transaction Flow Animation */
+@keyframes success-pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
+
+@keyframes error-pulse {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+  100% { opacity: 0.3; }
+}
+
+.animate-success-pulse {
+  animation: success-pulse 2s ease-in-out infinite;
+}
+
+.animate-error-pulse {
+  animation: error-pulse 2s ease-in-out infinite;
+}
+
+/* Thringlet Emotion States */
+.emotion-joy {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(91, 186, 249, 0.2) 100%);
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.emotion-fear {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(91, 33, 182, 0.2) 100%);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.emotion-trust {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(37, 99, 235, 0.2) 100%);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.emotion-surprise {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.2) 0%, rgba(251, 191, 36, 0.2) 100%);
+  border-color: rgba(124, 58, 237, 0.5);
+}
+
+/* Thringlet type styles */
+.thringlet-type-logical {
+  border-left: 3px solid #3b82f6;
+}
+
+.thringlet-type-chaotic {
+  border-left: 3px solid #f59e0b;
+}
+
+.thringlet-type-guardian {
+  border-left: 3px solid #10b981;
+}
+
+.thringlet-type-trickster {
+  border-left: 3px solid #ec4899;
+}
+
+/* Badge styles */
+.badge-primary {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+.badge-success {
+  background-color: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+.badge-warning {
+  background-color: rgba(245, 158, 11, 0.2);
+  color: #fcd34d;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+.badge-error {
+  background-color: rgba(239, 68, 68, 0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+}
+
+/* Data visualization styles */
+.data-bar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: rgba(59, 130, 246, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.data-bar-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
+}
+
 @layer utilities {
   .text-shadow-neon {
     text-shadow: 0 0 5px #0af, 0 0 10px #0af, 0 0 15px #0af;

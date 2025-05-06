@@ -1,9 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, Check, Loader2, FileWarning, Lock, Unlock } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  CheckCircle2, 
+  XCircle, 
+  AlertTriangle, 
+  Loader2, 
+  ShieldAlert, 
+  Lock, 
+  Radio, 
+  Zap
+} from 'lucide-react';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-export type TransactionStatus = 'pending' | 'processing' | 'encrypting' | 'broadcasting' | 'success' | 'failed' | 'validated';
+export type TransactionStatus = 
+  'pending' | 
+  'processing' | 
+  'encrypting' | 
+  'broadcasting' | 
+  'success' | 
+  'failed' | 
+  'validated';
 
 export interface TransactionFlowProps {
   status: TransactionStatus;
@@ -26,252 +43,329 @@ export function TransactionFlow({
   onComplete,
   className
 }: TransactionFlowProps) {
-  const [currentStatus, setCurrentStatus] = useState<TransactionStatus>(status);
-  const [pixels, setPixels] = useState<Array<{ x: number; y: number; duration: number }>>([]);
-  const [matrixColumns, setMatrixColumns] = useState<Array<{
-    x: number; 
-    chars: string[]; 
-    speed: number;
-    startDelay: number;
-  }>>([]);
+  const [particleCount, setParticleCount] = useState<number>(0);
+  const [matrixChars, setMatrixChars] = useState<string[]>([]);
   
-  // Status transition flow
+  // Generate particles for visualizing transaction flow
   useEffect(() => {
-    setCurrentStatus(status);
-    if (status === 'success' && onComplete) {
+    if (status === 'processing' || status === 'encrypting' || status === 'broadcasting') {
+      const count = status === 'broadcasting' ? 100 : 40;
+      setParticleCount(count);
+    } else {
+      setParticleCount(0);
+    }
+  }, [status]);
+  
+  // Generate Matrix-style characters for encryption visualization
+  useEffect(() => {
+    if (status === 'encrypting') {
+      const chars: string[] = [];
+      const possibleChars = '01アイウエオカキクケコサシスセソタチツテト';
+      const count = 50;
+      
+      for (let i = 0; i < count; i++) {
+        const char = possibleChars[Math.floor(Math.random() * possibleChars.length)];
+        chars.push(char);
+      }
+      
+      setMatrixChars(chars);
+      
+      // Refresh characters every 500ms
+      const interval = setInterval(() => {
+        const newChars: string[] = [];
+        for (let i = 0; i < count; i++) {
+          const char = possibleChars[Math.floor(Math.random() * possibleChars.length)];
+          newChars.push(char);
+        }
+        setMatrixChars(newChars);
+      }, 500);
+      
+      return () => clearInterval(interval);
+    }
+  }, [status]);
+  
+  // Call onComplete when transaction reaches a terminal state
+  useEffect(() => {
+    const terminalStates: TransactionStatus[] = ['success', 'failed', 'validated'];
+    if (terminalStates.includes(status) && onComplete) {
       const timer = setTimeout(() => {
         onComplete();
-      }, 5000);
+      }, 3000);
+      
       return () => clearTimeout(timer);
     }
   }, [status, onComplete]);
   
-  // Generate initial pixels for animation
-  useEffect(() => {
-    const newPixels = [];
-    for (let i = 0; i < 100; i++) {
-      newPixels.push({
-        x: Math.random() * 100,
-        y: Math.random() * 100,
-        duration: Math.random() * 2 + 0.5
-      });
-    }
-    setPixels(newPixels);
-    
-    // Generate matrix columns
-    const newColumns = [];
-    const matrixChars = '01αβγδεζηθικλμνξοπρςστυφχψω¥¢$€₹£₽៛₩฿₫₴₸₼АБВГҐДЂЃЕЁЄЖЗЅИІЇЙЈКЛЉМНЊОПРСТЋЌУЎФХЦЧЏШЩЪЫЬЭЮЯ';
-    for (let i = 0; i < 20; i++) {
-      const chars = [];
-      for (let j = 0; j < 20; j++) {
-        chars.push(matrixChars.charAt(Math.floor(Math.random() * matrixChars.length)));
-      }
-      newColumns.push({
-        x: i * 5,
-        chars,
-        speed: Math.random() * 0.5 + 0.1,
-        startDelay: Math.random() * 2
-      });
-    }
-    setMatrixColumns(newColumns);
-    
-  }, []);
-  
-  // Message based on status
-  const statusMessages = {
-    pending: 'Initializing Transaction...',
-    processing: 'Processing Transaction Details...',
-    encrypting: 'Encrypting with zkSNARK Protocol...',
-    broadcasting: 'Broadcasting to PVX Network Nodes...',
-    success: 'Transaction Completed Successfully',
-    failed: 'Transaction Failed',
-    validated: 'Block Validated & Confirmed'
+  // Format μPVX amount
+  const formatAmount = (amount?: number): string => {
+    if (amount === undefined) return '';
+    return new Intl.NumberFormat().format(amount) + ' μPVX';
   };
   
-  // Animation for different states
-  const getStatusAnimation = () => {
-    switch (currentStatus) {
-      case 'pending':
-        return (
-          <div className="relative h-20 w-20 flex items-center justify-center">
-            <Loader2 className="h-12 w-12 text-primary animate-spin" />
-            <div className="absolute inset-0 border-2 border-primary/50 rounded-full animate-ping" />
-          </div>
-        );
-      case 'processing':
-        return (
-          <div className="relative h-20 w-20">
-            <svg className="w-full h-full" viewBox="0 0 100 100">
-              {pixels.map((pixel, i) => (
-                <rect
-                  key={i}
-                  x={pixel.x}
-                  y={pixel.y}
-                  width="3"
-                  height="3"
-                  fill="#3b82f6"
-                  className="animate-pulse"
-                  style={{ animationDuration: `${pixel.duration}s` }}
-                />
-              ))}
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-10 w-10 border-2 border-primary/80 rounded-full animate-spin border-t-transparent" />
-            </div>
-          </div>
-        );
-      case 'encrypting':
-        return (
-          <div className="relative h-20 w-20 flex items-center justify-center">
-            <Lock className="h-12 w-12 text-green-400 animate-pulse" />
-            <div className="absolute inset-0">
-              <svg className="w-full h-full" viewBox="0 0 100 100">
-                {matrixColumns.map((column, i) => (
-                  <g key={i} style={{ animation: `fallDown ${column.speed}s infinite`, animationDelay: `${column.startDelay}s` }}>
-                    {column.chars.map((char, j) => (
-                      <text
-                        key={j}
-                        x={column.x}
-                        y={j * 5}
-                        className="text-xs fill-green-500 opacity-70"
-                        style={{ 
-                          animation: `fadeOut ${column.speed * 2}s infinite`,
-                          animationDelay: `${column.startDelay + j * 0.1}s`
-                        }}
-                      >
-                        {char}
-                      </text>
-                    ))}
-                  </g>
-                ))}
-              </svg>
-            </div>
-          </div>
-        );
-      case 'broadcasting':
-        return (
-          <div className="relative h-20 w-20">
-            <div className="absolute inset-0 rounded-full border-4 border-primary animate-ping opacity-20" />
-            <div className="absolute inset-2 rounded-full border-4 border-primary animate-ping opacity-40" style={{ animationDelay: '0.3s' }} />
-            <div className="absolute inset-4 rounded-full border-4 border-primary animate-ping opacity-60" style={{ animationDelay: '0.6s' }} />
-            <div className="absolute inset-6 rounded-full border-4 border-primary animate-ping opacity-80" style={{ animationDelay: '0.9s' }} />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="h-8 w-8 bg-primary/60 rounded-full animate-pulse" />
-            </div>
-          </div>
-        );
-      case 'success':
-        return (
-          <div className="relative h-20 w-20 flex items-center justify-center bg-green-900/20 rounded-full">
-            <Check className="h-12 w-12 text-green-400" />
-            <div className="absolute inset-0 border-2 border-green-400 rounded-full animate-success-pulse" />
-          </div>
-        );
-      case 'failed':
-        return (
-          <div className="relative h-20 w-20 flex items-center justify-center bg-red-900/20 rounded-full">
-            <AlertCircle className="h-12 w-12 text-red-400" />
-            <div className="absolute inset-0 border-2 border-red-400 rounded-full animate-error-pulse" />
-          </div>
-        );
-      case 'validated':
-        return (
-          <div className="relative h-20 w-20 flex items-center justify-center">
-            <Unlock className="h-12 w-12 text-green-400" />
-            <div className="absolute inset-0 border-2 border-green-400 rounded-full animate-success-pulse" />
-            <div className="absolute inset-0">
-              <svg className="w-full h-full" viewBox="0 0 100 100">
-                {pixels.map((pixel, i) => (
-                  <rect
-                    key={i}
-                    x={pixel.x}
-                    y={pixel.y}
-                    width="2"
-                    height="2"
-                    fill="#10b981"
-                    className="animate-pulse"
-                    style={{ animationDuration: `${pixel.duration}s` }}
-                  />
-                ))}
-              </svg>
-            </div>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-  
-  // Truncate address for display
-  const truncateAddress = (address: string) => {
+  // Shorten an address for display
+  const shortenAddress = (address?: string): string => {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
   };
   
+  // Get status description based on current status
+  const getStatusDescription = (): string => {
+    switch (status) {
+      case 'pending':
+        return 'Transaction is queued for processing';
+      case 'processing':
+        return 'Processing transaction data';
+      case 'encrypting':
+        return 'Generating zkSNARK proof';
+      case 'broadcasting':
+        return 'Broadcasting to PVX network';
+      case 'success':
+        return 'Transaction completed successfully';
+      case 'failed':
+        return errorMessage || 'Transaction failed';
+      case 'validated':
+        return 'Transaction confirmed and validated';
+      default:
+        return 'Processing transaction';
+    }
+  };
+  
+  // Get icon based on status
+  const getStatusIcon = () => {
+    switch (status) {
+      case 'pending':
+        return <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />;
+      case 'processing':
+        return <Radio className="h-8 w-8 text-blue-400 animate-pulse" />;
+      case 'encrypting':
+        return <Lock className="h-8 w-8 text-green-400 animate-pulse" />;
+      case 'broadcasting':
+        return <Zap className="h-8 w-8 text-yellow-400 animate-pulse" />;
+      case 'success':
+        return <CheckCircle2 className="h-8 w-8 text-green-500" />;
+      case 'failed':
+        return <XCircle className="h-8 w-8 text-red-500" />;
+      case 'validated':
+        return <ShieldAlert className="h-8 w-8 text-green-500" />;
+      default:
+        return <AlertTriangle className="h-8 w-8 text-yellow-400" />;
+    }
+  };
+  
   return (
-    <div className={cn(
-      "bg-black/80 backdrop-blur-md border border-blue-800/60 rounded-lg p-6 shadow-lg shadow-blue-900/30 flex flex-col items-center justify-center space-y-4",
-      className
-    )}>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentStatus}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.3 }}
-          className="flex flex-col items-center justify-center space-y-6"
-        >
-          {getStatusAnimation()}
+    <div className={cn("relative z-50", className)}>
+      <Card className="bg-black/90 border-blue-900/50 p-6 max-w-md w-full relative overflow-hidden">
+        {/* Background effect */}
+        <div className="absolute inset-0 bg-blue-950/20 z-0"></div>
+        
+        {/* Processing particles */}
+        <AnimatePresence>
+          {particleCount > 0 && (
+            <>
+              {Array.from({ length: particleCount }).map((_, i) => {
+                const size = Math.random() * 3 + 1;
+                const duration = Math.random() * 3 + 1;
+                const initialX = Math.random() * 100;
+                const initialY = -10;
+                const finalY = status === 'broadcasting' ? 
+                  Math.random() * 120 : // For broadcasting, particles go in all directions
+                  110; // For other states, particles fall down
+                const finalX = status === 'broadcasting' ?
+                  initialX + (Math.random() * 60 - 30) : // Spread for broadcasting
+                  initialX;
+                  
+                const opacity = Math.random() * 0.7 + 0.3;
+                const delay = Math.random() * 2;
+                
+                // Determine color based on status
+                let color;
+                if (status === 'processing') color = '#60A5FA'; // blue
+                else if (status === 'encrypting') color = '#10B981'; // green
+                else if (status === 'broadcasting') color = '#FBBF24'; // yellow
+                
+                return (
+                  <motion.div
+                    key={`particle-${i}`}
+                    initial={{ 
+                      x: `${initialX}%`, 
+                      y: `${initialY}%`, 
+                      opacity
+                    }}
+                    animate={{ 
+                      x: `${finalX}%`, 
+                      y: `${finalY}%`, 
+                      opacity: 0 
+                    }}
+                    transition={{ 
+                      duration, 
+                      delay,
+                      ease: 'linear',
+                      repeat: Infinity,
+                      repeatDelay: Math.random() * 1
+                    }}
+                    className="absolute rounded-full"
+                    style={{
+                      width: `${size}px`,
+                      height: `${size}px`,
+                      backgroundColor: color
+                    }}
+                  />
+                );
+              })}
+            </>
+          )}
+        </AnimatePresence>
+        
+        {/* Matrix-style characters for encryption */}
+        <AnimatePresence>
+          {status === 'encrypting' && (
+            <div className="absolute inset-0 overflow-hidden z-0">
+              {matrixChars.map((char, i) => {
+                const posX = Math.random() * 100;
+                const posY = Math.random() * 100;
+                const opacity = Math.random() * 0.7 + 0.3;
+                const size = Math.random() * 16 + 10;
+                
+                return (
+                  <motion.div
+                    key={`matrix-${i}`}
+                    initial={{ 
+                      x: `${posX}%`, 
+                      y: `${posY}%`, 
+                      opacity, 
+                      scale: 0.8 
+                    }}
+                    animate={{ 
+                      opacity: opacity * 0.5, 
+                      scale: 1.2 
+                    }}
+                    transition={{ 
+                      duration: 0.5,
+                      repeat: Infinity,
+                      repeatType: 'reverse'
+                    }}
+                    className="absolute font-mono text-green-500 select-none pointer-events-none"
+                    style={{ fontSize: `${size}px` }}
+                  >
+                    {char}
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </AnimatePresence>
+        
+        {/* Success/fail effects */}
+        <AnimatePresence>
+          {status === 'success' && (
+            <div 
+              className="absolute inset-0 z-0 animate-success-pulse"
+              style={{ 
+                background: 'radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%)',
+              }}
+            />
+          )}
           
-          <div className="text-center space-y-2">
+          {status === 'failed' && (
+            <div 
+              className="absolute inset-0 z-0 animate-error-pulse"
+              style={{ 
+                background: 'radial-gradient(circle, rgba(239, 68, 68, 0.1) 0%, transparent 70%)',
+              }}
+            />
+          )}
+          
+          {status === 'validated' && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 z-0"
+              style={{ 
+                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, transparent 100%)',
+              }}
+            />
+          )}
+        </AnimatePresence>
+        
+        {/* Content */}
+        <div className="relative z-10">
+          <div className="flex items-center justify-center mb-4">
+            {getStatusIcon()}
+          </div>
+          
+          <div className="text-center mb-6">
             <h3 className={cn(
-              "text-xl font-bold tracking-tight text-white text-shadow-neon",
-              currentStatus === 'failed' && "text-red-400",
-              currentStatus === 'success' && "text-green-400"
+              "text-lg font-semibold mb-1",
+              status === 'success' && "text-green-400",
+              status === 'failed' && "text-red-400",
+              status === 'validated' && "text-green-400",
+              status !== 'success' && status !== 'failed' && status !== 'validated' && "text-blue-400"
             )}>
-              {statusMessages[currentStatus]}
+              {status.charAt(0).toUpperCase() + status.slice(1)}
             </h3>
-            
-            {errorMessage && currentStatus === 'failed' && (
-              <p className="text-red-400 text-sm max-w-xs">
-                {errorMessage}
-              </p>
+            <p className="text-gray-400 text-sm">{getStatusDescription()}</p>
+          </div>
+          
+          <div className="space-y-3">
+            {amount !== undefined && (
+              <div className="flex items-center justify-between bg-gray-900/50 p-2 rounded border border-gray-800">
+                <span className="text-gray-400 text-sm">Amount</span>
+                <span className="text-white font-mono">{formatAmount(amount)}</span>
+              </div>
             )}
             
-            {amount !== undefined && (
-              <div className="flex items-center justify-center space-x-2 mt-2">
-                <span className="font-mono text-xl font-semibold text-primary-light">
-                  {amount.toLocaleString()} μPVX
+            {fromAddress && (
+              <div className="flex items-center justify-between bg-gray-900/50 p-2 rounded border border-gray-800">
+                <span className="text-gray-400 text-sm">From</span>
+                <span className="text-white font-mono">{shortenAddress(fromAddress)}</span>
+              </div>
+            )}
+            
+            {toAddress && (
+              <div className="flex items-center justify-between bg-gray-900/50 p-2 rounded border border-gray-800">
+                <span className="text-gray-400 text-sm">To</span>
+                <span className="text-white font-mono">{shortenAddress(toAddress)}</span>
+              </div>
+            )}
+            
+            {transactionHash && (
+              <div className="flex items-center justify-between bg-gray-900/50 p-2 rounded border border-gray-800">
+                <span className="text-gray-400 text-sm">Hash</span>
+                <span className="text-white font-mono text-xs truncate max-w-[200px]">
+                  {transactionHash}
                 </span>
               </div>
             )}
             
-            {(fromAddress || toAddress) && (
-              <div className="bg-black/80 border border-blue-900/40 rounded-md p-3 mt-3 max-w-md font-mono text-xs">
-                {fromAddress && (
-                  <div className="flex items-center justify-between space-x-4 mb-2">
-                    <span className="text-primary-light/70">FROM:</span>
-                    <span className="text-blue-300">{truncateAddress(fromAddress)}</span>
-                  </div>
-                )}
-                {toAddress && (
-                  <div className="flex items-center justify-between space-x-4">
-                    <span className="text-primary-light/70">TO:</span>
-                    <span className="text-blue-300">{truncateAddress(toAddress)}</span>
-                  </div>
-                )}
+            {/* Progress bar for active states */}
+            {(status === 'processing' || status === 'encrypting' || status === 'broadcasting') && (
+              <div className="h-1 w-full bg-gray-800 rounded overflow-hidden mt-4">
+                <motion.div
+                  className={cn(
+                    "h-full",
+                    status === 'processing' && "bg-blue-500",
+                    status === 'encrypting' && "bg-green-500",
+                    status === 'broadcasting' && "bg-yellow-500"
+                  )}
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  transition={{ 
+                    duration: status === 'encrypting' ? 5 : 3,
+                    ease: "easeInOut"
+                  }}
+                />
               </div>
             )}
             
-            {transactionHash && (currentStatus === 'success' || currentStatus === 'validated') && (
-              <div className="mt-3 text-xs font-mono text-blue-400/80">
-                <span>TX Hash: {truncateAddress(transactionHash)}</span>
+            {/* Error message for failed state */}
+            {status === 'failed' && errorMessage && (
+              <div className="bg-red-900/20 border border-red-800 p-3 rounded-md mt-4">
+                <p className="text-red-400 text-sm">{errorMessage}</p>
               </div>
             )}
           </div>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </Card>
     </div>
   );
 }

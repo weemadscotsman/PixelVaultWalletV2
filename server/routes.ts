@@ -1,11 +1,13 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer } from 'ws';
 import { storage } from "./storage";
 import { WalletService } from "./services/wallet";
 import { BlockchainService } from "./services/blockchain";
 import { MiningService } from "./services/mining";
 import { StakingService } from "./services/staking";
 import { NFTService } from "./services/nft";
+import { thringletService } from "./services/thringlet";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
@@ -627,6 +629,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to transfer NFT" });
     }
   });
+  
+  // Thringlet API
+  app.get("/api/thringlets/owner/:address", async (req, res) => {
+    try {
+      const { address } = req.params;
+      const thringlets = await storage.getThringletsByOwner(address);
+      
+      res.json(thringlets);
+    } catch (error) {
+      console.error('Error fetching thringlets:', error);
+      res.status(500).json({ message: 'Failed to fetch thringlets' });
+    }
+  });
+  
+  app.get("/api/thringlets/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const thringlet = await storage.getThringlet(id);
+      
+      if (!thringlet) {
+        return res.status(404).json({ message: 'Thringlet not found' });
+      }
+      
+      res.json(thringlet);
+    } catch (error) {
+      console.error('Error fetching thringlet:', error);
+      res.status(500).json({ message: 'Failed to fetch thringlet' });
+    }
+  });
+  
+  app.post("/api/thringlets/bond", async (req, res) => {
+    try {
+      const { thringletId, address } = req.body;
+      
+      if (!thringletId || !address) {
+        return res.status(400).json({ message: 'Missing required parameters' });
+      }
+      
+      const thringlet = await thringletService.bondThringlet(thringletId, address);
+      
+      res.json({ success: true, thringlet });
+    } catch (error) {
+      console.error('Error bonding with thringlet:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to bond with thringlet' 
+      });
+    }
+  });
+  
+  app.post("/api/thringlets/interact", async (req, res) => {
+    try {
+      const { thringletId, address, interactionType } = req.body;
+      
+      if (!thringletId || !address || !interactionType) {
+        return res.status(400).json({ message: 'Missing required parameters' });
+      }
+      
+      const validInteractions = ['stimulate', 'calm', 'challenge', 'reward'];
+      if (!validInteractions.includes(interactionType)) {
+        return res.status(400).json({ 
+          message: 'Invalid interaction type. Valid types: stimulate, calm, challenge, reward' 
+        });
+      }
+      
+      const result = await thringletService.processInteraction(
+        thringletId, 
+        address, 
+        interactionType
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error interacting with thringlet:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Failed to interact with thringlet' 
+      });
+    }
+  });
 
   // User Feedback Routes
   app.get("/api/feedback", async (req, res) => {
@@ -720,7 +800,257 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: "Failed to update feedback status" });
     }
   });
+  
+  // Secret Drops API
+  app.get("/api/drops/secret", async (req, res) => {
+    try {
+      const drops = await storage.getSecretDrops();
+      
+      // Filter out sensitive information like codes
+      const safeDrops = drops.map(drop => {
+        const { code, ...safeDrop } = drop;
+        return {
+          ...safeDrop,
+          claimable: drop.isActive && drop.claimedCount < drop.maxClaims,
+          hasExpired: drop.expiration ? new Date(drop.expiration) < new Date() : false
+        };
+      });
+      
+      res.json(safeDrops);
+    } catch (error) {
+      console.error('Error fetching secret drops:', error);
+      res.status(500).json({ error: 'Failed to fetch secret drops' });
+    }
+  });
+  
+  app.post("/api/drops/claim", async (req, res) => {
+    try {
+      const { dropCode, address } = req.body;
+      
+      if (!dropCode || !address) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+      
+      // Find the drop by code
+      const drop = await storage.getSecretDropByCode(dropCode);
+      
+      if (!drop) {
+        return res.status(404).json({ error: 'Invalid drop code' });
+      }
+      
+      if (!drop.isActive) {
+        return res.status(400).json({ error: 'This drop is no longer active' });
+      }
+      
+      if (drop.claimedCount >= drop.maxClaims) {
+        return res.status(400).json({ error: 'All claims for this drop have been exhausted' });
+      }
+      
+      if (drop.expiration && new Date(drop.expiration) < new Date()) {
+        return res.status(400).json({ error: 'This drop has expired' });
+      }
+      
+      // Process the claim - increment the claim count
+      const updatedDrop = {
+        ...drop,
+        claimedCount: drop.claimedCount + 1
+      };
+      
+      await storage.updateSecretDrop(updatedDrop);
+      
+      // Generate rewards (could be μPVX, NFTs, or Thringlets)
+      let claimResult: any = { rewards: drop.rewards };
+      
+      // If this drop rewards a Thringlet, create it
+      if (drop.rewards.some(r => r.includes('Thringlet'))) {
+        // Create a new thringlet for this user
+        const thringletBase = thringletService.createRandomThringlet();
+        const thringlet = await storage.createThringlet({
+          ...thringletBase,
+          ownerAddress: address
+        });
+        
+        claimResult = { ...claimResult, thringlet };
+      }
+      
+      res.json({
+        success: true,
+        message: 'Drop claimed successfully',
+        ...claimResult
+      });
+    } catch (error) {
+      console.error('Error claiming drop:', error);
+      res.status(500).json({ 
+        error: error instanceof Error ? error.message : 'Failed to claim drop' 
+      });
+    }
+  });
+  
+  // Auth code verification
+  app.post("/api/verify-auth-code", async (req, res) => {
+    try {
+      const { code, requestedLevel } = req.body;
+      
+      if (!code || !requestedLevel) {
+        return res.status(400).json({ error: 'Missing required parameters' });
+      }
+      
+      // Very simple validation for demo purposes
+      // In a real system, these would be securely stored and validated
+      const validCodes = {
+        1: ['AUTH-1-ALPHA2023', 'AUTH-1-BETA9876'],
+        2: ['AUTH-2-GAMMA5432', 'AUTH-2-DELTA1098'],
+        3: ['AUTH-3-EPSILON777', 'AUTH-3-ZETA3456']
+      };
+      
+      const level = parseInt(requestedLevel);
+      
+      if (isNaN(level) || level < 1 || level > 3) {
+        return res.status(400).json({ error: 'Invalid access level' });
+      }
+      
+      const valid = validCodes[level as keyof typeof validCodes]?.includes(code);
+      
+      res.json({ valid });
+    } catch (error) {
+      console.error('Error verifying auth code:', error);
+      res.status(500).json({ error: 'Failed to verify authorization code' });
+    }
+  });
+  
+  // Security scanning API
+  app.post("/api/security/scan", async (req, res) => {
+    try {
+      const { target } = req.body;
+      
+      if (!target) {
+        return res.status(400).json({ error: 'Missing required parameter: target' });
+      }
+      
+      // Determine if this is a drop code or an address
+      let result: any;
+      
+      if (target.startsWith('PVX-DROP-')) {
+        // This is a drop code
+        const drop = await storage.getSecretDropByCode(target);
+        
+        if (!drop) {
+          return res.json({
+            type: 'drop',
+            securityScore: 0,
+            message: 'Unknown drop code - possible scam or expired drop'
+          });
+        }
+        
+        // Calculate security score based on drop properties
+        const securityScore = calculateDropSecurityScore(drop);
+        
+        result = {
+          type: 'drop',
+          securityScore,
+          createdBy: drop.creatorAddress ? shortenAddress(drop.creatorAddress) : undefined
+        };
+      } else if (target.length === 42 && target.startsWith('0x')) {
+        // This is an address
+        // In a real system, this would query on-chain data or reputation services
+        
+        // Simulate basic address scoring for demo
+        const reputationScore = Math.floor(Math.random() * 31) + 70; // 70-100
+        const transactionCount = Math.floor(Math.random() * 500) + 50;
+        const knownEntity = Math.random() > 0.7;
+        
+        result = {
+          type: 'address',
+          reputationScore,
+          transactionCount,
+          knownEntity,
+          entityName: knownEntity ? getRandomEntityName() : undefined
+        };
+      } else {
+        return res.status(400).json({ error: 'Invalid target format' });
+      }
+      
+      res.json(result);
+    } catch (error) {
+      console.error('Error scanning target:', error);
+      res.status(500).json({ error: 'Failed to scan target' });
+    }
+  });
 
   const httpServer = createServer(app);
+  
+  // Set up WebSocket server for real-time updates
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        
+        // Handle incoming messages
+        console.log('Received message:', data);
+        
+        // Echo back for now
+        if (ws.readyState === ws.OPEN) {
+          ws.send(JSON.stringify({
+            type: 'echo',
+            data
+          }));
+        }
+      } catch (error) {
+        console.error('Error processing WebSocket message:', error);
+      }
+    });
+    
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+    });
+    
+    // Send initial connection confirmation
+    ws.send(JSON.stringify({
+      type: 'connection',
+      status: 'connected',
+      timestamp: new Date()
+    }));
+  });
+  
   return httpServer;
+}
+
+// Helper functions
+function shortenAddress(address: string): string {
+  return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+}
+
+function calculateDropSecurityScore(drop: any): number {
+  // Calculate a security score based on drop properties
+  let score = 80; // Base score
+  
+  // Factors that affect score
+  if (drop.creatorAddress) score += 5;
+  if (drop.maxClaims < 10) score += 5;
+  if (drop.claimedCount > 0) score += 5;
+  if (drop.emotionalProfile) score += 5;
+  
+  // Random component for demo purposes
+  score += Math.floor(Math.random() * 10) - 5;
+  
+  // Ensure score is within 0-100 range
+  return Math.min(100, Math.max(0, score));
+}
+
+function getRandomEntityName(): string {
+  const entities = [
+    'PVX Foundation',
+    'Trusted Exchange',
+    'Verified Validator',
+    'DAO Treasury',
+    'Developer Fund',
+    'Grant Program',
+    'Ecosystem Growth'
+  ];
+  
+  return entities[Math.floor(Math.random() * entities.length)];
 }
