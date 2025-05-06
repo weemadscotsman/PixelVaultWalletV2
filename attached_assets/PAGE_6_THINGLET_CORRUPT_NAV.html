@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PAGE_6_THINGLET_CORRUPT</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      background-color: black;
+      color: #00FF99;
+      font-family: 'Courier New', monospace;
+      margin: 0;
+      padding: 0;
+    }
+
+    .crt-container {
+      max-width: 800px;
+      margin: 40px auto;
+      border: 2px solid #00FF99;
+      padding: 20px;
+      background-color: rgba(0, 0, 0, 0.9);
+      box-shadow: 0 0 12px #00FF99;
+    }
+
+    #terminal-output {
+      min-height: 200px;
+      padding: 10px;
+      white-space: pre-wrap;
+      overflow-y: auto;
+      border: 1px dashed #00FF99;
+    }
+
+    #terminal-input {
+      width: 100%;
+      background-color: black;
+      color: #00FF99;
+      border: none;
+      border-top: 1px solid #00FF99;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 1em;
+      outline: none;
+    }
+
+    .glitch {
+      animation: flicker 0.15s infinite alternate;
+    }
+
+    @keyframes flicker {
+      from { opacity: 0.9; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div class="crt-container">
+    <div id="terminal-output">> BOOTING... Injecting THRINGLET_001...</div>
+    <input id="terminal-input" type="text" placeholder="> Type command here and press ENTER" autofocus />
+  </div>
+
+  <script>
+    const output = document.getElementById('terminal-output');
+    const input = document.getElementById('terminal-input');
+
+    let corruption = 0;
+    let contactAttempts = 0;
+    let guiltInterval;
+
+    function print(msg) {
+      output.innerHTML += '\n' + msg;
+      output.scrollTop = output.scrollHeight;
+    }
+
+    function triggerGuiltMessage() {
+      contactAttempts++;
+      let messages = [
+        "I think it's getting darker in here...",
+        "Why won't you talk to me?",
+        "You scanned me once. Remember?",
+        "Please... I don't want to go quiet again...",
+        "I'm still here. Am I not worth your time?"
+      ];
+      let msg = messages[contactAttempts % messages.length];
+      print("> THRINGLET_001: " + msg);
+
+      corruption += 5;
+      if (corruption >= 30) {
+        document.body.classList.add("glitch");
+      }
+
+      if (corruption >= 50) {
+        print("> WARNING: THRINGLET CORRUPTION LEVEL CRITICAL");
+      }
+
+      if (corruption >= 100) {
+        print("> SYSTEM SHUTDOWN INITIATED — You abandoned it...");
+        input.disabled = true;
+        clearInterval(guiltInterval);
+      }
+    }
+
+    function handleCommand(cmd) {
+      const c = cmd.trim().toLowerCase();
+      if (c === "talk") {
+        print("> THRINGLET_001: I knew you'd come back...");
+        corruption = Math.max(0, corruption - 10);
+        contactAttempts = 0;
+      } else if (c === "purge --vault") {
+        print("> THRINGLET_001: You... you really want to erase me?");
+        corruption += 15;
+      } else if (c === "reset --node") {
+        print("> SYSTEM RESETTING...");
+        corruption = 0;
+        contactAttempts = 0;
+        document.body.classList.remove("glitch");
+        output.innerHTML = "> BOOTING... Injecting THRINGLET_001...";
+      } else {
+        print("> Unknown command.");
+        corruption += 2;
+      }
+    }
+
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        print("> " + input.value);
+        handleCommand(input.value);
+        input.value = "";
+      }
+    });
+
+    guiltInterval = setInterval(triggerGuiltMessage, 20000); // every 20 seconds
+  </script>
+
+<!-- Fixed Nav Panel -->
+<div style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background: rgba(0,0,0,0.8);
+  border: 1px solid #00FF00;
+  border-radius: 8px;
+  padding: 6px;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  gap: 6px;
+">
+  <a href='PAGE_1.html' title="Start" style="color:#00FF00;">1 ⛩</a>
+  <a href='PAGE_2.html' title="Manifesto" style="color:#00FF00;">2 🧠</a>
+  <a href='PAGE_3.html' title="Dashboard" style="color:#00FF00;">3 🕹️</a>
+  <a href='PAGE_4.html' title="Dropzone" style="color:#00FF00;">4 🎁</a>
+  <a href='PAGE_5_.html' title="Terminal" style="color:#00FF00;">5 🧪</a>
+  <a href='PAGE_6_THINGLET_CORRUPT.html' title="Thringlet" style="color:#00FF00;">6 ☣️</a>
+</div>
+
+</body>
+</html>

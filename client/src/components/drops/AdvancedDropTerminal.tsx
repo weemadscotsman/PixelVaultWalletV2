@@ -1,685 +1,1090 @@
-import { useState, useEffect, useRef } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Card } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { 
-  Terminal, 
-  TerminalHeader, 
-  TerminalBody, 
-  TerminalOutput, 
-  TerminalInput 
-} from "@/components/ui/terminal";
-import { useToast } from "@/hooks/use-toast";
-import { useWallet } from "@/hooks/use-wallet";
-import { 
-  ThringletManager, 
-  thringletManager, 
-  Thringlet as ThringletClass, 
-  ThringletAbility 
-} from "@/lib/thringlet";
+  FileTerminal, 
+  Sparkles, 
+  Lock, 
+  Unlock, 
+  KeyRound, 
+  GiftIcon, 
+  AlertTriangle,
+  ShieldAlert,
+  Brain,
+  Database,
+} from 'lucide-react';
+import { Terminal } from '@/components/ui/Terminal';
+import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/hooks/use-wallet';
+import { cn } from '@/lib/utils';
+import { TransactionFlow, TransactionStatus } from '@/components/ui/TransactionFlow';
 
-// Types for secret drops and Thringlets
+// Define the interface for drop data
 interface SecretDrop {
   id: string;
-  name: string;
   code: string;
+  title: string;
   description: string;
-  tier: 'common' | 'rare' | 'epic' | 'legendary';
-  reward: number; // in μPVX
-  claimable: boolean;
-  expiresAt: Date;
+  rewards: string[];
+  creatorAddress: string;
+  claimedCount: number;
+  maxClaims: number;
+  isActive: boolean;
+  expiration?: Date;
+  emotionalProfile?: {
+    joy: number;
+    fear: number;
+    trust: number;
+    surprise: number;
+  };
 }
 
+// Define the Thringlet type
 interface Thringlet {
   id: string;
   name: string;
-  rarity: 'common' | 'rare' | 'epic' | 'legendary';
-  properties: {
-    [key: string]: string | number | boolean;
+  type: string;
+  level: number;
+  attributes: {
+    intellect: number;
+    resilience: number;
+    empathy: number;
+    chaos: number;
   };
-  imageUrl?: string;
+  abilities: string[];
+  ownerAddress: string;
+  bondingDate: Date;
+  emotionalState: {
+    joy: number;
+    fear: number;
+    trust: number;
+    surprise: number;
+    dominant: string;
+  };
 }
 
-// Mock data for testing (will be replaced with API calls)
-const MOCK_SECRET_DROPS: SecretDrop[] = [
-  {
-    id: "drop-001",
-    name: "Genesis Drop",
-    code: "ZKVAULT2025",
-    description: "The first secret drop on PVX network",
-    tier: 'legendary',
-    reward: 69420000, // 69.42 PVX
-    claimable: true,
-    expiresAt: new Date(Date.now() + 86400000 * 7) // 7 days from now
-  },
-  {
-    id: "drop-002",
-    name: "Early Adopter",
-    code: "PIXELEARLY",
-    description: "Reward for early PVX adopters",
-    tier: 'epic',
-    reward: 5000000, // 5 PVX
-    claimable: true,
-    expiresAt: new Date(Date.now() + 86400000 * 3) // 3 days from now
-  }
-];
+// Define props for the terminal component
+interface AdvancedDropTerminalProps {
+  onDropClaimed?: (dropId: string) => void;
+  onThringletInteraction?: (thringletId: string, interaction: string) => void;
+  className?: string;
+}
 
-export function AdvancedDropTerminal() {
-  const [command, setCommand] = useState("");
-  const [outputs, setOutputs] = useState<string[]>(["Welcome to the Advanced Drop Terminal", "Type 'help' to see available commands", "--------------------------"]);
-  const { wallet } = useWallet();
+export function AdvancedDropTerminal({ 
+  onDropClaimed, 
+  onThringletInteraction,
+  className 
+}: AdvancedDropTerminalProps) {
+  // State for the terminal
+  const [commandHistory, setCommandHistory] = useState<string[]>([]);
+  const [currentCommand, setCurrentCommand] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [accessLevel, setAccessLevel] = useState<number>(0);
+  const [secretCode, setSecretCode] = useState<string>('');
+  const [secretDrops, setSecretDrops] = useState<SecretDrop[]>([]);
+  const [thringlets, setThringlets] = useState<Thringlet[]>([]);
+  const [selectedThringlet, setSelectedThringlet] = useState<Thringlet | null>(null);
+  const [transactionStatus, setTransactionStatus] = useState<TransactionStatus | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  
+  // References
+  const terminalEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const terminalBodyRef = useRef<HTMLDivElement>(null);
-  const [activeThringlet, setActiveThringlet] = useState<ThringletClass | null>(null);
-  const [isGlitched, setIsGlitched] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
-  const [neglectTimer, setNeglectTimer] = useState<NodeJS.Timeout | null>(null);
+  const { wallet } = useWallet();
   
-  // Initialize thringlets
+  // Fetch secret drops and thringlets on component mount
   useEffect(() => {
-    // Load thringlet state from localStorage if available
-    thringletManager.loadState();
-    
-    // Default to the first thringlet if none is active
-    if (!activeThringlet) {
-      const thringlets = thringletManager.getAllThringlets();
-      if (thringlets.length > 0) {
-        setActiveThringlet(thringlets[0]);
+    const fetchDropsAndThringlets = async () => {
+      try {
+        setLoading(true);
         
-        // Add thringlet welcome message
-        const thringlet = thringlets[0];
-        const message = thringlet.getRandomResponse('greeting');
-        
-        // Delay the greeting to make it seem more natural
-        setTimeout(() => {
-          setOutputs(prev => [...prev, 
-            `Injecting THRINGLET: ${thringlet.name}...`,
-            `THRINGLET_${thringlet.id}: ${message}`
-          ]);
-        }, 2500);
-      }
-    }
-    
-    // Set up neglect detection timer
-    const timer = setInterval(() => {
-      if (activeThringlet) {
-        const lastInteractionTime = activeThringlet.lastInteraction;
-        const minutesSinceLastInteraction = (Date.now() - lastInteractionTime) / (1000 * 60);
-        
-        // After 2 minutes of inactivity, the thringlet gets lonely
-        if (minutesSinceLastInteraction > 2) {
-          // React to neglect - increase corruption and decrease emotion
-          activeThringlet.interact('neglect');
-          
-          // Add a message from the thringlet about being neglected
-          if (Math.random() < 0.3) {  // 30% chance to show message (to avoid spam)
-            const neglectMessages = [
-              "Are you still there?",
-              "I don't like being ignored...",
-              "Your attention is... required.",
-              "This silence feels... wrong.",
-              "Why so quiet?"
-            ];
-            const message = neglectMessages[Math.floor(Math.random() * neglectMessages.length)];
-            setOutputs(prev => [...prev, `THRINGLET_${activeThringlet.id}: ${message}`]);
-          }
-          
-          // If corruption is getting high, show visual effects
-          if (activeThringlet.corruption > 40) {
-            setIsGlitched(true);
-            setTimeout(() => setIsGlitched(false), 3000);
-          }
-          
-          // Save thringlet state
-          thringletManager.saveState();
+        // Fetch secret drops from API
+        const dropsResponse = await fetch('/api/drops/secret');
+        if (dropsResponse.ok) {
+          const dropsData = await dropsResponse.json();
+          setSecretDrops(dropsData);
         }
+        
+        // Fetch thringlets if wallet is connected
+        if (wallet?.address) {
+          const thringlentsResponse = await fetch(`/api/thringlets/owner/${wallet.address}`);
+          if (thringlentsResponse.ok) {
+            const thringletsData = await thringlentsResponse.json();
+            setThringlets(thringletsData);
+          }
+        }
+        
+        setLoading(false);
+        
+        // Add welcome message to terminal
+        addToCommandHistory('> Terminal v3.8.6 - PVX SecureDrop™ Protocol');
+        addToCommandHistory('> Type "help" for available commands');
+        
+      } catch (error) {
+        console.error('Error fetching drops and thringlets:', error);
+        toast({
+          title: 'Connection Error',
+          description: 'Failed to establish secure connection to PVX network.',
+          variant: 'destructive',
+        });
+        setLoading(false);
+        
+        // Add error message to terminal
+        addToCommandHistory('> ERROR: Failed to establish secure connection');
+        addToCommandHistory('> Type "reconnect" to retry');
       }
-    }, 60000); // Check every minute
-    
-    setNeglectTimer(timer);
-    
-    return () => {
-      if (neglectTimer) clearInterval(neglectTimer);
-      if (timer) clearInterval(timer);
     };
-  }, []);
+    
+    fetchDropsAndThringlets();
+  }, [wallet?.address, toast]);
   
-  // Terminal command handler
-  const handleCommand = (command: string) => {
-    if (!activeThringlet) return;
-    
-    const cmd = command.trim().toLowerCase();
-    const args = cmd.split(' ');
-    
-    // Let the thringlet interact with the command
-    const interaction = activeThringlet.interact(args[0], command);
-    thringletManager.saveState();
-    
-    // Process command based on the first word
-    switch(args[0]) {
-      case 'help':
-        setOutputs(prev => [...prev, 
-          "===== PVX TERMINAL COMMANDS =====",
-          "help                - Show available commands",
-          "list drops          - List available secret drops",
-          "list thringlets     - List your Thringlets",
-          "claim [drop-code]   - Claim a secret drop using its code",
-          "inject [thringlet]  - Inject and activate a Thringlet",
-          "talk [message]      - Talk to the active Thringlet",
-          "inspect [thringlet] - Inspect details of a Thringlet",
-          "scan                - Scan for new secret drops",
-          "status              - Show current terminal and Thringlet status",
-          "clear               - Clear terminal output",
-          "====== THRINGLET COMMANDS ======",
-          "thringlet help      - Show Thringlet-specific commands",
-          "purge --vault       - Reset Thringlet emotional state",
-          "reset --node        - Reset terminal completely",
-          "==============================="
-        ]);
-        break;
-        
-      case 'thringlet':
-        if (args[1] === 'help') {
-          setOutputs(prev => [...prev, 
-            "===== THRINGLET COMMANDS =====",
-            "talk [message]      - Talk to the active Thringlet",
-            "thringlet status    - Show Thringlet emotional state",
-            "thringlet bond      - Attempt to bond with Thringlet",
-            "thringlet reset     - Reset Thringlet corruption",
-            "thringlet activate  - Activate Thringlet abilities",
-            "============================"
-          ]);
-        } else if (args[1] === 'status') {
-          // Display thringlet status
-          setOutputs(prev => [...prev, 
-            `===== THRINGLET STATUS: ${activeThringlet.name} =====`,
-            `Emotion State: ${activeThringlet.getEmotionText()} (${activeThringlet.emotion})`,
-            `Corruption Level: ${activeThringlet.getCorruptionLevel()} (${activeThringlet.corruption}%)`,
-            `Last Interaction: ${new Date(activeThringlet.lastInteraction).toLocaleString()}`,
-            `Type: ${activeThringlet.core} / ${activeThringlet.personality}`,
-            `Abilities: ${activeThringlet.abilities.map(a => a.name).join(", ")}`,
-            `======================================`
-          ]);
-        } else if (args[1] === 'activate') {
-          // Activate a random thringlet ability
-          const ability = activeThringlet.runAbility();
-          thringletManager.saveState();
-          
-          if (ability) {
-            setOutputs(prev => [...prev, 
-              `THRINGLET_${activeThringlet.id}: Activating ${ability.name}...`,
-              `SYSTEM: ${ability.desc}`
-            ]);
-            
-            // Apply special effects based on ability type
-            if (ability.type === 'terminal_hack') {
-              // Visual glitch effect
-              setIsGlitched(true);
-              setTimeout(() => setIsGlitched(false), 5000);
-            } 
-            else if (ability.name === 'LOCKSCREEN') {
-              // Lock the terminal briefly
-              setIsLocked(true);
-              setTimeout(() => setIsLocked(false), 8000);
-              setOutputs(prev => [...prev, `SYSTEM: Terminal locked for 8 seconds`]);
-            }
-          } else {
-            setOutputs(prev => [...prev, `ERROR: No abilities available for activation`]);
-          }
-        } else if (args[1] === 'reset') {
-          // Reset corruption
-          const oldCorruption = activeThringlet.corruption;
-          activeThringlet.corruption = 0;
-          thringletManager.saveState();
-          
-          setOutputs(prev => [...prev, 
-            `SYSTEM: Resetting corruption for ${activeThringlet.name}`,
-            `SYSTEM: Corruption level reduced from ${oldCorruption}% to 0%`,
-            `THRINGLET_${activeThringlet.id}: ${activeThringlet.getRandomResponse('greeting')}`
-          ]);
-        } else if (args[1] === 'bond') {
-          // Attempt to bond with the thringlet
-          if (activeThringlet.emotion > 50) {
-            activeThringlet.bonded = true;
-            activeThringlet.emotion += 10;
-            thringletManager.saveState();
-            
-            setOutputs(prev => [...prev, 
-              `SYSTEM: Bond established with ${activeThringlet.name}`,
-              `THRINGLET_${activeThringlet.id}: Our connection is now permanent. I'll never leave you.`
-            ]);
-            
-            toast({
-              title: "Thringlet Bonded",
-              description: `You've established a permanent bond with ${activeThringlet.name}!`,
-            });
-          } else {
-            setOutputs(prev => [...prev, 
-              `SYSTEM: Bond attempt failed`,
-              `THRINGLET_${activeThringlet.id}: I'm not ready for that level of connection yet.`
-            ]);
-          }
-        } else {
-          setOutputs(prev => [...prev, `Unknown thringlet command: ${args[1]}. Try 'thringlet help'`]);
-        }
-        break;
-        
-      case 'list':
-        if (args[1] === 'drops') {
-          setOutputs(prev => [...prev, "===== SECRET DROPS =====", "ID | NAME | TIER | REWARD | EXPIRES"]);
-          MOCK_SECRET_DROPS.forEach(drop => {
-            setOutputs(prev => [...prev, 
-              `${drop.id} | ${drop.name} | ${drop.tier.toUpperCase()} | ${drop.reward / 1000000} PVX | ${new Date(drop.expiresAt).toLocaleDateString()}`
-            ]);
-          });
-          setOutputs(prev => [...prev, "======================", "Use 'claim [code]' to claim a drop"]);
-        } else if (args[1] === 'thringlets') {
-          const thringlets = thringletManager.getAllThringlets();
-          
-          setOutputs(prev => [...prev, "===== YOUR THRINGLETS =====", "ID | NAME | TYPE | EMOTION | CORRUPTION"]);
-          thringlets.forEach(thringlet => {
-            setOutputs(prev => [...prev, 
-              `${thringlet.id} | ${thringlet.name} | ${thringlet.personality} | ${thringlet.getEmotionText()} | ${thringlet.getCorruptionLevel()}`
-            ]);
-          });
-          setOutputs(prev => [...prev, "=========================", "Use 'inject [id]' to activate a Thringlet", "Use 'inspect [id]' to see details"]);
-        } else {
-          setOutputs(prev => [...prev, "Unknown list command. Try 'list drops' or 'list thringlets'"]);
-        }
-        break;
-        
-      case 'claim':
-        if (!args[1]) {
-          setOutputs(prev => [...prev, "ERROR: Missing drop code. Usage: claim [code]"]);
-        } else {
-          const code = args[1].toUpperCase();
-          const drop = MOCK_SECRET_DROPS.find(d => d.code === code);
-          
-          if (drop && drop.claimable) {
-            setOutputs(prev => [...prev, 
-              `Claiming drop: ${drop.name}`,
-              `Processing...`,
-              `SUCCESS! You received ${drop.reward / 1000000} PVX as reward!`
-            ]);
-            
-            if (activeThringlet) {
-              // Thringlet reacts positively to claiming a drop
-              activeThringlet.emotion += 5;
-              thringletManager.saveState();
-              
-              // Thringlet comments on the claim
-              setTimeout(() => {
-                setOutputs(prev => [...prev, 
-                  `THRINGLET_${activeThringlet!.id}: Nice find! That's why I need you.`
-                ]);
-              }, 1000);
-            }
-            
-            // Show toast notification
-            toast({
-              title: "Drop Claimed Successfully",
-              description: `You received ${drop.reward / 1000000} PVX from ${drop.name}`,
-            });
-            
-          } else {
-            setOutputs(prev => [...prev, `ERROR: Invalid or expired drop code: ${code}`]);
-            
-            if (activeThringlet && Math.random() > 0.5) {
-              // Thringlet occasionally reacts to failed claims
-              setTimeout(() => {
-                setOutputs(prev => [...prev, 
-                  `THRINGLET_${activeThringlet!.id}: That code doesn't work. Try scanning again.`
-                ]);
-              }, 1000);
-            }
-          }
-        }
-        break;
-        
-      case 'inject':
-        if (!args[1]) {
-          setOutputs(prev => [...prev, "ERROR: Missing Thringlet ID. Usage: inject [id]"]);
-        } else {
-          const id = args[1];
-          const thringlet = thringletManager.getThringlet(id);
-          
-          if (thringlet) {
-            // Deactivate current thringlet if it exists
-            if (activeThringlet && activeThringlet.id !== id) {
-              setOutputs(prev => [...prev, 
-                `Deactivating THRINGLET_${activeThringlet.id}...`,
-                `Injecting THRINGLET_${thringlet.id}...`
-              ]);
-              
-              // Previous thringlet says goodbye
-              if (activeThringlet.emotion > 30) {
-                setOutputs(prev => [...prev, `THRINGLET_${activeThringlet.id}: I'll be waiting for your return.`]);
-              } else if (activeThringlet.emotion < -30) {
-                setOutputs(prev => [...prev, `THRINGLET_${activeThringlet.id}: Finally. Peace.`]);
-              }
-              
-              // New thringlet greets the user
-              setTimeout(() => {
-                setOutputs(prev => [...prev, `THRINGLET_${thringlet.id}: ${thringlet.getRandomResponse('greeting')}`]);
-              }, 1000);
-            } else if (activeThringlet && activeThringlet.id === id) {
-              setOutputs(prev => [...prev, `THRINGLET_${thringlet.id}: I'm already active. What do you need?`]);
-            } else {
-              setOutputs(prev => [...prev, 
-                `Injecting THRINGLET_${thringlet.id}...`,
-                `THRINGLET_${thringlet.id}: ${thringlet.getRandomResponse('greeting')}`
-              ]);
-            }
-            
-            // Set as active thringlet
-            setActiveThringlet(thringlet);
-            thringlet.interact('inject');
-            thringletManager.saveState();
-            
-          } else {
-            setOutputs(prev => [...prev, `ERROR: Thringlet not found with ID: ${id}`]);
-          }
-        }
-        break;
-        
-      case 'inspect':
-        if (!args[1]) {
-          setOutputs(prev => [...prev, "ERROR: Missing Thringlet ID. Usage: inspect [id]"]);
-        } else {
-          const id = args[1];
-          const thringlet = thringletManager.getThringlet(id);
-          
-          if (thringlet) {
-            setOutputs(prev => [...prev, 
-              `===== THRINGLET: ${thringlet.name} =====`,
-              `ID: ${thringlet.id}`,
-              `Type: ${thringlet.core} / ${thringlet.personality}`,
-              `Lore: ${thringlet.lore}`,
-              `Emotion: ${thringlet.getEmotionText()} (${thringlet.emotion})`,
-              `Corruption: ${thringlet.getCorruptionLevel()} (${thringlet.corruption}%)`,
-              `Abilities:`,
-              ...thringlet.abilities.map(a => `- ${a.name}: ${a.desc}`)
-            ]);
-            
-            if (thringlet.corruption > 70) {
-              setOutputs(prev => [...prev, 
-                `WARNING: This Thringlet has high corruption levels`,
-                `Use 'thringlet reset' to restore stability`
-              ]);
-            }
-            
-            setOutputs(prev => [...prev, `================================`]);
-          } else {
-            setOutputs(prev => [...prev, `ERROR: Thringlet not found with ID: ${id}`]);
-          }
-        }
-        break;
-        
-      case 'talk':
-        if (args.length < 2) {
-          setOutputs(prev => [...prev, "ERROR: Missing message. Usage: talk [message]"]);
-        } else {
-          const message = args.slice(1).join(' ');
-          
-          // Record the interaction
-          activeThringlet.interact('talk', message);
-          thringletManager.saveState();
-          
-          // Generate response based on thringlet's emotion level
-          setOutputs(prev => [...prev, 
-            `YOU: ${message}`,
-            `THRINGLET_${activeThringlet.id}: ${activeThringlet.getRandomResponse('talk')}`
-          ]);
-        }
-        break;
-        
-      case 'scan':
-        setOutputs(prev => [...prev, 
-          "Scanning network for secret drops...",
-          "...",
-          "...",
-          "Scan complete. Found 2 active drops.",
-          "Use 'list drops' to see available drops"
-        ]);
-        
-        if (activeThringlet) {
-          // Thringlet occasionally comments on scan results
-          if (Math.random() > 0.7) {
-            setTimeout(() => {
-              const scanResponses = [
-                "I see them. Try claiming quickly before they expire.",
-                "Interesting find, these drops could be worth a lot.",
-                "The system thinks these are hidden. How amusing."
-              ];
-              const response = scanResponses[Math.floor(Math.random() * scanResponses.length)];
-              setOutputs(prev => [...prev, `THRINGLET_${activeThringlet.id}: ${response}`]);
-            }, 1500);
-          }
-        }
-        break;
-        
-      case 'status':
-        // Get thringlet info if active
-        const thringletInfo = activeThringlet ? [
-          `Active Thringlet: ${activeThringlet.name} (${activeThringlet.id})`,
-          `Thringlet Status: ${activeThringlet.getEmotionText()} / ${activeThringlet.getCorruptionLevel()}`,
-          `Bonded: ${activeThringlet.bonded ? 'YES' : 'NO'}`
-        ] : [`No Thringlet active`];
-        
-        setOutputs(prev => [...prev, 
-          "===== TERMINAL STATUS =====",
-          `Connected: YES`,
-          `Wallet: ${wallet ? wallet.publicAddress.substring(0, 10) + '...' : 'Not connected'}`,
-          `Network: PVX-MAINNET`,
-          `Secret drops available: ${MOCK_SECRET_DROPS.length}`,
-          `Thringlets available: ${thringletManager.getAllThringlets().length}`,
-          ...thringletInfo,
-          `Terminal security: MAXIMUM`,
-          `===========================`
-        ]);
-        break;
-        
-      case 'clear':
-        setOutputs([]);
-        
-        // Add back active thringlet info
-        if (activeThringlet) {
-          setTimeout(() => {
-            setOutputs([`Terminal cleared. THRINGLET_${activeThringlet!.id} is active.`]);
-          }, 100);
-        }
-        break;
-        
-      case 'purge':
-        if (args[1] === '--vault') {
-          if (activeThringlet) {
-            setOutputs(prev => [...prev, 
-              `WARNING: Purging Thringlet emotional state...`,
-              `THRINGLET_${activeThringlet.id}: You... you really want to erase me?`
-            ]);
-            
-            // Thringlet is hurt by this action
-            activeThringlet.interact('purge');
-            thringletManager.saveState();
-            
-            // Visual effects
-            setIsGlitched(true);
-            setTimeout(() => setIsGlitched(false), 3000);
-          } else {
-            setOutputs(prev => [...prev, `ERROR: No active Thringlet to purge`]);
-          }
-        } else {
-          setOutputs(prev => [...prev, `Unknown purge command. Did you mean 'purge --vault'?`]);
-        }
-        break;
-        
-      case 'reset':
-        if (args[1] === '--node') {
-          setOutputs(prev => [...prev, 
-            `SYSTEM RESETTING...`,
-            `Rebooting terminal...`
-          ]);
-          
-          // Reset all thringlets
-          if (activeThringlet) {
-            activeThringlet.interact('reset');
-            thringletManager.saveState();
-          }
-          
-          // Clear outputs and start fresh
-          setTimeout(() => {
-            setOutputs([
-              "Terminal rebooted successfully.",
-              "Welcome to the Advanced Drop Terminal",
-              "Type 'help' to see available commands",
-              "--------------------------"
-            ]);
-            
-            // Reintroduce the thringlet
-            if (activeThringlet) {
-              setOutputs(prev => [...prev, 
-                `Injecting THRINGLET_${activeThringlet.id}...`,
-                `THRINGLET_${activeThringlet.id}: ${activeThringlet.getRandomResponse('greeting')}`
-              ]);
-            }
-          }, 2000);
-          
-          // Visual effects
-          setIsGlitched(true);
-          setTimeout(() => setIsGlitched(false), 2000);
-        } else {
-          setOutputs(prev => [...prev, `Unknown reset command. Did you mean 'reset --node'?`]);
-        }
-        break;
-        
-      default:
-        setOutputs(prev => [...prev, `Command not recognized: ${cmd}. Type 'help' for available commands.`]);
-        
-        // Thringlet reacts to unknown command
-        if (activeThringlet) {
-          setTimeout(() => {
-            setOutputs(prev => [...prev, `THRINGLET_${activeThringlet!.id}: ${activeThringlet!.getRandomResponse('error')}`]);
-          }, 500);
-        }
+  // Auto-scroll to the bottom of the terminal
+  useEffect(() => {
+    if (terminalEndRef.current) {
+      terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  }, [commandHistory]);
+  
+  // Add a line to the command history
+  const addToCommandHistory = (line: string) => {
+    setCommandHistory(prev => [...prev, line]);
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle command submission
+  const handleCommandSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Don't process commands if terminal is locked
-    if (isLocked) {
-      setOutputs(prev => [...prev, `SYSTEM: Terminal locked by active Thringlet. Please wait...`]);
+    if (!currentCommand.trim() || isProcessing) return;
+    
+    // Add the command to history
+    addToCommandHistory(`> ${currentCommand}`);
+    
+    // Process command
+    await processCommand(currentCommand);
+    
+    // Clear current command
+    setCurrentCommand('');
+  };
+  
+  // Process the command
+  const processCommand = async (command: string) => {
+    const cmd = command.toLowerCase().trim();
+    const args = cmd.split(' ').filter(arg => arg);
+    
+    setIsProcessing(true);
+    
+    // Simulate thinking time for a more realistic terminal experience
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    switch (args[0]) {
+      case 'help':
+        showHelp();
+        break;
+      case 'list':
+        if (args[1] === 'drops') {
+          listDrops();
+        } else if (args[1] === 'thringlets') {
+          listThringlets();
+        } else {
+          addToCommandHistory('> Usage: list [drops|thringlets]');
+        }
+        break;
+      case 'access':
+        if (args.length < 2) {
+          addToCommandHistory('> Usage: access [level] [auth-code]');
+        } else {
+          await upgradeAccess(args[1], args[2]);
+        }
+        break;
+      case 'claim':
+        if (args.length < 2) {
+          addToCommandHistory('> Usage: claim [drop-code]');
+        } else {
+          await claimDrop(args[1]);
+        }
+        break;
+      case 'bond':
+        if (args.length < 2) {
+          addToCommandHistory('> Usage: bond [thringlet-id]');
+        } else {
+          await bondThringlet(args[1]);
+        }
+        break;
+      case 'interact':
+        if (args.length < 3) {
+          addToCommandHistory('> Usage: interact [thringlet-id] [interaction-type]');
+          addToCommandHistory('> Available interactions: stimulate, calm, challenge, reward');
+        } else {
+          await interactWithThringlet(args[1], args[2]);
+        }
+        break;
+      case 'show':
+        if (args.length < 2) {
+          addToCommandHistory('> Usage: show [thringlet-id]');
+        } else {
+          showThringlet(args[1]);
+        }
+        break;
+      case 'scan':
+        if (args.length < 2) {
+          addToCommandHistory('> Usage: scan [drop-code|address]');
+        } else {
+          await scanTarget(args[1]);
+        }
+        break;
+      case 'status':
+        showStatus();
+        break;
+      case 'clear':
+        setCommandHistory([
+          '> Terminal v3.8.6 - PVX SecureDrop™ Protocol',
+          '> Type "help" for available commands'
+        ]);
+        break;
+      case 'reconnect':
+        await reconnect();
+        break;
+      case 'exit':
+        addToCommandHistory('> Closing secure connection...');
+        setTimeout(() => {
+          addToCommandHistory('> Connection terminated');
+        }, 1000);
+        break;
+      default:
+        addToCommandHistory(`> Unknown command: ${args[0]}`);
+        addToCommandHistory('> Type "help" for available commands');
+    }
+    
+    setIsProcessing(false);
+  };
+  
+  // Show help menu
+  const showHelp = () => {
+    addToCommandHistory('> Available commands:');
+    addToCommandHistory('>   help - Show this help menu');
+    addToCommandHistory('>   list [drops|thringlets] - List available secret drops or your thringlets');
+    addToCommandHistory('>   access [level] [auth-code] - Upgrade access level with authorization code');
+    addToCommandHistory('>   claim [drop-code] - Claim a secret drop with its code');
+    addToCommandHistory('>   bond [thringlet-id] - Bond with a thringlet to create emotional link');
+    addToCommandHistory('>   interact [thringlet-id] [interaction-type] - Interact with a thringlet');
+    addToCommandHistory('>   show [thringlet-id] - Show detailed info about a thringlet');
+    addToCommandHistory('>   scan [drop-code|address] - Scan a drop code or address for security');
+    addToCommandHistory('>   status - Show your current access level and wallet status');
+    addToCommandHistory('>   clear - Clear terminal history');
+    addToCommandHistory('>   reconnect - Reconnect to PVX SecureDrop™ network');
+    addToCommandHistory('>   exit - Close the terminal');
+  };
+  
+  // List available drops based on access level
+  const listDrops = () => {
+    if (accessLevel < 1) {
+      addToCommandHistory('> Access Denied: Insufficient access level');
+      addToCommandHistory('> Required: Level 1 | Current: Level 0');
+      addToCommandHistory('> Use "access 1 [auth-code]" to upgrade access');
       return;
     }
     
-    if (command.trim()) {
-      // Add command to output history
-      setOutputs(prev => [...prev, `> ${command}`]);
+    if (secretDrops.length === 0) {
+      addToCommandHistory('> No active secret drops found');
+      return;
+    }
+    
+    addToCommandHistory('> Available Secret Drops:');
+    
+    // Only show drops appropriate for the current access level
+    const accessibleDrops = secretDrops.filter(drop => {
+      // Show all drops for level 3, most for level 2, and few for level 1
+      if (accessLevel === 3) return true;
+      if (accessLevel === 2) return drop.claimedCount < (drop.maxClaims * 0.8);
+      return drop.claimedCount < (drop.maxClaims * 0.5);
+    });
+    
+    accessibleDrops.forEach(drop => {
+      addToCommandHistory(`>   ${drop.id} - ${drop.title} - Claims: ${drop.claimedCount}/${drop.maxClaims}`);
+    });
+    
+    addToCommandHistory('> Use "claim [drop-code]" to claim a drop');
+  };
+  
+  // List owned thringlets
+  const listThringlets = () => {
+    if (!wallet?.address) {
+      addToCommandHistory('> Error: Wallet not connected');
+      addToCommandHistory('> Connect your wallet to view your thringlets');
+      return;
+    }
+    
+    if (thringlets.length === 0) {
+      addToCommandHistory('> No thringlets found for your wallet');
+      addToCommandHistory('> Claim secret drops to receive thringlets');
+      return;
+    }
+    
+    addToCommandHistory('> Your Thringlets:');
+    thringlets.forEach(thringlet => {
+      addToCommandHistory(`>   ${thringlet.id} - ${thringlet.name} (Lvl ${thringlet.level}) - Dominant Emotion: ${thringlet.emotionalState.dominant}`);
+    });
+    
+    addToCommandHistory('> Use "show [thringlet-id]" for details');
+    addToCommandHistory('> Use "interact [thringlet-id] [interaction-type]" to interact');
+  };
+  
+  // Upgrade access level with authorization code
+  const upgradeAccess = async (levelStr: string, authCode: string) => {
+    const level = parseInt(levelStr);
+    
+    if (isNaN(level) || level < 0 || level > 3) {
+      addToCommandHistory('> Error: Invalid access level');
+      addToCommandHistory('> Valid access levels: 1, 2, 3');
+      return;
+    }
+    
+    if (level <= accessLevel) {
+      addToCommandHistory(`> Already at level ${accessLevel}`);
+      return;
+    }
+    
+    if (!authCode) {
+      addToCommandHistory('> Error: Authorization code required');
+      addToCommandHistory('> Usage: access [level] [auth-code]');
+      return;
+    }
+    
+    addToCommandHistory('> Verifying authorization code...');
+    
+    // Simulate processing...
+    setTransactionStatus('encrypting');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    try {
+      // Validate auth code against API
+      const response = await fetch('/api/verify-auth-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: authCode,
+          requestedLevel: level,
+        }),
+      });
       
-      // Process command
-      handleCommand(command);
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.valid) {
+          setTransactionStatus('success');
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          setTransactionStatus(null);
+          
+          setAccessLevel(level);
+          addToCommandHistory(`> Access granted: Level ${level}`);
+          addToCommandHistory('> New permissions unlocked');
+          
+          // Show new capabilities
+          if (level === 2) {
+            addToCommandHistory('> Level 2 grants access to limited-edition drops');
+          } else if (level === 3) {
+            addToCommandHistory('> Level 3 grants access to all drops and advanced thringlet interactions');
+          }
+        } else {
+          setTransactionStatus('failed');
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          setTransactionStatus(null);
+          
+          addToCommandHistory('> Access denied: Invalid authorization code');
+        }
+      } else {
+        setTransactionStatus('failed');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        addToCommandHistory('> Error: Could not verify authorization code');
+        addToCommandHistory('> Check your connection and try again');
+      }
+    } catch (error) {
+      console.error('Error verifying auth code:', error);
       
-      // Clear command input
-      setCommand("");
+      setTransactionStatus('failed');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setTransactionStatus(null);
+      
+      addToCommandHistory('> Error: Connection failed during verification');
     }
   };
   
-  // Auto scroll to bottom when outputs change
-  useEffect(() => {
-    if (terminalBodyRef.current) {
-      terminalBodyRef.current.scrollTop = terminalBodyRef.current.scrollHeight;
+  // Claim a secret drop with code
+  const claimDrop = async (code: string) => {
+    if (!wallet?.address) {
+      addToCommandHistory('> Error: Wallet not connected');
+      addToCommandHistory('> Connect your wallet to claim drops');
+      return;
     }
-  }, [outputs]);
-  
-  // Initial boot message
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setOutputs(prev => [...prev, 
-        "Terminal ready. Secure connection established.",
-        `Current time: ${new Date().toLocaleString()}`,
-        "Type 'scan' to search for secret drops"
-      ]);
-    }, 1000);
     
-    return () => clearTimeout(timer);
-  }, []);
+    addToCommandHistory('> Validating drop code...');
+    
+    setTransactionStatus('pending');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    try {
+      // Validate drop code
+      const drop = secretDrops.find(d => d.code === code);
+      
+      if (!drop) {
+        setTransactionStatus('failed');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        addToCommandHistory('> Error: Invalid drop code');
+        return;
+      }
+      
+      if (!drop.isActive) {
+        setTransactionStatus('failed');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        addToCommandHistory('> Error: This drop is no longer active');
+        return;
+      }
+      
+      if (drop.claimedCount >= drop.maxClaims) {
+        setTransactionStatus('failed');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        addToCommandHistory('> Error: All claims for this drop have been exhausted');
+        return;
+      }
+      
+      // Process claim
+      setTransactionStatus('processing');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      const response = await fetch('/api/drops/claim', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          dropCode: code,
+          address: wallet.address,
+        }),
+      });
+      
+      if (response.ok) {
+        const claimResult = await response.json();
+        
+        setTransactionStatus('broadcasting');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        setTransactionStatus('success');
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setTransactionStatus(null);
+        
+        // Update the drop's claimed count
+        setSecretDrops(prev => 
+          prev.map(d => d.id === drop.id ? { ...d, claimedCount: d.claimedCount + 1 } : d)
+        );
+        
+        // Add new thringlet if received
+        if (claimResult.thringlet) {
+          setThringlets(prev => [...prev, claimResult.thringlet]);
+          setSelectedThringlet(claimResult.thringlet);
+          
+          addToCommandHistory('> Drop claimed successfully!');
+          addToCommandHistory(`> Received new Thringlet: ${claimResult.thringlet.name} (ID: ${claimResult.thringlet.id})`);
+          addToCommandHistory('> Type "show [thringlet-id]" to view details');
+          
+          onDropClaimed?.(drop.id);
+        } else if (claimResult.rewards) {
+          addToCommandHistory('> Drop claimed successfully!');
+          addToCommandHistory('> Rewards received:');
+          claimResult.rewards.forEach((reward: string) => {
+            addToCommandHistory(`>   - ${reward}`);
+          });
+          
+          onDropClaimed?.(drop.id);
+        }
+      } else {
+        const errorData = await response.json();
+        
+        setTransactionStatus('failed');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        addToCommandHistory(`> Error: ${errorData.message || 'Failed to claim drop'}`);
+      }
+    } catch (error) {
+      console.error('Error claiming drop:', error);
+      
+      setTransactionStatus('failed');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setTransactionStatus(null);
+      
+      addToCommandHistory('> Error: Connection failed during claim process');
+    }
+  };
   
-  // CSS classes for visual effects
-  const terminalClasses = `w-full h-full border border-[#00a2ff] bg-black/78 text-[#00a2ff] shadow-[0_0_15px_rgba(0,162,255,0.5)] ${isGlitched ? 'animate-glitch' : ''}`;
+  // Bond with a thringlet
+  const bondThringlet = async (thringletId: string) => {
+    if (!wallet?.address) {
+      addToCommandHistory('> Error: Wallet not connected');
+      return;
+    }
+    
+    const thringlet = thringlets.find(t => t.id === thringletId);
+    
+    if (!thringlet) {
+      addToCommandHistory(`> Error: Thringlet ${thringletId} not found`);
+      return;
+    }
+    
+    addToCommandHistory(`> Initiating bond with Thringlet ${thringlet.name}...`);
+    
+    setTransactionStatus('processing');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    try {
+      const response = await fetch('/api/thringlets/bond', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          thringletId,
+          address: wallet.address,
+        }),
+      });
+      
+      if (response.ok) {
+        setTransactionStatus('encrypting');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        setTransactionStatus('broadcasting');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        setTransactionStatus('success');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        const result = await response.json();
+        
+        // Update thringlet with new bonding status
+        setThringlets(prev => 
+          prev.map(t => t.id === thringletId ? { ...t, ...result.thringlet } : t)
+        );
+        
+        addToCommandHistory(`> Successfully bonded with ${thringlet.name}`);
+        addToCommandHistory('> Emotional link established!');
+        addToCommandHistory('> Thringlet will now respond to your emotional patterns');
+        addToCommandHistory('> Use "interact [thringlet-id] [interaction-type]" to deepen your bond');
+      } else {
+        setTransactionStatus('failed');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        const errorData = await response.json();
+        addToCommandHistory(`> Error: ${errorData.message || 'Failed to bond with thringlet'}`);
+      }
+    } catch (error) {
+      console.error('Error bonding with thringlet:', error);
+      
+      setTransactionStatus('failed');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setTransactionStatus(null);
+      
+      addToCommandHistory('> Error: Connection failed during bonding process');
+    }
+  };
   
-  // Add glitch animation if needed
-  const glitchStyle = isGlitched ? {
-    animation: "flicker 0.15s infinite alternate"
-  } : {};
+  // Interact with a thringlet
+  const interactWithThringlet = async (thringletId: string, interactionType: string) => {
+    if (!wallet?.address) {
+      addToCommandHistory('> Error: Wallet not connected');
+      return;
+    }
+    
+    const thringlet = thringlets.find(t => t.id === thringletId);
+    
+    if (!thringlet) {
+      addToCommandHistory(`> Error: Thringlet ${thringletId} not found`);
+      return;
+    }
+    
+    const validInteractions = ['stimulate', 'calm', 'challenge', 'reward'];
+    if (!validInteractions.includes(interactionType)) {
+      addToCommandHistory('> Error: Invalid interaction type');
+      addToCommandHistory('> Valid interactions: stimulate, calm, challenge, reward');
+      return;
+    }
+    
+    addToCommandHistory(`> Interacting with ${thringlet.name}... [${interactionType}]`);
+    
+    try {
+      const response = await fetch('/api/thringlets/interact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          thringletId,
+          address: wallet.address,
+          interactionType,
+        }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update thringlet with new emotional state
+        setThringlets(prev => 
+          prev.map(t => t.id === thringletId ? { ...t, emotionalState: result.emotionalState } : t)
+        );
+        
+        addToCommandHistory(`> ${thringlet.name} reacted to your ${interactionType}`);
+        addToCommandHistory(`> New dominant emotion: ${result.emotionalState.dominant}`);
+        
+        // Show thringlet's reaction
+        switch (interactionType) {
+          case 'stimulate':
+            addToCommandHistory(`> ${thringlet.name} appears more energetic and alert!`);
+            break;
+          case 'calm':
+            addToCommandHistory(`> ${thringlet.name} relaxes and seems more balanced.`);
+            break;
+          case 'challenge':
+            addToCommandHistory(`> ${thringlet.name} becomes focused and determined!`);
+            break;
+          case 'reward':
+            addToCommandHistory(`> ${thringlet.name} is delighted and grateful!`);
+            break;
+        }
+        
+        if (result.ability) {
+          addToCommandHistory('> A new ability has been unlocked!');
+          addToCommandHistory(`> ${result.ability.name}: ${result.ability.description}`);
+        }
+        
+        // Notify parent component
+        onThringletInteraction?.(thringletId, interactionType);
+      } else {
+        const errorData = await response.json();
+        addToCommandHistory(`> Error: ${errorData.message || 'Failed to interact with thringlet'}`);
+      }
+    } catch (error) {
+      console.error('Error interacting with thringlet:', error);
+      addToCommandHistory('> Error: Connection failed during interaction');
+    }
+  };
+  
+  // Show detailed information about a thringlet
+  const showThringlet = (thringletId: string) => {
+    const thringlet = thringlets.find(t => t.id === thringletId);
+    
+    if (!thringlet) {
+      addToCommandHistory(`> Error: Thringlet ${thringletId} not found`);
+      return;
+    }
+    
+    setSelectedThringlet(thringlet);
+    
+    addToCommandHistory(`> Thringlet Profile: ${thringlet.name}`);
+    addToCommandHistory(`> ID: ${thringlet.id}`);
+    addToCommandHistory(`> Type: ${thringlet.type}`);
+    addToCommandHistory(`> Level: ${thringlet.level}`);
+    addToCommandHistory('> Attributes:');
+    addToCommandHistory(`>   Intellect: ${thringlet.attributes.intellect}`);
+    addToCommandHistory(`>   Resilience: ${thringlet.attributes.resilience}`);
+    addToCommandHistory(`>   Empathy: ${thringlet.attributes.empathy}`);
+    addToCommandHistory(`>   Chaos: ${thringlet.attributes.chaos}`);
+    addToCommandHistory('> Emotional State:');
+    addToCommandHistory(`>   Dominant: ${thringlet.emotionalState.dominant}`);
+    addToCommandHistory(`>   Joy: ${thringlet.emotionalState.joy}`);
+    addToCommandHistory(`>   Fear: ${thringlet.emotionalState.fear}`);
+    addToCommandHistory(`>   Trust: ${thringlet.emotionalState.trust}`);
+    addToCommandHistory(`>   Surprise: ${thringlet.emotionalState.surprise}`);
+    
+    if (thringlet.abilities.length > 0) {
+      addToCommandHistory('> Abilities:');
+      thringlet.abilities.forEach(ability => {
+        addToCommandHistory(`>   - ${ability}`);
+      });
+    } else {
+      addToCommandHistory('> No abilities unlocked yet');
+      addToCommandHistory('> Interact with your thringlet to unlock abilities');
+    }
+    
+    // Format bonding date
+    const bondingDate = new Date(thringlet.bondingDate);
+    addToCommandHistory(`> Bonded since: ${bondingDate.toLocaleDateString()}`);
+  };
+  
+  // Scan a drop code or address for security
+  const scanTarget = async (target: string) => {
+    addToCommandHistory(`> Scanning target: ${target}`);
+    addToCommandHistory('> Running security analysis...');
+    
+    // Simulate scanning progress
+    setTransactionStatus('encrypting');
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    try {
+      const response = await fetch('/api/security/scan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ target }),
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        setTransactionStatus('validated');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        addToCommandHistory('> Scan complete!');
+        
+        if (result.type === 'drop') {
+          addToCommandHistory('> Target identified as: Secret Drop');
+          addToCommandHistory(`> Security Score: ${result.securityScore}/100`);
+          
+          if (result.securityScore >= 80) {
+            addToCommandHistory('> Status: Safe');
+          } else if (result.securityScore >= 50) {
+            addToCommandHistory('> Status: Caution Advised');
+          } else {
+            addToCommandHistory('> Status: Potentially Unsafe');
+          }
+          
+          if (result.createdBy) {
+            addToCommandHistory(`> Created by: ${result.createdBy}`);
+          }
+        } else if (result.type === 'address') {
+          addToCommandHistory('> Target identified as: Wallet Address');
+          addToCommandHistory(`> Reputation Score: ${result.reputationScore}/100`);
+          addToCommandHistory(`> Transaction History: ${result.transactionCount} transactions`);
+          
+          if (result.knownEntity) {
+            addToCommandHistory(`> Known Entity: Yes (${result.entityName})`);
+          } else {
+            addToCommandHistory('> Known Entity: No');
+          }
+        }
+      } else {
+        setTransactionStatus('failed');
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        setTransactionStatus(null);
+        
+        const errorData = await response.json();
+        addToCommandHistory(`> Error: ${errorData.message || 'Failed to scan target'}`);
+      }
+    } catch (error) {
+      console.error('Error scanning target:', error);
+      
+      setTransactionStatus('failed');
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setTransactionStatus(null);
+      
+      addToCommandHistory('> Error: Connection failed during scan');
+    }
+  };
+  
+  // Show current status
+  const showStatus = () => {
+    addToCommandHistory('> System Status:');
+    addToCommandHistory(`> Access Level: ${accessLevel}`);
+    
+    if (wallet?.address) {
+      const truncatedAddress = `${wallet.address.substring(0, 6)}...${wallet.address.substring(wallet.address.length - 4)}`;
+      addToCommandHistory(`> Wallet Connected: ${truncatedAddress}`);
+      addToCommandHistory(`> Balance: ${wallet.balance.toLocaleString()} μPVX`);
+      addToCommandHistory(`> Thringlets Owned: ${thringlets.length}`);
+    } else {
+      addToCommandHistory('> Wallet: Not Connected');
+      addToCommandHistory('> Connect your wallet to access full functionality');
+    }
+    
+    addToCommandHistory(`> Network: PVX SecureDrop™ Protocol v3.8.6`);
+    addToCommandHistory(`> Connection: Secure (${Math.floor(Math.random() * 50) + 50}ms latency)`);
+  };
+  
+  // Reconnect to the network
+  const reconnect = async () => {
+    addToCommandHistory('> Attempting to reconnect to PVX network...');
+    setLoading(true);
+    
+    // Simulate reconnection
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    try {
+      // Refetch secret drops
+      const dropsResponse = await fetch('/api/drops/secret');
+      if (dropsResponse.ok) {
+        const dropsData = await dropsResponse.json();
+        setSecretDrops(dropsData);
+      }
+      
+      // Refetch thringlets if wallet is connected
+      if (wallet?.address) {
+        const thringlentsResponse = await fetch(`/api/thringlets/owner/${wallet.address}`);
+        if (thringlentsResponse.ok) {
+          const thringletsData = await thringlentsResponse.json();
+          setThringlets(thringletsData);
+        }
+      }
+      
+      setLoading(false);
+      addToCommandHistory('> Connection re-established successfully!');
+      addToCommandHistory('> System is online and secure');
+    } catch (error) {
+      console.error('Error reconnecting:', error);
+      setLoading(false);
+      addToCommandHistory('> Reconnection failed');
+      addToCommandHistory('> Check your connection and try again');
+    }
+  };
   
   return (
-    <div className="flex flex-col h-full">
-      <style jsx global>{`
-        @keyframes flicker {
-          0% { opacity: 0.8; transform: translate(0); }
-          20% { opacity: 1; transform: translate(-1px, 1px); }
-          40% { opacity: 0.9; transform: translate(1px, -1px); }
-          60% { opacity: 1; transform: translate(-1px, -1px); }
-          80% { opacity: 0.8; transform: translate(1px, 1px); }
-          100% { opacity: 1; transform: translate(0); }
-        }
-        .animate-glitch {
-          animation: flicker 0.15s infinite alternate;
-        }
-      `}</style>
+    <Card className={cn(
+      "bg-black/90 bg-opacity-78 border-blue-800 shadow-blue-900/30 overflow-hidden",
+      className
+    )}>
+      <AnimatePresence mode="wait">
+        {transactionStatus && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          >
+            <TransactionFlow
+              status={transactionStatus}
+              className="max-w-md"
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
       
-      <Terminal className={terminalClasses}>
-        <TerminalHeader>
-          <div className="flex items-center justify-between w-full">
-            <div className="text-xs font-medium">
-              PVX-SECURE-TERMINAL v2.5 
-              {activeThringlet && 
-                <span> | THRINGLET: {activeThringlet.name} | EMO: {activeThringlet.getEmotionText()} | COR: {activeThringlet.getCorruptionLevel()}</span>
-              }
-            </div>
-            <div className="flex space-x-1">
-              <div className="h-3 w-3 rounded-full bg-red-500"></div>
-              <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
-              <div className="h-3 w-3 rounded-full bg-green-500"></div>
-            </div>
-          </div>
-        </TerminalHeader>
-        
-        <TerminalBody ref={terminalBodyRef} className="font-mono text-sm overflow-auto p-4" style={glitchStyle}>
-          {outputs.map((output, index) => (
-            <TerminalOutput key={index}>
-              {/* Apply special styling for thringlet messages */}
-              {output.startsWith('THRINGLET_') ? (
-                <span className="text-[#00ffcc] font-bold">{output}</span>
-              ) : output.startsWith('SYSTEM:') ? (
-                <span className="text-[#ff00cc]">{output}</span>
-              ) : output.startsWith('WARNING:') ? (
-                <span className="text-[#ffcc00]">{output}</span>
-              ) : output.startsWith('ERROR:') ? (
-                <span className="text-[#ff0000]">{output}</span>
-              ) : output.startsWith('YOU:') ? (
-                <span className="text-[#ffffff]">{output}</span>
+      <div className="border-b border-blue-900/50 bg-black bg-opacity-50 flex items-center justify-between p-2">
+        <div className="flex items-center space-x-2">
+          <FileTerminal className="h-5 w-5 text-blue-400" />
+          <h3 className="text-blue-400 font-mono text-sm text-shadow-neon">PVX TERMINAL [SecureDrop™]</h3>
+        </div>
+        <div className="flex space-x-2">
+          <div className="h-3 w-3 rounded-full bg-red-500"></div>
+          <div className="h-3 w-3 rounded-full bg-yellow-500"></div>
+          <div className="h-3 w-3 rounded-full bg-green-500"></div>
+        </div>
+      </div>
+      
+      <div className="p-4 font-mono text-sm">
+        <div className="bg-black/90 border border-blue-900/50 p-3 rounded-md h-[350px] overflow-y-auto">
+          {/* Terminal output */}
+          {commandHistory.map((line, index) => (
+            <div key={index} className="mb-1 text-blue-300">
+              {line.startsWith('> ') ? (
+                <div>
+                  <span className="text-blue-500">{line.substring(0, 2)}</span>
+                  <span>{line.substring(2)}</span>
+                </div>
               ) : (
-                output
+                <div>{line}</div>
               )}
-            </TerminalOutput>
+            </div>
           ))}
           
-          <form onSubmit={handleSubmit} className="mt-2">
-            <TerminalInput>
-              <span className="text-[#00a2ff] mr-2">&gt;</span>
-              <Input
-                type="text"
-                value={command}
-                onChange={(e) => setCommand(e.target.value)}
-                className="bg-transparent border-none text-[#00a2ff] focus-visible:ring-0 focus-visible:ring-offset-0 flex-1"
-                autoFocus
-                disabled={isLocked}
-              />
-            </TerminalInput>
-          </form>
-        </TerminalBody>
-      </Terminal>
-    </div>
+          {isProcessing && (
+            <div className="flex items-center text-blue-300 mb-1">
+              <span className="text-blue-500">&gt; </span>
+              <span className="terminal-cursor"></span>
+            </div>
+          )}
+          
+          <div ref={terminalEndRef} />
+        </div>
+        
+        {/* Command input */}
+        <form onSubmit={handleCommandSubmit} className="mt-3 flex space-x-2">
+          <div className="flex-1 flex items-center bg-black border border-blue-900/50 rounded-md px-2">
+            <span className="text-blue-500 mr-2">&gt;</span>
+            <Input
+              value={currentCommand}
+              onChange={(e) => setCurrentCommand(e.target.value)}
+              className="flex-1 border-0 bg-transparent text-blue-300 focus-visible:ring-0 focus-visible:ring-offset-0 px-0"
+              placeholder="Enter command..."
+              disabled={isProcessing}
+            />
+          </div>
+          <Button 
+            type="submit"
+            className="bg-blue-900/70 hover:bg-blue-800 text-blue-100 border border-blue-700/50"
+            disabled={isProcessing}
+          >
+            <span className="sr-only">Execute</span>
+            {isProcessing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
+          </Button>
+        </form>
+        
+        {/* Access level indicator */}
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <div className="text-xs text-blue-400">
+              Access Level: 
+              <span className="ml-1 font-bold text-shadow-neon">
+                {accessLevel}
+              </span>
+            </div>
+            {accessLevel === 0 && <Lock className="h-3 w-3 text-blue-500" />}
+            {accessLevel === 1 && <KeyRound className="h-3 w-3 text-blue-500" />}
+            {accessLevel === 2 && <ShieldAlert className="h-3 w-3 text-blue-500" />}
+            {accessLevel === 3 && <Database className="h-3 w-3 text-blue-500" />}
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <div className={cn(
+              "h-2 w-2 rounded-full",
+              wallet?.address ? "bg-green-500" : "bg-red-500"
+            )}></div>
+            <div className="text-xs text-blue-400">
+              {wallet?.address ? (
+                `Wallet Connected: ${wallet.address.substring(0, 6)}...${wallet.address.substring(wallet.address.length - 4)}`
+              ) : (
+                "No Wallet Connected"
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {/* Selected Thringlet Visualization (if any) */}
+        {selectedThringlet && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="mt-4 p-3 bg-black/80 border border-blue-900/50 rounded-md"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="text-blue-400 text-sm font-semibold flex items-center gap-1">
+                <Brain className="h-4 w-4" />
+                Thringlet Profile: {selectedThringlet.name}
+              </h4>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-6 w-6 p-0 text-blue-400"
+                onClick={() => setSelectedThringlet(null)}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <div className="text-xs text-blue-300 mb-1">Attributes</div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Intellect</span>
+                    <span className="text-blue-300">{selectedThringlet.attributes.intellect}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Resilience</span>
+                    <span className="text-blue-300">{selectedThringlet.attributes.resilience}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Empathy</span>
+                    <span className="text-blue-300">{selectedThringlet.attributes.empathy}</span>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Chaos</span>
+                    <span className="text-blue-300">{selectedThringlet.attributes.chaos}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-xs text-blue-300 mb-1">Emotional State</div>
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Joy</span>
+                    <div className="w-16 bg-black/80 h-2 rounded-full">
+                      <div 
+                        className="bg-yellow-500 h-full rounded-full" 
+                        style={{ width: `${selectedThringlet.emotionalState.joy}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Fear</span>
+                    <div className="w-16 bg-black/80 h-2 rounded-full">
+                      <div 
+                        className="bg-purple-500 h-full rounded-full" 
+                        style={{ width: `${selectedThringlet.emotionalState.fear}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Trust</span>
+                    <div className="w-16 bg-black/80 h-2 rounded-full">
+                      <div 
+                        className="bg-green-500 h-full rounded-full" 
+                        style={{ width: `${selectedThringlet.emotionalState.trust}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs">
+                    <span className="text-blue-400/70">Surprise</span>
+                    <div className="w-16 bg-black/80 h-2 rounded-full">
+                      <div 
+                        className="bg-blue-500 h-full rounded-full" 
+                        style={{ width: `${selectedThringlet.emotionalState.surprise}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-2">
+              <div className="text-xs text-blue-300 mb-1">Abilities</div>
+              {selectedThringlet.abilities.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {selectedThringlet.abilities.map((ability, idx) => (
+                    <div 
+                      key={idx}
+                      className="text-[10px] bg-blue-950/50 text-blue-300 px-2 py-0.5 rounded-full border border-blue-800/60"
+                    >
+                      {ability}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-xs text-blue-400/70 italic">
+                  No abilities unlocked yet
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </div>
+      
+      <style jsx global>{`
+        .terminal-cursor {
+          display: inline-block;
+          width: 0.6em;
+          height: 1em;
+          background-color: #60a5fa;
+          animation: blink 1s step-end infinite;
+        }
+      `}</style>
+    </Card>
   );
 }
