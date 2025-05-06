@@ -67,6 +67,20 @@ export interface IStorage {
   createThringlet(thringlet: any): Promise<any>;
   updateThringlet(thringlet: any): Promise<any>;
   
+  // User Feedback methods
+  getUserFeedback(limit?: number): Promise<UserFeedback[]>;
+  getUserFeedbackById(id: string): Promise<UserFeedback | undefined>;
+  getFeedbackByAddress(address: string, limit?: number): Promise<UserFeedback[]>;
+  createFeedback(feedback: InsertUserFeedback): Promise<UserFeedback>;
+  updateFeedbackStatus(id: string, isResolved: boolean, resolutionNote?: string): Promise<UserFeedback | undefined>;
+  getFeedbackStats(): Promise<{
+    total: number;
+    resolved: number;
+    unresolved: number;
+    byType: Record<string, number>;
+    bySentiment: Record<string, number>;
+  }>;
+  
   // Network stats
   getNetworkStats(): Promise<NetworkStats>;
 }

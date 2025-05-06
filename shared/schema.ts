@@ -191,3 +191,28 @@ export type Vote = typeof votes.$inferSelect;
 
 export type InsertNFT = z.infer<typeof insertNFTSchema>;
 export type NFT = typeof nfts.$inferSelect;
+
+// User Feedback table
+export const user_feedback = pgTable("user_feedback", {
+  id: serial("id").primaryKey(),
+  user_address: text("user_address").notNull(),
+  feedback_type: text("feedback_type").notNull(), // "bug", "feature", "suggestion", "other"
+  content: text("content").notNull(),
+  sentiment: text("sentiment").notNull().default("neutral"), // "positive", "negative", "neutral"
+  category: text("category"), // Optional category for organizing feedback
+  page_url: text("page_url"), // The page where the feedback was submitted from
+  browser_info: json("browser_info"), // Browser and device information 
+  is_resolved: boolean("is_resolved").notNull().default(false),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  resolved_at: timestamp("resolved_at"),
+  resolution_note: text("resolution_note"),
+});
+
+export const insertUserFeedbackSchema = createInsertSchema(user_feedback).omit({
+  id: true,
+  created_at: true,
+  resolved_at: true,
+});
+
+export type InsertUserFeedback = z.infer<typeof insertUserFeedbackSchema>;
+export type UserFeedback = typeof user_feedback.$inferSelect;
