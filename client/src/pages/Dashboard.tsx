@@ -174,7 +174,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Game Card 1 */}
           <div className="bg-black bg-opacity-78 rounded-lg shadow-lg shadow-blue-900/30 overflow-hidden border border-blue-800">
-            <div className="h-48 bg-black bg-opacity-90 flex items-center justify-center">
+            <div className="h-48 bg-black bg-opacity-78 flex items-center justify-center">
               <p className="text-blue-400 text-lg text-shadow-neon">Crypto Miner Tycoon</p>
             </div>
             <div className="p-4">
@@ -188,7 +188,7 @@ export default function Dashboard() {
           
           {/* Game Card 2 */}
           <div className="bg-black bg-opacity-78 rounded-lg shadow-lg shadow-blue-900/30 overflow-hidden border border-blue-800">
-            <div className="h-48 bg-black bg-opacity-90 flex items-center justify-center">
+            <div className="h-48 bg-black bg-opacity-78 flex items-center justify-center">
               <p className="text-blue-400 text-lg text-shadow-neon">Blockchain Battles</p>
             </div>
             <div className="p-4">
