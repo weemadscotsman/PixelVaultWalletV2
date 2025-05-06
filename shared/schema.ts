@@ -335,3 +335,31 @@ export type UserBadge = typeof user_badges.$inferSelect;
 
 export type InsertBadgeProgress = z.infer<typeof insertBadgeProgressSchema>;
 export type BadgeProgress = typeof badge_progress.$inferSelect;
+
+// Universal Transaction Registry (UTR) table
+export const universal_transaction_registry = pgTable("universal_transaction_registry", {
+  id: serial("id").primaryKey(),
+  tx_id: text("tx_id").notNull().unique(), // Unique identifier for the transaction
+  tx_type: text("tx_type").notNull(), // Type: "transfer", "stake", "governance", "mining_reward", "nft_mint", "nft_transfer", "secret_drop", "system"
+  from_address: text("from_address"), // Can be null for system-generated transactions like mining rewards
+  to_address: text("to_address").notNull(),
+  amount: numeric("amount", { precision: 18, scale: 6 }), // Can be null for non-value transfers like governance votes
+  asset_type: text("asset_type").notNull().default("PVX"), // PVX, NFT, Thringlet, etc.
+  asset_id: text("asset_id"), // ID of NFT, Thringlet, etc. if applicable
+  block_height: integer("block_height"), // Can be null if not yet mined in a block
+  status: text("status").notNull(), // "pending", "confirmed", "failed", "vetoed"
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  metadata: json("metadata"), // Additional data specific to transaction type
+  zk_proof: text("zk_proof"), // For privacy-enhanced transactions
+  signature: text("signature"), // Transaction signature
+  gas_fee: numeric("gas_fee", { precision: 18, scale: 6 }), // Gas fee if applicable
+  verified: boolean("verified").notNull().default(false), // Whether transaction has been cryptographically verified
+});
+
+export const insertUTRSchema = createInsertSchema(universal_transaction_registry).omit({
+  id: true,
+  timestamp: true,
+});
+
+export type InsertUTR = z.infer<typeof insertUTRSchema>;
+export type UTR = typeof universal_transaction_registry.$inferSelect;

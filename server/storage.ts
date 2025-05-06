@@ -10,7 +10,10 @@ import {
   mining_rewards, stakes, proposals, votes, nfts, user_feedback,
   UserFeedback, InsertUserFeedback, VetoGuardian, InsertVetoGuardian,
   VetoAction, InsertVetoAction, veto_guardians, veto_actions,
-  GameLeaderboard, InsertGameLeaderboard, game_leaderboards
+  GameLeaderboard, InsertGameLeaderboard, game_leaderboards,
+  UTR, InsertUTR, universal_transaction_registry,
+  Badge, InsertBadge, badges, UserBadge, InsertUserBadge, user_badges,
+  BadgeProgress, InsertBadgeProgress, badge_progress
 } from '@shared/schema';
 
 export interface IStorage {
@@ -52,6 +55,25 @@ export interface IStorage {
   createProposal(proposal: Omit<Proposal, 'id'>): Promise<Proposal>;
   getVotes(address: string): Promise<{proposalId: string, option: VoteOption}[]>;
   vote(address: string, proposalId: string, option: VoteOption): Promise<boolean>;
+  
+  // UTR (Universal Transaction Registry) methods
+  createUTREntry(entry: InsertUTR): Promise<UTR>;
+  getUTRByTxId(txId: string): Promise<UTR | undefined>;
+  getUTREntries(limit?: number): Promise<UTR[]>;
+  getUTREntriesByAddress(address: string, asReceiver?: boolean, limit?: number): Promise<UTR[]>;
+  getUTREntriesByType(txType: string, limit?: number): Promise<UTR[]>;
+  getUTREntriesByAsset(assetType: string, assetId?: string, limit?: number): Promise<UTR[]>;
+  updateUTREntryStatus(txId: string, status: string, metadata?: any): Promise<UTR | undefined>;
+  verifyUTREntry(txId: string, verified: boolean): Promise<UTR | undefined>;
+  getUTRStats(): Promise<{
+    total: number;
+    pending: number;
+    confirmed: number;
+    failed: number;
+    vetoed: number;
+    byType: Record<string, number>;
+    byAsset: Record<string, number>;
+  }>;
   
   // Game Leaderboard methods
   getGameLeaderboards(gameType: string, limit?: number): Promise<GameLeaderboard[]>;
@@ -239,6 +261,9 @@ export class DatabaseStorage implements IStorage {
   // In-memory veto guardians for testing
   private vetoGuardians: VetoGuardian[] = [];
   private vetoActions: VetoAction[] = [];
+  
+  // In-memory UTR storage
+  private utrEntries: UTR[] = [];
   
   // In-memory badge storage
   private badges: Badge[] = [
