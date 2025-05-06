@@ -12,8 +12,10 @@ import StakingPage from "@/pages/StakingPage";
 import GovernancePage from "@/pages/GovernancePage";
 import ThringletsPage from "@/pages/ThringletsPage";
 import DropsPage from "@/pages/DropsPage";
+import BadgesPage from "@/pages/BadgesPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
+import { AuthProvider } from "@/hooks/use-auth";
 
 // Router component
 function Router() {
@@ -27,6 +29,7 @@ function Router() {
       <Route path="/governance" component={GovernancePage} />
       <Route path="/thringlets" component={ThringletsPage} />
       <Route path="/drops" component={DropsPage} />
+      <Route path="/badges" component={BadgesPage} />
       <Route path="/terminal" component={() => <HomePage />} />
       <Route path="/profile" component={() => <HomePage />} />
       <Route path="/settings" component={() => <HomePage />} />
@@ -43,11 +46,13 @@ function App() {
         defaultTheme="dark"
         enableSystem={false}
       >
-        <TooltipProvider>
-          <Toaster />
-          <FeedbackButton />
-          <Router />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <FeedbackButton />
+            <Router />
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
