@@ -11,7 +11,7 @@ import { useNFT } from "@/hooks/use-nft";
 import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import { Terminal } from "@/components/ui/Terminal";
 import { OnboardingSection } from "@/components/onboarding/OnboardingSection";
-import { Tooltip } from "@/components/ui/Tooltip";
+import { Tooltip } from "@/components/ui/tooltip";
 
 export default function Dashboard() {
   const { wallet, loadWalletFromStorage } = useWallet();
@@ -101,33 +101,33 @@ export default function Dashboard() {
       {/* Main Dashboard Panels */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Mining Stats Panel */}
-        <div className="bg-black bg-opacity-80 rounded-lg p-4 border border-green-500 shadow-lg">
-          <h3 className="text-green-400 font-medium mb-2 neon">Mining Status</h3>
-          <p className="text-green-500 font-semibold">{miningStats?.isCurrentlyMining ? 'Active' : 'Inactive'}</p>
-          <div className="mt-2 flex items-center">
-            <div className="w-full bg-gray-800 rounded-full h-2.5">
-              <div className="bg-green-500 h-2.5 rounded-full" style={{ width: miningStats?.isCurrentlyMining ? '85%' : '0%' }}></div>
+        <div className="bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
+          <h3 className="text-blue-400 font-semibold mb-3 text-shadow-neon">Mining Status</h3>
+          <p className="text-blue-300 font-semibold">{miningStats?.isCurrentlyMining ? 'Active' : 'Inactive'}</p>
+          <div className="mt-3 flex items-center">
+            <div className="w-full bg-black bg-opacity-60 rounded-full h-2.5 border border-blue-900/50">
+              <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: miningStats?.isCurrentlyMining ? '85%' : '0%' }}></div>
             </div>
-            <span className="ml-2 text-xs text-gray-400">{miningStats?.isCurrentlyMining ? '85%' : '0%'}</span>
+            <span className="ml-2 text-xs text-blue-300">{miningStats?.isCurrentlyMining ? '85%' : '0%'}</span>
           </div>
         </div>
         
         {/* Hash Rate Panel */}
-        <div className="bg-black bg-opacity-80 rounded-lg p-4 border border-green-500 shadow-lg">
-          <h3 className="text-green-400 font-medium mb-2 neon">Hash Rate</h3>
-          <p className="text-xl font-bold text-white">
+        <div className="bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
+          <h3 className="text-blue-400 font-semibold mb-3 text-shadow-neon">Hash Rate</h3>
+          <p className="text-xl font-bold text-blue-300">
             {miningStats?.currentHashRate ? `${(miningStats.currentHashRate / 1000).toFixed(1)} KH/s` : '0 H/s'}
           </p>
-          <p className="text-xs text-green-500">+2.5% from yesterday</p>
+          <p className="text-xs text-blue-400">+2.5% from yesterday</p>
         </div>
         
         {/* Earnings Panel */}
-        <div className="bg-black bg-opacity-80 rounded-lg p-4 border border-green-500 shadow-lg">
-          <h3 className="text-green-400 font-medium mb-2 neon">Daily Earnings</h3>
-          <p className="text-xl font-bold text-white">
+        <div className="bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
+          <h3 className="text-blue-400 font-semibold mb-3 text-shadow-neon">Daily Earnings</h3>
+          <p className="text-xl font-bold text-blue-300">
             {miningStats?.isCurrentlyMining ? '0.00124 PVX' : '0 PVX'}
           </p>
-          <p className="text-xs text-green-500">≈ $0.42 USD</p>
+          <p className="text-xs text-blue-400">≈ $0.42 USD</p>
         </div>
       </div>
 
@@ -136,18 +136,18 @@ export default function Dashboard() {
         <Terminal 
           output={terminalOutput} 
           isRunning={true} 
-          className="min-h-[200px] max-h-[300px] overflow-y-auto" 
+          className="min-h-[200px] max-h-[300px] overflow-y-auto border-blue-800 shadow-lg shadow-blue-900/30 bg-opacity-78" 
         />
         <div className="flex mt-4 space-x-2">
           <button 
             onClick={() => handleQuickCommand('start-mining')} 
-            className="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
+            className="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors shadow-md shadow-blue-900/30 border border-blue-600"
           >
             Start Mining
           </button>
           <button 
             onClick={() => handleQuickCommand('stats')} 
-            className="bg-blue-700 hover:bg-blue-600 text-white px-4 py-2 rounded-md transition-colors"
+            className="bg-blue-800 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-colors shadow-md shadow-blue-900/30 border border-blue-700"
           >
             Network Stats
           </button>
@@ -170,45 +170,45 @@ export default function Dashboard() {
 
       {/* Game Center Section */}
       <div className={activeSection === "games" ? "block" : "hidden"}>
-        <h2 className="text-2xl font-bold text-green-400 mb-6 neon">Game Center</h2>
+        <h2 className="text-2xl font-bold text-blue-400 mb-6 text-shadow-neon">Game Center</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Game Card 1 */}
-          <div className="bg-black bg-opacity-80 rounded-lg shadow overflow-hidden border border-green-500">
-            <div className="h-48 bg-gray-800 flex items-center justify-center">
-              <p className="text-green-500 text-lg">Crypto Miner Tycoon</p>
+          <div className="bg-black bg-opacity-78 rounded-lg shadow-lg shadow-blue-900/30 overflow-hidden border border-blue-800">
+            <div className="h-48 bg-black bg-opacity-90 flex items-center justify-center">
+              <p className="text-blue-400 text-lg text-shadow-neon">Crypto Miner Tycoon</p>
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-semibold text-green-400 neon">Crypto Miner Tycoon</h3>
-              <p className="text-gray-300 text-sm mb-4">Build and manage your mining empire in this strategy game.</p>
-              <button className="w-full bg-green-700 hover:bg-green-600 text-white py-2 rounded font-medium transition-colors duration-200">
+              <h3 className="text-lg font-semibold text-blue-400 text-shadow-neon mb-2">Crypto Miner Tycoon</h3>
+              <p className="text-blue-300 text-sm mb-4">Build and manage your mining empire in this strategy game.</p>
+              <button className="w-full bg-blue-700 hover:bg-blue-600 text-white py-2 rounded font-medium transition-colors duration-200 shadow-md shadow-blue-900/30">
                 Play Now
               </button>
             </div>
           </div>
           
           {/* Game Card 2 */}
-          <div className="bg-black bg-opacity-80 rounded-lg shadow overflow-hidden border border-green-500">
-            <div className="h-48 bg-gray-800 flex items-center justify-center">
-              <p className="text-green-500 text-lg">Blockchain Battles</p>
+          <div className="bg-black bg-opacity-78 rounded-lg shadow-lg shadow-blue-900/30 overflow-hidden border border-blue-800">
+            <div className="h-48 bg-black bg-opacity-90 flex items-center justify-center">
+              <p className="text-blue-400 text-lg text-shadow-neon">Blockchain Battles</p>
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-semibold text-green-400 neon">Blockchain Battles</h3>
-              <p className="text-gray-300 text-sm mb-4">Collect, trade, and battle with NFT characters in this P2E game.</p>
-              <button className="w-full bg-green-700 hover:bg-green-600 text-white py-2 rounded font-medium transition-colors duration-200">
+              <h3 className="text-lg font-semibold text-blue-400 text-shadow-neon mb-2">Blockchain Battles</h3>
+              <p className="text-blue-300 text-sm mb-4">Collect, trade, and battle with NFT characters in this P2E game.</p>
+              <button className="w-full bg-blue-700 hover:bg-blue-600 text-white py-2 rounded font-medium transition-colors duration-200 shadow-md shadow-blue-900/30">
                 Play Now
               </button>
             </div>
           </div>
           
           {/* Game Card 3 */}
-          <div className="bg-black bg-opacity-80 rounded-lg shadow overflow-hidden border border-green-500">
-            <div className="h-48 bg-gray-800 flex items-center justify-center">
-              <p className="text-green-500 text-lg">PVX Crypto Racer</p>
+          <div className="bg-black bg-opacity-78 rounded-lg shadow-lg shadow-blue-900/30 overflow-hidden border border-blue-800">
+            <div className="h-48 bg-black bg-opacity-90 flex items-center justify-center">
+              <p className="text-blue-400 text-lg text-shadow-neon">PVX Crypto Racer</p>
             </div>
             <div className="p-4">
-              <h3 className="text-lg font-semibold text-green-400 neon">PVX Crypto Racer</h3>
-              <p className="text-gray-300 text-sm mb-4">Race your NFT vehicles on the blockchain highway and earn PVX tokens.</p>
-              <button className="w-full bg-green-700 hover:bg-green-600 text-white py-2 rounded font-medium transition-colors duration-200">
+              <h3 className="text-lg font-semibold text-blue-400 text-shadow-neon mb-2">PVX Crypto Racer</h3>
+              <p className="text-blue-300 text-sm mb-4">Race your NFT vehicles on the blockchain highway and earn PVX tokens.</p>
+              <button className="w-full bg-blue-700 hover:bg-blue-600 text-white py-2 rounded font-medium transition-colors duration-200 shadow-md shadow-blue-900/30">
                 Play Now
               </button>
             </div>
@@ -218,57 +218,57 @@ export default function Dashboard() {
 
       {/* Exclusive Drops Section */}
       <div className={activeSection === "drops" ? "block" : "hidden"}>
-        <h2 className="text-2xl font-bold text-green-400 mb-6 neon">Exclusive Drops</h2>
+        <h2 className="text-2xl font-bold text-blue-400 mb-6 text-shadow-neon">Exclusive Drops</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Upcoming Drop */}
-          <div className="bg-black bg-opacity-80 rounded-lg p-6 border border-green-500">
+          <div className="bg-black bg-opacity-78 rounded-lg p-6 border border-blue-800 shadow-lg shadow-blue-900/30">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-green-400 neon">Genesis Collection</h3>
-              <span className="bg-green-700 text-white text-xs px-2 py-1 rounded">Coming Soon</span>
+              <h3 className="text-xl font-semibold text-blue-400 text-shadow-neon">Genesis Collection</h3>
+              <span className="bg-blue-800 text-white text-xs px-2 py-1 rounded shadow-sm shadow-blue-500/30">Coming Soon</span>
             </div>
-            <p className="text-gray-300 mb-4">Limited edition collection of 100 PVX Genesis NFTs with exclusive utility and governance rights.</p>
+            <p className="text-blue-300 mb-4">Limited edition collection of 100 PVX Genesis NFTs with exclusive utility and governance rights.</p>
             <div className="mb-4">
-              <div className="flex justify-between text-sm text-gray-400 mb-1">
+              <div className="flex justify-between text-sm text-blue-400 mb-1">
                 <span>Pre-sale Progress</span>
                 <span>63% Claimed</span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: '63%' }}></div>
+              <div className="w-full bg-black bg-opacity-60 rounded-full h-2 border border-blue-900/50">
+                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '63%' }}></div>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm text-gray-400">Starts in</p>
-                <p className="text-green-400">2 days, 5 hours</p>
+                <p className="text-sm text-blue-400">Starts in</p>
+                <p className="text-blue-300 font-medium">2 days, 5 hours</p>
               </div>
-              <button className="px-4 py-2 bg-green-700 hover:bg-green-600 text-white rounded transition-colors">
+              <button className="px-4 py-2 bg-blue-700 hover:bg-blue-600 text-white rounded transition-colors shadow-md shadow-blue-900/30">
                 Get Notified
               </button>
             </div>
           </div>
           
           {/* Active Drop */}
-          <div className="bg-black bg-opacity-80 rounded-lg p-6 border border-green-500">
+          <div className="bg-black bg-opacity-78 rounded-lg p-6 border border-blue-800 shadow-lg shadow-blue-900/30">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-semibold text-green-400 neon">Hacker Vault Collection</h3>
-              <span className="bg-red-600 text-white text-xs px-2 py-1 rounded">Live Now</span>
+              <h3 className="text-xl font-semibold text-blue-400 text-shadow-neon">Hacker Vault Collection</h3>
+              <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded shadow-sm shadow-blue-500/30">Live Now</span>
             </div>
-            <p className="text-gray-300 mb-4">Elite collection of 50 cyberpunk-themed NFTs with special mining boosts and exclusive access.</p>
+            <p className="text-blue-300 mb-4">Elite collection of 50 cyberpunk-themed NFTs with special mining boosts and exclusive access.</p>
             <div className="mb-4">
-              <div className="flex justify-between text-sm text-gray-400 mb-1">
+              <div className="flex justify-between text-sm text-blue-400 mb-1">
                 <span>Minted</span>
                 <span>32/50</span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-2">
-                <div className="bg-red-500 h-2 rounded-full" style={{ width: '64%' }}></div>
+              <div className="w-full bg-black bg-opacity-60 rounded-full h-2 border border-blue-900/50">
+                <div className="bg-blue-500 h-2 rounded-full" style={{ width: '64%' }}></div>
               </div>
             </div>
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm text-gray-400">Price</p>
-                <p className="text-green-400">25 PVX</p>
+                <p className="text-sm text-blue-400">Price</p>
+                <p className="text-blue-300 font-medium">25 PVX</p>
               </div>
-              <button className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded transition-colors">
+              <button className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded transition-colors shadow-md shadow-blue-900/30">
                 Mint Now
               </button>
             </div>
@@ -278,89 +278,89 @@ export default function Dashboard() {
 
       {/* Market Stats Section */}
       <div className={activeSection === "market" ? "block" : "hidden"}>
-        <h2 className="text-2xl font-bold text-green-400 mb-6 neon">Market Stats</h2>
+        <h2 className="text-2xl font-bold text-blue-400 mb-6 text-shadow-neon">Market Stats</h2>
         
         {/* Price Chart & Stats */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2 bg-black bg-opacity-80 rounded-lg p-4 border border-green-500">
-            <h3 className="text-lg font-semibold text-green-400 mb-4 neon">PVX Price Chart</h3>
-            <div className="h-64 bg-gray-900 rounded flex items-center justify-center">
+          <div className="lg:col-span-2 bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
+            <h3 className="text-lg font-semibold text-blue-400 mb-4 text-shadow-neon">PVX Price Chart</h3>
+            <div className="h-64 bg-black bg-opacity-90 rounded border border-blue-900/50 flex items-center justify-center shadow-inner shadow-blue-900/20">
               <div className="w-full h-full p-4 flex items-end">
                 {/* Simple price chart bars */}
-                <div className="flex-1 h-[30%] bg-green-500 mx-1"></div>
-                <div className="flex-1 h-[45%] bg-green-500 mx-1"></div>
-                <div className="flex-1 h-[25%] bg-red-500 mx-1"></div>
-                <div className="flex-1 h-[55%] bg-green-500 mx-1"></div>
-                <div className="flex-1 h-[60%] bg-green-500 mx-1"></div>
-                <div className="flex-1 h-[45%] bg-red-500 mx-1"></div>
-                <div className="flex-1 h-[35%] bg-red-500 mx-1"></div>
-                <div className="flex-1 h-[65%] bg-green-500 mx-1"></div>
-                <div className="flex-1 h-[75%] bg-green-500 mx-1"></div>
-                <div className="flex-1 h-[60%] bg-green-500 mx-1"></div>
-                <div className="flex-1 h-[40%] bg-red-500 mx-1"></div>
-                <div className="flex-1 h-[70%] bg-green-500 mx-1"></div>
+                <div className="flex-1 h-[30%] bg-blue-600 mx-1"></div>
+                <div className="flex-1 h-[45%] bg-blue-600 mx-1"></div>
+                <div className="flex-1 h-[25%] bg-blue-400 mx-1"></div>
+                <div className="flex-1 h-[55%] bg-blue-600 mx-1"></div>
+                <div className="flex-1 h-[60%] bg-blue-600 mx-1"></div>
+                <div className="flex-1 h-[45%] bg-blue-400 mx-1"></div>
+                <div className="flex-1 h-[35%] bg-blue-400 mx-1"></div>
+                <div className="flex-1 h-[65%] bg-blue-600 mx-1"></div>
+                <div className="flex-1 h-[75%] bg-blue-600 mx-1"></div>
+                <div className="flex-1 h-[60%] bg-blue-600 mx-1"></div>
+                <div className="flex-1 h-[40%] bg-blue-400 mx-1"></div>
+                <div className="flex-1 h-[70%] bg-blue-600 mx-1"></div>
               </div>
             </div>
           </div>
           
-          <div className="bg-black bg-opacity-80 rounded-lg p-4 border border-green-500">
-            <h3 className="text-lg font-semibold text-green-400 mb-4 neon">Current Stats</h3>
+          <div className="bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
+            <h3 className="text-lg font-semibold text-blue-400 mb-4 text-shadow-neon">Current Stats</h3>
             <ul className="space-y-4">
-              <li className="flex justify-between">
-                <span className="text-gray-400">Current Price:</span>
-                <span className="text-green-400">$0.342</span>
+              <li className="flex justify-between items-center">
+                <span className="text-blue-300">Current Price:</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">$0.342</span>
               </li>
-              <li className="flex justify-between">
-                <span className="text-gray-400">24h Change:</span>
-                <span className="text-green-400">+5.2%</span>
+              <li className="flex justify-between items-center">
+                <span className="text-blue-300">24h Change:</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">+5.2%</span>
               </li>
-              <li className="flex justify-between">
-                <span className="text-gray-400">24h Volume:</span>
-                <span className="text-green-400">1.25M PVX</span>
+              <li className="flex justify-between items-center">
+                <span className="text-blue-300">24h Volume:</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">1.25M PVX</span>
               </li>
-              <li className="flex justify-between">
-                <span className="text-gray-400">Circulating Supply:</span>
-                <span className="text-green-400">420M PVX</span>
+              <li className="flex justify-between items-center">
+                <span className="text-blue-300">Circulating Supply:</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">420M PVX</span>
               </li>
-              <li className="flex justify-between">
-                <span className="text-gray-400">Market Cap:</span>
-                <span className="text-green-400">$143.64M</span>
+              <li className="flex justify-between items-center">
+                <span className="text-blue-300">Market Cap:</span>
+                <span className="text-blue-400 font-medium text-shadow-neon bg-black bg-opacity-80 px-2 py-1 rounded border border-blue-900/50">$143.64M</span>
               </li>
             </ul>
           </div>
         </div>
         
         {/* Recent Transactions */}
-        <div className="bg-black bg-opacity-80 rounded-lg p-4 border border-green-500">
-          <h3 className="text-lg font-semibold text-green-400 mb-4 neon">Recent Transactions</h3>
+        <div className="bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
+          <h3 className="text-lg font-semibold text-blue-400 mb-4 text-shadow-neon">Recent Transactions</h3>
           <div className="overflow-x-auto">
             <table className="min-w-full">
               <thead>
-                <tr className="bg-gray-900 text-left">
-                  <th className="py-2 px-4 text-green-400 font-medium">Type</th>
-                  <th className="py-2 px-4 text-green-400 font-medium">Amount</th>
-                  <th className="py-2 px-4 text-green-400 font-medium">Hash</th>
-                  <th className="py-2 px-4 text-green-400 font-medium">Time</th>
+                <tr className="bg-black bg-opacity-90 text-left border-b border-blue-900/50">
+                  <th className="py-2 px-4 text-blue-400 font-medium">Type</th>
+                  <th className="py-2 px-4 text-blue-400 font-medium">Amount</th>
+                  <th className="py-2 px-4 text-blue-400 font-medium">Hash</th>
+                  <th className="py-2 px-4 text-blue-400 font-medium">Time</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-800">
+              <tbody className="divide-y divide-blue-900/30">
                 <tr>
-                  <td className="py-2 px-4 text-gray-300">Buy</td>
-                  <td className="py-2 px-4 text-green-400">+2,500 PVX</td>
-                  <td className="py-2 px-4 text-gray-300 font-mono text-xs">0x58a...3f9</td>
-                  <td className="py-2 px-4 text-gray-300">5 mins ago</td>
+                  <td className="py-2 px-4 text-blue-300">Buy</td>
+                  <td className="py-2 px-4 text-blue-400">+2,500 PVX</td>
+                  <td className="py-2 px-4 text-blue-300 font-mono text-xs">0x58a...3f9</td>
+                  <td className="py-2 px-4 text-blue-300">5 mins ago</td>
                 </tr>
                 <tr>
-                  <td className="py-2 px-4 text-gray-300">Sell</td>
-                  <td className="py-2 px-4 text-red-400">-1,000 PVX</td>
-                  <td className="py-2 px-4 text-gray-300 font-mono text-xs">0x72c...8b4</td>
-                  <td className="py-2 px-4 text-gray-300">12 mins ago</td>
+                  <td className="py-2 px-4 text-blue-300">Sell</td>
+                  <td className="py-2 px-4 text-blue-400">-1,000 PVX</td>
+                  <td className="py-2 px-4 text-blue-300 font-mono text-xs">0x72c...8b4</td>
+                  <td className="py-2 px-4 text-blue-300">12 mins ago</td>
                 </tr>
                 <tr>
-                  <td className="py-2 px-4 text-gray-300">Buy</td>
-                  <td className="py-2 px-4 text-green-400">+5,250 PVX</td>
-                  <td className="py-2 px-4 text-gray-300 font-mono text-xs">0x93e...7d2</td>
-                  <td className="py-2 px-4 text-gray-300">32 mins ago</td>
+                  <td className="py-2 px-4 text-blue-300">Buy</td>
+                  <td className="py-2 px-4 text-blue-400">+5,250 PVX</td>
+                  <td className="py-2 px-4 text-blue-300 font-mono text-xs">0x93e...7d2</td>
+                  <td className="py-2 px-4 text-blue-300">32 mins ago</td>
                 </tr>
               </tbody>
             </table>
@@ -370,14 +370,14 @@ export default function Dashboard() {
       
       {/* Learning/Onboarding Section */}
       <div className={activeSection === "learn" ? "block" : "hidden"}>
-        <h2 className="text-2xl font-bold text-green-400 mb-6 neon">Learning Center</h2>
+        <h2 className="text-2xl font-bold text-blue-400 mb-6 text-shadow-neon">Learning Center</h2>
         <OnboardingSection />
       </div>
       
 
       
       {/* Blockchain terminology example in the footer */}
-      <div className="fixed bottom-5 right-5 bg-black bg-opacity-80 p-3 rounded-lg border border-green-500 text-xs text-gray-400 max-w-xs">
+      <div className="fixed bottom-5 right-5 bg-black bg-opacity-78 p-3 rounded-lg border border-blue-800 text-xs text-blue-300 max-w-xs shadow-lg shadow-blue-900/30">
         <div>
           Hover over highlighted terms like <Tooltip term="blockchain" highlightStyle="dotted">blockchain</Tooltip>,{" "}
           <Tooltip term="zero-knowledge proof" highlightStyle="glow">zero-knowledge proof</Tooltip>, or{" "}
