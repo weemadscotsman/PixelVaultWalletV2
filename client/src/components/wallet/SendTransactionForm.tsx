@@ -16,15 +16,17 @@ import {
 import { formatCryptoAmount } from "@/lib/utils";
 
 export function SendTransactionForm() {
-  const { activeWallet, wallet, sendTransaction } = useWallet();
+  const { activeWallet, wallet, sendTransactionMutation } = useWallet();
   const { toast } = useToast();
   
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
+  const [passphrase, setPassphrase] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
     recipient?: string;
     amount?: string;
+    passphrase?: string;
   }>({});
   
   // Validate form inputs
@@ -32,6 +34,7 @@ export function SendTransactionForm() {
     const newErrors: {
       recipient?: string;
       amount?: string;
+      passphrase?: string;
     } = {};
     
     // Validate recipient address
@@ -53,6 +56,13 @@ export function SendTransactionForm() {
       }
     }
     
+    // Validate passphrase
+    if (!passphrase) {
+      newErrors.passphrase = "Wallet passphrase is required";
+    } else if (passphrase.length < 8) {
+      newErrors.passphrase = "Passphrase must be at least 8 characters";
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -67,10 +77,11 @@ export function SendTransactionForm() {
     try {
       setIsSubmitting(true);
       
-      const txResult = await sendTransaction.mutateAsync({
-        from: activeWallet,
-        to: recipient,
-        amount: parseFloat(amount),
+      const txResult = await sendTransactionMutation.mutateAsync({
+        fromAddress: activeWallet,
+        toAddress: recipient,
+        amount: amount,
+        passphrase: passphrase,
       });
       
       toast({
@@ -81,6 +92,7 @@ export function SendTransactionForm() {
       // Reset form
       setRecipient("");
       setAmount("");
+      setPassphrase("");
       
     } catch (error: any) {
       toast({
@@ -177,6 +189,26 @@ export function SendTransactionForm() {
                 )}
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="passphrase" className="text-gray-300">Wallet Passphrase</Label>
+                <Input
+                  id="passphrase"
+                  type="password"
+                  placeholder="Enter your wallet passphrase"
+                  value={passphrase}
+                  onChange={(e) => {
+                    setPassphrase(e.target.value);
+                    if (errors.passphrase) {
+                      setErrors((prev) => ({ ...prev, passphrase: undefined }));
+                    }
+                  }}
+                  className="bg-gray-900/50 border-blue-900/30 placeholder:text-gray-600"
+                />
+                {errors.passphrase && (
+                  <p className="text-red-400 text-sm">{errors.passphrase}</p>
+                )}
+              </div>
+
               <div className="rounded-lg bg-blue-900/10 border border-blue-900/30 p-4">
                 <h4 className="text-sm font-medium text-blue-300 mb-2">Transaction Details</h4>
                 <div className="space-y-1 text-sm">
