@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
-import { TransactionType } from '@shared/types';
+import { TransactionType, Transaction } from '@shared/types';
+import { checkTransactionBadges } from './badgeController';
 
 /**
  * Send transaction
@@ -82,6 +83,17 @@ export const sendTransaction = async (req: Request, res: Response) => {
     
     // Store transaction
     await memBlockchainStorage.createTransaction(transaction);
+    
+    // Check for transaction-related achievements
+    try {
+      // Get transaction count for this sender
+      const senderTxs = await memBlockchainStorage.getTransactionsByAddress(from);
+      // Check and award badges
+      await checkTransactionBadges(from, amount, senderTxs.length);
+    } catch (err) {
+      console.error('Error checking transaction badges:', err);
+      // Continue even if badge check fails
+    }
     
     res.status(201).json({ 
       tx_hash: txHash, 
