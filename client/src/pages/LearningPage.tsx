@@ -7,7 +7,7 @@ import { toast } from '@/hooks/use-toast';
 
 export default function LearningPage() {
   const [wallet, setWallet] = useState({
-    address: '0x7f2331b84e5a65c772e21c66af6fb53bea39367a',
+    publicAddress: '0x7f2331b84e5a65c772e21c66af6fb53bea39367a',
     balance: 1250000 // μPVX
   });
   

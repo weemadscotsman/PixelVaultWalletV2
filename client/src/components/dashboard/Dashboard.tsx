@@ -21,7 +21,7 @@ import { Link } from 'wouter';
 
 // Example wallet data
 const walletData = {
-  address: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+  publicAddress: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
   balance: 432914.832651,
   transactions: [
     { id: 1, type: 'receive', amount: 5000, from: '0x3a...4b2c', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
@@ -171,7 +171,7 @@ export function Dashboard() {
               <div>
                 <p className="text-sm text-gray-400">Address</p>
                 <div className="text-xs font-mono text-gray-300 truncate bg-gray-900/50 rounded px-2 py-1">
-                  {walletData.address}
+                  {walletData.publicAddress}
                 </div>
               </div>
               
