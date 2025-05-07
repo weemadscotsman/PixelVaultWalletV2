@@ -72,18 +72,18 @@ export function StakingCard() {
     },
   });
   
-  // Fetch active stakes for current wallet
+  // Fetch active stakes for current wallet - using the exact endpoint from blueprint
   const {
     data: activeStakes,
     isLoading: isLoadingStakes,
     error: stakesError
   } = useQuery({
-    queryKey: ['/api/stake', activeWallet],
+    queryKey: ['/api/stake/status', activeWallet],
     queryFn: async () => {
       try {
         if (!activeWallet) return [];
         
-        const res = await apiRequest('GET', `/api/stake/${activeWallet}`);
+        const res = await apiRequest('GET', `/api/stake/status/${activeWallet}`);
         if (!res.ok) {
           throw new Error('Failed to fetch active stakes');
         }

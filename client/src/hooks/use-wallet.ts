@@ -57,10 +57,10 @@ export function useWallet() {
     }
   };
 
-  // Create a new wallet
+  // Create a new wallet - using the exact endpoint from blueprint
   const createWalletMutation = useMutation({
     mutationFn: async (data: CreateWalletRequest) => {
-      const res = await apiRequest('POST', '/api/blockchain/wallet', data);
+      const res = await apiRequest('POST', '/api/wallet/create', data);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to create wallet');
@@ -84,13 +84,13 @@ export function useWallet() {
     },
   });
 
-  // Import existing wallet
+  // Import existing wallet - using the exact endpoint from blueprint
   const importWalletMutation = useMutation({
     mutationFn: async (data: ImportWalletRequest) => {
       console.log("Importing wallet with privateKey length:", data.privateKey.length);
       
       try {
-        const res = await apiRequest('POST', '/api/blockchain/wallet/import', data);
+        const res = await apiRequest('POST', '/api/wallet/import', data);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Failed to import wallet');
@@ -120,14 +120,14 @@ export function useWallet() {
     },
   });
 
-  // Export wallet keys
+  // Export wallet keys - using the exact endpoint from blueprint
   const exportWalletKeysMutation = useMutation({
     mutationFn: async (data: ExportWalletRequest) => {
       const { address, passphrase } = data;
       console.log(`Exporting wallet keys for address: ${address}`);
       
       try {
-        const res = await apiRequest('POST', `/api/blockchain/wallet/${address}/export`, { passphrase });
+        const res = await apiRequest('POST', `/api/wallet/${address}/export`, { passphrase });
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Failed to export wallet keys');

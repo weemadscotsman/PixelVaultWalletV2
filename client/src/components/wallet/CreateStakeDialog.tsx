@@ -103,7 +103,7 @@ export function CreateStakeDialog({
     return rewards.toFixed(6);
   };
   
-  // Create stake mutation
+  // Create stake mutation - using the exact endpoint from blueprint
   const createStakeMutation = useMutation({
     mutationFn: async (data: {
       address: string;
@@ -126,9 +126,9 @@ export function CreateStakeDialog({
       onOpenChange(false);
       
       // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['/api/stake', activeWallet] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stake/status', activeWallet] });
       queryClient.invalidateQueries({ queryKey: ['/api/stake/pools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/wallet', activeWallet] });
+      queryClient.invalidateQueries({ queryKey: ['/api/wallet/balance', activeWallet] });
     },
     onError: (error: Error) => {
       toast({
