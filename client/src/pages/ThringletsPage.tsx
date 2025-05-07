@@ -12,7 +12,8 @@ import {
   Skull,
   Cloud,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Terminal as TerminalIcon
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -21,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { thringletManager } from '@/lib/thringlet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { ThringletTerminal } from '@/components/thringlet/ThringletTerminal';
 
 // Sample wallet address for testing
 const SAMPLE_WALLET_ADDRESS = '0x7f5c764cbc14f9669b88837ca1490cca17c31607';
@@ -273,9 +275,13 @@ export default function ThringletsPage() {
                 </CardHeader>
                 <CardContent className="pt-6 pb-6">
                   <Tabs defaultValue="overview" className="w-full mb-6">
-                    <TabsList className="grid w-full grid-cols-2">
+                    <TabsList className="grid w-full grid-cols-3">
                       <TabsTrigger value="overview">Overview</TabsTrigger>
                       <TabsTrigger value="memory">Memory</TabsTrigger>
+                      <TabsTrigger value="terminal">
+                        <TerminalIcon className="h-4 w-4 mr-2" />
+                        Terminal
+                      </TabsTrigger>
                     </TabsList>
                     <TabsContent value="overview">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -414,6 +420,50 @@ export default function ThringletsPage() {
                             </div>
                           )}
                         </div>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="terminal">
+                      <div className="h-[500px]">
+                        <ThringletTerminal 
+                          activeThringlet={{
+                            id: selectedThringlet.id,
+                            name: selectedThringlet.name,
+                            core: selectedThringlet.core || 'Unknown',
+                            personality: selectedThringlet.personality || 'Unknown',
+                            lore: selectedThringlet.lore || 'No lore available',
+                            abilities: selectedThringlet.abilities || [],
+                            emotionState: {
+                              joy: 0,
+                              fear: 0,
+                              trust: 0,
+                              surprise: 0,
+                              dominant: selectedThringlet.emotionLabel || 'neutral'
+                            },
+                            corruption: selectedThringlet.corruption,
+                            bondLevel: selectedThringlet.bondLevel
+                          }}
+                          onCommand={async (command, id) => {
+                            console.log(`Terminal command received: ${command} for Thringlet ${id}`);
+                            
+                            // For demonstration, we'll simulate the interaction response
+                            const result = thringletManager.interactWithThringlet(id, 'terminal', command);
+                            
+                            return {
+                              message: result?.message || `Processing command: ${command}`,
+                              abilityActivated: result?.abilityActivated
+                            };
+                          }}
+                          onAbilityActivated={(ability) => {
+                            toast({
+                              title: "Ability Activated!",
+                              description: `${ability.name}: ${ability.desc}`,
+                              variant: "default"
+                            });
+                            
+                            // Refresh Thringlet data after ability activation
+                            setTimeout(refreshThringlets, 1000);
+                          }}
+                        />
                       </div>
                     </TabsContent>
                   </Tabs>
