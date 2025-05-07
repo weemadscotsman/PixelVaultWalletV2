@@ -201,6 +201,51 @@ router.get('/wallet/:address', async (req, res) => {
 });
 
 /**
+ * Export wallet keys
+ * POST /api/blockchain/wallet/:address/export
+ */
+router.post('/wallet/:address/export', async (req, res) => {
+  try {
+    const { address } = req.params;
+    const { passphrase } = req.body;
+    
+    if (!passphrase) {
+      return res.status(400).json({ error: 'Passphrase is required' });
+    }
+    
+    const keys = await blockchainService.exportWalletKeys(address, passphrase);
+    res.json(keys);
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to export wallet keys'
+    });
+  }
+});
+
+/**
+ * Import wallet
+ * POST /api/blockchain/wallet/import
+ */
+router.post('/wallet/import', async (req, res) => {
+  try {
+    const { privateKey, passphrase } = req.body;
+    
+    if (!privateKey || !passphrase) {
+      return res.status(400).json({ error: 'Private key and passphrase are required' });
+    }
+    
+    const address = await blockchainService.importWallet(privateKey, passphrase);
+    const wallet = await blockchainService.getWallet(address);
+    
+    res.status(201).json(wallet);
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to import wallet'
+    });
+  }
+});
+
+/**
  * Send transaction
  * POST /api/blockchain/transaction
  */

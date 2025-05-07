@@ -112,7 +112,8 @@ export function useWallet() {
   // Export wallet keys
   const exportWalletKeysMutation = useMutation({
     mutationFn: async (data: ExportWalletRequest) => {
-      const res = await apiRequest('POST', '/api/blockchain/wallet/export', data);
+      const { address, passphrase } = data;
+      const res = await apiRequest('POST', `/api/blockchain/wallet/${address}/export`, { passphrase });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to export wallet keys');

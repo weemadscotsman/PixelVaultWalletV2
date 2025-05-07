@@ -146,6 +146,84 @@ export async function getWallet(address: string) {
 }
 
 /**
+ * Export wallet keys by address and passphrase
+ */
+export async function exportWalletKeys(address: string, passphrase: string) {
+  // Validate wallet and passphrase
+  const wallet = await memBlockchainStorage.getWalletByAddress(address);
+  
+  if (!wallet) {
+    throw new Error('Wallet not found');
+  }
+  
+  const hash = crypto.createHash('sha256')
+    .update(passphrase + wallet.passphraseSalt)
+    .digest('hex');
+  
+  if (hash !== wallet.passphraseHash) {
+    throw new Error('Invalid passphrase');
+  }
+  
+  // Generate private key (for demo purposes - in a real app this would be securely stored)
+  const privateKey = crypto.createHash('sha256')
+    .update(passphrase + wallet.passphraseSalt + wallet.address)
+    .digest('hex');
+  
+  return {
+    publicKey: wallet.publicKey,
+    privateKey: privateKey
+  };
+}
+
+/**
+ * Import wallet using private key
+ */
+export async function importWallet(privateKey: string, passphrase: string): Promise<string> {
+  // In a real implementation, we would validate the private key
+  // For demo, we'll derive the public key and address from the private key
+  
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.createHash('sha256')
+    .update(passphrase + salt)
+    .digest('hex');
+  
+  // Derive address from private key
+  const address = 'PVX_' + crypto.createHash('sha256')
+    .update(privateKey)
+    .digest('hex').substring(0, 32);
+  
+  // Generate public key (simplified for demo)
+  const publicKey = crypto.createHash('sha256')
+    .update(address)
+    .digest('hex');
+  
+  // Check if wallet already exists
+  const existingWallet = await memBlockchainStorage.getWalletByAddress(address);
+  
+  if (existingWallet) {
+    // Update existing wallet with new passphrase
+    existingWallet.passphraseSalt = salt;
+    existingWallet.passphraseHash = hash;
+    existingWallet.lastSynced = new Date();
+    await memBlockchainStorage.updateWallet(existingWallet);
+    return address;
+  }
+  
+  // Create new wallet in storage
+  await memBlockchainStorage.createWallet({
+    address,
+    publicKey,
+    balance: "1000000", // 1 PVX initial balance for testing
+    createdAt: new Date(),
+    lastSynced: new Date(),
+    passphraseSalt: salt,
+    passphraseHash: hash
+  });
+  
+  return address;
+}
+
+/**
  * Send transaction
  */
 export async function sendTransaction(
