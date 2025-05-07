@@ -274,6 +274,47 @@ export const getAllWallets = async (req: Request, res: Response) => {
 };
 
 /**
+ * Get transaction history for a wallet
+ * GET /api/wallet/history/:address
+ */
+export const getTransactionHistory = async (req: Request, res: Response) => {
+  try {
+    const { address } = req.params;
+    const wallet = await memBlockchainStorage.getWalletByAddress(address);
+    
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    // Get transactions involving this wallet
+    const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+    
+    // Format transaction history
+    const txHistory = transactions.map(tx => ({
+      hash: tx.hash,
+      type: tx.type,
+      amount: tx.amount,
+      timestamp: new Date(tx.timestamp).toISOString(),
+      from: tx.from,
+      to: tx.to,
+      fee: tx.fee,
+      note: tx.note,
+      status: tx.status
+    }));
+    
+    // Sort by timestamp (newest first)
+    txHistory.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    
+    res.json(txHistory);
+  } catch (error) {
+    console.error('Error getting transaction history:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get transaction history'
+    });
+  }
+};
+
+/**
  * Get staking information for a wallet
  * GET /api/wallet/:address/staking
  */

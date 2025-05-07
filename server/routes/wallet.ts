@@ -40,6 +40,12 @@ router.get('/:address/staking', walletController.getStakingInfo);
 router.post('/:address/export', walletController.exportWalletKeys);
 
 /**
+ * Get transaction history
+ * GET /api/wallet/history/:address
+ */
+router.get('/history/:address', walletController.getTransactionHistory);
+
+/**
  * Get wallet info
  * GET /api/wallet/:address
  */
