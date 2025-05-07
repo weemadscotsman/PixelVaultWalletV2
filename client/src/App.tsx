@@ -31,7 +31,7 @@ function Router() {
   
   return (
     <AnimatePresence mode="sync" initial={false}>
-      <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
+      <div className="relative z-10" style={{ pointerEvents: 'all' }}>
         <Switch key={location}>
           <Route path="/" component={HomePage} />
           <Route path="/learning" component={LearningPage} />

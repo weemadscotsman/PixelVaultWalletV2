@@ -270,7 +270,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 border-b border-blue-900/40 flex items-center px-6 bg-black/95 relative z-20" style={{ pointerEvents: 'auto' }}>
+        <header className="h-16 border-b border-blue-900/40 flex items-center px-6 bg-black/95 relative z-20" style={{ pointerEvents: 'all' }}>
           <h1 className="text-xl font-bold text-blue-300">
             {mainNavItems.find(item => item.path === location)?.name || 
              secondaryNavItems.find(item => item.path === location)?.name || 
