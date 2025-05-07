@@ -430,4 +430,16 @@ router.get('/addresses', async (req, res) => {
   }
 });
 
+/**
+ * Test API endpoint
+ * GET /api/blockchain/test
+ */
+router.get('/test', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'API is working correctly',
+    timestamp: new Date().toISOString()
+  });
+});
+
 export default router;

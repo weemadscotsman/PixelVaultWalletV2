@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -428,12 +427,6 @@ export function ImportWalletForm() {
           </TabsContent>
         </Tabs>
       </CardContent>
-      
-      <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4 flex-col items-stretch">
-        <p className="text-gray-400 text-xs mb-4 text-center">
-          Already have a wallet? You can access it directly by using your private key or wallet file.
-        </p>
-      </CardFooter>
     </Card>
   );
 }
