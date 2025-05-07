@@ -112,6 +112,7 @@ export class Thringlet {
 
   /**
    * Process an interaction with the Thringlet
+   * Exact implementation from the emotionEngine.js blueprint
    * @param type Type of interaction
    * @returns Result of the interaction
    */
@@ -126,7 +127,7 @@ export class Thringlet {
       message: `${this.name} acknowledges your interaction.`
     };
 
-    // Process different interaction types
+    // Process different interaction types according to the blueprint
     switch(type) {
       case 'talk': 
         this.emotion += 5; 
@@ -134,6 +135,36 @@ export class Thringlet {
         result.message = `${this.name} seems to enjoy the conversation.`;
         break;
       
+      case 'purge': 
+        this.corruption += 25; 
+        this.emotion -= 30;
+        this.bondLevel = Math.max(0, this.bondLevel - 15);
+        result.message = `${this.name}: You... you really want to erase me?`;
+        break;
+        
+      case 'reset': 
+        this.emotion = 0; 
+        this.corruption = 0;
+        this.bondLevel = 50;
+        result.message = `> SYSTEM RESETTING...\n${this.name} has been reset to default state.`;
+        break;
+        
+      case 'neglect':
+        this.emotion -= 2;
+        this.corruption += 1;
+        this.bondLevel = Math.max(0, this.bondLevel - 1);
+        result.message = `${this.name} seems to sense your neglect.`;
+        break;
+        
+      case 'inject':
+        const abilityResult = this.runAbility();
+        if (abilityResult) {
+          result.abilityActivated = abilityResult;
+          result.message = `${this.name} is injected with command code and activates ${abilityResult.name}!`;
+        }
+        break;
+        
+      // Keep these additional interactions for UI purposes
       case 'feed': 
         this.emotion += 10; 
         this.corruption = Math.max(0, this.corruption - 5);
@@ -148,27 +179,6 @@ export class Thringlet {
         if (trainAbilityResult) {
           result.abilityActivated = trainAbilityResult;
         }
-        break;
-      
-      case 'purge': 
-        this.corruption += 25; 
-        this.emotion -= 30; 
-        this.bondLevel = Math.max(0, this.bondLevel - 15);
-        result.message = `${this.name} seems distressed by the purge attempt.`;
-        break;
-      
-      case 'reset': 
-        this.emotion = 0; 
-        this.corruption = 0;
-        this.bondLevel = 50;
-        result.message = `${this.name} has been reset to its default state.`;
-        break;
-      
-      case 'neglect': 
-        this.emotion -= 2; 
-        this.corruption += 1;
-        this.bondLevel = Math.max(0, this.bondLevel - 1);
-        result.message = `${this.name} looks a bit neglected.`;
         break;
       
       default:
