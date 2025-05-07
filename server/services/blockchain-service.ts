@@ -538,6 +538,23 @@ export async function getTransactionsByAddress(address: string): Promise<Transac
 }
 
 /**
+ * Get all wallets
+ */
+export async function getAllWallets() {
+  const allWallets = [];
+  
+  // Get all wallets from storage with memory implementation 
+  // Based on the in-memory map in MemBlockchainStorage
+  const walletEntries = Array.from(memBlockchainStorage.wallets.entries());
+  
+  for (const [_, wallet] of walletEntries) {
+    allWallets.push(wallet);
+  }
+  
+  return allWallets;
+}
+
+/**
  * Get blockchain trends data for visualization
  */
 export function getBlockchainTrends(): BlockchainTrends {

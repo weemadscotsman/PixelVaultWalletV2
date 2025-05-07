@@ -1,11 +1,15 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import blockchainRoutes from "./routes/blockchain-routes";
+import walletRoutes from "./routes/wallet-routes";
 import { WebSocketServer } from "ws";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Register blockchain API routes
   app.use("/api/blockchain", blockchainRoutes);
+  
+  // Register wallet API routes - following the /api/wallet specification
+  app.use("/api/wallet", walletRoutes);
 
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
