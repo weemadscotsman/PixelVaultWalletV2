@@ -5,7 +5,7 @@ import { MobileNavigation } from "./MobileNavigation";
 import { Footer } from "./Footer";
 import { getNetworkStats } from "@/lib/blockchain";
 
-interface PageLayoutProps {
+export interface PageLayoutProps {
   children: ReactNode;
   isConnected: boolean;
 }

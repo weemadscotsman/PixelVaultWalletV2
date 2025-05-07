@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -22,27 +22,33 @@ import TerminalPage from "@/pages/TerminalPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
+import { AnimatePresence } from "framer-motion";
 
 // Router component
 function Router() {
+  // Get the current location for AnimatePresence
+  const [location] = useLocation();
+  
   return (
-    <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/learning" component={LearningPage} />
-      <Route path="/wallet" component={WalletPage} />
-      <Route path="/blockchain" component={BlockchainPage} />
-      <Route path="/staking" component={StakingPage} />
-      <Route path="/governance" component={GovernancePage} />
-      <Route path="/thringlets" component={ThringletsPage} />
-      <Route path="/drops" component={DropsPage} />
-      <Route path="/badges" component={BadgesPage} />
-      <Route path="/utr" component={UTRDashboardPage} />
-      <Route path="/dex" component={DEXPage} />
-      <Route path="/terminal" component={TerminalPage} />
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <AnimatePresence mode="wait">
+      <Switch key={location}>
+        <Route path="/" component={HomePage} />
+        <Route path="/learning" component={LearningPage} />
+        <Route path="/wallet" component={WalletPage} />
+        <Route path="/blockchain" component={BlockchainPage} />
+        <Route path="/staking" component={StakingPage} />
+        <Route path="/governance" component={GovernancePage} />
+        <Route path="/thringlets" component={ThringletsPage} />
+        <Route path="/drops" component={DropsPage} />
+        <Route path="/badges" component={BadgesPage} />
+        <Route path="/utr" component={UTRDashboardPage} />
+        <Route path="/dex" component={DEXPage} />
+        <Route path="/terminal" component={TerminalPage} />
+        <Route path="/profile" component={ProfilePage} />
+        <Route path="/settings" component={SettingsPage} />
+        <Route component={NotFound} />
+      </Switch>
+    </AnimatePresence>
   );
 }
 
