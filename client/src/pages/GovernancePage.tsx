@@ -537,9 +537,9 @@ export default function GovernancePage() {
                             <p className="text-sm text-green-400">Final Result:</p>
                             <p className="text-sm text-green-400 font-bold">{selectedProposal.votes.for}% in favor</p>
                           </div>
-                          <Button variant="outline" className="border-blue-900/50 text-blue-300">
-                            View Details
-                            <ChevronRight className="h-4 w-4 ml-1" />
+                          <Button variant="outline" className="border-blue-900/50 text-blue-300 h-9 flex items-center gap-2">
+                            <span>View Details</span>
+                            <ChevronRight className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>
@@ -559,9 +559,9 @@ export default function GovernancePage() {
                             <p className="text-sm text-red-400">Final Result:</p>
                             <p className="text-sm text-red-400 font-bold">{selectedProposal.votes.against}% against</p>
                           </div>
-                          <Button variant="outline" className="border-blue-900/50 text-blue-300">
-                            View Details
-                            <ChevronRight className="h-4 w-4 ml-1" />
+                          <Button variant="outline" className="border-blue-900/50 text-blue-300 h-9 flex items-center gap-2">
+                            <span>View Details</span>
+                            <ChevronRight className="h-4 w-4" />
                           </Button>
                         </div>
                       </div>

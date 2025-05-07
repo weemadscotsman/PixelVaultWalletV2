@@ -159,7 +159,7 @@ export default function DropsPage() {
               />
             </div>
             <Button 
-              className="bg-blue-700 hover:bg-blue-600 text-white h-9 px-4 flex items-center gap-2"
+              className="bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 text-white h-9 px-4 flex items-center gap-2 shadow-md"
               size="sm"
             >
               <Gift className="h-4 w-4" />
@@ -356,17 +356,28 @@ export default function DropsPage() {
                     </div>
                     
                     <div className="bg-gray-900/30 p-4 rounded border border-blue-900/30">
-                      <p className="text-gray-400 mb-3">Claim Code</p>
-                      <div className="flex flex-col gap-3">
-                        <div className="bg-blue-950/20 p-3 rounded border border-blue-900/30 flex items-center justify-between">
+                      <div className="flex justify-between items-center mb-3">
+                        <p className="text-gray-400">Claim Code</p>
+                        <Badge variant="outline" className="bg-blue-800/30 text-blue-300 border-blue-700/30">
+                          <ShieldCheck className="h-3.5 w-3.5 mr-1.5" />
+                          <span>Verified</span>
+                        </Badge>
+                      </div>
+                      <div className="space-y-4">
+                        <div className="bg-blue-950/20 p-3 rounded-md border border-blue-900/30 flex items-center justify-between">
                           <p className="text-lg font-mono text-blue-300">{selectedDrop.claimCode}</p>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
-                            <QrCode className="h-4 w-4 text-blue-400" />
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-blue-700/20">
+                              <Copy className="h-4 w-4 text-blue-400" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full hover:bg-blue-700/20">
+                              <QrCode className="h-4 w-4 text-blue-400" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex justify-end">
+                        <div className="flex justify-center">
                           <Button 
-                            className="bg-blue-700 hover:bg-blue-600 text-white h-10 w-full sm:w-auto px-6 flex items-center justify-center gap-2"
+                            className="bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 text-white h-10 w-full sm:w-auto px-6 flex items-center justify-center gap-2 shadow-md font-medium"
                           >
                             <Gift className="h-4 w-4" />
                             <span>Claim Drop</span>
