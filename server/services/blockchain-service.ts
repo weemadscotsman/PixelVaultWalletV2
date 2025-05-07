@@ -11,6 +11,7 @@ import {
   ThringletEmotionState,
   TransactionHash
 } from '@shared/types';
+import { checkMiningBadges } from '../controllers/badgeController';
 
 // Constants for PVX blockchain
 const PVX_GENESIS_BLOCK_TIMESTAMP = 1714637462000; // May 1, 2024
@@ -500,6 +501,14 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
     if (wallet) {
       wallet.balance = (BigInt(wallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
       await memBlockchainStorage.updateWallet(wallet);
+    }
+    
+    // Check and award mining-related badges
+    try {
+      await checkMiningBadges(minerAddress, minerStats.blocksMined);
+    } catch (err) {
+      console.error('Error checking mining badges:', err);
+      // Continue even if badge check fails
     }
     
     // Update blockchain status
