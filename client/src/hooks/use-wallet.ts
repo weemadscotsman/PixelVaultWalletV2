@@ -60,8 +60,7 @@ export function useWallet() {
   // Create a new wallet
   const createWalletMutation = useMutation({
     mutationFn: async (data: CreateWalletRequest) => {
-      // Update to use new API path
-      const res = await apiRequest('POST', '/api/wallet/create', data);
+      const res = await apiRequest('POST', '/api/blockchain/wallet', data);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to create wallet');
@@ -91,29 +90,12 @@ export function useWallet() {
       console.log("Importing wallet with privateKey length:", data.privateKey.length);
       
       try {
-        // Create full URL for better debugging
-        const baseUrl = window.location.origin;
-        const url = `${baseUrl}/api/wallet/import`;
-        console.log(`Making API request to ${url}`);
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-          credentials: 'include',
-        });
-        
-        console.log(`API Response status: ${response.status}`);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error importing wallet:", errorText);
-          throw new Error(errorText || `Failed with status ${response.status}`);
+        const res = await apiRequest('POST', '/api/blockchain/wallet/import', data);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Failed to import wallet');
         }
-        
-        const result = await response.json();
+        const result = await res.json();
         console.log("Wallet import successful:", result.address);
         return result as Wallet;
       } catch (error) {
@@ -145,28 +127,12 @@ export function useWallet() {
       console.log(`Exporting wallet keys for address: ${address}`);
       
       try {
-        const baseUrl = window.location.origin;
-        const url = `${baseUrl}/api/wallet/${address}/export`;
-        console.log(`Making API request to ${url}`);
-        
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ passphrase }),
-          credentials: 'include',
-        });
-        
-        console.log(`Export API Response status: ${response.status}`);
-        
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Error exporting wallet keys:", errorText);
-          throw new Error(errorText || `Failed with status ${response.status}`);
+        const res = await apiRequest('POST', `/api/blockchain/wallet/${address}/export`, { passphrase });
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Failed to export wallet keys');
         }
-        
-        const result = await response.json();
+        const result = await res.json();
         console.log("Wallet keys exported successfully");
         return result as WalletKeys;
       } catch (error) {
@@ -194,28 +160,14 @@ export function useWallet() {
     const walletAddress = address || activeWallet;
     
     return useQuery({
-      queryKey: ['/api/wallet', walletAddress],
+      queryKey: ['/api/blockchain/wallet', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/wallet/${walletAddress}`);
+        const res = await apiRequest('GET', `/api/blockchain/wallet/${walletAddress}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || `Failed to fetch wallet with address ${walletAddress}`);
         }
-        const walletData = await res.json();
-        
-        // Also fetch balance
-        const balanceRes = await apiRequest('GET', `/api/wallet/${walletAddress}/balance`);
-        if (!balanceRes.ok) {
-          const errorData = await balanceRes.json();
-          throw new Error(errorData.error || `Failed to fetch wallet balance for ${walletAddress}`);
-        }
-        const balanceData = await balanceRes.json();
-        
-        // Combine wallet and balance data
-        return {
-          ...walletData,
-          balance: balanceData.balance || "0"
-        } as Wallet;
+        return await res.json() as Wallet;
       },
       enabled: !!walletAddress, // Only run query if address is provided
       refetchInterval: 5000, // Refetch every 5 seconds
@@ -225,9 +177,9 @@ export function useWallet() {
   // Get all wallets
   const getAllWallets = () => {
     return useQuery({
-      queryKey: ['/api/wallet/all'],
+      queryKey: ['/api/blockchain/wallets'],
       queryFn: async () => {
-        const res = await apiRequest('GET', '/api/wallet/all');
+        const res = await apiRequest('GET', '/api/blockchain/wallets');
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Failed to fetch wallets');
@@ -243,9 +195,9 @@ export function useWallet() {
     const walletAddress = address || activeWallet;
     
     return useQuery({
-      queryKey: ['/api/wallet/history', walletAddress],
+      queryKey: ['/api/blockchain/transactions', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/wallet/history/${walletAddress}`);
+        const res = await apiRequest('GET', `/api/blockchain/transactions/${walletAddress}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || `Failed to fetch transactions for address ${walletAddress}`);
@@ -266,10 +218,10 @@ export function useWallet() {
         to: data.toAddress,
         amount: data.amount,
         passphrase: data.passphrase,
-        memo: data.note || ""
+        note: data.note || ""
       };
       
-      const res = await apiRequest('POST', '/api/wallet/send', sendData);
+      const res = await apiRequest('POST', '/api/blockchain/transaction', sendData);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to send transaction');
@@ -283,8 +235,8 @@ export function useWallet() {
       });
       // Update query keys to match new API paths
       if (activeWallet) {
-        queryClient.invalidateQueries({ queryKey: ['/api/wallet/history', activeWallet] });
-        queryClient.invalidateQueries({ queryKey: ['/api/wallet', activeWallet] });
+        queryClient.invalidateQueries({ queryKey: ['/api/blockchain/transactions', activeWallet] });
+        queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallet', activeWallet] });
       }
     },
     onError: (error: Error) => {
@@ -298,21 +250,19 @@ export function useWallet() {
 
   // Get active wallet data
   const walletQuery = useQuery({
-    queryKey: ['/api/wallet', activeWallet],
+    queryKey: ['/api/blockchain/wallet', activeWallet],
     queryFn: async () => {
       if (!activeWallet) return null;
       
       console.log(`Fetching wallet data for ${activeWallet}`);
       try {
-        // First get wallet info
-        const walletRes = await fetch(`/api/wallet/${activeWallet}`, {
-          credentials: 'include'
-        });
-        
-        if (!walletRes.ok) {
-          console.error(`Error fetching wallet: ${walletRes.status}`);
+        const res = await apiRequest('GET', `/api/blockchain/wallet/${activeWallet}`);
+        if (!res.ok) {
+          const errorStatus = res.status;
+          console.error(`Error fetching wallet: ${errorStatus}`);
+          
           // If we get a 404, the wallet doesn't exist, so clear it from localStorage
-          if (walletRes.status === 404) {
+          if (errorStatus === 404) {
             console.log('Wallet not found in backend, clearing from localStorage');
             localStorage.removeItem('activeWallet');
             setActiveWallet(null);
@@ -320,24 +270,7 @@ export function useWallet() {
           return null;
         }
         
-        const walletData = await walletRes.json();
-        
-        // Then get balance
-        const balanceRes = await fetch(`/api/wallet/${activeWallet}/balance`, {
-          credentials: 'include'
-        });
-        
-        if (!balanceRes.ok) {
-          console.error(`Error fetching wallet balance: ${balanceRes.status}`);
-          return null;
-        }
-        
-        // Combine wallet and balance data
-        const balanceData = await balanceRes.json();
-        return {
-          ...walletData,
-          balance: balanceData.balance || "0"
-        } as Wallet;
+        return await res.json() as Wallet;
       } catch (error) {
         console.error("Error fetching wallet data:", error);
         return null;
