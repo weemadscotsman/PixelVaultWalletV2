@@ -78,18 +78,26 @@ export function CreateWalletForm() {
 
   // Form submission
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    await createWalletMutation.mutateAsync({ 
-      passphrase: values.passphrase 
-    });
-    
-    // Show success message and reset form
-    setShowSuccessMessage(true);
-    form.reset();
-    
-    // Hide success message after 5 seconds
-    setTimeout(() => {
-      setShowSuccessMessage(false);
-    }, 5000);
+    try {
+      console.log("Creating wallet with passphrase (length):", values.passphrase.length);
+      
+      const result = await createWalletMutation.mutateAsync({ 
+        passphrase: values.passphrase 
+      });
+      
+      console.log("Wallet created successfully:", result);
+      
+      // Show success message and reset form
+      setShowSuccessMessage(true);
+      form.reset();
+      
+      // Hide success message after 5 seconds
+      setTimeout(() => {
+        setShowSuccessMessage(false);
+      }, 5000);
+    } catch (error) {
+      console.error("Error in form submission:", error);
+    }
   };
 
   // Get passphrase strength color

@@ -42,10 +42,10 @@ export function useWallet() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Clear any wallet from localStorage to start fresh
-  localStorage.removeItem('activeWallet');
+  // Get active wallet from localStorage
+  const storedWallet = localStorage.getItem('activeWallet');
   
-  const [activeWallet, setActiveWallet] = useState<string | null>(null);
+  const [activeWallet, setActiveWallet] = useState<string | null>(storedWallet);
 
   // Set active wallet
   const setActiveWalletAddress = (address: string | null) => {
@@ -194,14 +194,28 @@ export function useWallet() {
     const walletAddress = address || activeWallet;
     
     return useQuery({
-      queryKey: ['/api/wallet/balance', walletAddress],
+      queryKey: ['/api/wallet', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/wallet/balance/${walletAddress}`);
+        const res = await apiRequest('GET', `/api/wallet/${walletAddress}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || `Failed to fetch wallet with address ${walletAddress}`);
         }
-        return await res.json() as Wallet;
+        const walletData = await res.json();
+        
+        // Also fetch balance
+        const balanceRes = await apiRequest('GET', `/api/wallet/${walletAddress}/balance`);
+        if (!balanceRes.ok) {
+          const errorData = await balanceRes.json();
+          throw new Error(errorData.error || `Failed to fetch wallet balance for ${walletAddress}`);
+        }
+        const balanceData = await balanceRes.json();
+        
+        // Combine wallet and balance data
+        return {
+          ...walletData,
+          balance: balanceData.balance || "0"
+        } as Wallet;
       },
       enabled: !!walletAddress, // Only run query if address is provided
       refetchInterval: 5000, // Refetch every 5 seconds
@@ -270,7 +284,7 @@ export function useWallet() {
       // Update query keys to match new API paths
       if (activeWallet) {
         queryClient.invalidateQueries({ queryKey: ['/api/wallet/history', activeWallet] });
-        queryClient.invalidateQueries({ queryKey: ['/api/wallet/balance', activeWallet] });
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet', activeWallet] });
       }
     },
     onError: (error: Error) => {
@@ -284,20 +298,21 @@ export function useWallet() {
 
   // Get active wallet data
   const walletQuery = useQuery({
-    queryKey: ['/api/wallet/balance', activeWallet],
+    queryKey: ['/api/wallet', activeWallet],
     queryFn: async () => {
       if (!activeWallet) return null;
       
       console.log(`Fetching wallet data for ${activeWallet}`);
       try {
-        const res = await fetch(`/api/wallet/balance/${activeWallet}`, {
+        // First get wallet info
+        const walletRes = await fetch(`/api/wallet/${activeWallet}`, {
           credentials: 'include'
         });
         
-        if (!res.ok) {
-          console.error(`Error fetching wallet: ${res.status}`);
+        if (!walletRes.ok) {
+          console.error(`Error fetching wallet: ${walletRes.status}`);
           // If we get a 404, the wallet doesn't exist, so clear it from localStorage
-          if (res.status === 404) {
+          if (walletRes.status === 404) {
             console.log('Wallet not found in backend, clearing from localStorage');
             localStorage.removeItem('activeWallet');
             setActiveWallet(null);
@@ -305,14 +320,23 @@ export function useWallet() {
           return null;
         }
         
-        // Convert balance response to wallet format
-        const balanceData = await res.json();
+        const walletData = await walletRes.json();
+        
+        // Then get balance
+        const balanceRes = await fetch(`/api/wallet/${activeWallet}/balance`, {
+          credentials: 'include'
+        });
+        
+        if (!balanceRes.ok) {
+          console.error(`Error fetching wallet balance: ${balanceRes.status}`);
+          return null;
+        }
+        
+        // Combine wallet and balance data
+        const balanceData = await balanceRes.json();
         return {
-          address: activeWallet,
-          balance: balanceData.balance || "0",
-          publicKey: "", // Will be filled later if needed
-          createdAt: new Date().toISOString(),
-          lastSynced: new Date().toISOString()
+          ...walletData,
+          balance: balanceData.balance || "0"
         } as Wallet;
       } catch (error) {
         console.error("Error fetching wallet data:", error);
