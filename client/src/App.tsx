@@ -31,25 +31,23 @@ function Router() {
   
   return (
     <AnimatePresence mode="sync" initial={false}>
-      <div className="relative z-10" style={{ pointerEvents: 'all' }}>
-        <Switch key={location}>
-          <Route path="/" component={HomePage} />
-          <Route path="/learning" component={LearningPage} />
-          <Route path="/wallet" component={WalletPage} />
-          <Route path="/blockchain" component={BlockchainPage} />
-          <Route path="/staking" component={StakingPage} />
-          <Route path="/governance" component={GovernancePage} />
-          <Route path="/thringlets" component={ThringletsPage} />
-          <Route path="/drops" component={DropsPage} />
-          <Route path="/badges" component={BadgesPage} />
-          <Route path="/utr" component={UTRDashboardPage} />
-          <Route path="/dex" component={DEXPage} />
-          <Route path="/terminal" component={TerminalPage} />
-          <Route path="/profile" component={ProfilePage} />
-          <Route path="/settings" component={SettingsPage} />
-          <Route component={NotFound} />
-        </Switch>
-      </div>
+      <Switch key={location}>
+        <Route path="/" component={HomePage} />
+        <Route path="/learning" component={LearningPage} />
+        <Route path="/wallet" component={WalletPage} />
+        <Route path="/blockchain" component={BlockchainPage} />
+        <Route path="/staking" component={StakingPage} />
+        <Route path="/governance" component={GovernancePage} />
+        <Route path="/thringlets" component={ThringletsPage} />
+        <Route path="/drops" component={DropsPage} />
+        <Route path="/badges" component={BadgesPage} />
+        <Route path="/utr" component={UTRDashboardPage} />
+        <Route path="/dex" component={DEXPage} />
+        <Route path="/terminal" component={TerminalPage} />
+        <Route path="/profile" component={ProfilePage} />
+        <Route path="/settings" component={SettingsPage} />
+        <Route component={NotFound} />
+      </Switch>
     </AnimatePresence>
   );
 }
@@ -65,10 +63,17 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             {/* Matrix Background - this adds the kanji matrix rain effect */}
-            <MatrixBackground />
+            <div className="fixed inset-0 overflow-hidden" style={{ zIndex: -1 }}>
+              <MatrixBackground />
+            </div>
+            
+            {/* Main application - higher z-index to ensure interactivity */}
+            <div className="relative z-10 min-h-screen">
+              <Router />
+            </div>
+            
             <Toaster />
             <FeedbackButton />
-            <Router />
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
