@@ -5,33 +5,42 @@ import {
   Plus, 
   ArrowUpRight, 
   ArrowDownRight, 
-  ShieldAlert, 
+  ShieldAlert,
   BarChart4, 
   History,
   Send,
   QrCode,
-  Coins
+  Coins,
+  Copy,
+  TrendingUp
 } from 'lucide-react';
 import { useWallet } from '@/hooks/use-wallet';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { WalletCard } from '@/components/wallet/WalletCard';
 import { TransactionsList } from '@/components/wallet/TransactionsList';
 import { CreateWalletForm } from '@/components/wallet/CreateWalletForm';
 import { ImportWalletForm } from '@/components/wallet/ImportWalletForm';
 import { SendTransactionForm } from '@/components/wallet/SendTransactionForm';
 import { ReceiveAddressCard } from '@/components/wallet/ReceiveAddressCard';
+import { ExportWalletKeys } from '@/components/wallet/ExportWalletKeys';
+import { StakingCard } from '@/components/wallet/StakingCard';
 import { formatCryptoAmount } from '@/lib/utils';
 
 export default function WalletPage() {
   const { activeWallet, wallet, setActiveWalletAddress } = useWallet();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(activeWallet ? 'overview' : 'create');
   
   // Check for hash in URL for direct tab navigation
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.substring(1);
-      if (hash && ['overview', 'send', 'receive', 'transactions', 'security'].includes(hash)) {
+      if (hash && ['overview', 'send', 'receive', 'transactions', 'staking', 'security'].includes(hash)) {
         setActiveTab(hash);
       }
     };
@@ -46,33 +55,85 @@ export default function WalletPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon">
-            <Wallet className="inline-block mr-2 h-6 w-6" /> 
-            PVX Wallet
-          </h2>
-          
-          {activeWallet && wallet && (
-            <div className="flex items-center space-x-2">
-              <div className="text-right">
-                <p className="text-sm text-gray-400">Balance</p>
-                <p className="text-xl font-bold text-blue-300">
-                  {formatCryptoAmount(wallet.balance)}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-900/30 rounded-full flex items-center justify-center">
-                <Coins className="h-6 w-6 text-blue-300" />
-              </div>
+        {/* Header section with wallet info/status */}
+        <div className="bg-black/70 border border-blue-900/50 p-4 rounded-lg">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon flex items-center">
+                <Wallet className="mr-2 h-6 w-6" /> 
+                PVX Wallet
+              </h2>
+              {activeWallet && (
+                <div className="mt-1">
+                  <p className="text-xs text-gray-400 flex items-center">
+                    Address: <span className="font-mono ml-1 text-gray-300">{activeWallet}</span>
+                    <Button 
+                      variant="ghost" 
+                      className="h-6 w-6 p-0 ml-1 text-blue-400"
+                      onClick={() => {
+                        navigator.clipboard.writeText(activeWallet);
+                        toast({
+                          title: "Address copied",
+                          description: "Wallet address copied to clipboard",
+                        });
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </p>
+                </div>
+              )}
             </div>
-          )}
+            
+            {activeWallet && wallet ? (
+              <div className="flex items-center gap-4">
+                <div className="bg-blue-900/20 border border-blue-900/40 rounded-lg px-4 py-2">
+                  <p className="text-xs text-gray-400">Balance</p>
+                  <p className="text-xl font-bold text-blue-300">{formatCryptoAmount(wallet.balance)} μPVX</p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="bg-red-900/70 hover:bg-red-800/90 text-white h-10"
+                  onClick={() => {
+                    setActiveTab('create');
+                    setActiveWalletAddress(null);
+                    window.location.hash = '';
+                  }}
+                >
+                  <ShieldAlert className="h-4 w-4 mr-2" />
+                  Disconnect
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Button
+                  className="bg-blue-700 hover:bg-blue-600 text-white"
+                  onClick={() => setActiveTab('create')}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Wallet
+                </Button>
+                <Button
+                  variant="outline"
+                  className="border-blue-900/50 text-blue-300"
+                  onClick={() => setActiveTab('import')}
+                >
+                  <ArrowDownRight className="h-4 w-4 mr-2" />
+                  Import Wallet
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
         
+        {/* Main content based on wallet connection status */}
         {activeWallet ? (
           // Wallet Connected View
           <div className="space-y-6">
             {/* Tab Navigation */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid grid-cols-5 bg-black/70 border border-blue-900/50 mb-6">
+              <TabsList className="grid grid-cols-6 bg-black/70 border border-blue-900/50 mb-6">
                 <TabsTrigger value="overview" onClick={() => window.location.hash = 'overview'} className="data-[state=active]:bg-blue-900/30">
                   <BarChart4 className="w-4 h-4 mr-2" /> Overview
                 </TabsTrigger>
@@ -82,6 +143,9 @@ export default function WalletPage() {
                 <TabsTrigger value="receive" onClick={() => window.location.hash = 'receive'} className="data-[state=active]:bg-blue-900/30">
                   <QrCode className="w-4 h-4 mr-2" /> Receive
                 </TabsTrigger>
+                <TabsTrigger value="staking" onClick={() => window.location.hash = 'staking'} className="data-[state=active]:bg-blue-900/30">
+                  <Coins className="w-4 h-4 mr-2" /> Staking
+                </TabsTrigger>
                 <TabsTrigger value="transactions" onClick={() => window.location.hash = 'transactions'} className="data-[state=active]:bg-blue-900/30">
                   <History className="w-4 h-4 mr-2" /> History
                 </TabsTrigger>
@@ -90,11 +154,143 @@ export default function WalletPage() {
                 </TabsTrigger>
               </TabsList>
               
-              {/* Overview Tab - Shows wallet card and transactions */}
+              {/* Overview Tab - Shows wallet summary, quick actions, and recent transactions */}
               <TabsContent value="overview" className="mt-0">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <WalletCard />
-                  <TransactionsList />
+                  {/* Left Column - Wallet Info */}
+                  <div className="space-y-6">
+                    {/* Wallet Card */}
+                    <Card className="bg-black/70 border-blue-900/50">
+                      <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
+                        <CardTitle className="text-blue-300">
+                          Wallet Details
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="space-y-4">
+                          <div className="flex flex-col">
+                            <span className="text-sm text-gray-400">Address</span>
+                            <div className="flex items-center">
+                              <span className="font-mono text-sm text-blue-300">{activeWallet}</span>
+                              <Button 
+                                variant="ghost" 
+                                className="h-7 w-7 p-0 ml-1"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(activeWallet);
+                                  toast({
+                                    title: "Address copied",
+                                    description: "Wallet address copied to clipboard",
+                                  });
+                                }}
+                              >
+                                <Copy className="h-3.5 w-3.5 text-blue-400" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <span className="text-sm text-gray-400">Balance</span>
+                              <p className="text-xl font-bold text-blue-300">{formatCryptoAmount(wallet?.balance || '0')} μPVX</p>
+                            </div>
+                            <div>
+                              <span className="text-sm text-gray-400">Last Activity</span>
+                              <p className="text-gray-300">3 minutes ago</p>
+                            </div>
+                          </div>
+                          
+                          <div className="pt-4 flex gap-3">
+                            <Button 
+                              className="flex-1 bg-blue-700 hover:bg-blue-600 text-white"
+                              onClick={() => setActiveTab('send')}
+                            >
+                              <Send className="mr-2 h-4 w-4" />
+                              Send
+                            </Button>
+                            <Button 
+                              variant="outline"
+                              className="flex-1 border-blue-900/50 text-blue-300"
+                              onClick={() => setActiveTab('receive')}
+                            >
+                              <QrCode className="mr-2 h-4 w-4" />
+                              Receive
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Staking Summary */}
+                    <Card className="bg-black/70 border-blue-900/50">
+                      <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
+                        <CardTitle className="text-blue-300">
+                          <Coins className="inline-block mr-2 h-5 w-5" />
+                          Staking Summary
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <span className="text-sm text-gray-400">Total Staked</span>
+                            <p className="text-xl font-bold text-blue-300">120.00K μPVX</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-400">Active Stakes</span>
+                            <p className="text-xl font-bold text-blue-300">3</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-400">Staking Power</span>
+                            <p className="text-xl font-bold text-blue-300">85%</p>
+                          </div>
+                          <div>
+                            <span className="text-sm text-gray-400">Earned Rewards</span>
+                            <p className="text-xl font-bold text-green-400">+3.25K μPVX</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <Button 
+                            className="flex-1 bg-blue-700 hover:bg-blue-600 text-white"
+                            onClick={() => setActiveTab('staking')}
+                          >
+                            <Coins className="mr-2 h-4 w-4" />
+                            Manage Stakes
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="flex-1 border-green-900/50 text-green-300"
+                          >
+                            <TrendingUp className="mr-2 h-4 w-4" />
+                            Claim Rewards
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* Right Column - Transactions */}
+                  <div>
+                    <Card className="bg-black/70 border-blue-900/50">
+                      <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
+                        <div className="flex justify-between items-center">
+                          <CardTitle className="text-blue-300">
+                            <History className="inline-block mr-2 h-5 w-5" />
+                            Recent Transactions
+                          </CardTitle>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-300 h-8"
+                            onClick={() => setActiveTab('transactions')}
+                          >
+                            View All
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="pt-6">
+                        <TransactionsList />
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               </TabsContent>
               
@@ -106,6 +302,11 @@ export default function WalletPage() {
               {/* Receive Tab - QR code and address display */}
               <TabsContent value="receive" className="mt-0">
                 <ReceiveAddressCard />
+              </TabsContent>
+              
+              {/* Staking Tab - Staking functionality */}
+              <TabsContent value="staking" className="mt-0">
+                <StakingCard />
               </TabsContent>
               
               {/* Transactions Tab - Full transactions list */}
@@ -128,35 +329,29 @@ export default function WalletPage() {
                         Never share your private keys with anyone.
                       </p>
                       {activeWallet && (
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            className="bg-blue-700 hover:bg-blue-600 text-white"
-                            onClick={() => window.location.hash = '#export'}
-                          >
-                            <ShieldAlert className="h-4 w-4 mr-2" />
-                            Export Keys
-                          </Button>
-                        </div>
+                        <ExportWalletKeys walletAddress={activeWallet} />
                       )}
                     </div>
                     <div>
-                      <h4 className="text-blue-300 font-semibold mb-2">Disconnect Wallet</h4>
+                      <h4 className="text-blue-300 font-semibold mb-2">Privacy Settings</h4>
                       <p className="text-gray-400 text-sm mb-4">
-                        Disconnect your current wallet from this session. 
-                        Your wallet will remain in the system, but you'll need to reconnect it.
+                        Control privacy features for your transactions.
+                        Enable zkSNARK privacy for enhanced security.
                       </p>
-                      <Button 
-                        variant="destructive" 
-                        className="bg-red-900 hover:bg-red-800 text-white"
-                        onClick={() => {
-                          setActiveTab('create');
-                          setActiveWalletAddress(null);
-                          window.location.hash = '';
-                        }}
-                      >
-                        <ShieldAlert className="h-4 w-4 mr-2" />
-                        Disconnect Wallet
-                      </Button>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="zk-mode" className="text-gray-300">
+                            Enable zkSNARK Privacy
+                          </Label>
+                          <Switch id="zk-mode" />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <Label htmlFor="shield-balances" className="text-gray-300">
+                            Shield Balance from Explorer
+                          </Label>
+                          <Switch id="shield-balances" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

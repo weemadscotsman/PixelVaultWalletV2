@@ -1,62 +1,73 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs))
 }
 
-/**
- * Shortens an address or hash for display purposes
- * @param address The full address or hash to shorten
- * @param start Number of characters to keep at the start
- * @param end Number of characters to keep at the end
- * @returns The shortened address with ellipsis
- */
-export function shortenAddress(address: string, start: number = 6, end: number = 6): string {
-  if (!address) return '';
-  if (address.length <= start + end) return address;
+export function formatTimeAgo(date: Date): string {
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
   
-  return `${address.slice(0, start)}...${address.slice(-end)}`;
+  // Time units in seconds
+  const minute = 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+  const week = day * 7;
+  const month = day * 30;
+  const year = day * 365;
+  
+  if (seconds < minute) {
+    return `${seconds} seconds ago`;
+  } else if (seconds < hour) {
+    const minutes = Math.floor(seconds / minute);
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+  } else if (seconds < day) {
+    const hours = Math.floor(seconds / hour);
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  } else if (seconds < week) {
+    const days = Math.floor(seconds / day);
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  } else if (seconds < month) {
+    const weeks = Math.floor(seconds / week);
+    return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
+  } else if (seconds < year) {
+    const months = Math.floor(seconds / month);
+    return `${months} ${months === 1 ? 'month' : 'months'} ago`;
+  } else {
+    const years = Math.floor(seconds / year);
+    return `${years} ${years === 1 ? 'year' : 'years'} ago`;
+  }
 }
 
-/**
- * Formats a cryptocurrency amount with proper decimal places
- * @param amount The amount to format
- * @param decimals Number of decimal places to display
- * @param symbol The token symbol to append
- * @returns Formatted amount string
- */
-export function formatCryptoAmount(amount: string | number, decimals: number = 6, symbol: string = 'μPVX'): string {
+export function formatCryptoAmount(amount: string | number): string {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
   
-  if (isNaN(numAmount)) return `0 ${symbol}`;
-  
-  // For large amounts, use K, M, B
-  if (numAmount >= 1_000_000_000) {
-    return `${(numAmount / 1_000_000_000).toFixed(2)}B ${symbol}`;
-  } else if (numAmount >= 1_000_000) {
-    return `${(numAmount / 1_000_000).toFixed(2)}M ${symbol}`;
-  } else if (numAmount >= 1_000) {
-    return `${(numAmount / 1_000).toFixed(2)}K ${symbol}`;
+  if (isNaN(numAmount)) {
+    return '0.00';
   }
   
-  return `${numAmount.toFixed(decimals)} ${symbol}`;
+  // Format large numbers with K, M, etc.
+  if (numAmount >= 1_000_000_000) {
+    return `${(numAmount / 1_000_000_000).toFixed(2)}B`;
+  } else if (numAmount >= 1_000_000) {
+    return `${(numAmount / 1_000_000).toFixed(2)}M`;
+  } else if (numAmount >= 1_000) {
+    return `${(numAmount / 1_000).toFixed(2)}K`;
+  } else if (numAmount < 0.000001) {
+    return numAmount.toFixed(8);
+  } else {
+    return numAmount.toFixed(6);
+  }
 }
 
-/**
- * Formats a timestamp to a readable time ago string
- * @param timestamp The timestamp to format
- * @returns Formatted time ago string
- */
-export function formatTimeAgo(timestamp: number | Date): string {
-  const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
-  const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+export function shortenAddress(address: string): string {
+  if (!address) return '';
   
-  if (seconds < 60) return `${seconds}s ago`;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  if (address.length <= 12) return address;
+  
+  const prefix = address.slice(0, 6);
+  const suffix = address.slice(-4);
+  
+  return `${prefix}...${suffix}`;
 }
