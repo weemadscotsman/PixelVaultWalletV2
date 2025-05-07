@@ -242,39 +242,48 @@ export default function GovernancePage() {
               <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-blue-300">Proposals</CardTitle>
-                  <div className="flex gap-2">
+                  <div className="flex gap-1">
                     <Button 
                       variant={activeTab === 'active' ? 'default' : 'outline'} 
                       size="sm"
-                      className={activeTab === 'active' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}
+                      className={`h-8 ${activeTab === 'active' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}`}
                       onClick={() => {
                         setActiveTab('active');
                         setSelectedProposal(governanceData.proposals.find(p => p.status === 'Active'));
                       }}
                     >
-                      Active
+                      <div className="flex items-center gap-1">
+                        <Vote className="h-3.5 w-3.5" />
+                        <span>Active</span>
+                      </div>
                     </Button>
                     <Button 
                       variant={activeTab === 'passed' ? 'default' : 'outline'} 
                       size="sm"
-                      className={activeTab === 'passed' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}
+                      className={`h-8 ${activeTab === 'passed' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}`}
                       onClick={() => {
                         setActiveTab('passed');
                         setSelectedProposal(governanceData.proposals.find(p => p.status === 'Passed'));
                       }}
                     >
-                      Passed
+                      <div className="flex items-center gap-1">
+                        <CheckCircle className="h-3.5 w-3.5" />
+                        <span>Passed</span>
+                      </div>
                     </Button>
                     <Button 
                       variant={activeTab === 'rejected' ? 'default' : 'outline'} 
                       size="sm"
-                      className={activeTab === 'rejected' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}
+                      className={`h-8 ${activeTab === 'rejected' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}`}
                       onClick={() => {
                         setActiveTab('rejected');
                         setSelectedProposal(governanceData.proposals.find(p => p.status === 'Rejected'));
                       }}
                     >
-                      Rejected
+                      <div className="flex items-center gap-1">
+                        <XCircle className="h-3.5 w-3.5" />
+                        <span>Rejected</span>
+                      </div>
                     </Button>
                   </div>
                 </div>

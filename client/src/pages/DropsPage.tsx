@@ -147,18 +147,22 @@ export default function DropsPage() {
             Secret Drops
           </h2>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="relative">
               <SearchIcon className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input 
                 placeholder="Search drops..." 
-                className="pl-9 bg-gray-900/50 border-blue-900/40 w-60"
+                className="pl-9 bg-gray-900/50 border-blue-900/40 w-52 h-9"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button className="bg-blue-700 hover:bg-blue-600 text-white">
-              Claim Drop
+            <Button 
+              className="bg-blue-700 hover:bg-blue-600 text-white h-9 px-4 flex items-center gap-2"
+              size="sm"
+            >
+              <Gift className="h-4 w-4" />
+              <span>Claim Drop</span>
             </Button>
           </div>
         </div>
@@ -346,12 +350,15 @@ export default function DropsPage() {
                       <div className="flex items-center gap-3">
                         <div className="bg-blue-950/20 p-3 rounded border border-blue-900/30 flex-1 flex items-center justify-between">
                           <p className="text-lg font-mono text-blue-300">{selectedDrop.claimCode}</p>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <QrCode className="h-5 w-5 text-blue-400" />
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
+                            <QrCode className="h-4 w-4 text-blue-400" />
                           </Button>
                         </div>
-                        <Button className="bg-blue-700 hover:bg-blue-600 text-white px-6">
-                          Claim Now
+                        <Button 
+                          className="bg-blue-700 hover:bg-blue-600 text-white h-10 px-4 flex items-center gap-2"
+                        >
+                          <Gift className="h-4 w-4" />
+                          <span>Claim Now</span>
                         </Button>
                       </div>
                     </div>
