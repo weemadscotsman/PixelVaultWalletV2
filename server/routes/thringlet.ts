@@ -11,9 +11,9 @@ router.post('/input', thringletController.processInput);
 
 /**
  * Get current thringlet status
- * GET /api/thringlet/status
+ * GET /api/thringlet/status/:id
  */
-router.get('/status', thringletController.getStatus);
+router.get('/status/:id', thringletController.getStatus);
 
 /**
  * Get thringlet emotion history
