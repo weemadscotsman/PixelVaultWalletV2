@@ -30,23 +30,27 @@ function Router() {
   const [location] = useLocation();
   
   return (
-    <Switch>
-      <Route path="/" component={HomePage} />
-      <Route path="/learning" component={LearningPage} />
-      <Route path="/wallet" component={WalletPage} />
-      <Route path="/blockchain" component={BlockchainPage} />
-      <Route path="/staking" component={StakingPage} />
-      <Route path="/governance" component={GovernancePage} />
-      <Route path="/thringlets" component={ThringletsPage} />
-      <Route path="/drops" component={DropsPage} />
-      <Route path="/badges" component={BadgesPage} />
-      <Route path="/utr" component={UTRDashboardPage} />
-      <Route path="/dex" component={DEXPage} />
-      <Route path="/terminal" component={TerminalPage} />
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/settings" component={SettingsPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <AnimatePresence mode="sync" initial={false}>
+      <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
+        <Switch key={location}>
+          <Route path="/" component={HomePage} />
+          <Route path="/learning" component={LearningPage} />
+          <Route path="/wallet" component={WalletPage} />
+          <Route path="/blockchain" component={BlockchainPage} />
+          <Route path="/staking" component={StakingPage} />
+          <Route path="/governance" component={GovernancePage} />
+          <Route path="/thringlets" component={ThringletsPage} />
+          <Route path="/drops" component={DropsPage} />
+          <Route path="/badges" component={BadgesPage} />
+          <Route path="/utr" component={UTRDashboardPage} />
+          <Route path="/dex" component={DEXPage} />
+          <Route path="/terminal" component={TerminalPage} />
+          <Route path="/profile" component={ProfilePage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </div>
+    </AnimatePresence>
   );
 }
 

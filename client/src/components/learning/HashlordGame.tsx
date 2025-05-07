@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { sha256 } from 'js-sha256';
+import { sha256 as hashFunction } from 'js-sha256';
 import { GameCanvas } from './GameCanvas';
 import { LearningTerminal } from './LearningTerminal';
 
@@ -81,7 +81,7 @@ export function HashlordGame({ onComplete, walletAddress }: HashlordGameProps) {
       ...blockData,
       nonce
     });
-    return sha256(data);
+    return hashFunction(data);
   }, [blockData, nonce]);
   
   // Check if hash meets the target (starts with N zeros)
@@ -213,7 +213,7 @@ Type 'reward' to claim your rewards.`;
         nonce: currentNonce
       });
       
-      const newHash = sha256(data);
+      const newHash = hashFunction(data);
       setHashesComputed(prev => prev + 1);
       
       // Found a valid hash
