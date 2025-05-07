@@ -11,7 +11,9 @@ import {
   Skull,
   Zap,
   SearchIcon,
-  CheckCircle
+  CheckCircle,
+  Copy,
+  ShieldCheck
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
