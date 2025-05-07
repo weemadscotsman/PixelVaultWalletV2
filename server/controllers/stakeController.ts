@@ -2,38 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
-import { TransactionType } from '@shared/types';
-
-// Simulate staking pools
-const stakingPools = [
-  {
-    id: 'pool1',
-    name: 'Genesis Pool',
-    apy: '8.5',
-    totalStaked: '1500000000',
-    minStake: '10000',
-    lockupPeriod: 0 // No lockup
-  },
-  {
-    id: 'pool2',
-    name: 'Hodler Pool',
-    apy: '12.0',
-    totalStaked: '750000000',
-    minStake: '100000',
-    lockupPeriod: 7 // 7 days
-  },
-  {
-    id: 'pool3',
-    name: 'Validator Pool',
-    apy: '15.0',
-    totalStaked: '350000000',
-    minStake: '1000000',
-    lockupPeriod: 30 // 30 days
-  }
-];
-
-// In-memory staking records
-const stakingRecords = new Map();
+import { TransactionType, StakeRecord } from '@shared/types';
 
 /**
  * Start staking

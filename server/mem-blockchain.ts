@@ -3,7 +3,9 @@ import {
   Transaction, 
   MiningStats, 
   TransactionType,
-  ThringletEmotionState
+  ThringletEmotionState,
+  StakeRecord,
+  StakingPool
 } from '@shared/types';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -25,6 +27,8 @@ interface StorageState {
   transactions: Transaction[];
   wallets: [string, Wallet][];
   minerStats: [string, MiningStats][];
+  stakeRecords: [string, StakeRecord][];
+  stakingPools: StakingPool[];
 }
 
 // Path for persisting blockchain data
@@ -36,9 +40,53 @@ export class MemBlockchainStorage {
   private transactions: Transaction[] = [];
   wallets: Map<string, Wallet> = new Map();
   private minerStats: Map<string, MiningStats> = new Map();
+  private stakeRecords: Map<string, StakeRecord> = new Map();
+  private stakingPools: StakingPool[] = [];
   
   constructor() {
     this.loadFromFile();
+    // Initialize default staking pools if none exist
+    if (this.stakingPools.length === 0) {
+      this.initializeDefaultStakingPools();
+    }
+  }
+  
+  // Initialize default staking pools
+  private initializeDefaultStakingPools() {
+    this.stakingPools = [
+      {
+        id: 'pool1',
+        name: 'Genesis Pool',
+        apy: '8.5',
+        totalStaked: '1500000000',
+        minStake: '10000',
+        lockupPeriod: 0 // No lockup
+      },
+      {
+        id: 'pool2',
+        name: 'Hodler Pool',
+        apy: '12.0',
+        totalStaked: '750000000',
+        minStake: '100000',
+        lockupPeriod: 7 // 7 days
+      },
+      {
+        id: 'pool3',
+        name: 'Validator Pool',
+        apy: '15.0',
+        totalStaked: '350000000',
+        minStake: '1000000',
+        lockupPeriod: 30 // 30 days
+      },
+      {
+        id: 'pool4',
+        name: 'ZK Privacy Pool',
+        apy: '18.5',
+        totalStaked: '200000000',
+        minStake: '5000000',
+        lockupPeriod: 90 // 90 days
+      }
+    ];
   }
   
   // Save data to file
@@ -56,6 +104,8 @@ export class MemBlockchainStorage {
         transactions: this.transactions,
         wallets: Array.from(this.wallets.entries()),
         minerStats: Array.from(this.minerStats.entries()),
+        stakeRecords: Array.from(this.stakeRecords.entries()),
+        stakingPools: this.stakingPools
       };
       
       // Write to file
@@ -87,7 +137,13 @@ export class MemBlockchainStorage {
         }));
         
         // Restore miner stats
-        this.minerStats = new Map(data.minerStats);
+        this.minerStats = new Map(data.minerStats || []);
+        
+        // Restore stake records
+        this.stakeRecords = new Map(data.stakeRecords || []);
+        
+        // Restore staking pools
+        this.stakingPools = data.stakingPools || [];
         
         console.log("Blockchain data loaded from file");
       } else {
@@ -185,6 +241,50 @@ export class MemBlockchainStorage {
   async getAllActiveMiners(): Promise<MiningStats[]> {
     return Array.from(this.minerStats.values())
       .filter(miner => miner.isCurrentlyMining);
+  }
+  
+  // Staking methods
+  async createStakeRecord(stake: StakeRecord): Promise<StakeRecord> {
+    this.stakeRecords.set(stake.id, stake);
+    await this.saveToFile();
+    return stake;
+  }
+  
+  async getStakeById(id: string): Promise<StakeRecord | undefined> {
+    return this.stakeRecords.get(id);
+  }
+  
+  async getStakesByAddress(address: string): Promise<StakeRecord[]> {
+    return Array.from(this.stakeRecords.values())
+      .filter(stake => stake.address === address);
+  }
+  
+  async getActiveStakesByAddress(address: string): Promise<StakeRecord[]> {
+    return Array.from(this.stakeRecords.values())
+      .filter(stake => stake.address === address && stake.isActive);
+  }
+  
+  async updateStakeRecord(stake: StakeRecord): Promise<StakeRecord> {
+    this.stakeRecords.set(stake.id, stake);
+    await this.saveToFile();
+    return stake;
+  }
+  
+  async getStakingPools(): Promise<StakingPool[]> {
+    return this.stakingPools;
+  }
+  
+  async getStakingPoolById(id: string): Promise<StakingPool | undefined> {
+    return this.stakingPools.find(pool => pool.id === id);
+  }
+  
+  async updateStakingPool(pool: StakingPool): Promise<StakingPool> {
+    const index = this.stakingPools.findIndex(p => p.id === pool.id);
+    if (index !== -1) {
+      this.stakingPools[index] = pool;
+      await this.saveToFile();
+    }
+    return pool;
   }
 }
 
