@@ -1,0 +1,161 @@
+{
+  "badges": [
+    [
+      "tx-first",
+      {
+        "id": "tx-first",
+        "name": "First Transaction",
+        "description": "Completed your first PVX transaction",
+        "type": "transaction",
+        "rarity": "common",
+        "icon": "transaction-first",
+        "requirement": "Send your first transaction on the PVX network",
+        "secret": false
+      }
+    ],
+    [
+      "tx-big-spender",
+      {
+        "id": "tx-big-spender",
+        "name": "Big Spender",
+        "description": "Sent over 1000 PVX in a single transaction",
+        "type": "transaction",
+        "rarity": "uncommon",
+        "icon": "transaction-big",
+        "requirement": "Send more than 1000 PVX in a single transaction",
+        "secret": false
+      }
+    ],
+    [
+      "mining-first",
+      {
+        "id": "mining-first",
+        "name": "Block Pioneer",
+        "description": "Mined your first block on the PVX blockchain",
+        "type": "mining",
+        "rarity": "common",
+        "icon": "mining-first",
+        "requirement": "Mine your first block on the PVX network",
+        "secret": false
+      }
+    ],
+    [
+      "mining-master",
+      {
+        "id": "mining-master",
+        "name": "Mining Master",
+        "description": "Mined over 100 blocks on the PVX blockchain",
+        "type": "mining",
+        "rarity": "rare",
+        "icon": "mining-master",
+        "requirement": "Mine 100 blocks on the PVX network",
+        "secret": false
+      }
+    ],
+    [
+      "stake-first",
+      {
+        "id": "stake-first",
+        "name": "Stake Initiate",
+        "description": "Made your first stake in the PVX network",
+        "type": "staking",
+        "rarity": "common",
+        "icon": "stake-first",
+        "requirement": "Stake any amount of PVX for the first time",
+        "secret": false
+      }
+    ],
+    [
+      "stake-whale",
+      {
+        "id": "stake-whale",
+        "name": "Whale Staker",
+        "description": "Staked more than 10,000 PVX in a single pool",
+        "type": "staking",
+        "rarity": "epic",
+        "icon": "stake-whale",
+        "requirement": "Stake 10,000+ PVX in a single pool",
+        "secret": false
+      }
+    ],
+    [
+      "gov-first",
+      {
+        "id": "gov-first",
+        "name": "Governance Participant",
+        "description": "Cast your first vote in the PVX governance system",
+        "type": "governance",
+        "rarity": "common",
+        "icon": "gov-first",
+        "requirement": "Vote on any governance proposal",
+        "secret": false
+      }
+    ],
+    [
+      "thringlet-first",
+      {
+        "id": "thringlet-first",
+        "name": "Thringlet Parent",
+        "description": "Created your first Thringlet",
+        "type": "thringlet",
+        "rarity": "common",
+        "icon": "thringlet-first",
+        "requirement": "Create your first Thringlet",
+        "secret": false
+      }
+    ],
+    [
+      "thringlet-whisperer",
+      {
+        "id": "thringlet-whisperer",
+        "name": "Thringlet Whisperer",
+        "description": "Interact with your Thringlet 100 times",
+        "type": "thringlet",
+        "rarity": "rare",
+        "icon": "thringlet-whisperer",
+        "requirement": "Have 100 total interactions with your Thringlets",
+        "secret": false
+      }
+    ],
+    [
+      "special-early",
+      {
+        "id": "special-early",
+        "name": "PVX Pioneer",
+        "description": "One of the first 100 users on the PVX network",
+        "type": "special",
+        "rarity": "mythic",
+        "icon": "special-pioneer",
+        "requirement": "Be among the first 100 wallet addresses on the network",
+        "secret": true
+      }
+    ]
+  ],
+  "userBadges": [
+    [
+      "PVX_1e1ee32c2770a6af3ca119759c539907-tx-first",
+      {
+        "badgeId": "tx-first",
+        "userId": "PVX_1e1ee32c2770a6af3ca119759c539907",
+        "earnedAt": 1746381374147
+      }
+    ],
+    [
+      "PVX_1e1ee32c2770a6af3ca119759c539907-mining-first",
+      {
+        "badgeId": "mining-first",
+        "userId": "PVX_1e1ee32c2770a6af3ca119759c539907",
+        "earnedAt": 1746467774147
+      }
+    ],
+    [
+      "PVX_f5ba480b7db6010eecb453eca8e67ff0-stake-first",
+      {
+        "badgeId": "stake-first",
+        "userId": "PVX_f5ba480b7db6010eecb453eca8e67ff0",
+        "earnedAt": 1746554174147,
+        "progress": 100
+      }
+    ]
+  ]
+}
