@@ -283,7 +283,7 @@ export function Dashboard() {
                   Explorer
                 </Button>
               </Link>
-              <Link href="/learning">
+              <Link href="/blockchain">
                 <Button size="sm" className="bg-blue-700 hover:bg-blue-600 text-white">
                   Mine
                 </Button>
