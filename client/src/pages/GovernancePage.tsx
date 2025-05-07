@@ -11,7 +11,9 @@ import {
   ChevronRight,
   Plus,
   Shield,
-  AlertTriangle
+  AlertTriangle,
+  MinusCircle,
+  RefreshCcw
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -353,9 +355,11 @@ export default function GovernancePage() {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-                <Button className="w-full bg-blue-700 hover:bg-blue-600 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Proposal
+                <Button 
+                  className="w-full h-10 bg-blue-700 hover:bg-blue-600 text-white flex items-center justify-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Create Proposal</span>
                 </Button>
               </CardFooter>
             </Card>
@@ -457,22 +461,34 @@ export default function GovernancePage() {
                                 You voted: <span className="font-bold ml-1">{selectedProposal.yourVote}</span>
                               </Badge>
                               <p className="text-sm text-gray-400 mb-2">You have already cast your vote on this proposal.</p>
-                              <Button variant="outline" className="border-blue-900/50 text-blue-300">
-                                Change Vote
+                              <Button 
+                                variant="outline" 
+                                className="h-9 border-blue-900/50 text-blue-300 flex items-center gap-2"
+                              >
+                                <RefreshCcw className="h-3.5 w-3.5" />
+                                <span>Change Vote</span>
                               </Button>
                             </div>
                           ) : (
                             <div className="grid grid-cols-3 gap-3">
-                              <Button className="bg-green-700 hover:bg-green-600 text-white">
-                                <CheckCircle className="h-4 w-4 mr-2" />
-                                For
+                              <Button 
+                                className="h-10 bg-green-700 hover:bg-green-600 text-white flex items-center justify-center gap-2"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                                <span>For</span>
                               </Button>
-                              <Button className="bg-red-700 hover:bg-red-600 text-white">
-                                <XCircle className="h-4 w-4 mr-2" />
-                                Against
+                              <Button 
+                                className="h-10 bg-red-700 hover:bg-red-600 text-white flex items-center justify-center gap-2"
+                              >
+                                <XCircle className="h-4 w-4" />
+                                <span>Against</span>
                               </Button>
-                              <Button variant="outline" className="border-yellow-600/30 text-yellow-300">
-                                Abstain
+                              <Button 
+                                variant="outline" 
+                                className="h-10 border-yellow-600/30 text-yellow-300 flex items-center justify-center gap-2"
+                              >
+                                <MinusCircle className="h-4 w-4" />
+                                <span>Abstain</span>
                               </Button>
                             </div>
                           )}
