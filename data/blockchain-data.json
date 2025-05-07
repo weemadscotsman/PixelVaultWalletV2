@@ -82,6 +82,30 @@
         "passphraseSalt": "5d539cb2f66f6271d1182e3cd422b745",
         "passphraseHash": "6f043634a52a0516153973ad701095aeb9f787baaca1219a3c890fb247de7164"
       }
+    ],
+    [
+      "PVX_6ed0c62934babc58a315d6f70e50df2f",
+      {
+        "address": "PVX_6ed0c62934babc58a315d6f70e50df2f",
+        "publicKey": "e4d79c2a982cacd3641e3953bb2baff9563ae558ed99bef3a3aebb9b61d497be",
+        "balance": "1000000",
+        "createdAt": "2025-05-07T15:59:11.855Z",
+        "lastSynced": "2025-05-07T15:59:11.855Z",
+        "passphraseSalt": "1f4ac952c2e4660a0bc5330a17972e95",
+        "passphraseHash": "6ed0c62934babc58a315d6f70e50df2f3df4530c29bdd81b2725c17540ce9e9a"
+      }
+    ],
+    [
+      "PVX_dd2248a6272b70beb8fffcca7713cfac",
+      {
+        "address": "PVX_dd2248a6272b70beb8fffcca7713cfac",
+        "publicKey": "4987914e7605989964a517ef55c69b7721507f12b272a688d14d703e178548a1",
+        "balance": "1000000",
+        "createdAt": "2025-05-07T15:59:20.800Z",
+        "lastSynced": "2025-05-07T15:59:20.800Z",
+        "passphraseSalt": "0668073e0ded21d4e516bb50adf605ea",
+        "passphraseHash": "dd2248a6272b70beb8fffcca7713cfac73df5fe3365f59224c49e21153a5f6bb"
+      }
     ]
   ],
   "minerStats": [
