@@ -155,14 +155,14 @@ export function useWallet() {
     },
   });
 
-  // Get wallet by address
+  // Get wallet by address - using the exact endpoint from blueprint
   const getWallet = (address?: string) => {
     const walletAddress = address || activeWallet;
     
     return useQuery({
-      queryKey: ['/api/blockchain/wallet', walletAddress],
+      queryKey: ['/api/wallet', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/blockchain/wallet/${walletAddress}`);
+        const res = await apiRequest('GET', `/api/wallet/${walletAddress}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || `Failed to fetch wallet with address ${walletAddress}`);
@@ -174,12 +174,12 @@ export function useWallet() {
     });
   };
 
-  // Get all wallets
+  // Get all wallets - using the exact endpoint from blueprint
   const getAllWallets = () => {
     return useQuery({
-      queryKey: ['/api/blockchain/wallets'],
+      queryKey: ['/api/wallet/all'],
       queryFn: async () => {
-        const res = await apiRequest('GET', '/api/blockchain/wallets');
+        const res = await apiRequest('GET', '/api/wallet/all');
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Failed to fetch wallets');
@@ -190,14 +190,14 @@ export function useWallet() {
     });
   };
 
-  // Get transactions for active wallet
+  // Get transactions for active wallet - using the exact endpoint from blueprint
   const getWalletTransactions = (address?: string) => {
     const walletAddress = address || activeWallet;
     
     return useQuery({
-      queryKey: ['/api/blockchain/transactions', walletAddress],
+      queryKey: ['/api/wallet/history', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/blockchain/transactions/${walletAddress}`);
+        const res = await apiRequest('GET', `/api/wallet/history/${walletAddress}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || `Failed to fetch transactions for address ${walletAddress}`);
@@ -209,7 +209,7 @@ export function useWallet() {
     });
   };
 
-  // Send transaction
+  // Send transaction - using the exact endpoint from blueprint
   const sendTransactionMutation = useMutation({
     mutationFn: async (data: TransactionRequest) => {
       // Convert to new API format
@@ -221,7 +221,7 @@ export function useWallet() {
         note: data.note || ""
       };
       
-      const res = await apiRequest('POST', '/api/blockchain/transaction', sendData);
+      const res = await apiRequest('POST', '/api/wallet/send', sendData);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to send transaction');
@@ -235,8 +235,9 @@ export function useWallet() {
       });
       // Update query keys to match new API paths
       if (activeWallet) {
-        queryClient.invalidateQueries({ queryKey: ['/api/blockchain/transactions', activeWallet] });
-        queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallet', activeWallet] });
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet/history', activeWallet] });
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet', activeWallet] });
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet/balance', activeWallet] });
       }
     },
     onError: (error: Error) => {
@@ -248,15 +249,15 @@ export function useWallet() {
     },
   });
 
-  // Get active wallet data
+  // Get active wallet data - using the exact endpoint from blueprint
   const walletQuery = useQuery({
-    queryKey: ['/api/blockchain/wallet', activeWallet],
+    queryKey: ['/api/wallet', activeWallet],
     queryFn: async () => {
       if (!activeWallet) return null;
       
       console.log(`Fetching wallet data for ${activeWallet}`);
       try {
-        const res = await apiRequest('GET', `/api/blockchain/wallet/${activeWallet}`);
+        const res = await apiRequest('GET', `/api/wallet/${activeWallet}`);
         if (!res.ok) {
           const errorStatus = res.status;
           console.error(`Error fetching wallet: ${errorStatus}`);
