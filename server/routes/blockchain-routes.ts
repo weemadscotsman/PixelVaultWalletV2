@@ -442,4 +442,41 @@ router.get('/test', (req, res) => {
   });
 });
 
+/**
+ * Force mine a block (for testing purposes)
+ * POST /api/blockchain/mining/force-mine
+ */
+router.post('/mining/force-mine', async (req, res) => {
+  try {
+    const { address } = req.body;
+    
+    if (!address) {
+      return res.status(400).json({ error: 'Wallet address is required' });
+    }
+    
+    const newBlock = await blockchainService.forceMineBlock(address);
+    
+    if (!newBlock) {
+      return res.status(500).json({ error: 'Failed to mine block' });
+    }
+    
+    // Get updated mining stats and wallet info
+    const [miningStats, wallet] = await Promise.all([
+      blockchainService.getMiningStats(address),
+      blockchainService.getWallet(address)
+    ]);
+    
+    res.json({
+      success: true,
+      block: newBlock,
+      miningStats,
+      wallet
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to force mine block'
+    });
+  }
+});
+
 export default router;

@@ -418,6 +418,86 @@ export async function getNetworkHashrate(): Promise<number> {
 }
 
 /**
+ * Force mine a block (for testing)
+ */
+export async function forceMineBlock(minerAddress: string): Promise<Block | null> {
+  try {
+    // Get miner stats to check if registered as a miner
+    let minerStats = await memBlockchainStorage.getMinerByAddress(minerAddress);
+    
+    // Create miner stats if not exists
+    if (!minerStats) {
+      minerStats = {
+        address: minerAddress,
+        blocksMined: 0,
+        totalRewards: "0",
+        isCurrentlyMining: true,
+        currentHashRate: `${(Math.random() * 200 + 50).toFixed(2)} MH/s`
+      };
+      await memBlockchainStorage.createMiner(minerStats);
+    }
+    
+    // Get latest block
+    const currentLatestBlock = await getLatestBlock();
+    
+    if (!currentLatestBlock) {
+      return null;
+    }
+    
+    // Create new block
+    const newBlock: Block = {
+      height: currentLatestBlock.height + 1,
+      hash: generateRandomHash(),
+      previousHash: currentLatestBlock.hash,
+      timestamp: Date.now(),
+      transactions: pendingTransactions.slice(0, 10).map(tx => tx.hash),
+      miner: minerAddress,
+      nonce: Math.floor(Math.random() * 1000000).toString(),
+      difficulty: adjustDifficulty(currentLatestBlock),
+      reward: PVX_BLOCK_REWARD
+    };
+    
+    // Store new block
+    await memBlockchainStorage.createBlock(newBlock);
+    latestBlock = newBlock;
+    
+    // Update miner stats
+    minerStats.blocksMined += 1;
+    minerStats.lastBlockMined = newBlock.timestamp;
+    minerStats.totalRewards = (BigInt(minerStats.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString();
+    await memBlockchainStorage.updateMiner(minerStats);
+    
+    // Update wallet balance
+    const wallet = await memBlockchainStorage.getWalletByAddress(minerAddress);
+    if (wallet) {
+      wallet.balance = (BigInt(wallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
+      await memBlockchainStorage.updateWallet(wallet);
+    }
+    
+    // Update blockchain status
+    blockchainStatus = {
+      ...blockchainStatus,
+      connected: true,
+      latestBlock: {
+        height: newBlock.height,
+        hash: newBlock.hash,
+        timestamp: newBlock.timestamp
+      },
+      difficulty: newBlock.difficulty
+    };
+    
+    // Clear processed transactions from pending
+    const processed = pendingTransactions.slice(0, 10).map(tx => tx.hash);
+    pendingTransactions = pendingTransactions.filter(tx => !processed.includes(tx.hash));
+    
+    return newBlock;
+  } catch (error) {
+    console.error('Error in forced block mining:', error);
+    return null;
+  }
+}
+
+/**
  * Simulate block mining (for demo)
  */
 async function simulateBlockMining(minerAddress: string) {
@@ -433,61 +513,13 @@ async function simulateBlockMining(minerAddress: string) {
         return; // Stopped mining
       }
       
-      // Get latest block
-      const currentLatestBlock = await getLatestBlock();
+      // Mine a block using the force mine function
+      const newBlock = await forceMineBlock(minerAddress);
       
-      if (!currentLatestBlock) {
-        return;
+      if (newBlock) {
+        // Schedule next block
+        simulateBlockMining(minerAddress);
       }
-      
-      // Create new block
-      const newBlock: Block = {
-        height: currentLatestBlock.height + 1,
-        hash: generateRandomHash(),
-        previousHash: currentLatestBlock.hash,
-        timestamp: Date.now(),
-        transactions: pendingTransactions.slice(0, 10).map(tx => tx.hash),
-        miner: minerAddress,
-        nonce: Math.floor(Math.random() * 1000000).toString(),
-        difficulty: adjustDifficulty(currentLatestBlock),
-        reward: PVX_BLOCK_REWARD
-      };
-      
-      // Store new block
-      await memBlockchainStorage.createBlock(newBlock);
-      latestBlock = newBlock;
-      
-      // Update miner stats
-      minerStats.blocksMined += 1;
-      minerStats.lastBlockMined = newBlock.timestamp;
-      minerStats.totalRewards = (BigInt(minerStats.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString();
-      await memBlockchainStorage.updateMiner(minerStats);
-      
-      // Update wallet balance
-      const wallet = await memBlockchainStorage.getWalletByAddress(minerAddress);
-      if (wallet) {
-        wallet.balance = (BigInt(wallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
-        await memBlockchainStorage.updateWallet(wallet);
-      }
-      
-      // Update blockchain status
-      blockchainStatus = {
-        ...blockchainStatus,
-        connected: true,
-        latestBlock: {
-          height: newBlock.height,
-          hash: newBlock.hash,
-          timestamp: newBlock.timestamp
-        },
-        difficulty: newBlock.difficulty
-      };
-      
-      // Clear processed transactions from pending
-      const processed = pendingTransactions.slice(0, 10).map(tx => tx.hash);
-      pendingTransactions = pendingTransactions.filter(tx => !processed.includes(tx.hash));
-      
-      // Schedule next block
-      simulateBlockMining(minerAddress);
     } catch (error) {
       console.error('Error in block mining simulation:', error);
     }
