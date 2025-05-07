@@ -10,7 +10,8 @@ import {
   Shield,
   Skull,
   Zap,
-  SearchIcon
+  SearchIcon,
+  CheckCircle
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -173,31 +174,40 @@ export default function DropsPage() {
               <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-blue-300">Available Drops</CardTitle>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant={activeTab === 'active' ? 'default' : 'outline'} 
-                      size="sm"
-                      className={activeTab === 'active' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}
+                  <div className="inline-flex h-8 items-center justify-center rounded-md bg-blue-900/20 p-0.5 text-blue-300">
+                    <button
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        activeTab === 'active' 
+                          ? 'bg-blue-800 text-white shadow-sm' 
+                          : 'text-blue-300 hover:bg-blue-800/20'
+                      }`}
                       onClick={() => setActiveTab('active')}
                     >
+                      <Gift className="mr-1.5 h-3 w-3" />
                       Active
-                    </Button>
-                    <Button 
-                      variant={activeTab === 'upcoming' ? 'default' : 'outline'} 
-                      size="sm"
-                      className={activeTab === 'upcoming' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}
+                    </button>
+                    <button
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        activeTab === 'upcoming' 
+                          ? 'bg-blue-800 text-white shadow-sm' 
+                          : 'text-blue-300 hover:bg-blue-800/20'
+                      }`}
                       onClick={() => setActiveTab('upcoming')}
                     >
+                      <Clock className="mr-1.5 h-3 w-3" />
                       Upcoming
-                    </Button>
-                    <Button 
-                      variant={activeTab === 'claimed' ? 'default' : 'outline'} 
-                      size="sm"
-                      className={activeTab === 'claimed' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}
+                    </button>
+                    <button
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        activeTab === 'claimed' 
+                          ? 'bg-blue-800 text-white shadow-sm' 
+                          : 'text-blue-300 hover:bg-blue-800/20'
+                      }`}
                       onClick={() => setActiveTab('claimed')}
                     >
+                      <CheckCircle className="mr-1.5 h-3 w-3" />
                       Claimed
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </CardHeader>
@@ -347,19 +357,21 @@ export default function DropsPage() {
                     
                     <div className="bg-gray-900/30 p-4 rounded border border-blue-900/30">
                       <p className="text-gray-400 mb-3">Claim Code</p>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-blue-950/20 p-3 rounded border border-blue-900/30 flex-1 flex items-center justify-between">
+                      <div className="flex flex-col gap-3">
+                        <div className="bg-blue-950/20 p-3 rounded border border-blue-900/30 flex items-center justify-between">
                           <p className="text-lg font-mono text-blue-300">{selectedDrop.claimCode}</p>
                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 rounded-full">
                             <QrCode className="h-4 w-4 text-blue-400" />
                           </Button>
                         </div>
-                        <Button 
-                          className="bg-blue-700 hover:bg-blue-600 text-white h-10 px-4 flex items-center gap-2"
-                        >
-                          <Gift className="h-4 w-4" />
-                          <span>Claim Now</span>
-                        </Button>
+                        <div className="flex justify-end">
+                          <Button 
+                            className="bg-blue-700 hover:bg-blue-600 text-white h-10 w-full sm:w-auto px-6 flex items-center justify-center gap-2"
+                          >
+                            <Gift className="h-4 w-4" />
+                            <span>Claim Drop</span>
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>

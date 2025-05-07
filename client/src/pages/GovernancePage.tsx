@@ -244,49 +244,49 @@ export default function GovernancePage() {
               <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-blue-300">Proposals</CardTitle>
-                  <div className="flex gap-1">
-                    <Button 
-                      variant={activeTab === 'active' ? 'default' : 'outline'} 
-                      size="sm"
-                      className={`h-8 ${activeTab === 'active' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}`}
+                  <div className="inline-flex h-8 items-center justify-center rounded-md bg-blue-900/20 p-0.5 text-blue-300">
+                    <button
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        activeTab === 'active' 
+                          ? 'bg-blue-800 text-white shadow-sm' 
+                          : 'text-blue-300 hover:bg-blue-800/20'
+                      }`}
                       onClick={() => {
                         setActiveTab('active');
                         setSelectedProposal(governanceData.proposals.find(p => p.status === 'Active'));
                       }}
                     >
-                      <div className="flex items-center gap-1">
-                        <Vote className="h-3.5 w-3.5" />
-                        <span>Active</span>
-                      </div>
-                    </Button>
-                    <Button 
-                      variant={activeTab === 'passed' ? 'default' : 'outline'} 
-                      size="sm"
-                      className={`h-8 ${activeTab === 'passed' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}`}
+                      <Vote className="mr-1.5 h-3 w-3" />
+                      Active
+                    </button>
+                    <button
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        activeTab === 'passed' 
+                          ? 'bg-blue-800 text-white shadow-sm' 
+                          : 'text-blue-300 hover:bg-blue-800/20'
+                      }`}
                       onClick={() => {
                         setActiveTab('passed');
                         setSelectedProposal(governanceData.proposals.find(p => p.status === 'Passed'));
                       }}
                     >
-                      <div className="flex items-center gap-1">
-                        <CheckCircle className="h-3.5 w-3.5" />
-                        <span>Passed</span>
-                      </div>
-                    </Button>
-                    <Button 
-                      variant={activeTab === 'rejected' ? 'default' : 'outline'} 
-                      size="sm"
-                      className={`h-8 ${activeTab === 'rejected' ? 'bg-blue-700 text-white' : 'border-blue-900/50 text-gray-400'}`}
+                      <CheckCircle className="mr-1.5 h-3 w-3" />
+                      Passed
+                    </button>
+                    <button
+                      className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                        activeTab === 'rejected' 
+                          ? 'bg-blue-800 text-white shadow-sm' 
+                          : 'text-blue-300 hover:bg-blue-800/20'
+                      }`}
                       onClick={() => {
                         setActiveTab('rejected');
                         setSelectedProposal(governanceData.proposals.find(p => p.status === 'Rejected'));
                       }}
                     >
-                      <div className="flex items-center gap-1">
-                        <XCircle className="h-3.5 w-3.5" />
-                        <span>Rejected</span>
-                      </div>
-                    </Button>
+                      <XCircle className="mr-1.5 h-3 w-3" />
+                      Rejected
+                    </button>
                   </div>
                 </div>
               </CardHeader>
@@ -356,10 +356,10 @@ export default function GovernancePage() {
               </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
                 <Button 
-                  className="w-full h-10 bg-blue-700 hover:bg-blue-600 text-white flex items-center justify-center gap-2"
+                  className="w-full h-10 bg-gradient-to-r from-blue-700 to-blue-600 hover:from-blue-600 hover:to-blue-500 text-white font-medium shadow-md flex items-center justify-center gap-2"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Create Proposal</span>
+                  <span>Create New Proposal</span>
                 </Button>
               </CardFooter>
             </Card>
@@ -457,39 +457,36 @@ export default function GovernancePage() {
                           
                           {selectedProposal.yourVote ? (
                             <div className="flex flex-col items-center">
-                              <Badge className="mb-2 px-4 py-2 text-base" variant="outline">
-                                You voted: <span className="font-bold ml-1">{selectedProposal.yourVote}</span>
-                              </Badge>
-                              <p className="text-sm text-gray-400 mb-2">You have already cast your vote on this proposal.</p>
+                              <div className="flex items-center justify-center w-full mb-3">
+                                <Badge className="px-4 py-2 text-base" variant="outline">
+                                  You voted: <span className="font-bold ml-1">{selectedProposal.yourVote}</span>
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-400 mb-4 text-center">You have already cast your vote on this proposal.</p>
                               <Button 
                                 variant="outline" 
-                                className="h-9 border-blue-900/50 text-blue-300 flex items-center gap-2"
+                                className="h-9 border-blue-900/50 text-blue-300 flex items-center gap-2 w-2/3"
                               >
                                 <RefreshCcw className="h-3.5 w-3.5" />
                                 <span>Change Vote</span>
                               </Button>
                             </div>
                           ) : (
-                            <div className="grid grid-cols-3 gap-3">
-                              <Button 
-                                className="h-10 bg-green-700 hover:bg-green-600 text-white flex items-center justify-center gap-2"
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                                <span>For</span>
-                              </Button>
-                              <Button 
-                                className="h-10 bg-red-700 hover:bg-red-600 text-white flex items-center justify-center gap-2"
-                              >
-                                <XCircle className="h-4 w-4" />
-                                <span>Against</span>
-                              </Button>
-                              <Button 
-                                variant="outline" 
-                                className="h-10 border-yellow-600/30 text-yellow-300 flex items-center justify-center gap-2"
-                              >
-                                <MinusCircle className="h-4 w-4" />
-                                <span>Abstain</span>
-                              </Button>
+                            <div className="space-y-3">
+                              <div className="flex w-full bg-black/60 rounded-lg overflow-hidden border border-blue-900/50">
+                                <button className="w-1/3 py-3 bg-green-700/30 hover:bg-green-700/50 border-r border-r-blue-900/50 transition-colors flex flex-col items-center gap-1.5">
+                                  <CheckCircle className="h-5 w-5 text-green-400" />
+                                  <span className="text-sm font-medium text-green-400">For</span>
+                                </button>
+                                <button className="w-1/3 py-3 bg-red-700/30 hover:bg-red-700/50 border-r border-r-blue-900/50 transition-colors flex flex-col items-center gap-1.5">
+                                  <XCircle className="h-5 w-5 text-red-400" />
+                                  <span className="text-sm font-medium text-red-400">Against</span>
+                                </button>
+                                <button className="w-1/3 py-3 bg-yellow-700/30 hover:bg-yellow-700/50 transition-colors flex flex-col items-center gap-1.5">
+                                  <MinusCircle className="h-5 w-5 text-yellow-400" />
+                                  <span className="text-sm font-medium text-yellow-400">Abstain</span>
+                                </button>
+                              </div>
                             </div>
                           )}
                         </div>
