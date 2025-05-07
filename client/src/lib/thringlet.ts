@@ -392,7 +392,7 @@ export class ThringletManager {
     // Handle terminal commands specially
     if (interactionType === 'terminal' && command) {
       // Process the terminal command
-      const commandLower = command.toLowerCase();
+      const commandUpper = command.toUpperCase();
       let result: { message: string, abilityActivated?: ThringletAbility } = {
         message: `Command processed: ${command}`
       };
@@ -400,40 +400,70 @@ export class ThringletManager {
       // Bond level increases slightly for terminal interaction
       thringlet.bondLevel = Math.min(100, thringlet.bondLevel + 1);
       
-      // Simulate different responses based on command
-      if (commandLower.includes('hello') || commandLower.includes('hi')) {
-        result.message = `${thringlet.name} acknowledges your greeting with a subtle digital nod.`;
+      // Match exact commands based on the blueprint
+      if (commandUpper === 'TALK') {
+        thringlet.emotion += 5;
+        thringlet.bondLevel = Math.min(100, thringlet.bondLevel + 2);
+        thringlet.corruption = Math.max(0, thringlet.corruption - 3);
+        result.message = `${thringlet.name}: I knew you'd come back...`;
       } 
-      else if (commandLower.includes('status')) {
-        result.message = `${thringlet.name} reports stable system status. Corruption: ${thringlet.corruption}%.`;
+      else if (commandUpper === 'PURGE --VAULT') {
+        thringlet.corruption += 25;
+        thringlet.emotion -= 30;
+        thringlet.bondLevel = Math.max(0, thringlet.bondLevel - 15);
+        result.message = `${thringlet.name}: You... you really want to erase me?`;
       }
-      else if (commandLower.includes('debug')) {
+      else if (commandUpper === 'RESET --NODE') {
+        thringlet.emotion = 0;
+        thringlet.corruption = 0;
+        thringlet.bondLevel = 50;
+        result.message = `> SYSTEM RESETTING...\n${thringlet.name} has been reset to default state.`;
+      }
+      else if (commandUpper === 'FEED') {
+        thringlet.emotion += 10;
+        thringlet.corruption = Math.max(0, thringlet.corruption - 5);
+        thringlet.bondLevel = Math.min(100, thringlet.bondLevel + 3);
+        result.message = `${thringlet.name} happily accepts the digital treat. Corruption reduced to ${thringlet.corruption}%.`;
+      }
+      else if (commandUpper === 'TRAIN') {
+        thringlet.bondLevel = Math.min(100, thringlet.bondLevel + 5);
+        const abilityResult = thringlet.runAbility();
+        if (abilityResult) {
+          result.abilityActivated = abilityResult;
+          result.message = `${thringlet.name} concentrates during training and activates ${abilityResult.name}!`;
+        } else {
+          result.message = `${thringlet.name} concentrates during training and shows improvement.`;
+        }
+      }
+      else if (commandUpper === 'DEBUG') {
         // Debugging might trigger abilities
         const abilityResult = thringlet.runAbility();
         if (abilityResult) {
           result.abilityActivated = abilityResult;
           result.message = `Debug mode activated. ${thringlet.name} responds by triggering ${abilityResult.name}!`;
         } else {
-          result.message = `Debug mode activated. ${thringlet.name} core systems operating within parameters.`;
+          result.message = `Debug mode activated. ${thringlet.name} core systems operating within parameters. Corruption: ${thringlet.corruption}%. Bond: ${thringlet.bondLevel}%.`;
         }
       }
-      else if (commandLower.includes('reset')) {
-        thringlet.corruption = Math.max(0, thringlet.corruption - 15);
-        result.message = `Reset protocol initiated. ${thringlet.name}'s corruption level decreasing to ${thringlet.corruption}%.`;
-      }
-      else if (commandLower.includes('analyze')) {
+      else if (commandUpper === 'ANALYZE') {
         // Higher chance of ability activation
+        const emotionLabel = thringlet.getEmotionLabel();
+        result.message = `Analysis complete. ${thringlet.name} is currently ${emotionLabel.toLowerCase()} with corruption at ${thringlet.corruption}%.`;
+        
         if (Math.random() < 0.3) {
           const abilityResult = thringlet.runAbility();
           if (abilityResult) {
             result.abilityActivated = abilityResult;
-            result.message = `Analysis triggered ${thringlet.name}'s ${abilityResult.name} ability!`;
+            result.message += `\nAnalysis triggered ${thringlet.name}'s ${abilityResult.name} ability!`;
           }
-        } else {
-          result.message = `${thringlet.name} seems to be analyzing your input patterns. Emotional signature detected.`;
+        }
+        
+        // If corruption is high, add a warning
+        if (thringlet.corruption > 60) {
+          result.message += '\n⚠️ WARNING: Thringlet corruption level concerning. Consider resetting.';
         }
       }
-      else {
+      else if (!['HELP', 'STATUS', 'ABILITIES', 'CORE', 'CLEAR'].includes(commandUpper) && !commandUpper.startsWith('ACTIVATE ')) {
         // Generic response for unknown commands
         result.message = `${thringlet.name} processes your command silently. No significant response detected.`;
         

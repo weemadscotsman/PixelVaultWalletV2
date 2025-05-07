@@ -66,7 +66,13 @@ const HELP_TEXT = `
 Available commands:
 - HELP: Show this help text
 - STATUS: Get current Thringlet status
-- INTERACT [type]: Interact with Thringlet (types: talk, analyze, feed, debug, reset)
+- TALK: Talk to the Thringlet
+- PURGE --VAULT: Attempt to purge Thringlet (increases corruption)
+- RESET --NODE: Reset Thringlet to default state
+- FEED: Feed the Thringlet to reduce corruption
+- TRAIN: Train the Thringlet to increase abilities
+- DEBUG: Run diagnostics on Thringlet
+- ANALYZE: Analyze the Thringlet's emotional state
 - ABILITIES: List Thringlet abilities
 - ACTIVATE [ability]: Attempt to activate a Thringlet ability
 - CORE: View Thringlet core programming
