@@ -21,7 +21,7 @@ export interface Wallet {
 export class MemBlockchainStorage {
   private blocks: Block[] = [];
   private transactions: Transaction[] = [];
-  private wallets: Map<string, Wallet> = new Map();
+  wallets: Map<string, Wallet> = new Map();
   private minerStats: Map<string, MiningStats> = new Map();
   
   // Block methods

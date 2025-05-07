@@ -58,7 +58,8 @@ export function useWallet() {
   // Create a new wallet
   const createWalletMutation = useMutation({
     mutationFn: async (data: CreateWalletRequest) => {
-      const res = await apiRequest('POST', '/api/blockchain/wallet', data);
+      // Update to use new API path
+      const res = await apiRequest('POST', '/api/wallet/create', data);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to create wallet');
@@ -71,7 +72,7 @@ export function useWallet() {
         description: `New wallet created with address ${data.address}`,
       });
       setActiveWalletAddress(data.address);
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/wallet/all'] });
     },
     onError: (error: Error) => {
       toast({
@@ -90,7 +91,7 @@ export function useWallet() {
       try {
         // Create full URL for better debugging
         const baseUrl = window.location.origin;
-        const url = `${baseUrl}/api/blockchain/wallet/import`;
+        const url = `${baseUrl}/api/wallet/import`;
         console.log(`Making API request to ${url}`);
         
         const response = await fetch(url, {
@@ -124,7 +125,7 @@ export function useWallet() {
         description: `Wallet imported successfully with address ${data.address}`,
       });
       setActiveWalletAddress(data.address);
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallets'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/wallet/all'] });
     },
     onError: (error: Error) => {
       toast({
@@ -143,7 +144,7 @@ export function useWallet() {
       
       try {
         const baseUrl = window.location.origin;
-        const url = `${baseUrl}/api/blockchain/wallet/${address}/export`;
+        const url = `${baseUrl}/api/wallet/${address}/export`;
         console.log(`Making API request to ${url}`);
         
         const response = await fetch(url, {
@@ -191,9 +192,9 @@ export function useWallet() {
     const walletAddress = address || activeWallet;
     
     return useQuery({
-      queryKey: ['/api/blockchain/wallet', walletAddress],
+      queryKey: ['/api/wallet/balance', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/blockchain/wallet/${walletAddress}`);
+        const res = await apiRequest('GET', `/api/wallet/balance/${walletAddress}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || `Failed to fetch wallet with address ${walletAddress}`);
@@ -208,9 +209,9 @@ export function useWallet() {
   // Get all wallets
   const getAllWallets = () => {
     return useQuery({
-      queryKey: ['/api/blockchain/wallets'],
+      queryKey: ['/api/wallet/all'],
       queryFn: async () => {
-        const res = await apiRequest('GET', '/api/blockchain/wallets');
+        const res = await apiRequest('GET', '/api/wallet/all');
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || 'Failed to fetch wallets');
@@ -226,9 +227,9 @@ export function useWallet() {
     const walletAddress = address || activeWallet;
     
     return useQuery({
-      queryKey: ['/api/blockchain/address', walletAddress, 'transactions'],
+      queryKey: ['/api/wallet/history', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/blockchain/address/${walletAddress}/transactions`);
+        const res = await apiRequest('GET', `/api/wallet/history/${walletAddress}`);
         if (!res.ok) {
           const errorData = await res.json();
           throw new Error(errorData.error || `Failed to fetch transactions for address ${walletAddress}`);
@@ -243,7 +244,16 @@ export function useWallet() {
   // Send transaction
   const sendTransactionMutation = useMutation({
     mutationFn: async (data: TransactionRequest) => {
-      const res = await apiRequest('POST', '/api/blockchain/transaction', data);
+      // Convert to new API format
+      const sendData = {
+        from: data.fromAddress,
+        to: data.toAddress,
+        amount: data.amount,
+        passphrase: data.passphrase,
+        memo: data.note || ""
+      };
+      
+      const res = await apiRequest('POST', '/api/wallet/send', sendData);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to send transaction');
@@ -253,11 +263,13 @@ export function useWallet() {
     onSuccess: (data) => {
       toast({
         title: "Transaction sent",
-        description: `Transaction with hash ${data.hash} has been submitted to the network`,
+        description: `Transaction submitted to the network successfully`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/address', data.fromAddress, 'transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallet', data.fromAddress] });
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallet', data.toAddress] });
+      // Update query keys to match new API paths
+      if (activeWallet) {
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet/history', activeWallet] });
+        queryClient.invalidateQueries({ queryKey: ['/api/wallet/balance', activeWallet] });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -270,13 +282,13 @@ export function useWallet() {
 
   // Get active wallet data
   const walletQuery = useQuery({
-    queryKey: ['/api/blockchain/wallet', activeWallet],
+    queryKey: ['/api/wallet/balance', activeWallet],
     queryFn: async () => {
       if (!activeWallet) return null;
       
       console.log(`Fetching wallet data for ${activeWallet}`);
       try {
-        const res = await fetch(`/api/blockchain/wallet/${activeWallet}`, {
+        const res = await fetch(`/api/wallet/balance/${activeWallet}`, {
           credentials: 'include'
         });
         
@@ -285,7 +297,15 @@ export function useWallet() {
           return null;
         }
         
-        return await res.json() as Wallet;
+        // Convert balance response to wallet format
+        const balanceData = await res.json();
+        return {
+          address: activeWallet,
+          balance: balanceData.balance || "0",
+          publicKey: "", // Will be filled later if needed
+          createdAt: new Date().toISOString(),
+          lastSynced: new Date().toISOString()
+        } as Wallet;
       } catch (error) {
         console.error("Error fetching wallet data:", error);
         return null;
