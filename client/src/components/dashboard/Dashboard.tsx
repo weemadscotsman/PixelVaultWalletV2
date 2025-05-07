@@ -680,7 +680,7 @@ export function Dashboard() {
             </div>
           </Link>
           
-          <Link href="/learning">
+          <Link href="/blockchain">
             <div className="bg-black/70 border border-blue-900/50 rounded-lg p-4 text-center hover:bg-blue-900/10 transition-colors">
               <Zap className="w-8 h-8 text-yellow-400 mx-auto mb-2" />
               <p className="text-sm text-blue-300">Mine Blocks</p>
