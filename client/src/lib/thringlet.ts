@@ -377,11 +377,85 @@ export class ThringletManager {
   
   /**
    * Interact with a specific Thringlet
+   * @param id - Thringlet ID
+   * @param interactionType - Type of interaction (talk, feed, train, terminal)
+   * @param command - Optional command if interactionType is 'terminal'
    */
-  interactWithThringlet(id: string, interactionType: string): { message: string, abilityActivated?: ThringletAbility } | null {
+  interactWithThringlet(
+    id: string, 
+    interactionType: string, 
+    command?: string
+  ): { message: string, abilityActivated?: ThringletAbility } | null {
     const thringlet = this.thringlets.get(id);
     if (!thringlet) return null;
     
+    // Handle terminal commands specially
+    if (interactionType === 'terminal' && command) {
+      // Process the terminal command
+      const commandLower = command.toLowerCase();
+      let result: { message: string, abilityActivated?: ThringletAbility } = {
+        message: `Command processed: ${command}`
+      };
+      
+      // Bond level increases slightly for terminal interaction
+      thringlet.bondLevel = Math.min(100, thringlet.bondLevel + 1);
+      
+      // Simulate different responses based on command
+      if (commandLower.includes('hello') || commandLower.includes('hi')) {
+        result.message = `${thringlet.name} acknowledges your greeting with a subtle digital nod.`;
+      } 
+      else if (commandLower.includes('status')) {
+        result.message = `${thringlet.name} reports stable system status. Corruption: ${thringlet.corruption}%.`;
+      }
+      else if (commandLower.includes('debug')) {
+        // Debugging might trigger abilities
+        const abilityResult = thringlet.runAbility();
+        if (abilityResult) {
+          result.abilityActivated = abilityResult;
+          result.message = `Debug mode activated. ${thringlet.name} responds by triggering ${abilityResult.name}!`;
+        } else {
+          result.message = `Debug mode activated. ${thringlet.name} core systems operating within parameters.`;
+        }
+      }
+      else if (commandLower.includes('reset')) {
+        thringlet.corruption = Math.max(0, thringlet.corruption - 15);
+        result.message = `Reset protocol initiated. ${thringlet.name}'s corruption level decreasing to ${thringlet.corruption}%.`;
+      }
+      else if (commandLower.includes('analyze')) {
+        // Higher chance of ability activation
+        if (Math.random() < 0.3) {
+          const abilityResult = thringlet.runAbility();
+          if (abilityResult) {
+            result.abilityActivated = abilityResult;
+            result.message = `Analysis triggered ${thringlet.name}'s ${abilityResult.name} ability!`;
+          }
+        } else {
+          result.message = `${thringlet.name} seems to be analyzing your input patterns. Emotional signature detected.`;
+        }
+      }
+      else {
+        // Generic response for unknown commands
+        result.message = `${thringlet.name} processes your command silently. No significant response detected.`;
+        
+        // Small chance of corruption increase for unknown commands
+        if (Math.random() < 0.1) {
+          thringlet.corruption = Math.min(100, thringlet.corruption + 2);
+          result.message += ` Corruption level slightly increased to ${thringlet.corruption}%.`;
+        }
+      }
+      
+      // Record the interaction in memory
+      thringlet.memory.push({
+        action: 'terminal',
+        time: Date.now()
+      });
+      
+      thringlet.lastInteraction = Date.now();
+      this.saveToLocalStorage();
+      return result;
+    }
+    
+    // For standard interactions
     const result = thringlet.interact(interactionType);
     this.saveToLocalStorage();
     return result;

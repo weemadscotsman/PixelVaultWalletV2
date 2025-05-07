@@ -37,19 +37,51 @@ export default function SettingsPage() {
   const [highContrastMode, setHighContrastMode] = useState(false);
   const [animationsEnabled, setAnimationsEnabled] = useState(true);
   
-  // Mock function to save settings
+  // Save settings to localStorage and apply them
   const saveSettings = async () => {
     setIsSaving(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Actually save all settings to localStorage
+      const settings = {
+        username,
+        email,
+        twoFactorEnabled,
+        passwordAutoLock,
+        sessionTimeout,
+        biometricsEnabled,
+        matrixIntensity,
+        compactMode,
+        highContrastMode,
+        animationsEnabled,
+        lastUpdated: new Date().toISOString()
+      };
+      
+      localStorage.setItem('pvx_user_settings', JSON.stringify(settings));
+      
+      // Apply display settings to the application
+      document.documentElement.style.setProperty('--matrix-intensity', `${matrixIntensity}%`);
+      document.documentElement.classList.toggle('compact-mode', compactMode);
+      document.documentElement.classList.toggle('high-contrast', highContrastMode);
+      document.documentElement.classList.toggle('animations-disabled', !animationsEnabled);
+      
+      // Apply session timeout if auto-lock is enabled
+      if (passwordAutoLock) {
+        // Set session timeout in minutes
+        localStorage.setItem('pvx_session_timeout', sessionTimeout.toString());
+      } else {
+        localStorage.removeItem('pvx_session_timeout');
+      }
+      
+      // Short delay to simulate saving
+      await new Promise((resolve) => setTimeout(resolve, 600));
       
       toast({
         title: "Settings saved",
-        description: "Your settings have been updated successfully.",
+        description: "Your settings have been updated successfully and applied.",
         variant: "default",
       });
     } catch (error) {
+      console.error("Failed to save settings:", error);
       toast({
         title: "Error saving settings",
         description: "There was a problem saving your settings. Please try again.",
@@ -60,6 +92,37 @@ export default function SettingsPage() {
     }
   };
   
+  // Load settings from localStorage when component mounts
+  useEffect(() => {
+    try {
+      const savedSettings = localStorage.getItem('pvx_user_settings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        // Update state with saved settings
+        if (settings.username) setUsername(settings.username);
+        if (settings.email) setEmail(settings.email);
+        if (settings.twoFactorEnabled !== undefined) setTwoFactorEnabled(settings.twoFactorEnabled);
+        if (settings.passwordAutoLock !== undefined) setPasswordAutoLock(settings.passwordAutoLock);
+        if (settings.sessionTimeout) setSessionTimeout(settings.sessionTimeout);
+        if (settings.biometricsEnabled !== undefined) setBiometricsEnabled(settings.biometricsEnabled);
+        if (settings.matrixIntensity !== undefined) setMatrixIntensity(settings.matrixIntensity);
+        if (settings.compactMode !== undefined) setCompactMode(settings.compactMode);
+        if (settings.highContrastMode !== undefined) setHighContrastMode(settings.highContrastMode);
+        if (settings.animationsEnabled !== undefined) setAnimationsEnabled(settings.animationsEnabled);
+        
+        // Apply the settings to the page
+        document.documentElement.style.setProperty('--matrix-intensity', `${settings.matrixIntensity || 40}%`);
+        document.documentElement.classList.toggle('compact-mode', settings.compactMode || false);
+        document.documentElement.classList.toggle('high-contrast', settings.highContrastMode || false);
+        document.documentElement.classList.toggle('animations-disabled', !(settings.animationsEnabled !== undefined ? settings.animationsEnabled : true));
+        
+        console.log('Settings loaded from localStorage');
+      }
+    } catch (error) {
+      console.error('Failed to load settings from localStorage:', error);
+    }
+  }, []);
+
   // Reset settings to default
   const resetSettings = () => {
     setMatrixIntensity(40);
@@ -67,6 +130,12 @@ export default function SettingsPage() {
     setHighContrastMode(false);
     setAnimationsEnabled(true);
     setSessionTimeout(30);
+    
+    // Apply reset settings
+    document.documentElement.style.setProperty('--matrix-intensity', '40%');
+    document.documentElement.classList.remove('compact-mode');
+    document.documentElement.classList.remove('high-contrast');
+    document.documentElement.classList.remove('animations-disabled');
     
     toast({
       title: "Settings reset",
