@@ -108,8 +108,8 @@ export function AdvancedDropTerminal({
         }
         
         // Fetch thringlets if wallet is connected
-        if (wallet?.address) {
-          const thringlentsResponse = await fetch(`/api/thringlets/owner/${wallet.address}`);
+        if (wallet?.publicAddress) {
+          const thringlentsResponse = await fetch(`/api/thringlets/owner/${wallet.publicAddress}`);
           if (thringlentsResponse.ok) {
             const thringletsData = await thringlentsResponse.json();
             setThringlets(thringletsData);
@@ -138,7 +138,7 @@ export function AdvancedDropTerminal({
     };
     
     fetchDropsAndThringlets();
-  }, [wallet?.address, toast]);
+  }, [wallet?.publicAddress, toast]);
   
   // Auto-scroll to the bottom of the terminal
   useEffect(() => {
@@ -310,7 +310,7 @@ export function AdvancedDropTerminal({
   
   // List owned thringlets
   const listThringlets = () => {
-    if (!wallet?.address) {
+    if (!wallet?.publicAddress) {
       addToCommandHistory('> Error: Wallet not connected');
       addToCommandHistory('> Connect your wallet to view your thringlets');
       return;
