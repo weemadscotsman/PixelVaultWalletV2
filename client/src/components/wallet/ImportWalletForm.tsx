@@ -339,7 +339,7 @@ export function ImportWalletForm() {
             </Alert>
 
             <div className="mb-6">
-              <FormLabel className="text-gray-300 block mb-2">Wallet Backup File</FormLabel>
+              <label className="text-gray-300 block mb-2">Wallet Backup File</label>
               <div className="flex items-center gap-2">
                 <Input
                   type="file"
