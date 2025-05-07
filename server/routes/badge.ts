@@ -1,27 +1,36 @@
-import express from 'express';
+import { Router } from 'express';
 import * as badgeController from '../controllers/badgeController';
 
-const router = express.Router();
+const router = Router();
 
 // Get all visible badges
-router.get('/badges', badgeController.getAllBadges);
+router.get('/', async (req, res) => {
+  await badgeController.getAllBadges(req, res);
+});
 
 // Get badges by type
-router.get('/badges/type/:type', badgeController.getBadgesByType);
+router.get('/type/:type', async (req, res) => {
+  await badgeController.getBadgesByType(req, res);
+});
 
-// Get badge by ID
-router.get('/badges/:id', badgeController.getBadgeById);
+// Get a single badge by ID
+router.get('/:id', async (req, res) => {
+  await badgeController.getBadgeById(req, res);
+});
 
-// Create a new badge (admin only)
-router.post('/badges', badgeController.createBadge);
-
-// Get badges for a specific user
-router.get('/user-badges/:userId', badgeController.getUserBadges);
+// Get all badges for a user
+router.get('/user/:userId', async (req, res) => {
+  await badgeController.getUserBadges(req, res);
+});
 
 // Award a badge to a user
-router.post('/award-badge', badgeController.awardBadgeToUser);
+router.post('/award', async (req, res) => {
+  await badgeController.awardBadgeToUser(req, res);
+});
 
 // Update badge progress
-router.post('/update-progress', badgeController.updateBadgeProgress);
+router.post('/progress', async (req, res) => {
+  await badgeController.updateBadgeProgress(req, res);
+});
 
 export default router;

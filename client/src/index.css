@@ -231,6 +231,79 @@ body {
   font-size: 0.75rem;
 }
 
+/* Achievement badge styles */
+:root {
+  /* Badge backgrounds by rarity */
+  --common-badge-bg: rgba(149, 149, 149, 0.2);
+  --common-badge-text: #aaa;
+  --uncommon-badge-bg: rgba(32, 169, 83, 0.2);
+  --uncommon-badge-text: #4ade80;
+  --rare-badge-bg: rgba(59, 130, 246, 0.2);
+  --rare-badge-text: #60a5fa;
+  --epic-badge-bg: rgba(168, 85, 247, 0.2);
+  --epic-badge-text: #c084fc;
+  --legendary-badge-bg: rgba(245, 158, 11, 0.2);
+  --legendary-badge-text: #fbbf24;
+  --mythic-badge-bg: rgba(236, 72, 153, 0.2);
+  --mythic-badge-text: #f472b6;
+}
+
+/* Badge animation classes */
+.badge-pulse-slow {
+  animation: badgePulse 4s infinite;
+}
+
+.badge-pulse-medium {
+  animation: badgePulse 3s infinite;
+}
+
+.badge-pulse-fast {
+  animation: badgePulse 2s infinite;
+}
+
+.badge-glow {
+  animation: badgeGlow 2s infinite alternate;
+}
+
+.badge-mythic-pulse {
+  animation: mythicBadgePulse 3s infinite;
+  box-shadow: 0 0 15px rgba(236, 72, 153, 0.3);
+}
+
+/* Badge animations */
+@keyframes badgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 currentColor;
+  }
+  50% {
+    box-shadow: 0 0 10px 0 currentColor;
+  }
+}
+
+@keyframes badgeGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(245, 158, 11, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.7), 0 0 30px rgba(245, 158, 11, 0.5);
+  }
+}
+
+@keyframes mythicBadgePulse {
+  0% {
+    box-shadow: 0 0 5px rgba(236, 72, 153, 0.5);
+    border-color: rgba(236, 72, 153, 0.6);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.8), 0 0 25px rgba(236, 72, 153, 0.4);
+    border-color: rgba(236, 72, 153, 1);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(236, 72, 153, 0.5);
+    border-color: rgba(236, 72, 153, 0.6);
+  }
+}
+
 /* Data visualization styles */
 .data-bar {
   height: 8px;

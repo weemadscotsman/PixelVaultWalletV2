@@ -1,256 +1,288 @@
 import { Request, Response } from 'express';
-import { BadgeType, BadgeRarity } from '@shared/types';
 import { badgeStorage } from '../storage/badge-storage';
-import { customAlphabet } from 'nanoid';
+import { BadgeType, TransactionType } from '@shared/types';
 
-// Generate IDs for badges and user badges
-const generateId = customAlphabet('1234567890abcdef', 10);
-
-// Get all badges (visible to users)
-export async function getAllBadges(req: Request, res: Response) {
+// Get all badges (visible ones only)
+export const getAllBadges = async (req: Request, res: Response) => {
   try {
-    const badges = await badgeStorage.getVisibleBadges();
+    const badges = badgeStorage.getAllVisibleBadges();
     res.json(badges);
-  } catch (error) {
-    console.error('Error getting badges:', error);
-    res.status(500).json({ error: 'Failed to get badges' });
+  } catch (error: any) {
+    console.error('Error getting all badges:', error);
+    res.status(500).json({ error: error.message || 'Failed to get badges' });
   }
-}
+};
 
-// Get badges by type
-export async function getBadgesByType(req: Request, res: Response) {
+// Get badge by ID
+export const getBadgeById = async (req: Request, res: Response) => {
   try {
-    const type = req.params.type as BadgeType;
-    
-    // Validate badge type
-    if (!Object.values(BadgeType).includes(type)) {
-      return res.status(400).json({ error: 'Invalid badge type' });
-    }
-    
-    const badges = await badgeStorage.getBadgesByType(type);
-    res.json(badges);
-  } catch (error) {
-    console.error('Error getting badges by type:', error);
-    res.status(500).json({ error: 'Failed to get badges' });
-  }
-}
-
-// Get a single badge by ID
-export async function getBadgeById(req: Request, res: Response) {
-  try {
-    const badgeId = req.params.id;
-    const badge = await badgeStorage.getBadge(badgeId);
+    const { id } = req.params;
+    const badge = badgeStorage.getBadgeById(id);
     
     if (!badge) {
       return res.status(404).json({ error: 'Badge not found' });
     }
     
     res.json(badge);
-  } catch (error) {
-    console.error('Error getting badge:', error);
-    res.status(500).json({ error: 'Failed to get badge' });
+  } catch (error: any) {
+    console.error('Error getting badge by ID:', error);
+    res.status(500).json({ error: error.message || 'Failed to get badge' });
   }
-}
+};
 
-// Create a new badge (admin only)
-export async function createBadge(req: Request, res: Response) {
+// Get badges by type
+export const getBadgesByType = async (req: Request, res: Response) => {
   try {
-    const {
-      name,
-      description,
-      type,
-      rarity,
-      icon,
-      requirement,
-      secret
-    } = req.body;
+    const { type } = req.params;
     
-    // Validate required fields
-    if (!name || !description || !type || !rarity || !icon || !requirement) {
-      return res.status(400).json({ error: 'Missing required badge fields' });
-    }
-    
-    // Validate badge type and rarity
-    if (!Object.values(BadgeType).includes(type)) {
+    if (!Object.values(BadgeType).includes(type as BadgeType)) {
       return res.status(400).json({ error: 'Invalid badge type' });
     }
     
-    if (!Object.values(BadgeRarity).includes(rarity)) {
-      return res.status(400).json({ error: 'Invalid badge rarity' });
+    const badges = badgeStorage.getBadgesByType(type as BadgeType);
+    res.json(badges);
+  } catch (error: any) {
+    console.error('Error getting badges by type:', error);
+    res.status(500).json({ error: error.message || 'Failed to get badges' });
+  }
+};
+
+// Get user badges
+export const getUserBadges = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
     }
     
-    // Create badge with unique ID
-    const badge = await badgeStorage.createBadge({
-      id: `${type}-${generateId()}`,
-      name,
-      description,
-      type,
-      rarity,
-      icon,
-      requirement,
-      secret: !!secret // Convert to boolean
-    });
-    
-    res.status(201).json(badge);
-  } catch (error) {
-    console.error('Error creating badge:', error);
-    res.status(500).json({ error: 'Failed to create badge' });
-  }
-}
-
-// Get all badges for a user
-export async function getUserBadges(req: Request, res: Response) {
-  try {
-    const userId = req.params.userId;
-    const badgesWithDetails = await badgeStorage.getUserBadgesWithDetails(userId);
-    res.json(badgesWithDetails);
-  } catch (error) {
+    const userBadges = badgeStorage.getUserBadgesWithDetails(userId);
+    res.json(userBadges);
+  } catch (error: any) {
     console.error('Error getting user badges:', error);
-    res.status(500).json({ error: 'Failed to get user badges' });
+    res.status(500).json({ error: error.message || 'Failed to get user badges' });
   }
-}
+};
 
-// Award a badge to a user
-export async function awardBadgeToUser(req: Request, res: Response) {
+// Award badge to user
+export const awardBadgeToUser = async (req: Request, res: Response) => {
   try {
     const { userId, badgeId } = req.body;
     
-    // Validate required fields
     if (!userId || !badgeId) {
       return res.status(400).json({ error: 'User ID and Badge ID are required' });
     }
     
-    const userBadge = await badgeStorage.awardBadge(userId, badgeId);
+    const userBadge = badgeStorage.awardBadgeToUser(userId, badgeId);
     
     if (!userBadge) {
       return res.status(404).json({ error: 'Badge not found' });
     }
     
-    res.status(201).json(userBadge);
-  } catch (error) {
-    console.error('Error awarding badge:', error);
-    res.status(500).json({ error: 'Failed to award badge' });
+    // Get the badge details to include in the response
+    const badge = badgeStorage.getBadgeById(badgeId);
+    
+    res.json({ ...userBadge, badge });
+  } catch (error: any) {
+    console.error('Error awarding badge to user:', error);
+    res.status(500).json({ error: error.message || 'Failed to award badge' });
   }
-}
+};
 
-// Update user badge progress
-export async function updateBadgeProgress(req: Request, res: Response) {
+// Update badge progress
+export const updateBadgeProgress = async (req: Request, res: Response) => {
   try {
     const { userId, badgeId, progress } = req.body;
     
-    // Validate required fields
-    if (!userId || !badgeId || typeof progress !== 'number') {
-      return res.status(400).json({ error: 'User ID, Badge ID, and progress are required' });
+    if (!userId || !badgeId || progress === undefined) {
+      return res.status(400).json({ error: 'User ID, Badge ID and progress are required' });
     }
     
-    // Validate progress value
-    if (progress < 0 || progress > 100) {
-      return res.status(400).json({ error: 'Progress must be between 0 and 100' });
+    if (typeof progress !== 'number' || progress < 0) {
+      return res.status(400).json({ error: 'Progress must be a non-negative number' });
     }
     
-    const userBadge = await badgeStorage.updateUserBadgeProgress(userId, badgeId, progress);
+    const result = badgeStorage.updateBadgeProgress(userId, badgeId, progress);
+    const badge = badgeStorage.getBadgeById(badgeId);
     
-    if (!userBadge) {
-      return res.status(404).json({ error: 'Badge not found' });
-    }
-    
-    res.json(userBadge);
-  } catch (error) {
+    res.json({
+      ...result.userBadge,
+      badge,
+      newlyEarned: result.newlyEarned
+    });
+  } catch (error: any) {
     console.error('Error updating badge progress:', error);
-    res.status(500).json({ error: 'Failed to update badge progress' });
+    res.status(500).json({ error: error.message || 'Failed to update badge progress' });
   }
-}
+};
 
-// Check if user meets criteria for transaction-related badges
-export async function checkTransactionBadges(userId: string, amount: string, txCount: number) {
+// Check for mining badges
+export const checkMiningBadges = async (userId: string, blockCount: number, consecutiveCount?: number) => {
   try {
-    // First transaction badge
-    if (txCount === 1) {
-      await badgeStorage.awardBadge(userId, 'tx-first');
-    }
+    console.log(`Checking mining badges for user ${userId}, blocks: ${blockCount}, consecutive: ${consecutiveCount || 0}`);
     
-    // Big spender badge (1000+ PVX in a single transaction)
-    const amountNum = parseFloat(amount);
-    if (!isNaN(amountNum) && amountNum >= 1000) {
-      await badgeStorage.awardBadge(userId, 'tx-big-spender');
-    }
-  } catch (error) {
-    console.error('Error checking transaction badges:', error);
-  }
-}
-
-// Check if user meets criteria for mining-related badges
-export async function checkMiningBadges(userId: string, blockCount: number) {
-  try {
-    // First block mined badge
+    // First block mined
     if (blockCount === 1) {
-      await badgeStorage.awardBadge(userId, 'mining-first');
+      await badgeStorage.awardBadgeToUser(userId, 'mining-first-block');
+      console.log('Awarded first block mined badge');
     }
     
-    // Mining master badge (100+ blocks)
-    if (blockCount >= 100) {
-      await badgeStorage.awardBadge(userId, 'mining-master');
+    // Mining enthusiast - 10 blocks
+    if (blockCount >= 10) {
+      const result = await badgeStorage.updateBadgeProgress(userId, 'mining-10-blocks', 100);
+      if (result.newlyEarned) {
+        console.log('Awarded 10 blocks mined badge');
+      }
+    } else if (blockCount > 1) {
+      // Update progress
+      const progress = Math.floor((blockCount / 10) * 100);
+      await badgeStorage.updateBadgeProgress(userId, 'mining-10-blocks', progress);
+    }
+    
+    // Mining expert - 50 blocks
+    if (blockCount >= 50) {
+      const result = await badgeStorage.updateBadgeProgress(userId, 'mining-50-blocks', 100);
+      if (result.newlyEarned) {
+        console.log('Awarded 50 blocks mined badge');
+      }
+    } else if (blockCount > 10) {
+      // Update progress
+      const progress = Math.floor((blockCount / 50) * 100);
+      await badgeStorage.updateBadgeProgress(userId, 'mining-50-blocks', progress);
+    }
+    
+    // Hash king - 10 consecutive blocks
+    if (consecutiveCount !== undefined) {
+      if (consecutiveCount >= 10) {
+        const result = await badgeStorage.updateBadgeProgress(userId, 'mining-hash-king', 100);
+        if (result.newlyEarned) {
+          console.log('Awarded hash king badge');
+        }
+      } else if (consecutiveCount > 1) {
+        // Update progress
+        const progress = Math.floor((consecutiveCount / 10) * 100);
+        await badgeStorage.updateBadgeProgress(userId, 'mining-hash-king', progress);
+      }
     }
   } catch (error) {
     console.error('Error checking mining badges:', error);
   }
-}
+};
 
-// Check if user meets criteria for staking-related badges
-export async function checkStakingBadges(userId: string, amount: string, stakeCount: number) {
+// Check for thringlet badges
+export const checkThringletBadges = async (userId: string, level: number, evolution: number, count: number) => {
   try {
-    // First stake badge
-    if (stakeCount === 1) {
-      await badgeStorage.awardBadge(userId, 'stake-first');
-    }
+    console.log(`Checking thringlet badges for user ${userId}, level: ${level}, evolution: ${evolution}, count: ${count}`);
     
-    // Whale staker badge (10,000+ PVX staked)
-    const amountNum = parseFloat(amount);
-    if (!isNaN(amountNum) && amountNum >= 10000) {
-      await badgeStorage.awardBadge(userId, 'stake-whale');
-    }
-  } catch (error) {
-    console.error('Error checking staking badges:', error);
-  }
-}
-
-// Check if user meets criteria for thringlet-related badges
-export async function checkThringletBadges(userId: string, thringletCount: number, interactionCount: number) {
-  try {
     // First thringlet badge
-    if (thringletCount === 1) {
-      await badgeStorage.awardBadge(userId, 'thringlet-first');
+    if (count === 1) {
+      await badgeStorage.awardBadgeToUser(userId, 'thringlet-first');
+      console.log('Awarded first thringlet badge');
     }
     
-    // Thringlet whisperer badge (100+ interactions)
-    if (interactionCount >= 100) {
-      await badgeStorage.awardBadge(userId, 'thringlet-whisperer');
+    // Evolved thringlet badge
+    if (evolution > 0) {
+      await badgeStorage.awardBadgeToUser(userId, 'thringlet-evolved');
+      console.log('Awarded thringlet evolved badge');
+    }
+    
+    // Max level thringlet badge
+    if (level >= 10) { // Assuming level 10 is max
+      await badgeStorage.awardBadgeToUser(userId, 'thringlet-max-level');
+      console.log('Awarded thringlet maximalist badge');
     }
   } catch (error) {
     console.error('Error checking thringlet badges:', error);
   }
-}
+};
 
-// Check if user meets criteria for governance-related badges
-export async function checkGovernanceBadges(userId: string, voteCount: number) {
+// Check for staking badges
+export const checkStakingBadges = async (userId: string, amount: string, duration: number, totalStaked?: string) => {
   try {
-    // First vote badge
-    if (voteCount === 1) {
-      await badgeStorage.awardBadge(userId, 'gov-first');
+    console.log(`Checking staking badges for user ${userId}, amount: ${amount}, duration: ${duration}, totalStaked: ${totalStaked || 'N/A'}`);
+    
+    // First staking badge (already handled in transaction badges, but keeping it here as a backup)
+    await badgeStorage.awardBadgeToUser(userId, 'staking-first');
+    
+    // Long-term staker badge
+    if (duration >= 30) { // 30-day staking
+      await badgeStorage.awardBadgeToUser(userId, 'staking-long-term');
+      console.log('Awarded long-term staker badge');
+    }
+    
+    // Check large stake amount badges
+    const amountNum = parseFloat(amount);
+    if (amountNum >= 1000) {
+      await badgeStorage.awardBadgeToUser(userId, 'staking-whale');
+      console.log('Awarded staking whale badge');
+    }
+    
+    // Check total staked amount badges
+    if (totalStaked) {
+      const totalStakedNum = parseFloat(totalStaked);
+      
+      // Staking enthusiast - 5000 PVX total staked
+      if (totalStakedNum >= 5000) {
+        await badgeStorage.awardBadgeToUser(userId, 'staking-enthusiast');
+        console.log('Awarded staking enthusiast badge');
+      }
     }
   } catch (error) {
-    console.error('Error checking governance badges:', error);
+    console.error('Error checking staking badges:', error);
   }
-}
+};
 
-// Check early adopter status
-export async function checkEarlyAdopterBadge(userId: string, walletCount: number) {
+// Check for transaction badges
+export const checkTransactionBadges = async (userId: string, txType: TransactionType, txCount?: number) => {
   try {
-    // Early adopter badge (first 100 users)
-    if (walletCount <= 100) {
-      await badgeStorage.awardBadge(userId, 'special-early');
+    console.log(`Checking transaction badges for user ${userId}, type ${txType}`);
+    
+    // If we don't have the transaction count, we can't check count-based badges
+    if (!txCount && txType !== TransactionType.GOVERNANCE) {
+      console.log('No transaction count provided, skipping count-based badges');
+      return;
     }
+    
+    // Check for first transaction badge
+    if (txType === TransactionType.TRANSFER && txCount === 1) {
+      await badgeStorage.awardBadgeToUser(userId, 'tx-first');
+      console.log('Awarded first transaction badge');
+    }
+    
+    // Check for transaction count badges
+    if (txType === TransactionType.TRANSFER && txCount !== undefined) {
+      if (txCount >= 10) {
+        const result = await badgeStorage.updateBadgeProgress(userId, 'tx-10', 100);
+        if (result.newlyEarned) {
+          console.log('Awarded 10 transactions badge');
+        }
+      }
+      
+      if (txCount >= 100) {
+        const result = await badgeStorage.updateBadgeProgress(userId, 'tx-100', 100);
+        if (result.newlyEarned) {
+          console.log('Awarded 100 transactions badge');
+        }
+      } else if (txCount > 10) {
+        // Update progress for 100 transactions badge
+        const progress = Math.floor((txCount / 100) * 100);
+        await badgeStorage.updateBadgeProgress(userId, 'tx-100', progress);
+      }
+    }
+    
+    // Check for first staking badge
+    if (txType === TransactionType.STAKE) {
+      await badgeStorage.awardBadgeToUser(userId, 'staking-first');
+      console.log('Awarded first staking badge');
+    }
+    
+    // Check for governance badges
+    if (txType === TransactionType.GOVERNANCE) {
+      await badgeStorage.awardBadgeToUser(userId, 'gov-first-vote');
+      console.log('Awarded governance voter badge');
+    }
+    
   } catch (error) {
-    console.error('Error checking early adopter badge:', error);
+    console.error('Error checking transaction badges:', error);
   }
-}
+};

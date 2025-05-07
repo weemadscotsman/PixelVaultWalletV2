@@ -1,375 +1,415 @@
 import { Badge, BadgeType, BadgeRarity, UserBadge } from '@shared/types';
 import * as fs from 'fs';
 import * as path from 'path';
+import { v4 as uuidv4 } from 'uuid';
+import { fileURLToPath } from 'url';
 
-// Serializable storage state
-interface StorageState {
-  badges: [string, Badge][];
-  userBadges: [string, UserBadge][];
+// Get current file path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Path to badges data file
+const BADGES_DATA_FILE = path.join(__dirname, '../../data/badges.json');
+const USER_BADGES_DATA_FILE = path.join(__dirname, '../../data/user-badges.json');
+
+// Ensure data directory exists
+function ensureDataDir() {
+  const dataDir = path.join(__dirname, '../../data');
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+    console.log(`Created data directory at ${dataDir}`);
+  }
 }
 
-// Path for persisting badge data
-const DATA_FILE_PATH = './data/badge-data.json';
-
-// In-memory badge data storage with file persistence
-export class BadgeStorage {
-  private badges: Map<string, Badge> = new Map();
-  private userBadges: Map<string, UserBadge> = new Map();
+// Ensure badge data files exist with default data
+function ensureBadgeDataFiles() {
+  ensureDataDir();
   
-  constructor() {
-    // Load data from file
-    this.loadFromFile();
-    this.addDefaultBadges();
-  }
-  
-  // Add default badges if none exist
-  private addDefaultBadges() {
-    if (this.badges.size === 0) {
+  // Create badge definitions file if it doesn't exist
+  if (!fs.existsSync(BADGES_DATA_FILE)) {
+    const defaultBadges: Badge[] = [
       // Transaction badges
-      const firstTransaction: Badge = {
-        id: "tx-first",
-        name: "First Transaction",
-        description: "Completed your first PVX transaction",
+      {
+        id: 'tx-first',
+        name: 'First Transaction',
+        description: 'Completed your first PVX transaction',
         type: BadgeType.TRANSACTION,
         rarity: BadgeRarity.COMMON,
-        icon: "transaction-first",
-        requirement: "Send your first transaction on the PVX network",
-        secret: false
-      };
-      
-      const bigSpender: Badge = {
-        id: "tx-big-spender",
-        name: "Big Spender",
-        description: "Sent over 1000 PVX in a single transaction",
+        requirement: 'Complete 1 transaction'
+      },
+      {
+        id: 'tx-10',
+        name: 'Transaction Adept',
+        description: 'Completed 10 PVX transactions',
         type: BadgeType.TRANSACTION,
         rarity: BadgeRarity.UNCOMMON,
-        icon: "transaction-big",
-        requirement: "Send more than 1000 PVX in a single transaction",
-        secret: false
-      };
+        requirement: 'Complete 10 transactions'
+      },
+      {
+        id: 'tx-100',
+        name: 'Transaction Master',
+        description: 'Completed 100 PVX transactions',
+        type: BadgeType.TRANSACTION,
+        rarity: BadgeRarity.RARE,
+        requirement: 'Complete 100 transactions'
+      },
       
       // Mining badges
-      const firstBlock: Badge = {
-        id: "mining-first",
-        name: "Block Pioneer",
-        description: "Mined your first block on the PVX blockchain",
+      {
+        id: 'mining-first-block',
+        name: 'Block Miner',
+        description: 'Successfully mined your first block',
         type: BadgeType.MINING,
         rarity: BadgeRarity.COMMON,
-        icon: "mining-first",
-        requirement: "Mine your first block on the PVX network",
-        secret: false
-      };
-      
-      const miningMaster: Badge = {
-        id: "mining-master",
-        name: "Mining Master",
-        description: "Mined over 100 blocks on the PVX blockchain",
+        requirement: 'Mine 1 block'
+      },
+      {
+        id: 'mining-10-blocks',
+        name: 'Mining Enthusiast',
+        description: 'Successfully mined 10 blocks',
+        type: BadgeType.MINING,
+        rarity: BadgeRarity.UNCOMMON,
+        requirement: 'Mine 10 blocks'
+      },
+      {
+        id: 'mining-50-blocks',
+        name: 'Mining Expert',
+        description: 'Successfully mined 50 blocks',
         type: BadgeType.MINING,
         rarity: BadgeRarity.RARE,
-        icon: "mining-master",
-        requirement: "Mine 100 blocks on the PVX network",
-        secret: false
-      };
+        requirement: 'Mine 50 blocks'
+      },
+      {
+        id: 'mining-hash-king',
+        name: 'Hash King',
+        description: 'Mine 10 blocks in succession',
+        type: BadgeType.MINING,
+        rarity: BadgeRarity.EPIC,
+        requirement: 'Mine 10 consecutive blocks'
+      },
       
       // Staking badges
-      const firstStake: Badge = {
-        id: "stake-first",
-        name: "Stake Initiate",
-        description: "Made your first stake in the PVX network",
+      {
+        id: 'staking-first',
+        name: 'Stake Novice',
+        description: 'Staked PVX tokens for the first time',
         type: BadgeType.STAKING,
         rarity: BadgeRarity.COMMON,
-        icon: "stake-first",
-        requirement: "Stake any amount of PVX for the first time",
-        secret: false
-      };
-      
-      const whaleStaker: Badge = {
-        id: "stake-whale",
-        name: "Whale Staker",
-        description: "Staked more than 10,000 PVX in a single pool",
+        requirement: 'Stake tokens once'
+      },
+      {
+        id: 'staking-30days',
+        name: 'Stake Holder',
+        description: 'Maintained a stake for 30 days',
         type: BadgeType.STAKING,
-        rarity: BadgeRarity.EPIC,
-        icon: "stake-whale",
-        requirement: "Stake 10,000+ PVX in a single pool",
-        secret: false
-      };
+        rarity: BadgeRarity.UNCOMMON,
+        requirement: 'Keep a stake active for 30 days'
+      },
+      {
+        id: 'staking-1000pvx',
+        name: 'Whale Staker',
+        description: 'Staked over 1000 PVX at once',
+        type: BadgeType.STAKING,
+        rarity: BadgeRarity.RARE,
+        requirement: 'Stake 1000 PVX in a single stake'
+      },
       
       // Governance badges
-      const firstVote: Badge = {
-        id: "gov-first",
-        name: "Governance Participant",
-        description: "Cast your first vote in the PVX governance system",
+      {
+        id: 'gov-first-vote',
+        name: 'Governance Voter',
+        description: 'Participated in a network governance vote',
         type: BadgeType.GOVERNANCE,
         rarity: BadgeRarity.COMMON,
-        icon: "gov-first",
-        requirement: "Vote on any governance proposal",
-        secret: false
-      };
+        requirement: 'Vote in 1 governance proposal'
+      },
+      {
+        id: 'gov-proposal',
+        name: 'Proposal Creator',
+        description: 'Created a governance proposal',
+        type: BadgeType.GOVERNANCE,
+        rarity: BadgeRarity.RARE,
+        requirement: 'Create a governance proposal'
+      },
+      {
+        id: 'gov-winning-proposal',
+        name: 'Proposal Winner',
+        description: 'Had a governance proposal passed by the network',
+        type: BadgeType.GOVERNANCE,
+        rarity: BadgeRarity.EPIC,
+        requirement: 'Have a proposal pass with majority vote'
+      },
       
       // Thringlet badges
-      const thringletParent: Badge = {
-        id: "thringlet-first",
-        name: "Thringlet Parent",
-        description: "Created your first Thringlet",
+      {
+        id: 'thringlet-first',
+        name: 'Thringlet Owner',
+        description: 'Acquired your first Thringlet',
         type: BadgeType.THRINGLET,
         rarity: BadgeRarity.COMMON,
-        icon: "thringlet-first",
-        requirement: "Create your first Thringlet",
-        secret: false
-      };
-      
-      const thringletWhisperer: Badge = {
-        id: "thringlet-whisperer",
-        name: "Thringlet Whisperer",
-        description: "Interact with your Thringlet 100 times",
+        requirement: 'Own 1 Thringlet'
+      },
+      {
+        id: 'thringlet-evolved',
+        name: 'Thringlet Evolved',
+        description: 'Evolved a Thringlet to its next stage',
         type: BadgeType.THRINGLET,
-        rarity: BadgeRarity.RARE,
-        icon: "thringlet-whisperer",
-        requirement: "Have 100 total interactions with your Thringlets",
-        secret: false
-      };
+        rarity: BadgeRarity.UNCOMMON,
+        requirement: 'Evolve a Thringlet once'
+      },
+      {
+        id: 'thringlet-max-level',
+        name: 'Thringlet Maximalist',
+        description: 'Evolved a Thringlet to maximum level',
+        type: BadgeType.THRINGLET,
+        rarity: BadgeRarity.LEGENDARY,
+        requirement: 'Max out a Thringlet\'s level'
+      },
       
       // Special badges
-      const earlyAdopter: Badge = {
-        id: "special-early",
-        name: "PVX Pioneer",
-        description: "One of the first 100 users on the PVX network",
+      {
+        id: 'special-early-adopter',
+        name: 'Early Adopter',
+        description: 'Joined PVX during the alpha phase',
+        type: BadgeType.SPECIAL,
+        rarity: BadgeRarity.EPIC,
+        requirement: 'Created a wallet before official launch'
+      },
+      {
+        id: 'special-night-owl',
+        name: 'Night Owl',
+        description: 'Performed transactions at 3 AM',
+        type: BadgeType.SPECIAL,
+        rarity: BadgeRarity.RARE,
+        requirement: 'Complete a transaction between 2-4 AM',
+        secret: true
+      },
+      {
+        id: 'special-pvx-visionary',
+        name: 'PVX Visionary',
+        description: 'Contributed to the PVX ecosystem in a significant way',
         type: BadgeType.SPECIAL,
         rarity: BadgeRarity.MYTHIC,
-        icon: "special-pioneer",
-        requirement: "Be among the first 100 wallet addresses on the network",
-        secret: true
-      };
-      
-      // Add badges to storage
-      this.badges.set(firstTransaction.id, firstTransaction);
-      this.badges.set(bigSpender.id, bigSpender);
-      this.badges.set(firstBlock.id, firstBlock);
-      this.badges.set(miningMaster.id, miningMaster);
-      this.badges.set(firstStake.id, firstStake);
-      this.badges.set(whaleStaker.id, whaleStaker);
-      this.badges.set(firstVote.id, firstVote);
-      this.badges.set(thringletParent.id, thringletParent);
-      this.badges.set(thringletWhisperer.id, thringletWhisperer);
-      this.badges.set(earlyAdopter.id, earlyAdopter);
-      
-      // Add some example user badges for testing
-      const userBadge1: UserBadge = {
-        badgeId: "tx-first",
-        userId: "PVX_1e1ee32c2770a6af3ca119759c539907",
-        earnedAt: Date.now() - 86400000 * 3 // 3 days ago
-      };
-      
-      const userBadge2: UserBadge = {
-        badgeId: "mining-first",
-        userId: "PVX_1e1ee32c2770a6af3ca119759c539907",
-        earnedAt: Date.now() - 86400000 * 2 // 2 days ago
-      };
-      
-      const userBadge3: UserBadge = {
-        badgeId: "stake-first",
-        userId: "PVX_f5ba480b7db6010eecb453eca8e67ff0",
-        earnedAt: Date.now() - 86400000, // 1 day ago
-        progress: 100
-      };
-      
-      const userBadgeId1 = `${userBadge1.userId}-${userBadge1.badgeId}`;
-      const userBadgeId2 = `${userBadge2.userId}-${userBadge2.badgeId}`;
-      const userBadgeId3 = `${userBadge3.userId}-${userBadge3.badgeId}`;
-      
-      this.userBadges.set(userBadgeId1, userBadge1);
-      this.userBadges.set(userBadgeId2, userBadge2);
-      this.userBadges.set(userBadgeId3, userBadge3);
-      
-      // Save the test data
-      this.saveToFile();
-    }
-  }
-  
-  // Save data to file
-  private async saveToFile() {
-    try {
-      // Ensure data directory exists
-      const dataDir = path.dirname(DATA_FILE_PATH);
-      if (!fs.existsSync(dataDir)) {
-        fs.mkdirSync(dataDir, { recursive: true });
+        requirement: 'Special award from PVX team'
       }
-      
-      // Prepare data for serialization
-      const data: StorageState = {
-        badges: Array.from(this.badges.entries()),
-        userBadges: Array.from(this.userBadges.entries())
-      };
-      
-      // Write to file
-      fs.writeFileSync(DATA_FILE_PATH, JSON.stringify(data, null, 2));
-      console.log("Badge data saved to file");
-    } catch (error) {
-      console.error("Failed to save badge data:", error);
-    }
-  }
-  
-  // Load data from file
-  private loadFromFile() {
-    try {
-      if (fs.existsSync(DATA_FILE_PATH)) {
-        const data = JSON.parse(fs.readFileSync(DATA_FILE_PATH, 'utf8')) as StorageState;
-        
-        // Restore badges
-        this.badges = new Map(data.badges || []);
-        
-        // Restore user badges
-        this.userBadges = new Map(data.userBadges || []);
-        
-        console.log("Badge data loaded from file");
-      } else {
-        console.log("No badge data file found, starting with empty state");
-      }
-    } catch (error) {
-      console.error("Failed to load badge data:", error);
-    }
-  }
-  
-  // Badge methods
-  async getBadge(id: string): Promise<Badge | undefined> {
-    return this.badges.get(id);
-  }
-  
-  async getAllBadges(): Promise<Badge[]> {
-    return Array.from(this.badges.values());
-  }
-  
-  async getVisibleBadges(): Promise<Badge[]> {
-    return Array.from(this.badges.values()).filter(b => !b.secret);
-  }
-  
-  async getBadgesByType(type: BadgeType): Promise<Badge[]> {
-    return Array.from(this.badges.values()).filter(b => b.type === type);
-  }
-  
-  async createBadge(badge: Badge): Promise<Badge> {
-    this.badges.set(badge.id, badge);
-    await this.saveToFile();
-    return badge;
-  }
-  
-  async updateBadge(id: string, updates: Partial<Badge>): Promise<Badge | undefined> {
-    const badge = this.badges.get(id);
-    if (!badge) return undefined;
+    ];
     
-    const updatedBadge = { ...badge, ...updates };
-    this.badges.set(id, updatedBadge);
-    await this.saveToFile();
-    return updatedBadge;
+    fs.writeFileSync(BADGES_DATA_FILE, JSON.stringify(defaultBadges, null, 2));
+    console.log('Badge data loaded from file');
   }
   
-  async deleteBadge(id: string): Promise<boolean> {
-    const success = this.badges.delete(id);
-    if (success) {
-      // Also delete any user badges for this badge
-      const userBadgeIdsToDelete = Array.from(this.userBadges.entries())
-        .filter(([_, userBadge]) => userBadge.badgeId === id)
-        .map(([id, _]) => id);
-      
-      userBadgeIdsToDelete.forEach(id => this.userBadges.delete(id));
-      
-      await this.saveToFile();
+  // Create user badge file if it doesn't exist
+  if (!fs.existsSync(USER_BADGES_DATA_FILE)) {
+    fs.writeFileSync(USER_BADGES_DATA_FILE, JSON.stringify([], null, 2));
+  }
+}
+
+// Initialize data files
+ensureBadgeDataFiles();
+
+// Load badges from file
+export function loadBadges(): Badge[] {
+  try {
+    if (fs.existsSync(BADGES_DATA_FILE)) {
+      const data = fs.readFileSync(BADGES_DATA_FILE, 'utf8');
+      return JSON.parse(data);
     }
-    return success;
+  } catch (error) {
+    console.error('Error loading badge data:', error);
+  }
+  return [];
+}
+
+// Save badges to file
+export function saveBadges(badges: Badge[]): void {
+  try {
+    fs.writeFileSync(BADGES_DATA_FILE, JSON.stringify(badges, null, 2));
+  } catch (error) {
+    console.error('Error saving badge data:', error);
+  }
+}
+
+// Load user badges from file
+export function loadUserBadges(): UserBadge[] {
+  try {
+    if (fs.existsSync(USER_BADGES_DATA_FILE)) {
+      const data = fs.readFileSync(USER_BADGES_DATA_FILE, 'utf8');
+      return JSON.parse(data);
+    }
+  } catch (error) {
+    console.error('Error loading user badge data:', error);
+  }
+  return [];
+}
+
+// Save user badges to file
+export function saveUserBadges(userBadges: UserBadge[]): void {
+  try {
+    fs.writeFileSync(USER_BADGES_DATA_FILE, JSON.stringify(userBadges, null, 2));
+  } catch (error) {
+    console.error('Error saving user badge data:', error);
+  }
+}
+
+// Badge storage class
+export class BadgeStorage {
+  private badges: Badge[] = [];
+  private userBadges: UserBadge[] = [];
+  
+  constructor() {
+    this.badges = loadBadges();
+    this.userBadges = loadUserBadges();
   }
   
-  // User Badge methods
-  async getUserBadge(userId: string, badgeId: string): Promise<UserBadge | undefined> {
-    const id = `${userId}-${badgeId}`;
-    return this.userBadges.get(id);
+  // Get all visible badges (excludes secret badges)
+  getAllVisibleBadges(): Badge[] {
+    return this.badges.filter(badge => !badge.secret);
   }
   
-  async getUserBadges(userId: string): Promise<UserBadge[]> {
-    return Array.from(this.userBadges.values())
-      .filter(ub => ub.userId === userId);
+  // Get all badges (including secret ones)
+  getAllBadges(): Badge[] {
+    return [...this.badges];
   }
   
-  // Get complete badge details for a user
-  async getUserBadgesWithDetails(userId: string): Promise<(UserBadge & { badge: Badge })[]> {
-    const userBadges = await this.getUserBadges(userId);
-    return userBadges
-      .map(ub => {
-        const badge = this.badges.get(ub.badgeId);
-        if (!badge) return null;
-        return { ...ub, badge };
-      })
-      .filter((item): item is (UserBadge & { badge: Badge }) => item !== null);
+  // Get badge by ID
+  getBadgeById(id: string): Badge | undefined {
+    return this.badges.find(badge => badge.id === id);
   }
   
-  async awardBadge(userId: string, badgeId: string): Promise<UserBadge | undefined> {
+  // Get badges by type
+  getBadgesByType(type: BadgeType): Badge[] {
+    return this.badges.filter(badge => badge.type === type && !badge.secret);
+  }
+  
+  // Create a new badge
+  createBadge(badge: Omit<Badge, 'id'>): Badge {
+    const newBadge: Badge = {
+      ...badge,
+      id: uuidv4()
+    };
+    
+    this.badges.push(newBadge);
+    saveBadges(this.badges);
+    
+    return newBadge;
+  }
+  
+  // Update an existing badge
+  updateBadge(id: string, badge: Partial<Badge>): Badge | undefined {
+    const index = this.badges.findIndex(b => b.id === id);
+    if (index === -1) return undefined;
+    
+    this.badges[index] = { ...this.badges[index], ...badge };
+    saveBadges(this.badges);
+    
+    return this.badges[index];
+  }
+  
+  // Delete a badge
+  deleteBadge(id: string): boolean {
+    const index = this.badges.findIndex(b => b.id === id);
+    if (index === -1) return false;
+    
+    this.badges.splice(index, 1);
+    saveBadges(this.badges);
+    
+    // Also remove any user badges for this badge
+    this.userBadges = this.userBadges.filter(ub => ub.badgeId !== id);
+    saveUserBadges(this.userBadges);
+    
+    return true;
+  }
+  
+  // Get user badges
+  getUserBadges(userId: string): UserBadge[] {
+    return this.userBadges.filter(ub => ub.userId === userId);
+  }
+  
+  // Check if user has badge
+  hasUserBadge(userId: string, badgeId: string): boolean {
+    return this.userBadges.some(ub => ub.userId === userId && ub.badgeId === badgeId);
+  }
+  
+  // Award badge to user
+  awardBadgeToUser(userId: string, badgeId: string): UserBadge | undefined {
     // Check if badge exists
-    const badge = await this.getBadge(badgeId);
+    const badge = this.getBadgeById(badgeId);
     if (!badge) return undefined;
     
     // Check if user already has this badge
-    const existingBadge = await this.getUserBadge(userId, badgeId);
-    if (existingBadge) return existingBadge;
+    if (this.hasUserBadge(userId, badgeId)) {
+      return this.userBadges.find(ub => ub.userId === userId && ub.badgeId === badgeId);
+    }
     
-    // Create new user badge
+    // Award badge
     const userBadge: UserBadge = {
-      badgeId,
       userId,
-      earnedAt: Date.now(),
-      progress: 100 // Fully completed
+      badgeId,
+      earnedAt: Date.now()
     };
     
-    const id = `${userId}-${badgeId}`;
-    this.userBadges.set(id, userBadge);
-    await this.saveToFile();
+    this.userBadges.push(userBadge);
+    saveUserBadges(this.userBadges);
+    
     return userBadge;
   }
   
-  async updateUserBadgeProgress(userId: string, badgeId: string, progress: number): Promise<UserBadge | undefined> {
-    const id = `${userId}-${badgeId}`;
-    const userBadge = this.userBadges.get(id);
+  // Update badge progress
+  updateBadgeProgress(userId: string, badgeId: string, progress: number): { userBadge: UserBadge, newlyEarned: boolean } {
+    // Check if badge exists
+    const badge = this.getBadgeById(badgeId);
+    if (!badge) throw new Error('Badge not found');
     
-    // If user doesn't have this badge yet, create with progress
-    if (!userBadge) {
-      // Check if badge exists
-      const badge = await this.getBadge(badgeId);
-      if (!badge) return undefined;
+    // Check if already earned
+    const existingBadge = this.userBadges.find(ub => ub.userId === userId && ub.badgeId === badgeId);
+    if (existingBadge && existingBadge.earnedAt) {
+      return { userBadge: existingBadge, newlyEarned: false };
+    }
+    
+    // Update progress or create new progress entry
+    let newlyEarned = false;
+    let userBadge: UserBadge;
+    
+    if (existingBadge) {
+      // Update existing record
+      existingBadge.progress = Math.min(100, progress);
       
-      const newUserBadge: UserBadge = {
-        badgeId,
+      // Award badge if progress is 100%
+      if (progress >= 100 && !existingBadge.earnedAt) {
+        existingBadge.earnedAt = Date.now();
+        newlyEarned = true;
+      }
+      
+      userBadge = existingBadge;
+    } else {
+      // Create new progress record
+      userBadge = {
         userId,
-        earnedAt: progress >= 100 ? Date.now() : 0, // Only set earnedAt if completed
-        progress
+        badgeId,
+        progress: Math.min(100, progress),
+        earnedAt: progress >= 100 ? Date.now() : 0
       };
       
-      this.userBadges.set(id, newUserBadge);
-      await this.saveToFile();
-      return newUserBadge;
+      newlyEarned = progress >= 100;
+      this.userBadges.push(userBadge);
     }
     
-    // Update existing badge progress
-    const updatedUserBadge: UserBadge = { 
-      ...userBadge,
-      progress,
-      // Update earnedAt if newly completed
-      earnedAt: progress >= 100 && (!userBadge.earnedAt || userBadge.earnedAt === 0) 
-        ? Date.now() 
-        : userBadge.earnedAt
-    };
-    
-    this.userBadges.set(id, updatedUserBadge);
-    await this.saveToFile();
-    return updatedUserBadge;
+    saveUserBadges(this.userBadges);
+    return { userBadge, newlyEarned };
   }
   
-  async revokeUserBadge(userId: string, badgeId: string): Promise<boolean> {
-    const id = `${userId}-${badgeId}`;
-    const success = this.userBadges.delete(id);
-    if (success) {
-      await this.saveToFile();
-    }
-    return success;
+  // Get user badges with full badge details
+  getUserBadgesWithDetails(userId: string): (UserBadge & { badge: Badge })[] {
+    const userBadges = this.getUserBadges(userId);
+    return userBadges.map(ub => {
+      const badge = this.getBadgeById(ub.badgeId);
+      return {
+        ...ub,
+        badge: badge!
+      };
+    });
   }
 }
 
-// Export singleton instance
+// Singleton instance
 export const badgeStorage = new BadgeStorage();
