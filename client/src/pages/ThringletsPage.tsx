@@ -190,7 +190,52 @@ export default function ThringletsPage() {
               <p className="text-gray-300 mb-4">You don't have any Thringlets in your collection yet.</p>
             </CardContent>
             <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-              <Button className="w-full bg-blue-700 hover:bg-blue-600 text-white">
+              <Button 
+                className="w-full bg-blue-700 hover:bg-blue-600 text-white"
+                onClick={() => {
+                  setLoading(true);
+                  
+                  // Create a new random Thringlet
+                  const thringletId = `T${(Math.floor(Math.random() * 900) + 100).toString()}`;
+                  const rarityTypes: Array<'Common' | 'Rare' | 'Epic' | 'Legendary'> = ['Common', 'Rare', 'Epic', 'Legendary'];
+                  const rarity = rarityTypes[Math.floor(Math.random() * rarityTypes.length)] as 'Common' | 'Rare' | 'Epic' | 'Legendary';
+                  
+                  const cores = ['Creation', 'Destruction', 'Balance', 'Chaos', 'Order', 'Logic', 'Emotion'];
+                  const personalities = ['Analytical', 'Creative', 'Rebellious', 'Loyal', 'Paranoid', 'Curious'];
+                  
+                  const newThringlet = {
+                    id: thringletId,
+                    name: `THRINGLET_${thringletId}`,
+                    core: cores[Math.floor(Math.random() * cores.length)],
+                    personality: personalities[Math.floor(Math.random() * personalities.length)],
+                    lore: `A newly generated Thringlet entity, still developing its core identity.`,
+                    abilities: [
+                      {
+                        name: `ABILITY_${Math.floor(Math.random() * 1000)}`,
+                        type: Math.random() > 0.5 ? 'utility' : 'terminal_hack',
+                        desc: 'A mysterious and untested ability'
+                      }
+                    ],
+                    rarity: rarity,
+                    ownerAddress: SAMPLE_WALLET_ADDRESS
+                  };
+                  
+                  // Add to the manager
+                  thringletManager.addThringlet(newThringlet);
+                  
+                  // Refresh the displayed list
+                  setTimeout(() => {
+                    refreshThringlets();
+                    toast({
+                      title: "First Thringlet Added",
+                      description: `${newThringlet.name} has been added to your collection.`,
+                      variant: "default"
+                    });
+                    setLoading(false);
+                  }, 1000);
+                }}
+                disabled={loading}
+              >
                 <Plus className="h-4 w-4 mr-2" />
                 Get Your First Thringlet
               </Button>
@@ -246,7 +291,52 @@ export default function ThringletsPage() {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-                <Button className="w-full bg-blue-700 hover:bg-blue-600 text-white">
+                <Button 
+                  className="w-full bg-blue-700 hover:bg-blue-600 text-white"
+                  onClick={() => {
+                    setLoading(true);
+                    
+                    // Create a new random Thringlet
+                    const thringletId = `T${(Math.floor(Math.random() * 900) + 100).toString()}`;
+                    const rarityTypes: Array<'Common' | 'Rare' | 'Epic' | 'Legendary'> = ['Common', 'Rare', 'Epic', 'Legendary'];
+                    const rarity = rarityTypes[Math.floor(Math.random() * rarityTypes.length)] as 'Common' | 'Rare' | 'Epic' | 'Legendary';
+                    
+                    const cores = ['Creation', 'Destruction', 'Balance', 'Chaos', 'Order', 'Logic', 'Emotion'];
+                    const personalities = ['Analytical', 'Creative', 'Rebellious', 'Loyal', 'Paranoid', 'Curious'];
+                    
+                    const newThringlet = {
+                      id: thringletId,
+                      name: `THRINGLET_${thringletId}`,
+                      core: cores[Math.floor(Math.random() * cores.length)],
+                      personality: personalities[Math.floor(Math.random() * personalities.length)],
+                      lore: `A newly generated Thringlet entity, still developing its core identity.`,
+                      abilities: [
+                        {
+                          name: `ABILITY_${Math.floor(Math.random() * 1000)}`,
+                          type: Math.random() > 0.5 ? 'utility' : 'terminal_hack',
+                          desc: 'A mysterious and untested ability'
+                        }
+                      ],
+                      rarity: rarity,
+                      ownerAddress: SAMPLE_WALLET_ADDRESS
+                    };
+                    
+                    // Add to the manager
+                    thringletManager.addThringlet(newThringlet);
+                    
+                    // Refresh the displayed list
+                    setTimeout(() => {
+                      refreshThringlets();
+                      toast({
+                        title: "New Thringlet Added",
+                        description: `${newThringlet.name} has been added to your collection.`,
+                        variant: "default"
+                      });
+                      setLoading(false);
+                    }, 1000);
+                  }}
+                  disabled={loading}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Get New Thringlet
                 </Button>
