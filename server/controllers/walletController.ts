@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import * as cryptoUtils from '../utils/crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
+import { TransactionType } from '@shared/types';
 
 /**
  * Create a new wallet
@@ -151,10 +152,46 @@ export const getBalance = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
+    // Get active stakes for this wallet
+    const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(address);
+    
+    // Calculate total staked
+    const totalStaked = activeStakes.reduce((total, stake) => {
+      return total + BigInt(stake.amount);
+    }, BigInt(0));
+    
+    // Calculate pending rewards
+    let pendingRewards = BigInt(0);
+    const now = Date.now();
+    
+    for (const stake of activeStakes) {
+      const pool = await memBlockchainStorage.getStakingPoolById(stake.poolId);
+      if (pool) {
+        const timeSinceLastReward = now - stake.lastRewardTime;
+        const daysSinceLastReward = timeSinceLastReward / (24 * 60 * 60 * 1000);
+        const apyDecimal = parseFloat(pool.apy) / 100;
+        const reward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysSinceLastReward / 365));
+        pendingRewards += BigInt(reward);
+      }
+    }
+    
+    // Get reward transactions
+    const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+    const rewardTxs = transactions.filter(tx => 
+      tx.type === TransactionType.REWARD && tx.to === address
+    );
+    
+    // Calculate claimed rewards
+    const claimedRewards = rewardTxs.reduce((total, tx) => {
+      return total + BigInt(tx.amount);
+    }, BigInt(0));
+    
     res.json({
       balance: wallet.balance,
-      staked: "0", // Not implemented yet
-      rewards: "0"  // Not implemented yet
+      staked: totalStaked.toString(),
+      pending_rewards: pendingRewards.toString(),
+      claimed_rewards: claimedRewards.toString(),
+      active_stakes: activeStakes.length
     });
   } catch (error) {
     console.error('Error getting wallet balance:', error);
@@ -232,6 +269,85 @@ export const getAllWallets = async (req: Request, res: Response) => {
     console.error('Error getting all wallets:', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to get wallets'
+    });
+  }
+};
+
+/**
+ * Get staking information for a wallet
+ * GET /api/wallet/:address/staking
+ */
+export const getStakingInfo = async (req: Request, res: Response) => {
+  try {
+    const { address } = req.params;
+    const wallet = await memBlockchainStorage.getWalletByAddress(address);
+    
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    // Get active stakes for this wallet
+    const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(address);
+    
+    // Get all pools for reference
+    const pools = await memBlockchainStorage.getStakingPools();
+    
+    // Calculate total staked and format stake information
+    const totalStaked = activeStakes.reduce((total, stake) => {
+      return total + BigInt(stake.amount);
+    }, BigInt(0));
+    
+    // Format detailed stake information
+    const stakesInfo = await Promise.all(activeStakes.map(async (stake) => {
+      const pool = pools.find(p => p.id === stake.poolId);
+      
+      // Calculate pending rewards for this stake
+      const now = Date.now();
+      const timeSinceLastReward = now - stake.lastRewardTime;
+      const daysSinceLastReward = timeSinceLastReward / (24 * 60 * 60 * 1000);
+      const apyDecimal = parseFloat(pool?.apy || "0") / 100;
+      const pendingReward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysSinceLastReward / 365));
+      
+      return {
+        stake_id: stake.id,
+        pool_id: stake.poolId,
+        pool_name: pool?.name || 'Unknown Pool',
+        amount: stake.amount,
+        apy: pool?.apy || '0',
+        start_time: new Date(stake.startTime).toISOString(),
+        unlock_time: stake.unlockTime > 0 ? new Date(stake.unlockTime).toISOString() : 'No lockup',
+        pending_reward: pendingReward.toString(),
+        last_reward_time: new Date(stake.lastRewardTime).toISOString()
+      };
+    }));
+    
+    // Get reward transactions
+    const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+    const stakesTxs = transactions.filter(tx => 
+      [TransactionType.STAKE, TransactionType.UNSTAKE, TransactionType.REWARD].includes(tx.type) && 
+      (tx.to === address || tx.from === address)
+    );
+    
+    // Format transaction history
+    const txHistory = stakesTxs.map(tx => ({
+      tx_hash: tx.hash,
+      type: tx.type,
+      amount: tx.amount,
+      timestamp: new Date(tx.timestamp).toISOString(),
+      from: tx.from,
+      to: tx.to
+    }));
+    
+    res.json({
+      address: wallet.address,
+      total_staked: totalStaked.toString(),
+      active_stakes: stakesInfo,
+      transaction_history: txHistory
+    });
+  } catch (error) {
+    console.error('Error getting staking info:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get staking information'
     });
   }
 };

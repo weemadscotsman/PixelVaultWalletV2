@@ -4,6 +4,12 @@ import * as walletController from '../controllers/walletController';
 const router = express.Router();
 
 /**
+ * Get all wallets
+ * GET /api/wallet/all
+ */
+router.get('/all', walletController.getAllWallets);
+
+/**
  * Create a new wallet
  * POST /api/wallet/create
  */
@@ -16,16 +22,16 @@ router.post('/create', walletController.createWallet);
 router.post('/import', walletController.importWallet);
 
 /**
- * Get wallet info
- * GET /api/wallet/:address
- */
-router.get('/:address', walletController.getWallet);
-
-/**
- * Get wallet balance
+ * Get wallet balance with staking info
  * GET /api/wallet/:address/balance
  */
 router.get('/:address/balance', walletController.getBalance);
+
+/**
+ * Get detailed staking information
+ * GET /api/wallet/:address/staking
+ */
+router.get('/:address/staking', walletController.getStakingInfo);
 
 /**
  * Export wallet keys
@@ -34,9 +40,9 @@ router.get('/:address/balance', walletController.getBalance);
 router.post('/:address/export', walletController.exportWalletKeys);
 
 /**
- * Get all wallets
- * GET /api/wallet/all
+ * Get wallet info
+ * GET /api/wallet/:address
  */
-router.get('/all', walletController.getAllWallets);
+router.get('/:address', walletController.getWallet);
 
 export default router;

@@ -20,6 +20,9 @@ const PVX_MIN_DIFFICULTY = 0.5;
 const PVX_MAX_DIFFICULTY = 5.0;
 const PVX_BLOCK_REWARD = "5000000"; // 5 PVX
 const PVX_BLOCK_TIME = 60; // 1 minute
+const PVX_TARGET_BLOCK_TIME_MS = 60000; // 1 minute
+const PVX_MAX_TRANSACTIONS_PER_BLOCK = 50;
+const PVX_MINING_INTERVAL_MS = 10000; // Check every 10 seconds
 
 // In-memory state
 let blockchainStatus: BlockchainStatus = {
