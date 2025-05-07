@@ -318,6 +318,92 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
  * Get staking information for a wallet
  * GET /api/wallet/:address/staking
  */
+/**
+ * Send a transaction
+ * POST /api/wallet/send
+ */
+export const sendTransaction = async (req: Request, res: Response) => {
+  try {
+    const { from, to, amount, passphrase, note } = req.body;
+    
+    if (!from || !to || !amount || !passphrase) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    // Get sender wallet
+    const sender = await memBlockchainStorage.getWalletByAddress(from);
+    if (!sender) {
+      return res.status(404).json({ error: 'Sender wallet not found' });
+    }
+    
+    // Get recipient wallet
+    const recipient = await memBlockchainStorage.getWalletByAddress(to);
+    if (!recipient) {
+      return res.status(404).json({ error: 'Recipient wallet not found' });
+    }
+    
+    // Verify passphrase
+    const hash = crypto.createHash('sha256')
+      .update(passphrase + sender.passphraseSalt)
+      .digest('hex');
+    
+    if (hash !== sender.passphraseHash) {
+      return res.status(401).json({ error: 'Invalid passphrase' });
+    }
+    
+    // Verify sufficient balance
+    const amountBigInt = BigInt(amount);
+    const balanceBigInt = BigInt(sender.balance);
+    
+    if (amountBigInt > balanceBigInt) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
+    
+    // Create transaction
+    const tx = {
+      hash: crypto.randomBytes(32).toString('hex'),
+      from,
+      to,
+      amount,
+      fee: "0",
+      timestamp: Date.now(),
+      type: TransactionType.TRANSFER,
+      status: 'pending',
+      note: note || '',
+      blockHeight: 0,
+      confirmations: 0
+    };
+    
+    await memBlockchainStorage.createTransaction(tx);
+    
+    // Update balances
+    sender.balance = (balanceBigInt - amountBigInt).toString();
+    recipient.balance = (BigInt(recipient.balance) + amountBigInt).toString();
+    
+    await memBlockchainStorage.updateWallet(sender);
+    await memBlockchainStorage.updateWallet(recipient);
+    
+    // Update transaction status to confirmed
+    tx.status = 'confirmed';
+    tx.confirmations = 1;
+    await memBlockchainStorage.updateTransaction(tx);
+    
+    res.status(201).json({
+      hash: tx.hash,
+      from,
+      to,
+      amount,
+      timestamp: tx.timestamp,
+      status: tx.status
+    });
+  } catch (error) {
+    console.error('Error sending transaction:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to send transaction'
+    });
+  }
+};
+
 export const getStakingInfo = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;

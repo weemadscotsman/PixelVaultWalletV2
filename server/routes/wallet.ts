@@ -46,6 +46,12 @@ router.post('/:address/export', walletController.exportWalletKeys);
 router.get('/history/:address', walletController.getTransactionHistory);
 
 /**
+ * Send transaction from wallet
+ * POST /api/wallet/send
+ */
+router.post('/send', walletController.sendTransaction);
+
+/**
  * Get wallet info
  * GET /api/wallet/:address
  */
