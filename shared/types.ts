@@ -13,18 +13,40 @@ export enum TransactionType {
 }
 
 /**
+ * Represents the blockchain status
+ */
+export interface BlockchainStatus {
+  connected: boolean;
+  error?: string;
+  latestBlock?: {
+    height: number;
+    hash: string;
+    timestamp: number;
+  };
+  peers?: number;
+  networkHashRate?: number;
+  circulatingSupply?: string;
+  difficulty?: number;
+}
+
+/**
+ * Represents a transaction hash (for response types)
+ */
+export type TransactionHash = string;
+
+/**
  * Represents a block in the PVX blockchain
  */
 export interface Block {
   hash: string;
-  prevHash: string;
+  previousHash: string;
   height: number;
   timestamp: number;
   transactions: string[]; // Transaction hashes
   miner: string; // Miner address
   difficulty: number;
-  nonce: number;
-  size: number;
+  nonce: string;
+  reward: string;
 }
 
 /**
@@ -60,11 +82,18 @@ export interface Wallet {
  */
 export interface MiningStats {
   address: string;
-  hashRate: number;
-  blocksFound: number;
-  lastActiveMiningTime: number;
-  totalReward: string;
-  isActive: boolean;
+  blocksMined: number;
+  totalRewards: string;
+  isCurrentlyMining: boolean;
+  currentHashRate: string;
+  lastBlockMined?: number;
+}
+
+/**
+ * Represents blockchain trends for visualization
+ */
+export interface BlockchainTrends {
+  metrics: any[]; // Simplified for now
 }
 
 /**
@@ -103,7 +132,17 @@ export enum ThringletEmotionState {
   ANGRY = 'angry',
   EXCITED = 'excited',
   TIRED = 'tired',
-  HUNGRY = 'hungry'
+  HUNGRY = 'hungry',
+  SCARED = 'scared',
+  LOVE = 'love'
+}
+
+/**
+ * Represents a state history entry
+ */
+export interface StateHistoryEntry {
+  state: ThringletEmotionState;
+  timestamp: number;
 }
 
 /**
@@ -116,13 +155,10 @@ export interface Thringlet {
   createdAt: number;
   lastInteraction: number;
   emotionalState: ThringletEmotionState;
-  level: number;
-  experience: number;
+  interactionCount: number;
+  stateHistory: StateHistoryEntry[];
+  description?: string;
+  metadata?: any;
+  zk_verified?: boolean;
   abilities: string[];
-  visual: {
-    baseColor: string;
-    eyeColor: string;
-    appendages: number;
-    specialFeatures: string[];
-  };
 }

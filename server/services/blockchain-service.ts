@@ -557,7 +557,15 @@ export async function getAllWallets() {
 /**
  * Get blockchain trends data for visualization
  */
-export function getBlockchainTrends(): BlockchainTrends {
+export async function getRecentBlocks(limit: number = 10): Promise<Block[]> {
+  return await memBlockchainStorage.getRecentBlocks(limit);
+}
+
+export async function getRecentTransactions(limit: number = 10): Promise<Transaction[]> {
+  return await memBlockchainStorage.getRecentTransactions(limit);
+}
+
+export function getBlockchainTrends(): any {
   // Generate realistic trend data
   return {
     metrics: [
@@ -683,7 +691,12 @@ export function simulateThringletInteraction(
   interactionType: string
 ): Thringlet {
   // Update interaction count
-  thringlet.interactionCount += 1;
+  thringlet.interactionCount = (thringlet.interactionCount || 0) + 1;
+  
+  // Initialize stateHistory if it doesn't exist
+  if (!thringlet.stateHistory) {
+    thringlet.stateHistory = [];
+  }
   
   // Record previous state
   const previousState = thringlet.emotionalState;
@@ -692,34 +705,34 @@ export function simulateThringletInteraction(
   thringlet.lastInteraction = Date.now();
   
   // Determine new emotional state based on interaction type
-  let newState: ThringletEmotionalState;
+  let newState: ThringletEmotionState;
   
   switch (interactionType.toLowerCase()) {
     case 'pet':
     case 'praise':
     case 'feed':
       newState = Math.random() > 0.8 
-        ? ThringletEmotionalState.EXCITED 
-        : ThringletEmotionalState.HAPPY;
+        ? ThringletEmotionState.EXCITED 
+        : ThringletEmotionState.HAPPY;
       break;
     case 'ignore':
       newState = Math.random() > 0.7 
-        ? ThringletEmotionalState.SAD 
-        : ThringletEmotionalState.NEUTRAL;
+        ? ThringletEmotionState.SAD 
+        : ThringletEmotionState.NEUTRAL;
       break;
     case 'scold':
       newState = Math.random() > 0.6 
-        ? ThringletEmotionalState.ANGRY 
-        : ThringletEmotionalState.SAD;
+        ? ThringletEmotionState.ANGRY 
+        : ThringletEmotionState.SAD;
       break;
     case 'scare':
-      newState = ThringletEmotionalState.SCARED;
+      newState = ThringletEmotionState.SCARED;
       break;
     case 'gift':
-      newState = ThringletEmotionalState.LOVE;
+      newState = ThringletEmotionState.LOVE;
       break;
     default:
-      newState = ThringletEmotionalState.NEUTRAL;
+      newState = ThringletEmotionState.NEUTRAL;
   }
   
   // Update thringlet emotion
@@ -751,22 +764,6 @@ export async function initializeBlockchain() {
     console.error('Failed to initialize blockchain:', error);
     return blockchainStatus;
   }
-}
-
-// Helper functions to retrieve blockchain data
-
-/**
- * Get recent blocks (last n blocks)
- */
-export async function getRecentBlocks(limit: number = 10): Promise<Block[]> {
-  return await memBlockchainStorage.getRecentBlocks(limit);
-}
-
-/**
- * Get recent transactions (last n transactions)
- */
-export async function getRecentTransactions(limit: number = 10): Promise<Transaction[]> {
-  return await memBlockchainStorage.getRecentTransactions(limit);
 }
 
 // For mock pagination
@@ -815,7 +812,7 @@ export function getThringletById(id: string): Thringlet {
     },
     createdAt: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000),
     zk_verified: true,
-    emotionalState: ThringletEmotionalState.NEUTRAL,
+    emotionalState: ThringletEmotionState.NEUTRAL,
     lastInteraction: Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000),
     interactionCount: Math.floor(Math.random() * 100),
     stateHistory: [],

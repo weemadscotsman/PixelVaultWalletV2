@@ -5,6 +5,7 @@ import txRoutes from './routes/tx';
 import stakeRoutes from './routes/stake';
 import thringletRoutes from './routes/thringlet';
 import authRoutes from './routes/auth';
+import blockchainRoutes from './routes/blockchain-routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // PVX blockchain API routes
@@ -13,6 +14,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/stake', stakeRoutes);
   app.use('/api/thringlet', thringletRoutes);
   app.use('/api/auth', authRoutes);
+  app.use('/api/blockchain', blockchainRoutes);
 
   // Add a simple health check endpoint
   app.get('/api/health', (_req: Request, res: Response) => {
