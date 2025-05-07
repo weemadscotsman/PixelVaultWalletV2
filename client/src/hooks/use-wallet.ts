@@ -1,118 +1,149 @@
-import { useState, useEffect } from 'react';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { apiRequest, queryClient } from '../lib/queryClient';
-import { useToast } from './use-toast';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "./use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useState } from "react";
 
-export type Wallet = {
-  id: string;
+interface Wallet {
   address: string;
-  privateKey: string;
   publicKey: string;
   balance: string;
-  mnemonicPhrase?: string;
-  isZkEnabled: boolean;
-};
+  createdAt: string;
+  lastSynced: string;
+}
+
+interface CreateWalletRequest {
+  passphrase: string;
+}
+
+interface TransactionRequest {
+  fromAddress: string;
+  toAddress: string;
+  amount: string;
+  passphrase: string;
+  note?: string;
+}
 
 export function useWallet() {
   const { toast } = useToast();
-  const [storedWallet, setStoredWallet] = useState<Wallet | null>(null);
-  
-  // Load wallet from localStorage on component mount
-  useEffect(() => {
-    const walletData = localStorage.getItem('pvx_wallet');
-    if (walletData) {
-      try {
-        setStoredWallet(JSON.parse(walletData));
-      } catch (e) {
-        console.error('Failed to parse wallet data from localStorage');
-      }
+  const queryClient = useQueryClient();
+  const [activeWallet, setActiveWallet] = useState<string | null>(
+    localStorage.getItem('activeWallet')
+  );
+
+  // Set active wallet
+  const setActiveWalletAddress = (address: string | null) => {
+    setActiveWallet(address);
+    if (address) {
+      localStorage.setItem('activeWallet', address);
+    } else {
+      localStorage.removeItem('activeWallet');
     }
-  }, []);
-  
+  };
+
   // Create a new wallet
   const createWalletMutation = useMutation({
-    mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/wallet/create');
-      return await response.json();
+    mutationFn: async (data: CreateWalletRequest) => {
+      const res = await apiRequest('POST', '/api/blockchain/wallet', data);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to create wallet');
+      }
+      return await res.json() as Wallet;
     },
-    onSuccess: (wallet: Wallet) => {
-      localStorage.setItem('pvx_wallet', JSON.stringify(wallet));
-      setStoredWallet(wallet);
+    onSuccess: (data) => {
       toast({
-        title: 'Wallet Created',
-        description: 'Your new PVX wallet has been created successfully.',
+        title: "Wallet created",
+        description: `New wallet created with address ${data.address}`,
       });
+      setActiveWalletAddress(data.address);
+      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallets'] });
     },
     onError: (error: Error) => {
       toast({
-        title: 'Failed to Create Wallet',
-        description: error.message || 'There was an error creating your wallet.',
-        variant: 'destructive',
+        title: "Failed to create wallet",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });
-  
-  // Import wallet from private key
-  const importWalletMutation = useMutation({
-    mutationFn: async (privateKey: string) => {
-      const response = await apiRequest('POST', '/api/wallet/import', { privateKey });
-      return await response.json();
-    },
-    onSuccess: (wallet: Wallet) => {
-      localStorage.setItem('pvx_wallet', JSON.stringify(wallet));
-      setStoredWallet(wallet);
-      toast({
-        title: 'Wallet Imported',
-        description: 'Your PVX wallet has been imported successfully.',
-      });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Failed to Import Wallet',
-        description: error.message || 'There was an error importing your wallet.',
-        variant: 'destructive',
-      });
-    },
-  });
-  
-  // Get wallet balance (refreshes on interval)
-  const { data: walletBalance, isLoading: isLoadingBalance } = useQuery({
-    queryKey: ['/api/wallet/balance', storedWallet?.address],
-    queryFn: async () => {
-      if (!storedWallet?.address) return null;
-      const response = await apiRequest('GET', `/api/wallet/balance?address=${storedWallet.address}`);
-      return await response.json();
-    },
-    enabled: !!storedWallet?.address,
-    refetchInterval: 15000, // Refresh every 15 seconds
-  });
-  
-  // Update wallet with latest balance
-  useEffect(() => {
-    if (walletBalance && storedWallet) {
-      const updatedWallet = { ...storedWallet, balance: walletBalance.balance };
-      setStoredWallet(updatedWallet);
-      localStorage.setItem('pvx_wallet', JSON.stringify(updatedWallet));
-    }
-  }, [walletBalance, storedWallet]);
-  
-  // Clear wallet from storage
-  const clearWallet = () => {
-    localStorage.removeItem('pvx_wallet');
-    setStoredWallet(null);
-    toast({
-      title: 'Wallet Disconnected',
-      description: 'Your wallet has been disconnected.',
+
+  // Get wallet by address
+  const getWallet = (address?: string) => {
+    const walletAddress = address || activeWallet;
+    
+    return useQuery({
+      queryKey: ['/api/blockchain/wallet', walletAddress],
+      queryFn: async () => {
+        const res = await apiRequest('GET', `/api/blockchain/wallet/${walletAddress}`);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || `Failed to fetch wallet with address ${walletAddress}`);
+        }
+        return await res.json() as Wallet;
+      },
+      enabled: !!walletAddress, // Only run query if address is provided
+      refetchInterval: 5000, // Refetch every 5 seconds
     });
   };
-  
+
+  // Get transactions for active wallet
+  const getWalletTransactions = (address?: string) => {
+    const walletAddress = address || activeWallet;
+    
+    return useQuery({
+      queryKey: ['/api/blockchain/address', walletAddress, 'transactions'],
+      queryFn: async () => {
+        const res = await apiRequest('GET', `/api/blockchain/address/${walletAddress}/transactions`);
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || `Failed to fetch transactions for address ${walletAddress}`);
+        }
+        return await res.json();
+      },
+      enabled: !!walletAddress, // Only run query if address is provided
+      refetchInterval: 10000, // Refetch every 10 seconds
+    });
+  };
+
+  // Send transaction
+  const sendTransactionMutation = useMutation({
+    mutationFn: async (data: TransactionRequest) => {
+      const res = await apiRequest('POST', '/api/blockchain/transaction', data);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to send transaction');
+      }
+      return await res.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Transaction sent",
+        description: `Transaction with hash ${data.hash} has been submitted to the network`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/address', data.fromAddress, 'transactions'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallet', data.fromAddress] });
+      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallet', data.toAddress] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to send transaction",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   return {
-    wallet: storedWallet,
-    createWallet: createWalletMutation.mutate,
-    importWallet: importWalletMutation.mutate,
-    clearWallet,
-    isCreatingWallet: createWalletMutation.isPending,
-    isImportingWallet: importWalletMutation.isPending,
-    isLoadingBalance,
+    // State
+    activeWallet,
+    setActiveWalletAddress,
+    
+    // Queries
+    getWallet,
+    getWalletTransactions,
+    
+    // Mutations
+    createWalletMutation,
+    sendTransactionMutation,
   };
 }

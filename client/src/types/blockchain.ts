@@ -1,122 +1,257 @@
-// Transaction types
+// Basic blockchain types
+export type AccountId = string;
+export type Balance = string; // String for precision (represents μPVX)
+export type BlockNumber = number;
+export type Timestamp = number;
+export type Nonce = number;
+export type TransactionHash = string;
+export type NftId = string;
+export type StakeId = string;
+export type ProposalId = string;
+export type ZkProof = string;
+
+// Enum types
 export enum TransactionType {
   TRANSFER = 'transfer',
-  MINING_REWARD = 'mining_reward',
-  STAKING_REWARD = 'staking_reward',
-  NFT_MINT = 'nft_mint',
-  NFT_TRANSFER = 'nft_transfer',
+  MINT = 'mint',
+  BURN = 'burn',
   STAKE = 'stake',
   UNSTAKE = 'unstake',
-  GOVERNANCE_PROPOSAL = 'governance_proposal',
-  GOVERNANCE_VOTE = 'governance_vote'
+  CREATE_PROPOSAL = 'create_proposal',
+  VOTE = 'vote',
+  CLAIM_REWARD = 'claim_reward',
+  MINT_NFT = 'mint_nft',
+  SUBMIT_PROOF = 'submit_proof',
+  THRINGLET_INTERACTION = 'thringlet_interaction'
+}
+
+export enum ProofType {
+  ZK_SNARK = 'zk_snark',
+  SCREEN_CAPTURE = 'screen_capture',
+  GAME_ACTIVITY = 'game_activity',
+}
+
+export enum VoteOption {
+  YES = 'yes',
+  NO = 'no',
+  ABSTAIN = 'abstain'
+}
+
+export enum ProposalStatus {
+  ACTIVE = 'active',
+  PASSED = 'passed',
+  FAILED = 'failed',
+  EXECUTED = 'executed',
+  VETOED = 'vetoed'
+}
+
+export enum StakingDuration {
+  FLEXIBLE = 0,
+  ONE_MONTH = 30,
+  THREE_MONTHS = 90,
+  SIX_MONTHS = 180,
+  ONE_YEAR = 365
+}
+
+export enum ThringletEmotionalState {
+  NEUTRAL = 'neutral',
+  HAPPY = 'happy',
+  SAD = 'sad',
+  ANGRY = 'angry',
+  EXCITED = 'excited',
+  SCARED = 'scared',
+  LOVE = 'love'
+}
+
+// Interface types
+export interface Account {
+  id: AccountId;
+  balance: Balance;
+  nonce: Nonce;
+  nfts: NftId[];
+  lastActivity: Timestamp;
 }
 
 export interface Transaction {
-  id: string;
-  hash: string;
+  hash: TransactionHash;
   type: TransactionType;
-  fromAddress: string;
-  toAddress: string;
-  amount: number;
-  timestamp: Date;
-  blockHeight?: number;
-  note?: string;
+  from: AccountId;
+  to: AccountId;
+  amount: Balance;
+  timestamp: Timestamp;
+  nonce: Nonce;
+  signature: string;
+  blockHeight?: BlockNumber;
+  payload?: any;
+  status: 'pending' | 'confirmed' | 'failed';
 }
 
-// Block structure
 export interface Block {
-  height: number;
+  height: BlockNumber;
   hash: string;
   previousHash: string;
-  timestamp: Date;
-  nonce: number;
+  timestamp: Timestamp;
+  transactions: TransactionHash[];
+  miner: AccountId;
+  nonce: string;
   difficulty: number;
-  transactions: Transaction[];
-  miner: string;
-  reward: number;
+  reward: Balance;
 }
 
-// Mining related types
-export interface MiningStats {
-  address: string;
-  blocksMined: number;
-  totalRewards: number;
-  isCurrentlyMining: boolean;
-  currentHashRate: number;
-  lastBlockMined?: Date;
+export interface NFT {
+  id: NftId;
+  name: string;
+  description?: string;
+  owner: AccountId;
+  metadata: {
+    imageUrl?: string;
+    attributes?: any;
+  };
+  createdAt: Timestamp;
+  zk_verified: boolean;
 }
 
-export interface MiningReward {
-  id: string;
-  blockHeight: number;
-  amount: number;
-  timestamp: Date;
-  address: string;
+export interface Thringlet extends NFT {
+  emotionalState: ThringletEmotionalState;
+  lastInteraction: Timestamp;
+  interactionCount: number;
+  stateHistory: Array<{
+    state: ThringletEmotionalState;
+    timestamp: Timestamp;
+  }>;
+  abilities: string[];
 }
 
-// Staking related types
 export interface Stake {
-  id: string;
-  address: string;
-  amount: number;
-  startTime: Date;
-  endTime: Date;
-  duration: number;  // in days
-  votingPower: number;
+  id: StakeId;
+  owner: AccountId;
+  amount: Balance;
+  startTime: Timestamp;
+  endTime?: Timestamp;
+  duration: StakingDuration;
   isActive: boolean;
-}
-
-export interface StakingStats {
-  totalStaked: number;
-  votingPower: number;
-  estimatedYield: string;  // percentage as string (e.g. "8.2")
-}
-
-// Governance related types
-export enum VoteOption {
-  YES = 'YES',
-  NO = 'NO',
-  ABSTAIN = 'ABSTAIN'
+  votingPower: Balance;
 }
 
 export interface Proposal {
-  id: string;
+  id: ProposalId;
   title: string;
   description: string;
-  creatorAddress: string;
-  createTime: Date;
-  endTime: Date;
-  status: 'active' | 'passed' | 'rejected' | 'executed';
-  yesVotes: number;
-  noVotes: number;
-  abstainVotes: number;
-  quorum: number;
+  creator: AccountId;
+  startTime: Timestamp;
+  endTime: Timestamp;
+  status: ProposalStatus;
+  yesVotes: Balance;
+  noVotes: Balance;
+  abstainVotes: Balance;
+  quorum: Balance;
   voteCount: number;
-  ttl: number;  // Time to live in days
 }
 
-// NFT related types
-export interface NFT {
-  id: string;
-  name: string;
-  description: string;
-  ownerAddress: string;
-  createdAt: Date;
-  imageUrl?: string;
-  metadata?: Record<string, any>;
-  enableZkVerification: boolean;
-  hideOwnerAddress: boolean;
-  transactionHash: string;
+export interface Vote {
+  voter: AccountId;
+  proposalId: ProposalId;
+  option: VoteOption;
+  amount: Balance; // Voting power used
+  timestamp: Timestamp;
 }
 
-// Network stats
-export interface NetworkStats {
-  blockHeight: number;
-  blockTime: string;  // e.g. "~15 sec"
-  peers: number;
-  hashRate: string;  // e.g. "12.4 TH/s"
-  lastBlockTimestamp: Date;
+export interface MiningStats {
+  address: AccountId;
+  blocksMined: number;
+  totalRewards: Balance;
+  isCurrentlyMining: boolean;
+  currentHashRate: string; // Hash/s
+  lastBlockMined?: Timestamp;
+}
+
+export interface MiningReward {
+  address: AccountId;
+  amount: Balance;
+  blockHeight: BlockNumber;
+  timestamp: Timestamp;
+}
+
+export interface ZkTransaction extends Transaction {
+  proof: ZkProof;
+  publicInputs: string[];
+  verificationKey: string;
+}
+
+export interface BlockchainStatus {
+  connected: boolean;
+  latestBlock?: {
+    height: BlockNumber;
+    hash: string;
+    timestamp: Timestamp;
+  };
+  peers?: number;
+  networkHashRate?: number;
+  circulatingSupply?: Balance;
+  difficulty?: number;
+  error?: string;
+}
+
+export interface WalletResponse {
+  address: string;
+  balance: string;
+  createdAt: string;
+  lastSynced: string;
+  isLocalOnly?: boolean;
+}
+
+export interface CreateWalletRequest {
+  passphrase: string;
+}
+
+export interface TransferRequest {
+  fromAddress: string;
+  toAddress: string;
+  amount: string;
+  passphrase: string;
+  note?: string;
+}
+
+export interface TransferResponse {
+  hash: string;
+  fromAddress: string;
+  toAddress: string;
+  amount: string;
+  timestamp: string;
+}
+
+export interface BlockchainTrends {
+  metrics: Array<{
+    id: string;
+    label: string;
+    color: string;
+    data: {
+      [key: string]: {
+        value: number;
+        maxValue: number;
+        unit: string;
+      };
+    };
+  }>;
+}
+
+export interface GameScore {
+  userId: number;
+  walletAddress: string;
+  username: string;
+  gameType: 'hashlord' | 'gasescape' | 'stakingwars';
+  score: number;
+  timeSpent: number; // in seconds
   difficulty: number;
-  circulatingSupply: number;
-  totalSupply: number;
+  metadata?: {
+    blocksMined?: number;
+    gasSaved?: string;
+    stakingRewards?: string;
+  };
+}
+
+export interface BlockchainError {
+  code: string;
+  message: string;
+  details?: any;
 }

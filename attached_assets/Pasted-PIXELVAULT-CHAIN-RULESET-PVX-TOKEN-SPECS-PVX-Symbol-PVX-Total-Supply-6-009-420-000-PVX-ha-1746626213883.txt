@@ -1,0 +1,143 @@
+PIXELVAULT CHAIN RULESET (PVX)
+🔹 TOKEN SPECS — PVX
+Symbol: PVX
+
+Total Supply: 6,009,420,000 PVX (hard-capped)
+
+Decimals: 8
+
+Emission: None (fixed supply, zero inflation)
+
+Burn Logic: Monthly LP burn (optional)
+
+Type: Native base asset (not an ERC-20 clone)
+
+Privacy: Halo2-based zkSNARK shielded transfers (optional per tx)
+
+Ticker Governance: Token holders + Veto Guardian model
+
+🧩 CORE MODULES TO BUILD
+✅ genesis.rs
+Initializes the chain
+
+Allocates initial PVX balances
+
+Sets initial validators
+
+Stores network constants
+
+✅ wallet.rs
+Key generation (Ed25519, with optional BIP39)
+
+Address formatting
+
+PVX balance fetching
+
+Transaction creation/signing/broadcasting
+
+Option to export/import keys with local encryption
+
+✅ ledger.rs
+UTXO or account-based ledger
+
+PVX balance tracking
+
+Transaction pool and mempool logic
+
+Replay protection (nonce)
+
+✅ staking.rs
+Delegate/undelegate PVX
+
+Reward distribution (block or time-based)
+
+Unbonding delay
+
+Slashing (optional toggle)
+
+Stake-weighted governance voting
+
+✅ mint.rs
+(Optional) for NFT logic and in-chain drops
+
+Used for Thringlets, hash achievements, YCATA relics
+
+Mints to wallet address or to soulbound ID
+
+✅ governance.rs
+Proposal creation
+
+Voting system (1 PVX = 1 vote, or stake-weighted)
+
+Veto Guardian override check
+
+On-chain vote finalization
+
+✅ zk.rs
+Optional zk-transfer shielding
+
+Halo2 proof verifier integration
+
+Privacy toggle per transaction (default off)
+
+Trusted setup handling (or Groth16 fallback)
+
+✅ explorer.rs (backend)
+Block explorer backend API
+
+Exposes: blocks, txs, account balances, staking activity
+
+JSON-RPC or REST
+
+⚙️ CHAIN CONFIGURATION
+Base Parameters:
+Block time: 6s (low-latency for gameplay sync)
+
+Gas model: Flat, capped per block
+
+Consensus: Custom PoS (with trusted genesis validator set)
+
+Transaction finality: Immediate (no reorgs after N blocks)
+
+Governance Constants:
+Min PVX to propose: 50,000 PVX
+
+Voting Period: 72 hours
+
+Quorum: 8% of circulating supply
+
+Veto Guardian IDs: 3 hardcoded multisigs (you choose)
+
+Upgrade Path: On-chain upgrade via governance.rs
+
+🧠 GAMEPLAY / INTERACTION HOOKS
+Thringlet Integration
+Every Thringlet mint, feed, curse, or release event writes a log entry.
+
+Emotional state stored as hash or JSON blob in chain state
+
+Certain emotional outcomes trigger:
+
+Soulbound NFT reward
+
+Wallet lockout (if cursed)
+
+Access to Page_6 lore drops
+
+Hashlord & Staking Wars
+Hashlord: Records highest hash rate score (simulated miner performance)
+
+Staking Wars: Tracks faction staking totals, rewards top % per season
+
+All stats stored on-chain or in side-indexed contract
+
+🧪 TESTNET DEPLOYMENT PLAN
+Goals:
+Finalize core modules in .rs
+
+Deploy pixelvaultd node binary (Rust or Go)
+
+Wallet CLI + Web interface
+
+Thringlet and YCATA drop integration
+

@@ -7,41 +7,76 @@ import {
   Cpu,
   FileCode,
   RefreshCw,
-  BarChart
+  BarChart,
+  Loader2
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendRadar } from '@/components/blockchain/TrendRadar';
-
-// Example blockchain data
-const blockchainData = {
-  currentHeight: 3421897,
-  difficulty: 3.75,
-  hashRate: '14.2 TH/s',
-  lastBlockTime: new Date(Date.now() - 1000 * 15),
-  networkVersion: 'v1.3.42',
-  consensusHealth: 92,
-  averageBlockTime: 15.3,
-  activeMiners: 127,
-  blocks: [
-    { height: 3421897, hash: '0x8f2e7...9c3d', transactions: 24, timestamp: new Date(Date.now() - 1000 * 15), miner: '0x3a4b...7c9d' },
-    { height: 3421896, hash: '0x3a5d9...8f2e', transactions: 18, timestamp: new Date(Date.now() - 1000 * 30), miner: '0x7e2f...1a5b' },
-    { height: 3421895, hash: '0x6c1f8...2e5a', transactions: 32, timestamp: new Date(Date.now() - 1000 * 45), miner: '0x9d4e...5c2f' },
-    { height: 3421894, hash: '0x2d8e3...7f1a', transactions: 12, timestamp: new Date(Date.now() - 1000 * 60), miner: '0x3a4b...7c9d' },
-    { height: 3421893, hash: '0x9c4a2...1d7e', transactions: 27, timestamp: new Date(Date.now() - 1000 * 75), miner: '0x8e2d...4f9a' },
-  ]
-};
+import { useBlockchain } from '@/hooks/use-blockchain';
+import { useQueryClient } from '@tanstack/react-query';
+import { useWallet } from '@/hooks/use-wallet';
+import { shortenAddress } from '@/lib/utils';
 
 export default function BlockchainPage() {
+  const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  
+  const queryClient = useQueryClient();
+  const { activeWallet } = useWallet();
+  
+  const { 
+    statusQuery, 
+    getRecentBlocks, 
+    getRecentTransactions,
+    latestBlockQuery,
+    startMiningMutation,
+    stopMiningMutation,
+    getMiningStats
+  } = useBlockchain();
+  
+  // Get blockchain status
+  const { data: blockchainStatus, isLoading: isStatusLoading, error: statusError } = statusQuery;
+  
+  // Get recent blocks
+  const { data: recentBlocks, isLoading: isBlocksLoading } = getRecentBlocks(5);
+  
+  // Get mining stats if active wallet exists
+  const { data: miningStats, isLoading: isMiningStatsLoading } = getMiningStats(activeWallet || '');
+  
+  // Check if wallet is currently mining
+  const isMining = miningStats?.isCurrentlyMining || false;
+  
+  // Mock data for parts not yet implemented in real API
+  const networkVersion = 'v0.1.42';
+  const consensusHealth = 95;
+  const activeMiners = miningStats ? 1 : 0;
+  
+  // Start mining with active wallet
+  const handleStartMining = () => {
+    if (activeWallet) {
+      startMiningMutation.mutate(activeWallet);
+    }
+  };
+  
+  // Stop mining with active wallet
+  const handleStopMining = () => {
+    if (activeWallet) {
+      stopMiningMutation.mutate(activeWallet);
+    }
+  };
   
   const handleRefresh = () => {
     setRefreshing(true);
+    queryClient.invalidateQueries({ queryKey: ['/api/blockchain/status'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/blockchain/blocks'] });
+    queryClient.invalidateQueries({ queryKey: ['/api/blockchain/mining/stats', activeWallet] });
+    
     setTimeout(() => {
       setRefreshing(false);
-    }, 1500);
+    }, 1000);
   };
 
   const formatTimeAgo = (date: Date) => {
@@ -85,7 +120,13 @@ export default function BlockchainPage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Current Block Height</p>
-                  <p className="text-xl font-bold text-blue-300">{blockchainData.currentHeight.toLocaleString()}</p>
+                  {isStatusLoading ? (
+                    <p className="text-xl font-bold text-blue-300"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading...</p>
+                  ) : blockchainStatus?.latestBlock ? (
+                    <p className="text-xl font-bold text-blue-300">{blockchainStatus.latestBlock.height.toLocaleString()}</p>
+                  ) : (
+                    <p className="text-xl font-bold text-blue-300">-</p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -99,7 +140,13 @@ export default function BlockchainPage() {
                 </div>
                 <div>
                   <p className="text-xs text-gray-400">Network Hash Rate</p>
-                  <p className="text-xl font-bold text-blue-300">{blockchainData.hashRate}</p>
+                  {isStatusLoading ? (
+                    <p className="text-xl font-bold text-blue-300"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading...</p>
+                  ) : blockchainStatus?.networkHashRate ? (
+                    <p className="text-xl font-bold text-blue-300">{blockchainStatus.networkHashRate.toFixed(2)} MH/s</p>
+                  ) : (
+                    <p className="text-xl font-bold text-blue-300">-</p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -112,8 +159,14 @@ export default function BlockchainPage() {
                   <Clock className="h-5 w-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-xs text-gray-400">Avg Block Time</p>
-                  <p className="text-xl font-bold text-blue-300">{blockchainData.averageBlockTime}s</p>
+                  <p className="text-xs text-gray-400">Difficulty</p>
+                  {isStatusLoading ? (
+                    <p className="text-xl font-bold text-blue-300"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading...</p>
+                  ) : blockchainStatus?.difficulty ? (
+                    <p className="text-xl font-bold text-blue-300">{blockchainStatus.difficulty.toFixed(2)}</p>
+                  ) : (
+                    <p className="text-xl font-bold text-blue-300">-</p>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -138,28 +191,38 @@ export default function BlockchainPage() {
                 <CardTitle className="text-blue-300">Recent Blocks</CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
-                <div className="space-y-3">
-                  {blockchainData.blocks.map((block) => (
-                    <div key={block.height} className="bg-gray-900/30 p-3 rounded hover:bg-gray-900/50 transition-colors cursor-pointer">
-                      <div className="flex justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="bg-blue-900/30 h-8 w-8 rounded-full flex items-center justify-center">
-                            <Blocks className="h-4 w-4 text-blue-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-300">Block #{block.height.toLocaleString()}</p>
-                            <p className="text-xs text-gray-500">{block.hash}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs text-blue-400">{block.transactions} txns</p>
-                          <p className="text-xs text-gray-500">{formatTimeAgo(block.timestamp)}</p>
-                        </div>
-                      </div>
+                {isBlocksLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
                     </div>
-                  ))}
-                </div>
-              </CardContent>
+                  ) : recentBlocks && recentBlocks.length > 0 ? (
+                    <div className="space-y-3">
+                      {recentBlocks.map((block) => (
+                        <div key={block.height} className="bg-gray-900/30 p-3 rounded hover:bg-gray-900/50 transition-colors cursor-pointer">
+                          <div className="flex justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="bg-blue-900/30 h-8 w-8 rounded-full flex items-center justify-center">
+                                <Blocks className="h-4 w-4 text-blue-400" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-semibold text-gray-300">Block #{block.height.toLocaleString()}</p>
+                                <p className="text-xs text-gray-500">{shortenAddress(block.hash)}</p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs text-blue-400">{block.transactions.length} txns</p>
+                              <p className="text-xs text-gray-500">{formatTimeAgo(new Date(block.timestamp))}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="py-8 text-center">
+                      <p className="text-gray-400">No blocks found</p>
+                    </div>
+                  )}
+                </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
                 <Button 
                   variant="outline" 
@@ -174,7 +237,7 @@ export default function BlockchainPage() {
           <div>
             <Card className="bg-black/70 border-blue-900/50">
               <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
-                <CardTitle className="text-blue-300">Network Status</CardTitle>
+                <CardTitle className="text-blue-300">Mining Status</CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
                 <div className="space-y-4">
@@ -184,26 +247,56 @@ export default function BlockchainPage() {
                       <p className="text-xs text-gray-400">Status</p>
                       <p className="text-xs text-green-400">Healthy</p>
                     </div>
-                    <Progress value={blockchainData.consensusHealth} className="h-2" />
+                    <Progress value={consensusHealth} className="h-2" />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-gray-900/30 p-3 rounded">
                       <p className="text-xs text-gray-400">Difficulty</p>
-                      <p className="text-lg font-bold text-blue-300">{blockchainData.difficulty}</p>
+                      <p className="text-lg font-bold text-blue-300">
+                        {blockchainStatus?.difficulty ? blockchainStatus.difficulty.toFixed(2) : '-'}
+                      </p>
                     </div>
                     <div className="bg-gray-900/30 p-3 rounded">
                       <p className="text-xs text-gray-400">Active Miners</p>
-                      <p className="text-lg font-bold text-blue-300">{blockchainData.activeMiners}</p>
+                      <p className="text-lg font-bold text-blue-300">{activeMiners}</p>
                     </div>
                   </div>
+                  
+                  {activeWallet && (
+                    <div className="bg-blue-950/40 p-4 rounded border border-blue-900/60">
+                      <h4 className="text-sm font-medium text-blue-300 mb-2">Your Mining Stats</h4>
+                      {isMiningStatsLoading ? (
+                        <div className="flex items-center justify-center py-2">
+                          <Loader2 className="h-5 w-5 animate-spin text-blue-400" />
+                        </div>
+                      ) : miningStats ? (
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-400">Hash Rate:</span>
+                            <span className="text-xs text-blue-300">{miningStats.currentHashRate}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-400">Blocks Mined:</span>
+                            <span className="text-xs text-blue-300">{miningStats.blocksMined}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-xs text-gray-400">Total Rewards:</span>
+                            <span className="text-xs text-blue-300">{parseInt(miningStats.totalRewards).toLocaleString()} μPVX</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-gray-400">No mining stats available</p>
+                      )}
+                    </div>
+                  )}
                   
                   <div className="bg-blue-950/20 p-3 rounded border border-blue-900/30">
                     <p className="text-xs text-gray-400 mb-1">Network Version</p>
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
                         <FileCode className="w-4 h-4 text-blue-400 mr-2" />
-                        <p className="text-sm font-semibold text-blue-300">{blockchainData.networkVersion}</p>
+                        <p className="text-sm font-semibold text-blue-300">{networkVersion}</p>
                       </div>
                       <div className="bg-green-900/30 px-2 py-0.5 rounded text-green-400 text-xs">
                         Current
@@ -213,9 +306,40 @@ export default function BlockchainPage() {
                 </div>
               </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-                <Button className="w-full bg-blue-700 hover:bg-blue-600 text-white">
-                  Start Mining
-                </Button>
+                {activeWallet ? (
+                  isMining ? (
+                    <Button 
+                      className="w-full bg-red-700 hover:bg-red-600 text-white"
+                      onClick={handleStopMining}
+                      disabled={stopMiningMutation.isPending}
+                    >
+                      {stopMiningMutation.isPending ? (
+                        <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Stopping Mining...</>
+                      ) : (
+                        'Stop Mining'
+                      )}
+                    </Button>
+                  ) : (
+                    <Button 
+                      className="w-full bg-blue-700 hover:bg-blue-600 text-white"
+                      onClick={handleStartMining}
+                      disabled={startMiningMutation.isPending}
+                    >
+                      {startMiningMutation.isPending ? (
+                        <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Starting Mining...</>
+                      ) : (
+                        'Start Mining'
+                      )}
+                    </Button>
+                  )
+                ) : (
+                  <Button 
+                    className="w-full bg-gray-700 hover:bg-gray-600 text-white"
+                    disabled
+                  >
+                    Connect Wallet to Mine
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           </div>

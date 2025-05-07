@@ -1,5 +1,5 @@
 import crypto from 'crypto';
-import { storage } from '../storage';
+import { memBlockchainStorage } from '../mem-blockchain';
 import { 
   BlockchainStatus,
   MiningStats,
@@ -51,7 +51,7 @@ export async function connectToBlockchain(): Promise<BlockchainStatus> {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Initialize in-memory state with genesis block if no blocks exist
-    const latestBlockInfo = await getLatestBlock();
+    const latestBlockInfo = await memBlockchainStorage.getLatestBlock();
 
     if (!latestBlockInfo) {
       // Create genesis block
@@ -68,7 +68,7 @@ export async function connectToBlockchain(): Promise<BlockchainStatus> {
       };
       
       // Store genesis block
-      await createBlock(genesisBlock);
+      await memBlockchainStorage.createBlock(genesisBlock);
       latestBlock = genesisBlock;
     } else {
       latestBlock = latestBlockInfo;
@@ -125,7 +125,7 @@ export async function createWallet(passphrase: string): Promise<string> {
     .digest('hex');
   
   // Create wallet in storage
-  await storage.createWallet({
+  await memBlockchainStorage.createWallet({
     address,
     publicKey,
     balance: "1000000", // 1 PVX initial balance for testing
@@ -142,7 +142,7 @@ export async function createWallet(passphrase: string): Promise<string> {
  * Get wallet by address
  */
 export async function getWallet(address: string) {
-  return await storage.getWalletByAddress(address);
+  return await memBlockchainStorage.getWalletByAddress(address);
 }
 
 /**
@@ -155,7 +155,7 @@ export async function sendTransaction(
   passphrase: string
 ): Promise<TransactionHash> {
   // Validate wallet and passphrase
-  const wallet = await storage.getWalletByAddress(fromAddress);
+  const wallet = await memBlockchainStorage.getWalletByAddress(fromAddress);
   
   if (!wallet) {
     throw new Error('Wallet not found');
@@ -195,17 +195,17 @@ export async function sendTransaction(
   // Update balances
   const senderBalance = BigInt(wallet.balance) - BigInt(amount);
   wallet.balance = senderBalance.toString();
-  await storage.updateWallet(wallet);
+  await memBlockchainStorage.updateWallet(wallet);
   
   // Add to or create receiver wallet
-  const receiverWallet = await storage.getWalletByAddress(toAddress);
+  const receiverWallet = await memBlockchainStorage.getWalletByAddress(toAddress);
   if (receiverWallet) {
     const receiverBalance = BigInt(receiverWallet.balance) + BigInt(amount);
     receiverWallet.balance = receiverBalance.toString();
-    await storage.updateWallet(receiverWallet);
+    await memBlockchainStorage.updateWallet(receiverWallet);
   } else {
     // Create receiver wallet if it doesn't exist
-    await storage.createWallet({
+    await memBlockchainStorage.createWallet({
       address: toAddress,
       publicKey: generateRandomHash(),
       balance: amount,
@@ -217,7 +217,7 @@ export async function sendTransaction(
   }
   
   // Store transaction
-  await storage.createTransaction(transaction);
+  await memBlockchainStorage.createTransaction(transaction);
   
   // Add to pending transactions
   pendingTransactions.push(transaction);
@@ -230,14 +230,14 @@ export async function sendTransaction(
  */
 export async function startMining(address: string): Promise<MiningStats> {
   // Validate wallet
-  const wallet = await storage.getWalletByAddress(address);
+  const wallet = await memBlockchainStorage.getWalletByAddress(address);
   
   if (!wallet) {
     throw new Error('Wallet not found');
   }
   
   // Check if already mining
-  let minerStats = await storage.getMinerByAddress(address);
+  let minerStats = await memBlockchainStorage.getMinerByAddress(address);
   
   if (minerStats && minerStats.isCurrentlyMining) {
     throw new Error('Already mining');
@@ -257,9 +257,9 @@ export async function startMining(address: string): Promise<MiningStats> {
   
   // Update or create miner stats
   if (minerStats) {
-    await storage.updateMiner(stats);
+    await memBlockchainStorage.updateMiner(stats);
   } else {
-    await storage.createMiner(stats);
+    await memBlockchainStorage.createMiner(stats);
   }
   
   // Schedule mock block mining (for demo purposes)
@@ -273,14 +273,14 @@ export async function startMining(address: string): Promise<MiningStats> {
  */
 export async function stopMining(address: string): Promise<MiningStats> {
   // Validate wallet
-  const wallet = await storage.getWalletByAddress(address);
+  const wallet = await memBlockchainStorage.getWalletByAddress(address);
   
   if (!wallet) {
     throw new Error('Wallet not found');
   }
   
   // Check if mining
-  const minerStats = await storage.getMinerByAddress(address);
+  const minerStats = await memBlockchainStorage.getMinerByAddress(address);
   
   if (!minerStats || !minerStats.isCurrentlyMining) {
     throw new Error('Not mining');
@@ -288,7 +288,7 @@ export async function stopMining(address: string): Promise<MiningStats> {
   
   // Update miner stats
   minerStats.isCurrentlyMining = false;
-  await storage.updateMiner(minerStats);
+  await memBlockchainStorage.updateMiner(minerStats);
   
   return minerStats;
 }
@@ -297,7 +297,7 @@ export async function stopMining(address: string): Promise<MiningStats> {
  * Get mining stats
  */
 export async function getMiningStats(address: string): Promise<MiningStats> {
-  const minerStats = await storage.getMinerByAddress(address);
+  const minerStats = await memBlockchainStorage.getMinerByAddress(address);
   
   if (!minerStats) {
     return {
@@ -317,13 +317,13 @@ export async function getMiningStats(address: string): Promise<MiningStats> {
  */
 export async function getNetworkHashrate(): Promise<number> {
   // Sum up all active miners' hashrates
-  const activeMiners = await storage.getAllActiveMiners();
+  const activeMiners = await memBlockchainStorage.getAllActiveMiners();
   
   if (!activeMiners || activeMiners.length === 0) {
     return 0;
   }
   
-  const totalHashrate = activeMiners.reduce((sum, miner) => {
+  const totalHashrate = activeMiners.reduce((sum: number, miner: MiningStats) => {
     const hashrate = parseFloat(miner.currentHashRate.split(' ')[0]);
     return sum + hashrate;
   }, 0);
@@ -342,7 +342,7 @@ async function simulateBlockMining(minerAddress: string) {
   setTimeout(async () => {
     try {
       // Get miner stats to check if still mining
-      const minerStats = await storage.getMinerByAddress(minerAddress);
+      const minerStats = await memBlockchainStorage.getMinerByAddress(minerAddress);
       
       if (!minerStats || !minerStats.isCurrentlyMining) {
         return; // Stopped mining
@@ -369,20 +369,20 @@ async function simulateBlockMining(minerAddress: string) {
       };
       
       // Store new block
-      await storage.createBlock(newBlock);
+      await memBlockchainStorage.createBlock(newBlock);
       latestBlock = newBlock;
       
       // Update miner stats
       minerStats.blocksMined += 1;
       minerStats.lastBlockMined = newBlock.timestamp;
       minerStats.totalRewards = (BigInt(minerStats.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString();
-      await storage.updateMiner(minerStats);
+      await memBlockchainStorage.updateMiner(minerStats);
       
       // Update wallet balance
-      const wallet = await storage.getWalletByAddress(minerAddress);
+      const wallet = await memBlockchainStorage.getWalletByAddress(minerAddress);
       if (wallet) {
         wallet.balance = (BigInt(wallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
-        await storage.updateWallet(wallet);
+        await memBlockchainStorage.updateWallet(wallet);
       }
       
       // Update blockchain status
@@ -435,28 +435,28 @@ function adjustDifficulty(previousBlock: Block): number {
  * Get latest block
  */
 export async function getLatestBlock(): Promise<Block | null> {
-  return await storage.getLatestBlock();
+  return await memBlockchainStorage.getLatestBlock();
 }
 
 /**
  * Get block by height
  */
 export async function getBlockByHeight(height: number): Promise<Block | null> {
-  return await storage.getBlockByHeight(height);
+  return await memBlockchainStorage.getBlockByHeight(height);
 }
 
 /**
  * Get transaction by hash
  */
 export async function getTransactionByHash(hash: string): Promise<Transaction | null> {
-  return await storage.getTransactionByHash(hash);
+  return await memBlockchainStorage.getTransactionByHash(hash);
 }
 
 /**
  * Get transactions by address
  */
 export async function getTransactionsByAddress(address: string): Promise<Transaction[]> {
-  return await storage.getTransactionsByAddress(address);
+  return await memBlockchainStorage.getTransactionsByAddress(address);
 }
 
 /**
@@ -664,14 +664,14 @@ export async function initializeBlockchain() {
  * Get recent blocks (last n blocks)
  */
 export async function getRecentBlocks(limit: number = 10): Promise<Block[]> {
-  return await storage.getRecentBlocks(limit);
+  return await memBlockchainStorage.getRecentBlocks(limit);
 }
 
 /**
  * Get recent transactions (last n transactions)
  */
 export async function getRecentTransactions(limit: number = 10): Promise<Transaction[]> {
-  return await storage.getRecentTransactions(limit);
+  return await memBlockchainStorage.getRecentTransactions(limit);
 }
 
 // For mock pagination
