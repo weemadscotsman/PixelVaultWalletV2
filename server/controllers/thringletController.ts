@@ -5,6 +5,71 @@ import { ThringletEmotionState } from '@shared/types';
 // In-memory storage for Thringlets
 const thringlets = new Map();
 
+// Add some test thringlets
+function addTestThringlets() {
+  if (thringlets.size === 0) {
+    const testThringlet1 = {
+      id: "test-thringlet-1",
+      name: "Nebula",
+      owner: "PVX_1e1ee32c2770a6af3ca119759c539907",
+      createdAt: Date.now(),
+      lastInteraction: Date.now(),
+      emotionalState: ThringletEmotionState.HAPPY,
+      level: 3,
+      experience: 250,
+      abilities: ['basic_movement', 'teleport'],
+      visual: {
+        baseColor: 'purple',
+        eyeColor: 'teal',
+        appendages: 4,
+        specialFeatures: ['glowing_eyes', 'crystal_growths']
+      },
+      stateHistory: [{
+        state: ThringletEmotionState.NEUTRAL,
+        timestamp: Date.now() - 86400000,
+        trigger: 'creation'
+      }, {
+        state: ThringletEmotionState.HAPPY,
+        timestamp: Date.now(),
+        trigger: 'user interaction'
+      }]
+    };
+    
+    const testThringlet2 = {
+      id: "test-thringlet-2",
+      name: "Spark",
+      owner: "PVX_f5ba480b7db6010eecb453eca8e67ff0",
+      createdAt: Date.now() - 172800000,
+      lastInteraction: Date.now() - 36000000,
+      emotionalState: ThringletEmotionState.EXCITED,
+      level: 5,
+      experience: 490,
+      abilities: ['basic_movement', 'invisibility', 'energy_burst'],
+      visual: {
+        baseColor: 'orange',
+        eyeColor: 'blue',
+        appendages: 6,
+        specialFeatures: ['smoke', 'wings']
+      },
+      stateHistory: [{
+        state: ThringletEmotionState.NEUTRAL,
+        timestamp: Date.now() - 172800000,
+        trigger: 'creation'
+      }, {
+        state: ThringletEmotionState.EXCITED,
+        timestamp: Date.now() - 36000000,
+        trigger: 'level up'
+      }]
+    };
+    
+    thringlets.set(testThringlet1.id, testThringlet1);
+    thringlets.set(testThringlet2.id, testThringlet2);
+  }
+}
+
+// Initialize test data
+addTestThringlets();
+
 /**
  * Process input to thringlet emotion engine
  * POST /api/thringlet/input
@@ -281,6 +346,44 @@ export const createThringlet = async (req: Request, res: Response) => {
     console.error('Error creating thringlet:', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to create thringlet'
+    });
+  }
+};
+
+/**
+ * Get all thringlets
+ * GET /api/thringlet/all
+ */
+export const getAllThringlets = async (req: Request, res: Response) => {
+  try {
+    // Get all thringlets
+    const allThringlets = Array.from(thringlets.values());
+    
+    // Filter by owner if provided
+    const { owner } = req.query;
+    let filteredThringlets = allThringlets;
+    
+    if (owner) {
+      filteredThringlets = allThringlets.filter(thringlet => thringlet.owner === owner);
+    }
+    
+    // Format response
+    const thringletsList = filteredThringlets.map(thringlet => ({
+      id: thringlet.id,
+      name: thringlet.name,
+      owner: thringlet.owner,
+      emotionalState: thringlet.emotionalState,
+      level: thringlet.level,
+      experience: thringlet.experience,
+      lastInteraction: thringlet.lastInteraction,
+      visual: thringlet.visual
+    }));
+    
+    res.json(thringletsList);
+  } catch (error) {
+    console.error('Error getting all thringlets:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get thringlets'
     });
   }
 };

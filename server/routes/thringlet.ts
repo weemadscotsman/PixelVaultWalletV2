@@ -27,4 +27,10 @@ router.get('/emotions/:id', thringletController.getEmotionHistory);
  */
 router.post('/create', thringletController.createThringlet);
 
+/**
+ * Get all thringlets
+ * GET /api/thringlet/all
+ */
+router.get('/all', thringletController.getAllThringlets);
+
 export default router;
