@@ -42,16 +42,10 @@ export function useWallet() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Check if there's a bad wallet address in localStorage and remove it
-  const storedWallet = localStorage.getItem('activeWallet');
-  if (storedWallet === 'PVX_21800303904d0d372b6fe9c67066650e') {
-    console.log('Removing invalid wallet from localStorage on initialization');
-    localStorage.removeItem('activeWallet');
-  }
+  // Clear any wallet from localStorage to start fresh
+  localStorage.removeItem('activeWallet');
   
-  const [activeWallet, setActiveWallet] = useState<string | null>(
-    localStorage.getItem('activeWallet')
-  );
+  const [activeWallet, setActiveWallet] = useState<string | null>(null);
 
   // Set active wallet
   const setActiveWalletAddress = (address: string | null) => {

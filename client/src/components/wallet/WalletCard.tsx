@@ -57,19 +57,6 @@ export function WalletCard() {
           <div className="text-center">
             <p className="text-red-400">Error loading wallet data</p>
             <p className="text-gray-400 text-sm mt-1">{error?.message || "Please try again later"}</p>
-            <Button 
-              className="mt-4 bg-blue-700 hover:bg-blue-600 text-white"
-              onClick={() => {
-                // Clear the wallet from localStorage
-                setActiveWalletAddress(null);
-                toast({
-                  title: "Wallet disconnected",
-                  description: "Your wallet has been disconnected due to an error",
-                });
-              }}
-            >
-              Reset Wallet
-            </Button>
           </div>
         </CardContent>
       </Card>
