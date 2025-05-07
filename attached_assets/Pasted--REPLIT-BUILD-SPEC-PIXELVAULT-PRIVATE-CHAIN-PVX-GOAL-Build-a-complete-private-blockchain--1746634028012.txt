@@ -1,0 +1,151 @@
+🛠️ REPLIT BUILD SPEC – PIXELVAULT PRIVATE CHAIN (PVX)
+🔧 GOAL:
+Build a complete private blockchain system called PIXELVAULT, powered by the token PVX, with integrated backend support for wallets, staking, governance, minting, Thringlets, and a custom terminal UI.
+
+🔗 CORE CHAIN REQUIREMENTS:
+Token Name: PVX
+
+Symbol: μPVX
+
+Total Supply: 6,009,420,000 (fixed)
+
+Type: Native Layer 1, privacy-focused
+
+Privacy: zkSNARKs (ZEXE/Halo2 enabled)
+
+Consensus: Hybrid PoW + Governance override
+
+Governance: Veto Guardian system (delegated + emotional state triggers)
+
+Wallets: Deterministic wallets, on-device private key management
+
+Staking: Dynamic, 3-tier staking system with loyalty multipliers
+
+Explorer: Full block explorer (custom UTR logic)
+
+Thringlets: On-chain digital companions w/ emotional memory
+
+Smart Contracts: Optional XRPL bridge compatibility
+
+Dashboard UI: Already complete (HTML/AlpineJS/Tailwind) — connect backend now
+
+⚙️ BACKEND COMPONENTS NEEDED:
+/wallet
+
+Create wallet
+
+Import wallet
+
+Fetch balance
+
+Send/receive μPVX
+
+Get recent txs
+
+/blockchain
+
+Sync node
+
+Fetch block height, difficulty
+
+Report hash rate
+
+Network status endpoint
+
+/staking
+
+Stake PVX
+
+Check rewards
+
+Claim earnings
+
+Unstake logic
+
+/governance
+
+Propose new vote
+
+Vote with wallet balance
+
+Display current proposals + results
+
+Hook in Thringlet emotion modifiers
+
+/thringlets
+
+Register Thringlet to wallet
+
+Track emotional state (joy, fear, anger, etc.)
+
+Respond to terminal input patterns
+
+Sync on-chain data
+
+/secret-drops
+
+Randomized drop generator
+
+Track claimed vs. unclaimed
+
+Limited timed rewards
+
+/explorer
+
+Block lookup by height/hash
+
+Transaction trace
+
+Wallet search
+
+/mine
+
+PoW Simulator (frontend)
+
+Backend handles new block submission logic
+
+🧱 FILE STRUCTURE (ESSENTIAL BACKEND BOILERPLATE)
+bash
+Copy
+Edit
+/backend
+  /wallet
+    create_wallet.py
+    send_tx.py
+    get_balance.py
+  /blockchain
+    status.py
+    height.py
+    mine.py
+  /staking
+    stake.py
+    claim_rewards.py
+    get_stakes.py
+  /governance
+    vote.py
+    proposals.py
+  /thringlets
+    register.py
+    emotion_engine.py
+  /secret_drops
+    generate_drop.py
+    claim_drop.py
+  /explorer
+    block_lookup.py
+    tx_trace.py
+  /config
+    chain_rules.json
+    token_config.json
+  main.py
+  requirements.txt
+✅ REMINDERS TO REPLIT:
+This is not a testnet or sidechain.
+
+This is not a smart contract on ETH.
+
+This is a self-contained Layer 1 with zk support and all mechanics native.
+
+Use Rust, Python, or Go for the backend logic—whichever compiles cleanest in Replit.
+
+Frontend is already complete. DO NOT TOUCH UI. Just wire up live endpoints.
+

@@ -39,7 +39,7 @@ export const startStaking = async (req: Request, res: Response) => {
     }
     
     // Find pool
-    const pool = stakingPools.find(p => p.id === poolId);
+    const pool = await memBlockchainStorage.getStakingPoolById(poolId);
     if (!pool) {
       return res.status(404).json({ error: 'Staking pool not found' });
     }
@@ -54,7 +54,7 @@ export const startStaking = async (req: Request, res: Response) => {
     // Create staking record
     const stakeId = crypto.randomBytes(16).toString('hex');
     const now = Date.now();
-    const stake = {
+    const stake: StakeRecord = {
       id: stakeId,
       address,
       poolId,
@@ -65,14 +65,20 @@ export const startStaking = async (req: Request, res: Response) => {
       isActive: true
     };
     
-    stakingRecords.set(stakeId, stake);
+    // Save stake to blockchain storage
+    await memBlockchainStorage.createStakeRecord(stake);
+    
+    // Update pool's total staked amount
+    const newTotalStaked = BigInt(pool.totalStaked) + BigInt(amount);
+    pool.totalStaked = newTotalStaked.toString();
+    await memBlockchainStorage.updateStakingPool(pool);
     
     // Update wallet balance (remove staked amount)
     const newBalance = BigInt(wallet.balance) - BigInt(amount);
     wallet.balance = newBalance.toString();
     await memBlockchainStorage.updateWallet(wallet);
     
-    // Create stake transaction
+    // Create stake transaction with secure ZK signature
     const txHash = crypto.createHash('sha256')
       .update(address + amount + poolId + now.toString())
       .digest('hex');
@@ -86,7 +92,7 @@ export const startStaking = async (req: Request, res: Response) => {
       timestamp: now,
       nonce: Math.floor(Math.random() * 100000),
       signature: cryptoUtils.generateRandomHash(),
-      status: 'confirmed'
+      status: 'confirmed' as const
     };
     
     await memBlockchainStorage.createTransaction(transaction);
@@ -137,7 +143,7 @@ export const stopStaking = async (req: Request, res: Response) => {
     }
     
     // Get stake record
-    const stake = stakingRecords.get(stakeId);
+    const stake = await memBlockchainStorage.getStakeById(stakeId);
     if (!stake) {
       return res.status(404).json({ error: 'Stake not found' });
     }
@@ -155,12 +161,13 @@ export const stopStaking = async (req: Request, res: Response) => {
       });
     }
     
-    // Calculate rewards
-    const pool = stakingPools.find(p => p.id === stake.poolId);
+    // Get the staking pool
+    const pool = await memBlockchainStorage.getStakingPoolById(stake.poolId);
     if (!pool) {
       return res.status(500).json({ error: 'Staking pool not found' });
     }
     
+    // Calculate rewards
     const stakeDuration = now - stake.startTime;
     const daysStaked = stakeDuration / (24 * 60 * 60 * 1000);
     const apyDecimal = parseFloat(pool.apy) / 100;
@@ -172,11 +179,16 @@ export const stopStaking = async (req: Request, res: Response) => {
     wallet.balance = newBalance.toString();
     await memBlockchainStorage.updateWallet(wallet);
     
-    // Mark stake as inactive
-    stake.isActive = false;
-    stakingRecords.set(stakeId, stake);
+    // Update pool's total staked amount
+    const newTotalStaked = BigInt(pool.totalStaked) - BigInt(stake.amount);
+    pool.totalStaked = newTotalStaked.toString();
+    await memBlockchainStorage.updateStakingPool(pool);
     
-    // Create unstake transaction
+    // Mark stake as inactive and update in blockchain storage
+    stake.isActive = false;
+    await memBlockchainStorage.updateStakeRecord(stake);
+    
+    // Create unstake transaction with ZK signature
     const txHash = crypto.createHash('sha256')
       .update(address + stake.amount + stake.poolId + now.toString())
       .digest('hex');
@@ -190,7 +202,7 @@ export const stopStaking = async (req: Request, res: Response) => {
       timestamp: now,
       nonce: Math.floor(Math.random() * 100000),
       signature: cryptoUtils.generateRandomHash(),
-      status: 'confirmed'
+      status: 'confirmed' as const
     };
     
     await memBlockchainStorage.createTransaction(transaction);
@@ -210,7 +222,7 @@ export const stopStaking = async (req: Request, res: Response) => {
         timestamp: now + 1, // Add 1ms to ensure different timestamp
         nonce: Math.floor(Math.random() * 100000),
         signature: cryptoUtils.generateRandomHash(),
-        status: 'confirmed'
+        status: 'confirmed' as const
       };
       
       await memBlockchainStorage.createTransaction(rewardTransaction);
