@@ -14,6 +14,7 @@ import ThringletsPage from "@/pages/ThringletsPage";
 import DropsPage from "@/pages/DropsPage";
 import BadgesPage from "@/pages/BadgesPage";
 import UTRDashboardPage from "@/pages/UTRDashboardPage";
+import DEXPage from "@/pages/DEXPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/drops" component={DropsPage} />
       <Route path="/badges" component={BadgesPage} />
       <Route path="/utr" component={UTRDashboardPage} />
+      <Route path="/dex" component={DEXPage} />
       <Route path="/terminal" component={() => <HomePage />} />
       <Route path="/profile" component={() => <HomePage />} />
       <Route path="/settings" component={() => <HomePage />} />

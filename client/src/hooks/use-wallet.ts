@@ -1,204 +1,118 @@
-import { useState, useCallback, useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { generateWallet, loadWallet, getWalletBalance, getWalletTransactions, getWalletMnemonic, createTransaction as createTx } from "@/lib/wallet";
-import { Wallet, WalletInfo } from "@/types/wallet";
-import { Transaction } from "@/types/blockchain";
-import { useToast } from "./use-toast";
+import { useState, useEffect } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { apiRequest, queryClient } from '../lib/queryClient';
+import { useToast } from './use-toast';
+
+export type Wallet = {
+  id: string;
+  address: string;
+  privateKey: string;
+  publicKey: string;
+  balance: string;
+  mnemonicPhrase?: string;
+  isZkEnabled: boolean;
+};
 
 export function useWallet() {
-  const [wallet, setWallet] = useState<Wallet | null>(null);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [mnemonic, setMnemonic] = useState<string | null>(null);
-  const [mnemonicRevealed, setMnemonicRevealed] = useState(false);
-  const queryClient = useQueryClient();
   const { toast } = useToast();
-
-  // Load wallet from localStorage
-  const loadWalletFromStorage = useCallback(() => {
-    const storedWallet = loadWallet();
-    if (storedWallet) {
-      setWallet(storedWallet);
-      setLastUpdated(storedWallet.lastUpdated);
-      // Store current wallet address for transaction component to use
-      localStorage.setItem("currentWalletAddress", storedWallet.publicAddress);
-
-      // Load mnemonic if it exists but keep it hidden
-      const storedMnemonic = getWalletMnemonic();
-      if (storedMnemonic) {
-        setMnemonic(storedMnemonic);
+  const [storedWallet, setStoredWallet] = useState<Wallet | null>(null);
+  
+  // Load wallet from localStorage on component mount
+  useEffect(() => {
+    const walletData = localStorage.getItem('pvx_wallet');
+    if (walletData) {
+      try {
+        setStoredWallet(JSON.parse(walletData));
+      } catch (e) {
+        console.error('Failed to parse wallet data from localStorage');
       }
     }
-  }, []);
-
-  // Generate a new wallet
-  const generateNewWallet = useCallback(async (useMnemonic: boolean = false, entropy?: string) => {
-    try {
-      setIsGenerating(true);
-      const newWallet = await generateWallet(useMnemonic, entropy);
-      setWallet(newWallet);
-      setLastUpdated(new Date());
-      
-      // Store current wallet address for transaction component to use
-      localStorage.setItem("currentWalletAddress", newWallet.publicAddress);
-      
-      // Load mnemonic if it was generated
-      if (useMnemonic) {
-        const generatedMnemonic = getWalletMnemonic();
-        setMnemonic(generatedMnemonic);
-        setMnemonicRevealed(false);
-      }
-      
-      // Refresh data after wallet generation
-      queryClient.invalidateQueries({ queryKey: ['walletBalance'] });
-      queryClient.invalidateQueries({ queryKey: ['walletTransactions'] });
-      
-      toast({
-        title: "Wallet Generated",
-        description: "Your new zkSNARK wallet has been created successfully.",
-      });
-      
-      return newWallet;
-    } catch (error) {
-      console.error("Error generating wallet:", error);
-      toast({
-        title: "Wallet Generation Failed",
-        description: error instanceof Error ? error.message : "Failed to generate wallet",
-        variant: "destructive",
-      });
-      throw error;
-    } finally {
-      setIsGenerating(false);
-    }
-  }, [queryClient, toast]);
-
-  // Reveal or hide mnemonic
-  const revealMnemonic = useCallback(() => {
-    setMnemonicRevealed(true);
   }, []);
   
-  const hideMnemonic = useCallback(() => {
-    setMnemonicRevealed(false);
-  }, []);
-
-  // Get wallet balance
-  const { refetch: refreshBalance, isLoading: isBalanceLoading } = useQuery({
-    queryKey: [`/api/wallet/balance?address=${wallet?.publicAddress || ''}`],
-    enabled: !!wallet,
-    onSuccess: (data) => {
-      if (wallet && data) {
-        setWallet({
-          ...wallet,
-          balance: data.balance,
-          lastUpdated: new Date()
-        });
-        setLastUpdated(new Date());
-      }
+  // Create a new wallet
+  const createWalletMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/wallet/create');
+      return await response.json();
     },
-    onError: (error) => {
-      console.error("Error fetching balance:", error);
+    onSuccess: (wallet: Wallet) => {
+      localStorage.setItem('pvx_wallet', JSON.stringify(wallet));
+      setStoredWallet(wallet);
       toast({
-        title: "Balance Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update balance",
-        variant: "destructive",
+        title: 'Wallet Created',
+        description: 'Your new PVX wallet has been created successfully.',
       });
-    }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to Create Wallet',
+        description: error.message || 'There was an error creating your wallet.',
+        variant: 'destructive',
+      });
+    },
   });
-
-  // Get wallet transactions
-  const { refetch: refreshTransactions, isLoading: isTransactionsLoading } = useQuery({
-    queryKey: [`/api/wallet/transactions?address=${wallet?.publicAddress || ''}`],
-    enabled: !!wallet,
-    onSuccess: (data) => {
-      if (data) {
-        setTransactions(data);
-      }
+  
+  // Import wallet from private key
+  const importWalletMutation = useMutation({
+    mutationFn: async (privateKey: string) => {
+      const response = await apiRequest('POST', '/api/wallet/import', { privateKey });
+      return await response.json();
     },
-    onError: (error) => {
-      console.error("Error fetching transactions:", error);
+    onSuccess: (wallet: Wallet) => {
+      localStorage.setItem('pvx_wallet', JSON.stringify(wallet));
+      setStoredWallet(wallet);
       toast({
-        title: "Transaction Load Failed",
-        description: error instanceof Error ? error.message : "Failed to load transactions",
-        variant: "destructive",
+        title: 'Wallet Imported',
+        description: 'Your PVX wallet has been imported successfully.',
       });
-    }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to Import Wallet',
+        description: error.message || 'There was an error importing your wallet.',
+        variant: 'destructive',
+      });
+    },
   });
-
-  // Create transaction mutation
-  const { mutateAsync: createTransaction, isPending: isTransactionPending } = useMutation({
-    mutationFn: async (params: { 
-      fromAddress: string; 
-      toAddress: string; 
-      amount: number;
-      note?: string;
-    }) => {
-      if (!wallet) throw new Error("No wallet found");
-
-      return createTx(
-        params.fromAddress,
-        params.toAddress,
-        params.amount,
-        wallet.privateKey,
-        params.note
-      );
+  
+  // Get wallet balance (refreshes on interval)
+  const { data: walletBalance, isLoading: isLoadingBalance } = useQuery({
+    queryKey: ['/api/wallet/balance', storedWallet?.address],
+    queryFn: async () => {
+      if (!storedWallet?.address) return null;
+      const response = await apiRequest('GET', `/api/wallet/balance?address=${storedWallet.address}`);
+      return await response.json();
     },
-    onSuccess: () => {
-      // Refresh wallet data after transaction
-      refreshBalance();
-      refreshTransactions();
-      
-      toast({
-        title: "Transaction Successful",
-        description: "Your transaction has been processed successfully.",
-      });
-    },
-    onError: (error) => {
-      console.error("Transaction error:", error);
-      toast({
-        title: "Transaction Failed",
-        description: error instanceof Error ? error.message : "Failed to process transaction",
-        variant: "destructive",
-      });
-      throw error;
-    }
+    enabled: !!storedWallet?.address,
+    refetchInterval: 15000, // Refresh every 15 seconds
   });
-
-  // Combine loading states
-  const isLoading = isBalanceLoading || isTransactionsLoading || isTransactionPending;
-
-  // Initial load
+  
+  // Update wallet with latest balance
   useEffect(() => {
-    loadWalletFromStorage();
-  }, [loadWalletFromStorage]);
-
-  // Auto refresh data when wallet changes
-  useEffect(() => {
-    if (wallet) {
-      refreshBalance();
-      refreshTransactions();
+    if (walletBalance && storedWallet) {
+      const updatedWallet = { ...storedWallet, balance: walletBalance.balance };
+      setStoredWallet(updatedWallet);
+      localStorage.setItem('pvx_wallet', JSON.stringify(updatedWallet));
     }
-  }, [wallet, refreshBalance, refreshTransactions]);
-
+  }, [walletBalance, storedWallet]);
+  
+  // Clear wallet from storage
+  const clearWallet = () => {
+    localStorage.removeItem('pvx_wallet');
+    setStoredWallet(null);
+    toast({
+      title: 'Wallet Disconnected',
+      description: 'Your wallet has been disconnected.',
+    });
+  };
+  
   return {
-    wallet,
-    transactions,
-    isLoading,
-    isGenerating,
-    lastUpdated,
-    mnemonic,
-    mnemonicRevealed,
-    loadWalletFromStorage,
-    generateNewWallet,
-    refreshBalance: () => {
-      refreshBalance();
-      refreshTransactions();
-    },
-    createTransaction: async (fromAddress: string, toAddress: string, amount: number, note?: string) => {
-      return createTransaction({ fromAddress, toAddress, amount, note });
-    },
-    revealMnemonic,
-    hideMnemonic
+    wallet: storedWallet,
+    createWallet: createWalletMutation.mutate,
+    importWallet: importWalletMutation.mutate,
+    clearWallet,
+    isCreatingWallet: createWalletMutation.isPending,
+    isImportingWallet: importWalletMutation.isPending,
+    isLoadingBalance,
   };
 }
