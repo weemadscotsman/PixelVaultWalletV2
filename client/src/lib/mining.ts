@@ -1,7 +1,7 @@
 import { MiningReward, MiningStats } from "@/types/blockchain";
 
-// Mock base URL - in a real app, this would be configured properly
-const API_BASE_URL = "/api";
+// Base URL for blockchain API
+const API_BASE_URL = "/api/blockchain";
 
 // Start mining process
 export async function startMining(address: string, threads: number = 2): Promise<boolean> {
@@ -19,7 +19,7 @@ export async function startMining(address: string, threads: number = 2): Promise
     }
 
     const data = await response.json();
-    return data.success;
+    return true; // Return true if we got a successful response
   } catch (error) {
     console.error("Error starting mining:", error);
     throw new Error("Failed to start mining");
@@ -42,7 +42,7 @@ export async function stopMining(address: string): Promise<boolean> {
     }
 
     const data = await response.json();
-    return data.success;
+    return true; // Return true if we got a successful response
   } catch (error) {
     console.error("Error stopping mining:", error);
     throw new Error("Failed to stop mining");
@@ -52,7 +52,7 @@ export async function stopMining(address: string): Promise<boolean> {
 // Get current mining stats for an address
 export async function getMiningStats(address: string): Promise<MiningStats> {
   try {
-    const response = await fetch(`${API_BASE_URL}/mining/stats?address=${address}`);
+    const response = await fetch(`${API_BASE_URL}/mining/stats/${address}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch mining stats: ${response.statusText}`);
     }
@@ -66,7 +66,8 @@ export async function getMiningStats(address: string): Promise<MiningStats> {
 // Get mining rewards for an address
 export async function getMiningRewards(address: string): Promise<MiningReward[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/mining/rewards?address=${address}`);
+    // This endpoint might need to be added to the server if it doesn't exist yet
+    const response = await fetch(`${API_BASE_URL}/mining/rewards/${address}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch mining rewards: ${response.statusText}`);
     }

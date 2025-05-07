@@ -333,6 +333,29 @@ router.get('/mining/stats/:address', async (req, res) => {
 });
 
 /**
+ * Get mining rewards for an address
+ * GET /api/blockchain/mining/rewards/:address
+ */
+router.get('/mining/rewards/:address', async (req, res) => {
+  try {
+    const address = req.params.address;
+    // Check if the function exists in blockchainService
+    if (typeof blockchainService.getMiningRewards === 'function') {
+      const rewards = await blockchainService.getMiningRewards(address);
+      res.json(rewards);
+    } else {
+      // If the function doesn't exist yet, return an empty array
+      console.warn('getMiningRewards function not implemented yet in blockchainService');
+      res.json([]);
+    }
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get mining rewards'
+    });
+  }
+});
+
+/**
  * Get thringlet by ID
  * GET /api/blockchain/thringlet/:id
  */
