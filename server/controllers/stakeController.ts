@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
 import { TransactionType, StakeRecord } from '@shared/types';
+import { checkStakingBadges } from '../controllers/badgeController';
 
 /**
  * Start staking
@@ -96,6 +97,17 @@ export const startStaking = async (req: Request, res: Response) => {
     };
     
     await memBlockchainStorage.createTransaction(transaction);
+    
+    // Check for staking-related achievements
+    try {
+      // Get existing stakes for this address to determine if this is their first stake
+      const existingStakes = await memBlockchainStorage.getStakesByAddress(address);
+      // Check and award badges
+      await checkStakingBadges(address, amount, existingStakes.length + 1); // +1 includes the current stake
+    } catch (err) {
+      console.error('Error checking staking badges:', err);
+      // Continue even if badge check fails
+    }
     
     res.status(201).json({
       stake_id: stakeId,

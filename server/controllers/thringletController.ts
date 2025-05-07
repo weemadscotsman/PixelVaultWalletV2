@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { ThringletEmotionState } from '@shared/types';
 import { thringletStorage, Thringlet } from '../storage/thringlet-storage';
+import { checkThringletBadges } from '../controllers/badgeController';
 
 /**
  * Process input to thringlet emotion engine
@@ -102,6 +103,21 @@ export const processInput = async (req: Request, res: Response) => {
     
     // Save updated thringlet
     await thringletStorage.updateThringlet(thringletId, updatedThringlet);
+
+    // Check for Thringlet-related badges if an owner address is provided
+    if (ownerAddress) {
+      try {
+        // Award badges based on thringlet level, interaction count, and state changes
+        await checkThringletBadges(
+          ownerAddress, 
+          updatedThringlet.level, 
+          updatedThringlet.stateHistory?.length || 0
+        );
+      } catch (err) {
+        console.error('Error checking thringlet badges:', err);
+        // Continue even if badge check fails
+      }
+    }
     
     res.json({
       id: thringletId,
@@ -267,6 +283,16 @@ export const createThringlet = async (req: Request, res: Response) => {
     
     // Save thringlet
     await thringletStorage.createThringlet(thringlet);
+    
+    // Check for a first Thringlet creation badge
+    try {
+      // Get count of thringlets owned by this address to check if this is their first
+      const ownedThringlets = await thringletStorage.getThringletsByOwner(ownerAddress);
+      await checkThringletBadges(ownerAddress, 1, 0, ownedThringlets.length);
+    } catch (err) {
+      console.error('Error checking thringlet creation badges:', err);
+      // Continue even if badge check fails
+    }
     
     res.status(201).json({
       id,
