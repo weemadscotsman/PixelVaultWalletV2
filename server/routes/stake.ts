@@ -29,8 +29,8 @@ router.get('/pools', stakeController.getStakingPools);
 
 /**
  * Get staking status for a wallet
- * GET /api/stake/:address
+ * GET /api/stake/status/:address
  */
-router.get('/:address', stakeController.getStakingStatus);
+router.get('/status/:address', stakeController.getStakingStatus);
 
 export default router;
