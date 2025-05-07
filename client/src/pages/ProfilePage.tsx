@@ -1,33 +1,62 @@
 import { useState, useEffect } from "react";
 import { AnimatedPageLayout } from "@/components/layout/AnimatedPageLayout";
 import { useWallet } from "@/hooks/use-wallet";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Award, 
   BadgeCheck, 
   Code, 
   CreditCard, 
+  Eye,
+  EyeOff,
   Flame, 
   Github, 
   Globe, 
+  Loader2,
   Medal, 
+  PlusCircle, 
+  RefreshCw,
   Share2, 
   Shield, 
   Star, 
   Trophy, 
-  Users 
+  Users, 
+  Wallet
 } from "lucide-react";
 import { formatTokenAmount } from "@/lib/format";
 
 export default function ProfilePage() {
-  const { wallet } = useWallet();
+  const { 
+    wallet, 
+    activeWallet, 
+    createWalletMutation, 
+    importWalletMutation,
+    exportWalletKeysMutation,
+    setActiveWalletAddress,
+    getAllWallets
+  } = useWallet();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("overview");
+  
+  // Form state for create/import wallet
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [isImportingWallet, setIsImportingWallet] = useState(false);
+  const [passphrase, setPassphrase] = useState("");
+  const [privateKey, setPrivateKey] = useState("");
+  const [showPassphrase, setShowPassphrase] = useState(false);
+  const [showPrivateKey, setShowPrivateKey] = useState(false);
+  
+  // Get all wallets
+  const { data: wallets = [], isLoading: isLoadingWallets } = getAllWallets();
   
   // Mock user activity data
   const [userStats, setUserStats] = useState({
@@ -159,9 +188,12 @@ export default function ProfilePage() {
         
         {/* User Stats & Activity */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 lg:w-auto">
+          <TabsList className="grid grid-cols-5 lg:w-auto">
             <TabsTrigger value="overview" className="data-[state=active]:bg-blue-600">
               Overview
+            </TabsTrigger>
+            <TabsTrigger value="wallets" className="data-[state=active]:bg-blue-600">
+              Wallets
             </TabsTrigger>
             <TabsTrigger value="achievements" className="data-[state=active]:bg-blue-600">
               Achievements
@@ -173,6 +205,295 @@ export default function ProfilePage() {
               Activity
             </TabsTrigger>
           </TabsList>
+          
+          {/* Wallets Tab */}
+          <TabsContent value="wallets" className="space-y-4 mt-4">
+            <Card className="bg-black/80 backdrop-blur-lg border-slate-800">
+              <CardHeader>
+                <CardTitle className="flex justify-between">
+                  <span>Your PVX Wallets</span>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {setIsCreatingWallet(true); setIsImportingWallet(false);}}
+                      className="text-xs"
+                    >
+                      <PlusCircle className="h-3.5 w-3.5 mr-1" />
+                      Create Wallet
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => {setIsImportingWallet(true); setIsCreatingWallet(false);}}
+                      className="text-xs"
+                    >
+                      <Wallet className="h-3.5 w-3.5 mr-1" />
+                      Import Wallet
+                    </Button>
+                  </div>
+                </CardTitle>
+                <CardDescription>
+                  Manage your PVX wallets and private keys securely
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isCreatingWallet && (
+                  <Card className="mb-6 border-blue-600/50 bg-blue-950/20">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Create New Wallet</CardTitle>
+                      <CardDescription>
+                        Create a new PVX wallet with a secure passphrase
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="passphrase">Wallet Passphrase (required)</Label>
+                          <div className="flex">
+                            <Input
+                              id="passphrase"
+                              type={showPassphrase ? "text" : "password"}
+                              value={passphrase}
+                              onChange={(e) => setPassphrase(e.target.value)}
+                              className="bg-slate-900/50 border-slate-700/50"
+                              placeholder="Enter a secure passphrase"
+                            />
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="ml-2"
+                              onClick={() => setShowPassphrase(!showPassphrase)}
+                            >
+                              {showPassphrase ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                          <p className="text-xs text-yellow-400 flex items-center gap-1">
+                            <Shield className="h-3 w-3" />
+                            This passphrase will be used to secure your wallet. Store it safely!
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-between">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setIsCreatingWallet(false);
+                          setPassphrase("");
+                          setShowPassphrase(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="bg-gradient-to-r from-blue-600 to-violet-600"
+                        disabled={!passphrase || createWalletMutation.isPending}
+                        onClick={() => {
+                          if (passphrase) {
+                            createWalletMutation.mutate(
+                              { passphrase },
+                              {
+                                onSuccess: () => {
+                                  setIsCreatingWallet(false);
+                                  setPassphrase("");
+                                  setShowPassphrase(false);
+                                }
+                              }
+                            );
+                          }
+                        }}
+                      >
+                        {createWalletMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          <>Create Wallet</>
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                )}
+                
+                {isImportingWallet && (
+                  <Card className="mb-6 border-blue-600/50 bg-blue-950/20">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Import Existing Wallet</CardTitle>
+                      <CardDescription>
+                        Import a PVX wallet using your private key
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="privateKey">Private Key</Label>
+                          <div className="flex">
+                            <Input
+                              id="privateKey"
+                              type={showPrivateKey ? "text" : "password"}
+                              value={privateKey}
+                              onChange={(e) => setPrivateKey(e.target.value)}
+                              className="bg-slate-900/50 border-slate-700/50 font-mono"
+                              placeholder="Enter your wallet private key"
+                            />
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="ml-2"
+                              onClick={() => setShowPrivateKey(!showPrivateKey)}
+                            >
+                              {showPrivateKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="importPassphrase">New Passphrase</Label>
+                          <div className="flex">
+                            <Input
+                              id="importPassphrase"
+                              type={showPassphrase ? "text" : "password"}
+                              value={passphrase}
+                              onChange={(e) => setPassphrase(e.target.value)}
+                              className="bg-slate-900/50 border-slate-700/50"
+                              placeholder="Create a new passphrase for this wallet"
+                            />
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="ml-2"
+                              onClick={() => setShowPassphrase(!showPassphrase)}
+                            >
+                              {showPassphrase ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="flex justify-between">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => {
+                          setIsImportingWallet(false);
+                          setPassphrase("");
+                          setPrivateKey("");
+                          setShowPassphrase(false);
+                          setShowPrivateKey(false);
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        className="bg-gradient-to-r from-blue-600 to-violet-600"
+                        disabled={!privateKey || !passphrase || importWalletMutation.isPending}
+                        onClick={() => {
+                          if (privateKey && passphrase) {
+                            importWalletMutation.mutate(
+                              { privateKey, passphrase },
+                              {
+                                onSuccess: () => {
+                                  setIsImportingWallet(false);
+                                  setPassphrase("");
+                                  setPrivateKey("");
+                                  setShowPassphrase(false);
+                                  setShowPrivateKey(false);
+                                }
+                              }
+                            );
+                          }
+                        }}
+                      >
+                        {importWalletMutation.isPending ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Importing...
+                          </>
+                        ) : (
+                          <>Import Wallet</>
+                        )}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                )}
+                
+                {isLoadingWallets ? (
+                  <div className="py-8 flex justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
+                  </div>
+                ) : wallets.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Wallet className="h-12 w-12 mx-auto text-slate-500 mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No wallets found</h3>
+                    <p className="text-sm text-slate-400 mb-4">
+                      Create a new wallet or import an existing one to get started
+                    </p>
+                    <div className="flex justify-center space-x-4">
+                      <Button 
+                        onClick={() => {setIsCreatingWallet(true); setIsImportingWallet(false);}}
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        Create Wallet
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {wallets.map((wallet: any) => (
+                      <div 
+                        key={wallet.address} 
+                        className={`p-4 rounded-lg border ${activeWallet === wallet.address ? 'bg-blue-900/20 border-blue-600' : 'bg-slate-900/50 border-slate-800'}`}
+                      >
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                          <div className="space-y-1">
+                            <div className="flex items-center">
+                              <h3 className="font-semibold text-lg mr-2">{wallet.address}</h3>
+                              {activeWallet === wallet.address && (
+                                <Badge className="bg-blue-600">Active</Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center text-sm text-slate-400">
+                              <span className="mr-4">Balance: {formatTokenAmount(wallet.balance, 6)} PVX</span>
+                              <span>Created: {new Date(wallet.createdAt).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                          
+                          <div className="flex space-x-2">
+                            {activeWallet !== wallet.address && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => setActiveWalletAddress(wallet.address)}
+                              >
+                                Set Active
+                              </Button>
+                            )}
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                // Open export dialog or modal
+                                toast({
+                                  title: "Export Keys",
+                                  description: "Coming soon - key export functionality",
+                                });
+                              }}
+                            >
+                              Export Keys
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
           
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4 mt-4">
