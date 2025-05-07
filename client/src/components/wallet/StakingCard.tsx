@@ -57,10 +57,10 @@ export function StakingCard() {
     isLoading: isLoadingPools,
     error: poolsError 
   } = useQuery({
-    queryKey: ['/api/blockchain/staking/pools'],
+    queryKey: ['/api/stake/pools'],
     queryFn: async () => {
       try {
-        const res = await apiRequest('GET', '/api/blockchain/staking/pools');
+        const res = await apiRequest('GET', '/api/stake/pools');
         if (!res.ok) {
           throw new Error('Failed to fetch staking pools');
         }
@@ -78,14 +78,19 @@ export function StakingCard() {
     isLoading: isLoadingStakes,
     error: stakesError
   } = useQuery({
-    queryKey: ['/api/blockchain/staking/stakes', activeWallet],
+    queryKey: ['/api/stake', activeWallet],
     queryFn: async () => {
       try {
-        const res = await apiRequest('GET', `/api/blockchain/staking/stakes/${activeWallet}`);
+        if (!activeWallet) return [];
+        
+        const res = await apiRequest('GET', `/api/stake/${activeWallet}`);
         if (!res.ok) {
           throw new Error('Failed to fetch active stakes');
         }
-        return await res.json() as StakeRecord[];
+        
+        const stakeData = await res.json();
+        // Convert the response format to match our component expectations
+        return stakeData.stakes || [];
       } catch (error) {
         console.error('Error fetching active stakes:', error);
         throw error;

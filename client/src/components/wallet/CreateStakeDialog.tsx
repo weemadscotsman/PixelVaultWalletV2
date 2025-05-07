@@ -106,12 +106,12 @@ export function CreateStakeDialog({
   // Create stake mutation
   const createStakeMutation = useMutation({
     mutationFn: async (data: {
-      walletAddress: string;
+      address: string;
       poolId: string;
       amount: string;
       passphrase: string;
     }) => {
-      const res = await apiRequest('POST', '/api/blockchain/staking/create', data);
+      const res = await apiRequest('POST', '/api/stake/start', data);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to create stake');
@@ -126,9 +126,9 @@ export function CreateStakeDialog({
       onOpenChange(false);
       
       // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/staking/stakes', activeWallet] });
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/staking/pools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallet', activeWallet] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stake', activeWallet] });
+      queryClient.invalidateQueries({ queryKey: ['/api/stake/pools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/wallet', activeWallet] });
     },
     onError: (error: Error) => {
       toast({
@@ -184,7 +184,7 @@ export function CreateStakeDialog({
     if (!validateForm() || !activeWallet) return;
     
     await createStakeMutation.mutateAsync({
-      walletAddress: activeWallet,
+      address: activeWallet,
       poolId,
       amount,
       passphrase,
