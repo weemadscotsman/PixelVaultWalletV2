@@ -1,0 +1,114 @@
+{
+  "thringlets": [
+    [
+      "test-thringlet-1",
+      {
+        "id": "test-thringlet-1",
+        "name": "Nebula",
+        "owner": "PVX_1e1ee32c2770a6af3ca119759c539907",
+        "createdAt": 1746640040195,
+        "lastInteraction": 1746640040195,
+        "emotionalState": "happy",
+        "level": 3,
+        "experience": 250,
+        "abilities": [
+          "basic_movement",
+          "teleport"
+        ],
+        "visual": {
+          "baseColor": "purple",
+          "eyeColor": "teal",
+          "appendages": 4,
+          "specialFeatures": [
+            "glowing_eyes",
+            "crystal_growths"
+          ]
+        },
+        "stateHistory": [
+          {
+            "state": "neutral",
+            "timestamp": 1746553640195,
+            "trigger": "creation"
+          },
+          {
+            "state": "happy",
+            "timestamp": 1746640040195,
+            "trigger": "user interaction"
+          }
+        ]
+      }
+    ],
+    [
+      "test-thringlet-2",
+      {
+        "id": "test-thringlet-2",
+        "name": "Spark",
+        "owner": "PVX_f5ba480b7db6010eecb453eca8e67ff0",
+        "createdAt": 1746467240195,
+        "lastInteraction": 1746604040195,
+        "emotionalState": "excited",
+        "level": 5,
+        "experience": 490,
+        "abilities": [
+          "basic_movement",
+          "invisibility",
+          "energy_burst"
+        ],
+        "visual": {
+          "baseColor": "orange",
+          "eyeColor": "blue",
+          "appendages": 6,
+          "specialFeatures": [
+            "smoke",
+            "wings"
+          ]
+        },
+        "stateHistory": [
+          {
+            "state": "neutral",
+            "timestamp": 1746467240195,
+            "trigger": "creation"
+          },
+          {
+            "state": "excited",
+            "timestamp": 1746604040195,
+            "trigger": "level up"
+          }
+        ]
+      }
+    ],
+    [
+      "07421ebed734152332ae55ab849e6f64",
+      {
+        "id": "07421ebed734152332ae55ab849e6f64",
+        "name": "Astro",
+        "owner": "PVX_9703f23ff29015d96de825c2309ef249",
+        "createdAt": 1746640049696,
+        "lastInteraction": 1746640049696,
+        "emotionalState": "neutral",
+        "level": 1,
+        "experience": 0,
+        "abilities": [
+          "basic_movement"
+        ],
+        "visual": {
+          "baseColor": "green",
+          "eyeColor": "teal",
+          "appendages": 6,
+          "specialFeatures": [
+            "horn",
+            "scales",
+            "wings"
+          ]
+        },
+        "stateHistory": [
+          {
+            "state": "neutral",
+            "timestamp": 1746640049696,
+            "trigger": "creation"
+          }
+        ]
+      }
+    ]
+  ]
+}

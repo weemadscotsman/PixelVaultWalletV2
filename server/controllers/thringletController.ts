@@ -1,74 +1,7 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { ThringletEmotionState } from '@shared/types';
-
-// In-memory storage for Thringlets
-const thringlets = new Map();
-
-// Add some test thringlets
-function addTestThringlets() {
-  if (thringlets.size === 0) {
-    const testThringlet1 = {
-      id: "test-thringlet-1",
-      name: "Nebula",
-      owner: "PVX_1e1ee32c2770a6af3ca119759c539907",
-      createdAt: Date.now(),
-      lastInteraction: Date.now(),
-      emotionalState: ThringletEmotionState.HAPPY,
-      level: 3,
-      experience: 250,
-      abilities: ['basic_movement', 'teleport'],
-      visual: {
-        baseColor: 'purple',
-        eyeColor: 'teal',
-        appendages: 4,
-        specialFeatures: ['glowing_eyes', 'crystal_growths']
-      },
-      stateHistory: [{
-        state: ThringletEmotionState.NEUTRAL,
-        timestamp: Date.now() - 86400000,
-        trigger: 'creation'
-      }, {
-        state: ThringletEmotionState.HAPPY,
-        timestamp: Date.now(),
-        trigger: 'user interaction'
-      }]
-    };
-    
-    const testThringlet2 = {
-      id: "test-thringlet-2",
-      name: "Spark",
-      owner: "PVX_f5ba480b7db6010eecb453eca8e67ff0",
-      createdAt: Date.now() - 172800000,
-      lastInteraction: Date.now() - 36000000,
-      emotionalState: ThringletEmotionState.EXCITED,
-      level: 5,
-      experience: 490,
-      abilities: ['basic_movement', 'invisibility', 'energy_burst'],
-      visual: {
-        baseColor: 'orange',
-        eyeColor: 'blue',
-        appendages: 6,
-        specialFeatures: ['smoke', 'wings']
-      },
-      stateHistory: [{
-        state: ThringletEmotionState.NEUTRAL,
-        timestamp: Date.now() - 172800000,
-        trigger: 'creation'
-      }, {
-        state: ThringletEmotionState.EXCITED,
-        timestamp: Date.now() - 36000000,
-        trigger: 'level up'
-      }]
-    };
-    
-    thringlets.set(testThringlet1.id, testThringlet1);
-    thringlets.set(testThringlet2.id, testThringlet2);
-  }
-}
-
-// Initialize test data
-addTestThringlets();
+import { thringletStorage, Thringlet } from '../storage/thringlet-storage';
 
 /**
  * Process input to thringlet emotion engine
@@ -83,7 +16,7 @@ export const processInput = async (req: Request, res: Response) => {
     }
     
     // Get thringlet
-    const thringlet = thringlets.get(thringletId);
+    const thringlet = await thringletStorage.getThringlet(thringletId);
     if (!thringlet) {
       return res.status(404).json({ error: 'Thringlet not found' });
     }
@@ -118,34 +51,35 @@ export const processInput = async (req: Request, res: Response) => {
     }
     
     // Update thringlet state
-    thringlet.emotionalState = newState;
-    thringlet.lastInteraction = Date.now();
+    const updatedThringlet = {
+      ...thringlet,
+      emotionalState: newState,
+      lastInteraction: Date.now(),
+      experience: thringlet.experience + 10,
+    };
     
     // Add to emotion history
-    if (!thringlet.stateHistory) {
-      thringlet.stateHistory = [];
+    if (!updatedThringlet.stateHistory) {
+      updatedThringlet.stateHistory = [];
     }
     
-    thringlet.stateHistory.push({
+    updatedThringlet.stateHistory.push({
       state: newState,
       timestamp: Date.now(),
       trigger: input
     });
     
     // Limit history size
-    if (thringlet.stateHistory.length > 50) {
-      thringlet.stateHistory = thringlet.stateHistory.slice(-50);
+    if (updatedThringlet.stateHistory.length > 50) {
+      updatedThringlet.stateHistory = updatedThringlet.stateHistory.slice(-50);
     }
     
-    // Update experience
-    thringlet.experience += 10;
-    
     // Level up if enough experience
-    if (thringlet.experience >= thringlet.level * 100) {
-      thringlet.level += 1;
+    if (updatedThringlet.experience >= updatedThringlet.level * 100) {
+      updatedThringlet.level += 1;
       
       // Add new ability at certain levels
-      if (thringlet.level % 5 === 0) {
+      if (updatedThringlet.level % 5 === 0) {
         const newAbilities = [
           'teleport',
           'invisibility',
@@ -157,24 +91,24 @@ export const processInput = async (req: Request, res: Response) => {
         ];
         
         // Add a random ability if not already present
-        let newAbility;
+        let newAbility: string;
         do {
           newAbility = newAbilities[Math.floor(Math.random() * newAbilities.length)];
-        } while (thringlet.abilities.includes(newAbility));
+        } while (updatedThringlet.abilities.includes(newAbility));
         
-        thringlet.abilities.push(newAbility);
+        updatedThringlet.abilities.push(newAbility);
       }
     }
     
     // Save updated thringlet
-    thringlets.set(thringletId, thringlet);
+    await thringletStorage.updateThringlet(thringletId, updatedThringlet);
     
     res.json({
       id: thringletId,
-      emotionalState: thringlet.emotionalState,
-      level: thringlet.level,
-      experience: thringlet.experience,
-      lastInteraction: thringlet.lastInteraction
+      emotionalState: updatedThringlet.emotionalState,
+      level: updatedThringlet.level,
+      experience: updatedThringlet.experience,
+      lastInteraction: updatedThringlet.lastInteraction
     });
   } catch (error) {
     console.error('Error processing thringlet input:', error);
@@ -193,7 +127,7 @@ export const getStatus = async (req: Request, res: Response) => {
     const { id } = req.params;
     
     // Get thringlet
-    const thringlet = thringlets.get(id);
+    const thringlet = await thringletStorage.getThringlet(id);
     if (!thringlet) {
       return res.status(404).json({ error: 'Thringlet not found' });
     }
@@ -213,8 +147,7 @@ export const getStatus = async (req: Request, res: Response) => {
       }
       
       // Update thringlet state
-      thringlet.emotionalState = currentState;
-      thringlets.set(id, thringlet);
+      await thringletStorage.updateThringlet(id, { ...thringlet, emotionalState: currentState });
     }
     
     res.json({
@@ -244,7 +177,7 @@ export const getEmotionHistory = async (req: Request, res: Response) => {
     const { id } = req.params;
     
     // Get thringlet
-    const thringlet = thringlets.get(id);
+    const thringlet = await thringletStorage.getThringlet(id);
     if (!thringlet) {
       return res.status(404).json({ error: 'Thringlet not found' });
     }
@@ -258,7 +191,7 @@ export const getEmotionHistory = async (req: Request, res: Response) => {
     // Return limited history
     res.json({
       id: thringlet.id,
-      history: history.slice(-limit).map(entry => ({
+      history: history.slice(-limit).map((entry: { state: ThringletEmotionState; timestamp: number; trigger: string }) => ({
         state: entry.state,
         timestamp: entry.timestamp,
         trigger: entry.trigger
@@ -293,7 +226,7 @@ export const createThringlet = async (req: Request, res: Response) => {
     const eyeColor = colors[Math.floor(Math.random() * colors.length)];
     const appendages = Math.floor(Math.random() * 6) + 2; // 2-7 appendages
     
-    const specialFeatures = [];
+    const specialFeatures: string[] = [];
     const possibleFeatures = [
       'glowing_eyes', 'horn', 'wings', 'scales', 'spikes', 
       'multiple_eyes', 'tentacles', 'smoke', 'crystal_growths'
@@ -309,7 +242,7 @@ export const createThringlet = async (req: Request, res: Response) => {
     }
     
     // Create thringlet
-    const thringlet = {
+    const thringlet: Thringlet = {
       id,
       name,
       owner: ownerAddress,
@@ -333,7 +266,7 @@ export const createThringlet = async (req: Request, res: Response) => {
     };
     
     // Save thringlet
-    thringlets.set(id, thringlet);
+    await thringletStorage.createThringlet(thringlet);
     
     res.status(201).json({
       id,
@@ -357,18 +290,16 @@ export const createThringlet = async (req: Request, res: Response) => {
 export const getAllThringlets = async (req: Request, res: Response) => {
   try {
     // Get all thringlets
-    const allThringlets = Array.from(thringlets.values());
+    let allThringlets = await thringletStorage.getAllThringlets();
     
     // Filter by owner if provided
     const { owner } = req.query;
-    let filteredThringlets = allThringlets;
-    
-    if (owner) {
-      filteredThringlets = allThringlets.filter(thringlet => thringlet.owner === owner);
+    if (owner && typeof owner === 'string') {
+      allThringlets = allThringlets.filter(thringlet => thringlet.owner === owner);
     }
     
     // Format response
-    const thringletsList = filteredThringlets.map(thringlet => ({
+    const thringletsList = allThringlets.map(thringlet => ({
       id: thringlet.id,
       name: thringlet.name,
       owner: thringlet.owner,
