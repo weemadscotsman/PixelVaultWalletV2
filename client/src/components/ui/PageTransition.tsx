@@ -44,6 +44,7 @@ export function PageTransition({
       exit="exit"
       variants={variants}
       className={className}
+      style={{ position: 'relative', zIndex: 1 }}
     >
       {children}
     </motion.div>

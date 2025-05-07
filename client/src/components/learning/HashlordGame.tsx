@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { sha256 } from 'js-sha3';
+import { sha256 } from 'js-sha256';
 import { GameCanvas } from './GameCanvas';
 import { LearningTerminal } from './LearningTerminal';
 
