@@ -98,9 +98,11 @@ export function AnimatedPageLayout({
 
   return (
     <PageLayout isConnected={isConnected}>
-      <PageTransition key={location} variants={getVariant()}>
-        {children}
-      </PageTransition>
+      <div className="relative z-10 w-full" style={{ position: 'relative', pointerEvents: 'auto' }}>
+        <PageTransition variants={getVariant()}>
+          {children}
+        </PageTransition>
+      </div>
     </PageLayout>
   );
 }
