@@ -10,21 +10,21 @@ export function useBadges() {
   // Get all visible badges
   const getAllBadges = () => 
     useQuery<Badge[]>({
-      queryKey: ['/api/badges'],
+      queryKey: ['/api/badge'],
       staleTime: 60000 * 5, // 5 minutes
     });
 
   // Get badges by type
   const getBadgesByType = (type: BadgeType) =>
     useQuery<Badge[]>({
-      queryKey: ['/api/badges/type', type],
+      queryKey: ['/api/badge/type', type],
       staleTime: 60000 * 5, // 5 minutes
     });
 
   // Get a single badge by ID
   const getBadgeById = (id: string) =>
     useQuery<Badge>({
-      queryKey: ['/api/badges', id],
+      queryKey: ['/api/badge', id],
       enabled: !!id,
       staleTime: 60000 * 5, // 5 minutes
     });
@@ -32,7 +32,7 @@ export function useBadges() {
   // Get badges for a user
   const getUserBadges = (userId: string) =>
     useQuery<(UserBadge & { badge: Badge })[]>({
-      queryKey: ['/api/badges/user', userId],
+      queryKey: ['/api/badge/user', userId],
       enabled: !!userId,
       staleTime: 60000 * 5, // 5 minutes
     });
@@ -49,7 +49,7 @@ export function useBadges() {
 
       progress: number;
     }) => {
-      const res = await apiRequest('POST', '/api/badges/progress', {
+      const res = await apiRequest('POST', '/api/badge/progress', {
         userId,
         badgeId,
         progress
@@ -58,7 +58,7 @@ export function useBadges() {
     },
     onSuccess: (data, variables) => {
       // Invalidate badge queries
-      queryClient.invalidateQueries({ queryKey: ['/api/badges/user', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/badge/user', variables.userId] });
       
       if (data.progress >= 100) {
         toast({
