@@ -27,192 +27,169 @@ function ensureBadgeDataFiles() {
   
   // Create badge definitions file if it doesn't exist
   if (!fs.existsSync(BADGES_DATA_FILE)) {
-    const defaultBadges: Badge[] = [
-      // Transaction badges
-      {
-        id: 'tx-first',
-        name: 'First Transaction',
-        description: 'Completed your first PVX transaction',
-        type: BadgeType.TRANSACTION,
-        rarity: BadgeRarity.COMMON,
-        requirement: 'Complete 1 transaction'
-      },
-      {
-        id: 'tx-10',
-        name: 'Transaction Adept',
-        description: 'Completed 10 PVX transactions',
-        type: BadgeType.TRANSACTION,
-        rarity: BadgeRarity.UNCOMMON,
-        requirement: 'Complete 10 transactions'
-      },
-      {
-        id: 'tx-100',
-        name: 'Transaction Master',
-        description: 'Completed 100 PVX transactions',
-        type: BadgeType.TRANSACTION,
-        rarity: BadgeRarity.RARE,
-        requirement: 'Complete 100 transactions'
-      },
-      
-      // Mining badges
-      {
-        id: 'mining-first-block',
-        name: 'Block Miner',
-        description: 'Successfully mined your first block',
-        type: BadgeType.MINING,
-        rarity: BadgeRarity.COMMON,
-        requirement: 'Mine 1 block'
-      },
-      {
-        id: 'mining-10-blocks',
-        name: 'Mining Enthusiast',
-        description: 'Successfully mined 10 blocks',
-        type: BadgeType.MINING,
-        rarity: BadgeRarity.UNCOMMON,
-        requirement: 'Mine 10 blocks'
-      },
-      {
-        id: 'mining-50-blocks',
-        name: 'Mining Expert',
-        description: 'Successfully mined 50 blocks',
-        type: BadgeType.MINING,
-        rarity: BadgeRarity.RARE,
-        requirement: 'Mine 50 blocks'
-      },
-      {
-        id: 'mining-hash-king',
-        name: 'Hash King',
-        description: 'Mine 10 blocks in succession',
-        type: BadgeType.MINING,
-        rarity: BadgeRarity.EPIC,
-        requirement: 'Mine 10 consecutive blocks'
-      },
-      
-      // Staking badges
-      {
-        id: 'staking-first',
-        name: 'Stake Novice',
-        description: 'Staked PVX tokens for the first time',
-        type: BadgeType.STAKING,
-        rarity: BadgeRarity.COMMON,
-        requirement: 'Stake tokens once'
-      },
-      {
-        id: 'staking-30days',
-        name: 'Stake Holder',
-        description: 'Maintained a stake for 30 days',
-        type: BadgeType.STAKING,
-        rarity: BadgeRarity.UNCOMMON,
-        requirement: 'Keep a stake active for 30 days'
-      },
-      {
-        id: 'staking-1000pvx',
-        name: 'Whale Staker',
-        description: 'Staked over 1000 PVX at once',
-        type: BadgeType.STAKING,
-        rarity: BadgeRarity.RARE,
-        requirement: 'Stake 1000 PVX in a single stake'
-      },
-      
-      // Governance badges
-      {
-        id: 'gov-first-vote',
-        name: 'Governance Voter',
-        description: 'Participated in a network governance vote',
-        type: BadgeType.GOVERNANCE,
-        rarity: BadgeRarity.COMMON,
-        requirement: 'Vote in 1 governance proposal'
-      },
-      {
-        id: 'gov-proposal',
-        name: 'Proposal Creator',
-        description: 'Created a governance proposal',
-        type: BadgeType.GOVERNANCE,
-        rarity: BadgeRarity.RARE,
-        requirement: 'Create a governance proposal'
-      },
-      {
-        id: 'gov-winning-proposal',
-        name: 'Proposal Winner',
-        description: 'Had a governance proposal passed by the network',
-        type: BadgeType.GOVERNANCE,
-        rarity: BadgeRarity.EPIC,
-        requirement: 'Have a proposal pass with majority vote'
-      },
-      
-      // Thringlet badges
-      {
-        id: 'thringlet-first',
-        name: 'Thringlet Owner',
-        description: 'Acquired your first Thringlet',
-        type: BadgeType.THRINGLET,
-        rarity: BadgeRarity.COMMON,
-        requirement: 'Own 1 Thringlet'
-      },
-      {
-        id: 'thringlet-evolved',
-        name: 'Thringlet Evolved',
-        description: 'Evolved a Thringlet to its next stage',
-        type: BadgeType.THRINGLET,
-        rarity: BadgeRarity.UNCOMMON,
-        requirement: 'Evolve a Thringlet once'
-      },
-      {
-        id: 'thringlet-max-level',
-        name: 'Thringlet Maximalist',
-        description: 'Evolved a Thringlet to maximum level',
-        type: BadgeType.THRINGLET,
-        rarity: BadgeRarity.LEGENDARY,
-        requirement: 'Max out a Thringlet\'s level'
-      },
-      
-      // Special badges
-      {
-        id: 'special-early-adopter',
-        name: 'Early Adopter',
-        description: 'Joined PVX during the alpha phase',
-        type: BadgeType.SPECIAL,
-        rarity: BadgeRarity.EPIC,
-        requirement: 'Created a wallet before official launch'
-      },
-      {
-        id: 'special-night-owl',
-        name: 'Night Owl',
-        description: 'Performed transactions at 3 AM',
-        type: BadgeType.SPECIAL,
-        rarity: BadgeRarity.RARE,
-        requirement: 'Complete a transaction between 2-4 AM',
-        secret: true
-      },
-      {
-        id: 'special-pvx-visionary',
-        name: 'PVX Visionary',
-        description: 'Contributed to the PVX ecosystem in a significant way',
-        type: BadgeType.SPECIAL,
-        rarity: BadgeRarity.MYTHIC,
-        requirement: 'Special award from PVX team'
-      }
-    ];
+    // Following the exact blueprint data structure with Map entries
+    const defaultBadges = {
+      badges: [
+        [
+          "tx-first",
+          {
+            id: "tx-first",
+            name: "First Transaction",
+            description: "Completed your first PVX transaction",
+            type: "transaction",
+            rarity: "common",
+            icon: "transaction-first",
+            requirement: "Send your first transaction on the PVX network",
+            secret: false
+          }
+        ],
+        [
+          "tx-big-spender",
+          {
+            id: "tx-big-spender",
+            name: "Big Spender",
+            description: "Sent over 1000 PVX in a single transaction",
+            type: "transaction",
+            rarity: "uncommon",
+            icon: "transaction-big",
+            requirement: "Send more than 1000 PVX in a single transaction",
+            secret: false
+          }
+        ],
+        [
+          "mining-first",
+          {
+            id: "mining-first",
+            name: "Block Pioneer",
+            description: "Mined your first block on the PVX blockchain",
+            type: "mining",
+            rarity: "common",
+            icon: "mining-first",
+            requirement: "Mine your first block on the PVX network",
+            secret: false
+          }
+        ],
+        [
+          "mining-master",
+          {
+            id: "mining-master",
+            name: "Mining Master",
+            description: "Mined over 100 blocks on the PVX blockchain",
+            type: "mining",
+            rarity: "rare",
+            icon: "mining-master",
+            requirement: "Mine 100 blocks on the PVX network",
+            secret: false
+          }
+        ],
+        [
+          "stake-first",
+          {
+            id: "stake-first",
+            name: "Stake Initiate",
+            description: "Made your first stake in the PVX network",
+            type: "staking",
+            rarity: "common",
+            icon: "stake-first",
+            requirement: "Stake any amount of PVX for the first time",
+            secret: false
+          }
+        ],
+        [
+          "stake-whale",
+          {
+            id: "stake-whale",
+            name: "Whale Staker",
+            description: "Staked more than 10,000 PVX in a single pool",
+            type: "staking",
+            rarity: "epic",
+            icon: "stake-whale",
+            requirement: "Stake 10,000+ PVX in a single pool",
+            secret: false
+          }
+        ],
+        [
+          "gov-first",
+          {
+            id: "gov-first",
+            name: "Governance Participant",
+            description: "Cast your first vote in the PVX governance system",
+            type: "governance",
+            rarity: "common",
+            icon: "gov-first",
+            requirement: "Vote on any governance proposal",
+            secret: false
+          }
+        ],
+        [
+          "thringlet-first",
+          {
+            id: "thringlet-first",
+            name: "Thringlet Parent",
+            description: "Created your first Thringlet",
+            type: "thringlet",
+            rarity: "common",
+            icon: "thringlet-first",
+            requirement: "Create your first Thringlet",
+            secret: false
+          }
+        ],
+        [
+          "thringlet-whisperer",
+          {
+            id: "thringlet-whisperer",
+            name: "Thringlet Whisperer",
+            description: "Interact with your Thringlet 100 times",
+            type: "thringlet",
+            rarity: "rare",
+            icon: "thringlet-whisperer",
+            requirement: "Have 100 total interactions with your Thringlets",
+            secret: false
+          }
+        ],
+        [
+          "special-early",
+          {
+            id: "special-early",
+            name: "PVX Pioneer",
+            description: "One of the first 100 users on the PVX network",
+            type: "special",
+            rarity: "mythic",
+            icon: "special-pioneer",
+            requirement: "Be among the first 100 wallet addresses on the network",
+            secret: true
+          }
+        ]
+      ],
+      userBadges: []
+    };
     
     fs.writeFileSync(BADGES_DATA_FILE, JSON.stringify(defaultBadges, null, 2));
-    console.log('Badge data loaded from file');
+    console.log('Badge data saved to file according to blueprint format');
   }
   
   // Create user badge file if it doesn't exist
   if (!fs.existsSync(USER_BADGES_DATA_FILE)) {
-    fs.writeFileSync(USER_BADGES_DATA_FILE, JSON.stringify([], null, 2));
+    fs.writeFileSync(USER_BADGES_DATA_FILE, JSON.stringify({userBadges: []}, null, 2));
   }
 }
 
 // Initialize data files
 ensureBadgeDataFiles();
 
-// Load badges from file
+// Load badges from file following blueprint format
 export function loadBadges(): Badge[] {
   try {
     if (fs.existsSync(BADGES_DATA_FILE)) {
       const data = fs.readFileSync(BADGES_DATA_FILE, 'utf8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      
+      // Convert from blueprint format to array of badges
+      if (parsed.badges && Array.isArray(parsed.badges)) {
+        // Extract badge objects from the map entries
+        return parsed.badges.map((entry: [string, Badge]) => entry[1]);
+      }
+      return [];
     }
   } catch (error) {
     console.error('Error loading badge data:', error);
@@ -220,21 +197,41 @@ export function loadBadges(): Badge[] {
   return [];
 }
 
-// Save badges to file
+// Save badges to file in blueprint format
 export function saveBadges(badges: Badge[]): void {
   try {
-    fs.writeFileSync(BADGES_DATA_FILE, JSON.stringify(badges, null, 2));
+    // Convert badges to blueprint format
+    const badgesMap = badges.map(badge => [badge.id, badge]);
+    const data = {
+      badges: badgesMap,
+      userBadges: [] // This will be populated from the user badges file
+    };
+    
+    fs.writeFileSync(BADGES_DATA_FILE, JSON.stringify(data, null, 2));
   } catch (error) {
     console.error('Error saving badge data:', error);
   }
 }
 
-// Load user badges from file
+// Load user badges from file following blueprint format
 export function loadUserBadges(): UserBadge[] {
   try {
     if (fs.existsSync(USER_BADGES_DATA_FILE)) {
       const data = fs.readFileSync(USER_BADGES_DATA_FILE, 'utf8');
-      return JSON.parse(data);
+      const parsed = JSON.parse(data);
+      
+      // If using shared file format with badges
+      if (parsed.userBadges && Array.isArray(parsed.userBadges)) {
+        // Extract user badge objects from the map entries
+        return parsed.userBadges.map((entry: [string, UserBadge]) => entry[1]);
+      }
+      
+      // If using separate user badges file
+      if (Array.isArray(parsed)) {
+        return parsed;
+      }
+      
+      return [];
     }
   } catch (error) {
     console.error('Error loading user badge data:', error);
@@ -242,10 +239,22 @@ export function loadUserBadges(): UserBadge[] {
   return [];
 }
 
-// Save user badges to file
+// Save user badges to file in blueprint format
 export function saveUserBadges(userBadges: UserBadge[]): void {
   try {
-    fs.writeFileSync(USER_BADGES_DATA_FILE, JSON.stringify(userBadges, null, 2));
+    // Convert to blueprint format - array of [key, value] pairs
+    // Where key is userId-badgeId and value is the badge data
+    const userBadgesMap = userBadges.map(ub => {
+      const key = `${ub.userId}-${ub.badgeId}`;
+      return [key, ub];
+    });
+    
+    // Using the separate user badges file format
+    const data = {
+      userBadges: userBadgesMap
+    };
+    
+    fs.writeFileSync(USER_BADGES_DATA_FILE, JSON.stringify(data, null, 2));
   } catch (error) {
     console.error('Error saving user badge data:', error);
   }

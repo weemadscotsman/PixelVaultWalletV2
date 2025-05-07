@@ -34,8 +34,8 @@ export interface Badge {
   description: string;
   type: BadgeType;
   rarity: BadgeRarity;
+  icon: string;
   requirement: string;
-  image?: string;
   secret?: boolean;
 }
 
