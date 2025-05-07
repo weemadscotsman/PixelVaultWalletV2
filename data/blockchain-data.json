@@ -43,6 +43,63 @@
       "nonce": "241434",
       "difficulty": 0.55,
       "reward": "5000000"
+    },
+    {
+      "height": 4,
+      "hash": "b587f4ef905309360724fb4e35a50b3cfe1f000257fceb70a4906e0d80d6dd83",
+      "previousHash": "999591a80601a09190b1d4a40a69e22e5f5b99092508e04e722eabda559f2f7f",
+      "timestamp": 1746635012467,
+      "transactions": [
+        "8e957f0a5efa30d4a40123715e1b50f5a41b3bfb7da037ce44e8f623b78cbad4"
+      ],
+      "miner": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "nonce": "47217",
+      "difficulty": 0.5,
+      "reward": "5000000"
+    },
+    {
+      "height": 5,
+      "hash": "033bd785bb8c4e88b1d7d3c6d131160bf6ef4948e38c2dfc6346d465c014053f",
+      "previousHash": "b587f4ef905309360724fb4e35a50b3cfe1f000257fceb70a4906e0d80d6dd83",
+      "timestamp": 1746635022468,
+      "transactions": [],
+      "miner": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "nonce": "525647",
+      "difficulty": 0.55,
+      "reward": "5000000"
+    },
+    {
+      "height": 6,
+      "hash": "bf207f75983b7d19e33ea497b09cdfd532d22f32e0fc490eb9edc0539f748d95",
+      "previousHash": "033bd785bb8c4e88b1d7d3c6d131160bf6ef4948e38c2dfc6346d465c014053f",
+      "timestamp": 1746635032468,
+      "transactions": [],
+      "miner": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "nonce": "442126",
+      "difficulty": 0.6050000000000001,
+      "reward": "5000000"
+    },
+    {
+      "height": 7,
+      "hash": "d580dda8fd4a19df53876e7dcc13657882d63e9794919bf496452782a29b5b24",
+      "previousHash": "bf207f75983b7d19e33ea497b09cdfd532d22f32e0fc490eb9edc0539f748d95",
+      "timestamp": 1746635042469,
+      "transactions": [],
+      "miner": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "nonce": "773015",
+      "difficulty": 0.6655000000000002,
+      "reward": "5000000"
+    },
+    {
+      "height": 8,
+      "hash": "e26799989241a14fb29b2d6373fec6b4dfab12213e14a5d319b6a9248a75b8b9",
+      "previousHash": "d580dda8fd4a19df53876e7dcc13657882d63e9794919bf496452782a29b5b24",
+      "timestamp": 1746635056407,
+      "transactions": [],
+      "miner": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "nonce": "674732",
+      "difficulty": 0.7320500000000003,
+      "reward": "5000000"
     }
   ],
   "transactions": [
@@ -55,7 +112,62 @@
       "timestamp": 1746633047613,
       "nonce": 26910,
       "signature": "a2591e8c53620864b9f416a513e62e7f71e03224aa763c9e2e24c6288f2b5ec1",
-      "status": "pending"
+      "status": "confirmed"
+    },
+    {
+      "hash": "e973059b6eeeea3a05a49bf175537744bd110464d0234c23d2e55dcf3dd581a2",
+      "type": "reward",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "amount": "5000000",
+      "timestamp": 1746635012467,
+      "nonce": 90891,
+      "signature": "2dcf3eca217626b463949189013ec19f8fc14a79395e10ec9608cd36ed7229e5",
+      "status": "confirmed"
+    },
+    {
+      "hash": "6bfeea603ed331a08daa39fdaf416ca66ba708ff83939b3707459780c3fcb6db",
+      "type": "reward",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "amount": "5000000",
+      "timestamp": 1746635022468,
+      "nonce": 783,
+      "signature": "23b5a35a1543b617667c6268470c8bc996bed4deabdecbc84925db8aacdb3464",
+      "status": "confirmed"
+    },
+    {
+      "hash": "bd38503e72ae8a2730394cf5b6ad1bcbdbdb22d542fe526c1343dacaac8e2bfa",
+      "type": "reward",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "amount": "5000000",
+      "timestamp": 1746635032468,
+      "nonce": 53079,
+      "signature": "d7204e116bb678f60a6adb7778653dc5cd9718c9bd73d8f10eb3f2ff45225b8a",
+      "status": "confirmed"
+    },
+    {
+      "hash": "5415285f40fc04ac02a15a0b06d51e1a5fb07b1f40e969401576cf8818fac02e",
+      "type": "reward",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "amount": "5000000",
+      "timestamp": 1746635042469,
+      "nonce": 59559,
+      "signature": "843b1468f9a279e44edb0f73f21e067bdcd65cfae3b1692a5c8e8adc6f34dc55",
+      "status": "confirmed"
+    },
+    {
+      "hash": "3af9e4a5c1da05b97f9d88dc3f0f884fbc79134a27df298359dd856b6bc64037",
+      "type": "reward",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "amount": "5000000",
+      "timestamp": 1746635056407,
+      "nonce": 67703,
+      "signature": "a90f2aa76805a1c140aaa03346869290ec978eeb59ae128d8323c8ccf688e26b",
+      "status": "confirmed"
     }
   ],
   "wallets": [
@@ -64,9 +176,9 @@
       {
         "address": "PVX_1e1ee32c2770a6af3ca119759c539907",
         "publicKey": "814eb62f87583afb04aebb7abcdb8fb52a7150c8390111f4115ebbe389bcf24b",
-        "balance": "15999900",
+        "balance": "40999900",
         "createdAt": "2025-05-07T15:49:53.480Z",
-        "lastSynced": "2025-05-07T15:49:53.480Z",
+        "lastSynced": "2025-05-07T16:24:16.407Z",
         "passphraseSalt": "430f2740756b69721379cd9d553e9b66",
         "passphraseHash": "1e1ee32c2770a6af3ca119759c5399072ff483851fcd25a80f2329f6d4994026"
       }
@@ -113,12 +225,47 @@
       "PVX_1e1ee32c2770a6af3ca119759c539907",
       {
         "address": "PVX_1e1ee32c2770a6af3ca119759c539907",
-        "blocksMined": 3,
-        "totalRewards": "15000000",
+        "blocksMined": 8,
+        "totalRewards": "40000000",
         "isCurrentlyMining": true,
         "currentHashRate": "181.01 MH/s",
-        "lastBlockMined": 1746633379834
+        "lastBlockMined": 1746635056407
       }
     ]
+  ],
+  "stakeRecords": [],
+  "stakingPools": [
+    {
+      "id": "pool1",
+      "name": "Genesis Pool",
+      "apy": "8.5",
+      "totalStaked": "1500000000",
+      "minStake": "10000",
+      "lockupPeriod": 0
+    },
+    {
+      "id": "pool2",
+      "name": "Hodler Pool",
+      "apy": "12.0",
+      "totalStaked": "750000000",
+      "minStake": "100000",
+      "lockupPeriod": 7
+    },
+    {
+      "id": "pool3",
+      "name": "Validator Pool",
+      "apy": "15.0",
+      "totalStaked": "350000000",
+      "minStake": "1000000",
+      "lockupPeriod": 30
+    },
+    {
+      "id": "pool4",
+      "name": "ZK Privacy Pool",
+      "apy": "18.5",
+      "totalStaked": "200000000",
+      "minStake": "5000000",
+      "lockupPeriod": 90
+    }
   ]
 }

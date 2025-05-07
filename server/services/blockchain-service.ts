@@ -794,13 +794,240 @@ export function simulateThringletInteraction(
   return thringlet;
 }
 
+// Mining interval reference
+let miningIntervalId: NodeJS.Timeout | null = null;
+let stakingIntervalId: NodeJS.Timeout | null = null;
+
+/**
+ * Real mining function that generates a new block with transactions
+ */
+async function mineNewBlock() {
+  try {
+    if (!blockchainStatus.connected) {
+      console.log('Blockchain not connected, skipping mining attempt');
+      return;
+    }
+
+    const latest = await memBlockchainStorage.getLatestBlock();
+    if (!latest) {
+      console.error('No latest block found, cannot mine');
+      return;
+    }
+
+    // Get active miners
+    const activeMiners = await memBlockchainStorage.getAllActiveMiners();
+    if (activeMiners.length === 0) {
+      // No active miners, skip this mining round
+      console.log('No active miners, skipping block generation');
+      return;
+    }
+
+    // Select a miner randomly based on hashrate (simplified mining algorithm)
+    const totalHashrate = activeMiners.reduce((sum, miner) => {
+      const hashrateStr = miner.currentHashRate || "0 MH/s";
+      const hashrate = parseFloat(hashrateStr.split(' ')[0]) || 0;
+      return sum + hashrate;
+    }, 0);
+
+    // Weighted selection based on hashrate
+    let randomPoint = Math.random() * totalHashrate;
+    let selectedMiner = activeMiners[0];
+    let accumulatedHashrate = 0;
+
+    for (const miner of activeMiners) {
+      const hashrateStr = miner.currentHashRate || "0 MH/s";
+      const hashrate = parseFloat(hashrateStr.split(' ')[0]) || 0;
+      accumulatedHashrate += hashrate;
+
+      if (randomPoint <= accumulatedHashrate) {
+        selectedMiner = miner;
+        break;
+      }
+    }
+
+    // Prepare transactions for the block
+    // Get pending transactions and include up to PVX_MAX_TRANSACTIONS_PER_BLOCK
+    const recentTransactions = await memBlockchainStorage.getRecentTransactions(100);
+    const pendingTxs = recentTransactions
+      .filter(tx => tx.status === 'pending')
+      .slice(0, PVX_MAX_TRANSACTIONS_PER_BLOCK);
+
+    // Create the new block
+    const newHeight = latest.height + 1;
+    const newDifficulty = adjustDifficulty(latest);
+    const newTimestamp = Date.now();
+    const newHash = crypto.createHash('sha256')
+      .update(latest.hash + newHeight.toString() + newTimestamp.toString() + selectedMiner.address)
+      .digest('hex');
+
+    const newBlock: Block = {
+      height: newHeight,
+      hash: newHash,
+      previousHash: latest.hash,
+      timestamp: newTimestamp,
+      transactions: pendingTxs.map(tx => tx.hash),
+      miner: selectedMiner.address,
+      nonce: Math.floor(Math.random() * 1000000).toString(),
+      difficulty: newDifficulty,
+      reward: PVX_BLOCK_REWARD
+    };
+
+    // Store the new block
+    await memBlockchainStorage.createBlock(newBlock);
+    latestBlock = newBlock;
+
+    // Update miner statistics
+    selectedMiner.blocksMined += 1;
+    selectedMiner.lastBlockMined = newTimestamp;
+    const newRewards = BigInt(selectedMiner.totalRewards) + BigInt(PVX_BLOCK_REWARD);
+    selectedMiner.totalRewards = newRewards.toString();
+    await memBlockchainStorage.updateMiner(selectedMiner);
+
+    // Create a reward transaction for the miner
+    const rewardTx: Transaction = {
+      hash: crypto.createHash('sha256')
+        .update('reward_' + selectedMiner.address + newTimestamp.toString())
+        .digest('hex'),
+      type: TransactionType.REWARD,
+      from: PVX_GENESIS_ADDRESS,
+      to: selectedMiner.address,
+      amount: PVX_BLOCK_REWARD,
+      timestamp: newTimestamp,
+      nonce: Math.floor(Math.random() * 100000),
+      signature: generateRandomHash(),
+      status: 'confirmed'
+    };
+
+    await memBlockchainStorage.createTransaction(rewardTx);
+
+    // Credit the miner's wallet
+    const minerWallet = await memBlockchainStorage.getWalletByAddress(selectedMiner.address);
+    if (minerWallet) {
+      const newBalance = BigInt(minerWallet.balance) + BigInt(PVX_BLOCK_REWARD);
+      minerWallet.balance = newBalance.toString();
+      minerWallet.lastSynced = new Date(newTimestamp);
+      await memBlockchainStorage.updateWallet(minerWallet);
+    }
+
+    // Update pending transactions status to confirmed
+    for (const tx of pendingTxs) {
+      tx.status = 'confirmed';
+      await memBlockchainStorage.updateTransaction(tx);
+    }
+
+    // Update blockchain status
+    blockchainStatus = {
+      ...blockchainStatus,
+      latestBlock: {
+        height: newBlock.height,
+        hash: newBlock.hash,
+        timestamp: newBlock.timestamp
+      },
+      difficulty: newBlock.difficulty
+    };
+
+    console.log(`New block mined: ${newBlock.height} by miner ${selectedMiner.address}`);
+  } catch (error) {
+    console.error('Error mining new block:', error);
+  }
+}
+
+/**
+ * Calculate staking rewards for all active stakes
+ */
+async function distributeStakingRewards() {
+  try {
+    // Get all active stakes
+    const stakingPools = await memBlockchainStorage.getStakingPools();
+    
+    for (const pool of stakingPools) {
+      const now = Date.now();
+      const activeStakes = await memBlockchainStorage.getActiveStakesByPoolId(pool.id);
+      
+      for (const stake of activeStakes) {
+        // Calculate reward based on time since last reward
+        const timeSinceLastReward = now - stake.lastRewardTime;
+        // Only distribute rewards if it's been at least an hour
+        if (timeSinceLastReward >= 3600000) { // 1 hour in milliseconds
+          const daysSinceLastReward = timeSinceLastReward / (24 * 60 * 60 * 1000);
+          const apyDecimal = parseFloat(pool.apy) / 100;
+          const reward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysSinceLastReward / 365));
+          
+          if (reward > 0) {
+            // Create reward transaction
+            const rewardTx: Transaction = {
+              hash: crypto.createHash('sha256')
+                .update('stake_reward_' + stake.walletAddress + now.toString())
+                .digest('hex'),
+              type: TransactionType.REWARD,
+              from: PVX_GENESIS_ADDRESS,
+              to: stake.walletAddress,
+              amount: reward.toString(),
+              timestamp: now,
+              nonce: Math.floor(Math.random() * 100000),
+              signature: generateRandomHash(),
+              status: 'confirmed'
+            };
+            
+            await memBlockchainStorage.createTransaction(rewardTx);
+            
+            // Credit the staker's wallet
+            const wallet = await memBlockchainStorage.getWalletByAddress(stake.walletAddress);
+            if (wallet) {
+              const newBalance = BigInt(wallet.balance) + BigInt(reward);
+              wallet.balance = newBalance.toString();
+              wallet.lastSynced = new Date(now);
+              await memBlockchainStorage.updateWallet(wallet);
+            }
+            
+            // Update stake's last reward time
+            stake.lastRewardTime = now;
+            await memBlockchainStorage.updateStakeRecord(stake);
+            
+            console.log(`Distributed staking reward of ${reward} μPVX to ${stake.walletAddress}`);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error distributing staking rewards:', error);
+  }
+}
+
+/**
+ * Start the blockchain mining and staking processes
+ */
+function startBlockchainProcesses() {
+  if (miningIntervalId) {
+    clearInterval(miningIntervalId);
+  }
+  
+  if (stakingIntervalId) {
+    clearInterval(stakingIntervalId);
+  }
+  
+  // Start the mining process (every 10 seconds)
+  miningIntervalId = setInterval(async () => {
+    await mineNewBlock();
+  }, 10000);
+  
+  // Start the staking rewards distribution process (every 5 minutes)
+  stakingIntervalId = setInterval(async () => {
+    await distributeStakingRewards();
+  }, 300000);
+  
+  console.log('Started PVX blockchain mining and staking processes');
+}
+
 /**
  * Initialize the blockchain
  * This should be called at server startup
  */
 export async function initializeBlockchain() {
   try {
+    console.log('Initializing PVX blockchain...');
     await connectToBlockchain();
+    startBlockchainProcesses();
     return blockchainStatus;
   } catch (error) {
     console.error('Failed to initialize blockchain:', error);

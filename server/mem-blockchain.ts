@@ -198,6 +198,15 @@ export class MemBlockchainStorage {
     );
   }
   
+  async updateTransaction(transaction: Transaction): Promise<Transaction> {
+    const index = this.transactions.findIndex(t => t.hash === transaction.hash);
+    if (index !== -1) {
+      this.transactions[index] = transaction;
+      await this.saveToFile();
+    }
+    return transaction;
+  }
+  
   async getRecentTransactions(limit: number = 10): Promise<Transaction[]> {
     return [...this.transactions]
       .sort((a, b) => b.timestamp - a.timestamp)
@@ -256,12 +265,17 @@ export class MemBlockchainStorage {
   
   async getStakesByAddress(address: string): Promise<StakeRecord[]> {
     return Array.from(this.stakeRecords.values())
-      .filter(stake => stake.address === address);
+      .filter(stake => stake.walletAddress === address);
   }
   
   async getActiveStakesByAddress(address: string): Promise<StakeRecord[]> {
     return Array.from(this.stakeRecords.values())
-      .filter(stake => stake.address === address && stake.isActive);
+      .filter(stake => stake.walletAddress === address && stake.isActive);
+  }
+  
+  async getActiveStakesByPoolId(poolId: string): Promise<StakeRecord[]> {
+    return Array.from(this.stakeRecords.values())
+      .filter(stake => stake.poolId === poolId && stake.isActive);
   }
   
   async updateStakeRecord(stake: StakeRecord): Promise<StakeRecord> {
