@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Example wallet data
 const walletData = {
-  address: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+  publicAddress: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
   balance: 432914.832651,
   transactions: [
     { id: 1, type: 'receive', amount: 5000, from: '0x3a...4b2c', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
@@ -50,7 +50,7 @@ export default function WalletPage() {
   };
   
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(walletData.address);
+    navigator.clipboard.writeText(walletData.publicAddress);
     toast({
       title: "Address copied",
       description: "Wallet address copied to clipboard",
@@ -87,7 +87,7 @@ export default function WalletPage() {
                   <p className="text-sm text-gray-400 mb-1">Wallet Address</p>
                   <div className="flex items-center">
                     <div className="bg-gray-900/50 p-2 rounded flex-1 font-mono text-sm text-gray-300">
-                      {walletData.address}
+                      {walletData.publicAddress}
                     </div>
                     <Button 
                       variant="outline" 
