@@ -49,10 +49,19 @@ export function TrendRadar({ className }: TrendRadarProps) {
   const radarData = React.useMemo(() => {
     if (!blockchainTrends) return [];
     
-    return blockchainTrends.metrics.map((metric: any) => ({
-      metric: metric.label,
-      [metric.id]: Math.round((metric.data[timeRange].value / metric.data[timeRange].maxValue) * 100),
-    })).reduce((acc: any, item: any) => {
+    return blockchainTrends.metrics.map((metric: any) => {
+      // Check if values exist and are valid numbers
+      const value = metric.data[timeRange]?.value || 0;
+      const maxValue = metric.data[timeRange]?.maxValue || 1; // Prevent division by zero
+      
+      // Calculate percentage and ensure it's a valid number
+      const percentage = maxValue > 0 ? Math.round((value / maxValue) * 100) : 0;
+      
+      return {
+        metric: metric.label,
+        [metric.id]: String(percentage), // Convert to string to avoid NaN errors
+      };
+    }).reduce((acc: any, item: any) => {
       // Convert array of objects to a single object with all metrics
       const { metric, ...values } = item;
       
