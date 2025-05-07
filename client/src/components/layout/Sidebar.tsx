@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useLocation, useRoute } from "wouter";
 
 interface NetworkStatsType {
   blockHeight: number;
@@ -15,6 +16,7 @@ interface SidebarProps {
 export function Sidebar({ networkStats }: SidebarProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const sidebarCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [, navigate] = useLocation();
   
   // Matrix effect for sidebar
   useEffect(() => {
@@ -93,20 +95,16 @@ export function Sidebar({ networkStats }: SidebarProps) {
     };
   }, []);
 
-  const isActive = (hash: string) => {
-    return window.location.hash === hash;
-  };
-
   const navItems = [
-    { id: "#wallet", icon: "fa-wallet", label: "Wallet" },
-    { id: "#mining", icon: "fa-hammer", label: "Mining" },
-    { id: "#staking", icon: "fa-layer-group", label: "Staking" },
-    { id: "#governance", icon: "fa-landmark", label: "Governance" },
-    { id: "#nft", icon: "fa-image", label: "NFT Minting" },
-    { id: "#learn", icon: "fa-graduation-cap", label: "Learning Center" },
-    { id: "#games", icon: "fa-gamepad", label: "Game Center" },
-    { id: "#drops", icon: "fa-gift", label: "Exclusive Drops" },
-    { id: "#market", icon: "fa-chart-line", label: "Market Stats" },
+    { path: "/wallet", icon: "fa-wallet", label: "Wallet" },
+    { path: "/blockchain", icon: "fa-hammer", label: "Blockchain" },
+    { path: "/staking", icon: "fa-layer-group", label: "Staking" },
+    { path: "/governance", icon: "fa-landmark", label: "Governance" },
+    { path: "/thringlets", icon: "fa-image", label: "Thringlets" },
+    { path: "/learning", icon: "fa-graduation-cap", label: "Learning" },
+    { path: "/terminal", icon: "fa-terminal", label: "Terminal" },
+    { path: "/drops", icon: "fa-gift", label: "Drops" },
+    { path: "/", icon: "fa-home", label: "Dashboard" },
   ];
 
   return (
@@ -172,17 +170,17 @@ export function Sidebar({ networkStats }: SidebarProps) {
         <nav className="py-4 flex-grow relative z-10 bg-black bg-opacity-78">
           <ul className="space-y-1 px-2">
             {navItems.map((item) => (
-              <li key={item.id} className="py-1">
+              <li key={item.path} className="py-1">
                 <div 
                   className={cn(
                     "flex items-center px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer",
-                    isActive(item.id)
+                    window.location.pathname === item.path
                       ? "bg-blue-800 bg-opacity-90 text-white border border-blue-600 shadow-md shadow-blue-900/50" 
                       : "text-blue-400 hover:bg-blue-900 hover:bg-opacity-30 hover:text-blue-300 hover:border hover:border-blue-700/50 text-shadow-neon"
                   )}
                   onClick={() => {
-                    // Set hash for navigation
-                    window.location.hash = item.id;
+                    // Use wouter's navigate for routing
+                    navigate(item.path);
                     
                     // Close sidebar on mobile
                     if (window.innerWidth < 768) {
