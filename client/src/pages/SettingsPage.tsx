@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { PageLayout } from "@/components/layout/PageLayout";
+import { AnimatedPageLayout } from "@/components/layout/AnimatedPageLayout";
 import { useWallet } from "@/hooks/use-wallet";
 import { Eye, EyeOff, Shield, AlertTriangle, RefreshCw, Save, Check, X } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -75,7 +75,7 @@ export default function SettingsPage() {
   };
   
   return (
-    <PageLayout isConnected={!!wallet}>
+    <AnimatedPageLayout isConnected={!!wallet} variant="pop">
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-violet-500 bg-clip-text text-transparent pb-1">
@@ -454,6 +454,6 @@ export default function SettingsPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </PageLayout>
+    </AnimatedPageLayout>
   );
 }
