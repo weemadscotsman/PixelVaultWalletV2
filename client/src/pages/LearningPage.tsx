@@ -45,7 +45,7 @@ export default function LearningPage() {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Wallet:</span>
                     <span className="text-blue-300 font-mono text-xs">
-                      {wallet.address.substring(0, 6)}...{wallet.address.substring(wallet.address.length - 4)}
+                      {wallet.publicAddress.substring(0, 6)}...{wallet.publicAddress.substring(wallet.publicAddress.length - 4)}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -117,7 +117,7 @@ export default function LearningPage() {
             <TabsContent value="hashlord">
               <HashlordGame 
                 onComplete={(score, difficulty) => handleLearningComplete('Hashlord', score, difficulty)}
-                walletAddress={wallet.address}
+                walletAddress={wallet.publicAddress}
               />
               
               <div className="mt-8">
