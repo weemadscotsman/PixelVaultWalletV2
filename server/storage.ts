@@ -13,7 +13,12 @@ import {
   GameLeaderboard, InsertGameLeaderboard, game_leaderboards,
   UTR, InsertUTR, universal_transaction_registry,
   Badge, InsertBadge, badges, UserBadge, InsertUserBadge, user_badges,
-  BadgeProgress, InsertBadgeProgress, badge_progress
+  BadgeProgress, InsertBadgeProgress, badge_progress,
+  // DEX related models
+  Token, InsertToken, tokens,
+  LiquidityPool, InsertLiquidityPool, liquidity_pools,
+  LPPosition, InsertLPPosition, lp_positions,
+  Swap, InsertSwap, swaps
 } from '@shared/schema';
 
 export interface IStorage {
@@ -149,11 +154,226 @@ export interface IStorage {
   getBadgeProgress(userId: number, badgeId: number): Promise<BadgeProgress | undefined>;
   updateBadgeProgress(userId: number, badgeId: number, progress: object): Promise<BadgeProgress>;
   checkAndAwardBadges(userId: number): Promise<Badge[]>; // Checks for badge eligibility and awards any earned badges
+  
+  // DEX Token methods
+  getTokens(limit?: number): Promise<Token[]>;
+  getTokenById(id: number): Promise<Token | undefined>;
+  getTokenBySymbol(symbol: string): Promise<Token | undefined>;
+  createToken(token: InsertToken): Promise<Token>;
+  updateToken(id: number, updates: Partial<InsertToken>): Promise<Token | undefined>;
+  
+  // Liquidity Pool methods
+  getLiquidityPools(limit?: number): Promise<LiquidityPool[]>;
+  getLiquidityPoolById(id: number): Promise<LiquidityPool | undefined>;
+  getLiquidityPoolByTokens(token0Id: number, token1Id: number): Promise<LiquidityPool | undefined>;
+  getLiquidityPoolsByToken(tokenId: number): Promise<LiquidityPool[]>;
+  createLiquidityPool(pool: InsertLiquidityPool): Promise<LiquidityPool>;
+  updateLiquidityPool(id: number, updates: Partial<Omit<LiquidityPool, 'id' | 'created_at'>>): Promise<LiquidityPool | undefined>;
+  
+  // LP Position methods
+  getLPPositions(address: string): Promise<LPPosition[]>;
+  getLPPositionById(id: number): Promise<LPPosition | undefined>;
+  getLPPositionsByPool(poolId: number): Promise<LPPosition[]>;
+  createLPPosition(position: InsertLPPosition): Promise<LPPosition>;
+  updateLPPosition(id: number, updates: Partial<Omit<LPPosition, 'id' | 'created_at'>>): Promise<LPPosition | undefined>;
+  
+  // Swap methods
+  getSwaps(limit?: number): Promise<Swap[]>;
+  getSwapsByAddress(address: string, limit?: number): Promise<Swap[]>;
+  getSwapsByPool(poolId: number, limit?: number): Promise<Swap[]>;
+  createSwap(swap: InsertSwap): Promise<Swap>;
+  
+  // DEX calculation methods
+  calculateSwapOutput(poolId: number, tokenInId: number, amountIn: string): Promise<{
+    amountOut: string; 
+    priceImpact: string;
+    fee: string; 
+    exchangeRate: string;
+  }>;
+  calculateLiquidityValue(poolId: number, lpTokenAmount: string): Promise<{
+    token0Amount: string;
+    token1Amount: string;
+    totalValue: string; // PVX equivalent
+  }>;
+  getPoolStats(poolId: number): Promise<{
+    volume24h: string;
+    volume7d: string;
+    fees24h: string;
+    tvl: string; // Total Value Locked
+    apr: string; // Annual Percentage Rate for LP providers
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
   // User feedback in-memory storage - will be replaced with proper DB implementation
   private userFeedback: UserFeedback[] = [];
+  
+  // DEX in-memory storage
+  private tokens: Token[] = [];
+  private liquidityPools: LiquidityPool[] = [];
+  private lpPositions: LPPosition[] = [];
+  private swaps: Swap[] = [];
+  
+  constructor() {
+    this.initializeDEX();
+  }
+  
+  private initializeDEX() {
+    // Add native PVX token
+    const pvxToken: Token = {
+      id: 1,
+      symbol: "PVX",
+      name: "PixelVault",
+      logo_url: "/assets/tokens/pvx-logo.svg",
+      decimals: 6,
+      contract_address: null,
+      is_native: true,
+      is_verified: true,
+      created_at: new Date(),
+      total_supply: "6009420000000",
+      description: "The native token of the PixelVault blockchain"
+    };
+    this.tokens.push(pvxToken);
+    
+    // Add some sample tokens
+    const usdcToken: Token = {
+      id: 2,
+      symbol: "USDC",
+      name: "USD Coin",
+      logo_url: "/assets/tokens/usdc-logo.svg",
+      decimals: 6,
+      contract_address: "0x7fffffffffffffffffffffffffffffffffffffff",
+      is_native: false,
+      is_verified: true,
+      created_at: new Date(),
+      total_supply: "10000000000000",
+      description: "A stablecoin pegged to the US Dollar"
+    };
+    this.tokens.push(usdcToken);
+    
+    const ethToken: Token = {
+      id: 3,
+      symbol: "ETH",
+      name: "Ethereum",
+      logo_url: "/assets/tokens/eth-logo.svg",
+      decimals: 18,
+      contract_address: "0x8fffffffffffffffffffffffffffffffffffffff",
+      is_native: false,
+      is_verified: true,
+      created_at: new Date(),
+      total_supply: "120000000000000000000000000",
+      description: "Ethereum token bridged to PVX network"
+    };
+    this.tokens.push(ethToken);
+    
+    const pxEnergyToken: Token = {
+      id: 4,
+      symbol: "PXENERGY",
+      name: "Pixel Energy",
+      logo_url: "/assets/tokens/pxenergy-logo.svg",
+      decimals: 6,
+      contract_address: "0x9fffffffffffffffffffffffffffffffffffffff",
+      is_native: false,
+      is_verified: true,
+      created_at: new Date(),
+      total_supply: "1000000000000",
+      description: "The energy token for the PixelVault ecosystem"
+    };
+    this.tokens.push(pxEnergyToken);
+    
+    // Add sample liquidity pools
+    const pvxUsdcPool: LiquidityPool = {
+      id: 1,
+      token0_id: 1, // PVX
+      token1_id: 2, // USDC
+      token0_amount: "1000000000", // 1000 PVX
+      token1_amount: "3000000", // 3 USDC (1 PVX = 0.003 USDC)
+      lp_token_supply: "54772255", // sqrt(1000 * 3)
+      swap_fee_percent: "0.3",
+      created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+      last_updated: new Date(),
+      pool_address: "0x1fffffffffffffffffffffffffffffffffffffff",
+      is_active: true
+    };
+    this.liquidityPools.push(pvxUsdcPool);
+    
+    const pvxEthPool: LiquidityPool = {
+      id: 2,
+      token0_id: 1, // PVX
+      token1_id: 3, // ETH
+      token0_amount: "2000000000", // 2000 PVX
+      token1_amount: "1000000000000000000", // 1 ETH (1 PVX = 0.0000005 ETH)
+      lp_token_supply: "44721359", // sqrt(2000 * 1)
+      swap_fee_percent: "0.3",
+      created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
+      last_updated: new Date(),
+      pool_address: "0x2fffffffffffffffffffffffffffffffffffffff",
+      is_active: true
+    };
+    this.liquidityPools.push(pvxEthPool);
+    
+    const pvxEnergyPool: LiquidityPool = {
+      id: 3,
+      token0_id: 1, // PVX
+      token1_id: 4, // PXENERGY
+      token0_amount: "5000000000", // 5000 PVX
+      token1_amount: "25000000000", // 25000 PXENERGY (1 PVX = 5 PXENERGY)
+      lp_token_supply: "353553390", // sqrt(5000 * 25000)
+      swap_fee_percent: "0.3",
+      created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+      last_updated: new Date(),
+      pool_address: "0x3fffffffffffffffffffffffffffffffffffffff",
+      is_active: true
+    };
+    this.liquidityPools.push(pvxEnergyPool);
+    
+    // Sample LP positions
+    const sampleLpPosition1: LPPosition = {
+      id: 1,
+      pool_id: 1,
+      owner_address: "zk_PVX:0x1234567890abcdef1234567890abcdef12345678",
+      lp_token_amount: "10000000", // 10 LP tokens
+      token0_amount: "182574185", // PVX
+      token1_amount: "547722", // USDC
+      created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000), // 6 days ago
+      last_updated: new Date(),
+      is_active: true
+    };
+    this.lpPositions.push(sampleLpPosition1);
+    
+    // Sample swaps
+    const sampleSwap1: Swap = {
+      id: 1,
+      pool_id: 1,
+      trader_address: "zk_PVX:0x7890abcdef1234567890abcdef1234567890abcd",
+      token_in_id: 1, // PVX
+      token_out_id: 2, // USDC
+      amount_in: "50000000", // 50 PVX
+      amount_out: "149253", // 0.149253 USDC
+      fee_amount: "150000", // 0.15 PVX
+      tx_hash: "0x1e5a45bd1d71f7e0c77e58b875e8a64b45a71cd0a723a6655481cd7605a29e51",
+      timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+      price_impact_percent: "0.02500",
+      slippage_tolerance_percent: "0.50"
+    };
+    this.swaps.push(sampleSwap1);
+    
+    const sampleSwap2: Swap = {
+      id: 2,
+      pool_id: 2,
+      trader_address: "zk_PVX:0xabcdef1234567890abcdef1234567890abcdef12",
+      token_in_id: 3, // ETH
+      token_out_id: 1, // PVX
+      amount_in: "100000000000000000", // 0.1 ETH
+      amount_out: "199500000", // 199.5 PVX
+      fee_amount: "300000000000000", // 0.0003 ETH
+      tx_hash: "0x2d4a6b8c0d2e4f6a8c0d2e4f6a8c0d2e4f6a8c0d2e4f6a8c0d2e4f6a8c0d2e4f",
+      timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+      price_impact_percent: "0.04980",
+      slippage_tolerance_percent: "1.00"
+    };
+    this.swaps.push(sampleSwap2);
+  }
   
   // In-memory game leaderboards storage, initial sample data
   private gameLeaderboards: GameLeaderboard[] = [

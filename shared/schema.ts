@@ -363,3 +363,97 @@ export const insertUTRSchema = createInsertSchema(universal_transaction_registry
 
 export type InsertUTR = z.infer<typeof insertUTRSchema>;
 export type UTR = typeof universal_transaction_registry.$inferSelect;
+
+// Token table for DEX
+export const tokens = pgTable("tokens", {
+  id: serial("id").primaryKey(),
+  symbol: text("symbol").notNull().unique(),
+  name: text("name").notNull(),
+  logo_url: text("logo_url"),
+  decimals: integer("decimals").notNull().default(6),
+  contract_address: text("contract_address"), // For external tokens 
+  is_native: boolean("is_native").notNull().default(false), // PVX is native
+  is_verified: boolean("is_verified").notNull().default(false),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  total_supply: numeric("total_supply", { precision: 36, scale: 18 }),
+  description: text("description"),
+});
+
+export const insertTokenSchema = createInsertSchema(tokens).omit({
+  id: true,
+  created_at: true,
+});
+
+// Liquidity pool table
+export const liquidity_pools = pgTable("liquidity_pools", {
+  id: serial("id").primaryKey(),
+  token0_id: integer("token0_id").notNull().references(() => tokens.id),
+  token1_id: integer("token1_id").notNull().references(() => tokens.id),
+  token0_amount: numeric("token0_amount", { precision: 36, scale: 18 }).notNull().default("0"),
+  token1_amount: numeric("token1_amount", { precision: 36, scale: 18 }).notNull().default("0"),
+  lp_token_supply: numeric("lp_token_supply", { precision: 36, scale: 18 }).notNull().default("0"),
+  swap_fee_percent: numeric("swap_fee_percent", { precision: 5, scale: 2 }).notNull().default("0.3"),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  last_updated: timestamp("last_updated").notNull().defaultNow(),
+  pool_address: text("pool_address").notNull().unique(),
+  is_active: boolean("is_active").notNull().default(true),
+});
+
+export const insertLiquidityPoolSchema = createInsertSchema(liquidity_pools).omit({
+  id: true,
+  created_at: true,
+  last_updated: true,
+});
+
+// LP token position table
+export const lp_positions = pgTable("lp_positions", {
+  id: serial("id").primaryKey(),
+  pool_id: integer("pool_id").notNull().references(() => liquidity_pools.id),
+  owner_address: text("owner_address").notNull(),
+  lp_token_amount: numeric("lp_token_amount", { precision: 36, scale: 18 }).notNull(),
+  token0_amount: numeric("token0_amount", { precision: 36, scale: 18 }).notNull(),
+  token1_amount: numeric("token1_amount", { precision: 36, scale: 18 }).notNull(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  last_updated: timestamp("last_updated").notNull().defaultNow(),
+  is_active: boolean("is_active").notNull().default(true),
+});
+
+export const insertLPPositionSchema = createInsertSchema(lp_positions).omit({
+  id: true,
+  created_at: true,
+  last_updated: true,
+});
+
+// Swap transaction table
+export const swaps = pgTable("swaps", {
+  id: serial("id").primaryKey(),
+  pool_id: integer("pool_id").notNull().references(() => liquidity_pools.id),
+  trader_address: text("trader_address").notNull(),
+  token_in_id: integer("token_in_id").notNull().references(() => tokens.id),
+  token_out_id: integer("token_out_id").notNull().references(() => tokens.id),
+  amount_in: numeric("amount_in", { precision: 36, scale: 18 }).notNull(),
+  amount_out: numeric("amount_out", { precision: 36, scale: 18 }).notNull(),
+  fee_amount: numeric("fee_amount", { precision: 36, scale: 18 }).notNull(),
+  tx_hash: text("tx_hash").notNull().unique(),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  price_impact_percent: numeric("price_impact_percent", { precision: 8, scale: 6 }),
+  slippage_tolerance_percent: numeric("slippage_tolerance_percent", { precision: 5, scale: 2 }),
+});
+
+export const insertSwapSchema = createInsertSchema(swaps).omit({
+  id: true,
+  timestamp: true,
+});
+
+// Types for DEX
+export type InsertToken = z.infer<typeof insertTokenSchema>;
+export type Token = typeof tokens.$inferSelect;
+
+export type InsertLiquidityPool = z.infer<typeof insertLiquidityPoolSchema>;
+export type LiquidityPool = typeof liquidity_pools.$inferSelect;
+
+export type InsertLPPosition = z.infer<typeof insertLPPositionSchema>;
+export type LPPosition = typeof lp_positions.$inferSelect;
+
+export type InsertSwap = z.infer<typeof insertSwapSchema>;
+export type Swap = typeof swaps.$inferSelect;
