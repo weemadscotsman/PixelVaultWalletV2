@@ -11,6 +11,7 @@ import { thringletService } from "./services/thringlet";
 import badgeRoutes from "./routes/badge-routes";
 import utrRoutes from "./routes/utr-routes";
 import blockchainRoutes from "./routes/blockchain-routes";
+import dexRoutes from "./routes/dex-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize services
@@ -28,6 +29,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Register blockchain routes
   app.use('/api', blockchainRoutes);
+  
+  // Register DEX routes
+  app.use('/api', dexRoutes);
 
   // Network and Blockchain Routes
   app.get("/api/network/stats", async (req, res) => {

@@ -2389,6 +2389,516 @@ export class DatabaseStorage implements IStorage {
       };
     }
   }
+  
+  // DEX Token methods
+  async getTokens(limit?: number): Promise<Token[]> {
+    if (limit) {
+      return this.tokens.slice(0, limit);
+    }
+    return this.tokens;
+  }
+  
+  async getTokenById(id: number): Promise<Token | undefined> {
+    return this.tokens.find(token => token.id === id);
+  }
+  
+  async getTokenBySymbol(symbol: string): Promise<Token | undefined> {
+    return this.tokens.find(token => token.symbol === symbol);
+  }
+  
+  async createToken(token: InsertToken): Promise<Token> {
+    const newToken: Token = {
+      id: this.tokens.length + 1,
+      created_at: new Date(),
+      ...token as any
+    };
+    this.tokens.push(newToken);
+    return newToken;
+  }
+  
+  async updateToken(id: number, updates: Partial<InsertToken>): Promise<Token | undefined> {
+    const tokenIndex = this.tokens.findIndex(token => token.id === id);
+    if (tokenIndex === -1) return undefined;
+    
+    const updatedToken = {
+      ...this.tokens[tokenIndex],
+      ...updates as any
+    };
+    this.tokens[tokenIndex] = updatedToken;
+    return updatedToken;
+  }
+  
+  // Liquidity Pool methods
+  async getLiquidityPools(limit?: number): Promise<LiquidityPool[]> {
+    if (limit) {
+      return this.liquidityPools.slice(0, limit);
+    }
+    return this.liquidityPools;
+  }
+  
+  async getLiquidityPoolById(id: number): Promise<LiquidityPool | undefined> {
+    return this.liquidityPools.find(pool => pool.id === id);
+  }
+  
+  async getLiquidityPoolByTokens(token0Id: number, token1Id: number): Promise<LiquidityPool | undefined> {
+    return this.liquidityPools.find(
+      pool => (pool.token0_id === token0Id && pool.token1_id === token1Id) || 
+              (pool.token0_id === token1Id && pool.token1_id === token0Id)
+    );
+  }
+  
+  async getLiquidityPoolsByToken(tokenId: number): Promise<LiquidityPool[]> {
+    return this.liquidityPools.filter(
+      pool => pool.token0_id === tokenId || pool.token1_id === tokenId
+    );
+  }
+  
+  async createLiquidityPool(pool: InsertLiquidityPool): Promise<LiquidityPool> {
+    // Sort tokens to ensure token0 has lower ID than token1 (convention)
+    let token0Id = Math.min(pool.token0_id, pool.token1_id);
+    let token1Id = Math.max(pool.token0_id, pool.token1_id);
+    
+    // Check if tokens exist
+    const token0 = await this.getTokenById(token0Id);
+    const token1 = await this.getTokenById(token1Id);
+    if (!token0 || !token1) {
+      throw new Error("One or both tokens don't exist");
+    }
+    
+    // Check if pool already exists
+    const existingPool = await this.getLiquidityPoolByTokens(token0Id, token1Id);
+    if (existingPool) {
+      throw new Error("Pool already exists for this token pair");
+    }
+    
+    // Create new pool with sorted token order
+    const newPool: LiquidityPool = {
+      id: this.liquidityPools.length + 1,
+      token0_id: token0Id,
+      token1_id: token1Id,
+      created_at: new Date(),
+      last_updated: new Date(),
+      ...pool as any,
+    };
+    this.liquidityPools.push(newPool);
+    return newPool;
+  }
+  
+  async updateLiquidityPool(id: number, updates: Partial<Omit<LiquidityPool, 'id' | 'created_at'>>): Promise<LiquidityPool | undefined> {
+    const poolIndex = this.liquidityPools.findIndex(pool => pool.id === id);
+    if (poolIndex === -1) return undefined;
+    
+    const updatedPool = {
+      ...this.liquidityPools[poolIndex],
+      ...updates as any,
+      last_updated: new Date()
+    };
+    this.liquidityPools[poolIndex] = updatedPool;
+    return updatedPool;
+  }
+  
+  // LP Position methods
+  async getLPPositions(address: string): Promise<LPPosition[]> {
+    return this.lpPositions.filter(position => position.owner_address === address);
+  }
+  
+  async getLPPositionById(id: number): Promise<LPPosition | undefined> {
+    return this.lpPositions.find(position => position.id === id);
+  }
+  
+  async getLPPositionsByPool(poolId: number): Promise<LPPosition[]> {
+    return this.lpPositions.filter(position => position.pool_id === poolId);
+  }
+  
+  async createLPPosition(position: InsertLPPosition): Promise<LPPosition> {
+    // Check if pool exists
+    const pool = await this.getLiquidityPoolById(position.pool_id);
+    if (!pool) {
+      throw new Error("Pool doesn't exist");
+    }
+    
+    const newPosition: LPPosition = {
+      id: this.lpPositions.length + 1,
+      created_at: new Date(),
+      last_updated: new Date(),
+      ...position as any,
+    };
+    this.lpPositions.push(newPosition);
+    
+    // Update pool balances
+    const token0Amount = BigInt(pool.token0_amount) + BigInt(position.token0_amount);
+    const token1Amount = BigInt(pool.token1_amount) + BigInt(position.token1_amount);
+    const lpTokenSupply = BigInt(pool.lp_token_supply) + BigInt(position.lp_token_amount);
+    
+    await this.updateLiquidityPool(pool.id, {
+      token0_amount: token0Amount.toString(),
+      token1_amount: token1Amount.toString(),
+      lp_token_supply: lpTokenSupply.toString()
+    });
+    
+    return newPosition;
+  }
+  
+  async updateLPPosition(id: number, updates: Partial<Omit<LPPosition, 'id' | 'created_at'>>): Promise<LPPosition | undefined> {
+    const positionIndex = this.lpPositions.findIndex(position => position.id === id);
+    if (positionIndex === -1) return undefined;
+    
+    const updatedPosition = {
+      ...this.lpPositions[positionIndex],
+      ...updates as any,
+      last_updated: new Date()
+    };
+    this.lpPositions[positionIndex] = updatedPosition;
+    return updatedPosition;
+  }
+  
+  // Swap methods
+  async getSwaps(limit?: number): Promise<Swap[]> {
+    const sortedSwaps = [...this.swaps].sort((a, b) => 
+      b.timestamp.getTime() - a.timestamp.getTime()
+    );
+    
+    if (limit) {
+      return sortedSwaps.slice(0, limit);
+    }
+    return sortedSwaps;
+  }
+  
+  async getSwapsByAddress(address: string, limit?: number): Promise<Swap[]> {
+    const sortedSwaps = [...this.swaps]
+      .filter(swap => swap.trader_address === address)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    
+    if (limit) {
+      return sortedSwaps.slice(0, limit);
+    }
+    return sortedSwaps;
+  }
+  
+  async getSwapsByPool(poolId: number, limit?: number): Promise<Swap[]> {
+    const sortedSwaps = [...this.swaps]
+      .filter(swap => swap.pool_id === poolId)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    
+    if (limit) {
+      return sortedSwaps.slice(0, limit);
+    }
+    return sortedSwaps;
+  }
+  
+  async createSwap(swap: InsertSwap): Promise<Swap> {
+    // Verify pool exists
+    const pool = await this.getLiquidityPoolById(swap.pool_id);
+    if (!pool) {
+      throw new Error("Pool doesn't exist");
+    }
+    
+    // Ensure tokens match the pool
+    const isValidTokenPair = 
+      (swap.token_in_id === pool.token0_id && swap.token_out_id === pool.token1_id) ||
+      (swap.token_in_id === pool.token1_id && swap.token_out_id === pool.token0_id);
+    
+    if (!isValidTokenPair) {
+      throw new Error("Token pair doesn't match the pool");
+    }
+    
+    // Create the swap record
+    const newSwap: Swap = {
+      id: this.swaps.length + 1,
+      timestamp: new Date(),
+      ...swap as any,
+    };
+    this.swaps.push(newSwap);
+    
+    // Update pool balances based on the swap direction
+    let token0Amount = BigInt(pool.token0_amount);
+    let token1Amount = BigInt(pool.token1_amount);
+    
+    if (swap.token_in_id === pool.token0_id) {
+      // Swapping token0 for token1
+      token0Amount = token0Amount + BigInt(swap.amount_in);
+      token1Amount = token1Amount - BigInt(swap.amount_out);
+    } else {
+      // Swapping token1 for token0
+      token0Amount = token0Amount - BigInt(swap.amount_out);
+      token1Amount = token1Amount + BigInt(swap.amount_in);
+    }
+    
+    await this.updateLiquidityPool(pool.id, {
+      token0_amount: token0Amount.toString(),
+      token1_amount: token1Amount.toString()
+    });
+    
+    // Get token symbols for UTR entry
+    const tokenIn = await this.getTokenById(swap.token_in_id);
+    const tokenOut = await this.getTokenById(swap.token_out_id);
+    
+    // Create UTR entry for the swap
+    await this.createUTREntry({
+      tx_id: swap.tx_hash,
+      tx_type: "dex_swap",
+      from_address: swap.trader_address,
+      to_address: `zk_PVX:dex:pool:${pool.id}`,
+      amount: swap.amount_in,
+      asset_type: "token",
+      asset_id: tokenIn?.symbol || "unknown",
+      block_height: null,
+      status: "confirmed",
+      metadata: { 
+        pool_id: pool.id,
+        token_out: tokenOut?.symbol || "unknown",
+        amount_out: swap.amount_out,
+        fee_amount: swap.fee_amount
+      },
+      zk_proof: null,
+      signature: null,
+      gas_fee: "0.0001",
+      verified: true
+    });
+    
+    return newSwap;
+  }
+  
+  // DEX calculation methods
+  async calculateSwapOutput(poolId: number, tokenInId: number, amountIn: string): Promise<{
+    amountOut: string; 
+    priceImpact: string;
+    fee: string; 
+    exchangeRate: string;
+  }> {
+    const pool = await this.getLiquidityPoolById(poolId);
+    if (!pool) {
+      throw new Error("Pool not found");
+    }
+    
+    // Check if the token is part of the pool
+    const isToken0 = pool.token0_id === tokenInId;
+    const isToken1 = pool.token1_id === tokenInId;
+    
+    if (!isToken0 && !isToken1) {
+      throw new Error("Token is not part of this pool");
+    }
+    
+    // Calculate swap fee
+    const feePercent = parseFloat(pool.swap_fee_percent);
+    const amountInBigInt = BigInt(amountIn);
+    const feeAmount = (amountInBigInt * BigInt(Math.floor(feePercent * 1000))) / BigInt(100000);
+    const amountInAfterFee = amountInBigInt - feeAmount;
+    
+    // Constant product formula: x * y = k
+    // When swapping, (x + Δx) * (y - Δy) = k
+    
+    let reserveIn, reserveOut;
+    if (isToken0) {
+      reserveIn = BigInt(pool.token0_amount);
+      reserveOut = BigInt(pool.token1_amount);
+    } else {
+      reserveIn = BigInt(pool.token1_amount);
+      reserveOut = BigInt(pool.token0_amount);
+    }
+    
+    const constantK = reserveIn * reserveOut;
+    const newReserveIn = reserveIn + amountInAfterFee;
+    const newReserveOut = constantK / newReserveIn;
+    const amountOut = reserveOut - newReserveOut;
+    
+    // Calculate price impact - approximate as this is complex with bigint
+    let priceImpact = 0;
+    try {
+      const spotPrice = Number(reserveIn) / Number(reserveOut);
+      const executionPrice = Number(amountInAfterFee) / Number(amountOut);
+      priceImpact = Math.abs((spotPrice - executionPrice) / spotPrice) * 100;
+    } catch (e) {
+      console.error("Error calculating price impact:", e);
+      priceImpact = 0;
+    }
+    
+    // Calculate exchange rate
+    let exchangeRate = "0";
+    try {
+      exchangeRate = (Number(amountOut) / Number(amountInBigInt)).toFixed(6);
+    } catch (e) {
+      console.error("Error calculating exchange rate:", e);
+    }
+    
+    return {
+      amountOut: amountOut.toString(),
+      priceImpact: priceImpact.toFixed(4),
+      fee: feeAmount.toString(),
+      exchangeRate: exchangeRate
+    };
+  }
+  
+  async calculateLiquidityValue(poolId: number, lpTokenAmount: string): Promise<{
+    token0Amount: string;
+    token1Amount: string;
+    totalValue: string; // PVX equivalent
+  }> {
+    const pool = await this.getLiquidityPoolById(poolId);
+    if (!pool) {
+      throw new Error("Pool not found");
+    }
+    
+    const lpTokenAmountBigInt = BigInt(lpTokenAmount);
+    const lpTokenSupplyBigInt = BigInt(pool.lp_token_supply);
+    
+    if (lpTokenAmountBigInt > lpTokenSupplyBigInt) {
+      throw new Error("LP token amount exceeds pool supply");
+    }
+    
+    // Calculate proportional share of the pool
+    const token0AmountBigInt = (lpTokenAmountBigInt * BigInt(pool.token0_amount)) / lpTokenSupplyBigInt;
+    const token1AmountBigInt = (lpTokenAmountBigInt * BigInt(pool.token1_amount)) / lpTokenSupplyBigInt;
+    
+    // Calculate PVX equivalent value
+    let totalValuePVX = BigInt(0);
+    
+    if (pool.token0_id === 1) { // If token0 is PVX
+      // Add direct PVX amount
+      totalValuePVX += token0AmountBigInt;
+      
+      // Convert token1 to PVX (using a simplified approach)
+      // In a real implementation, this would use current exchange rates
+      if (pool.token1_id === 2) { // USDC (1 USDC = 333.33 PVX in our sample data)
+        totalValuePVX += (token1AmountBigInt * BigInt(333330000)) / BigInt(1000000);
+      } else if (pool.token1_id === 3) { // ETH (1 ETH = 2000 PVX)
+        totalValuePVX += (token1AmountBigInt * BigInt(2000000000)) / BigInt(1000000000000000000);
+      } else if (pool.token1_id === 4) { // PXENERGY (1 PVX = 5 PXENERGY, so 1 PXENERGY = 0.2 PVX)
+        totalValuePVX += (token1AmountBigInt * BigInt(200000)) / BigInt(1000000);
+      }
+    } else if (pool.token1_id === 1) { // If token1 is PVX
+      // Add direct PVX amount
+      totalValuePVX += token1AmountBigInt;
+      
+      // Convert token0 to PVX (simplified)
+      if (pool.token0_id === 2) { // USDC
+        totalValuePVX += (token0AmountBigInt * BigInt(333330000)) / BigInt(1000000);
+      } else if (pool.token0_id === 3) { // ETH
+        totalValuePVX += (token0AmountBigInt * BigInt(2000000000)) / BigInt(1000000000000000000);
+      } else if (pool.token0_id === 4) { // PXENERGY
+        totalValuePVX += (token0AmountBigInt * BigInt(200000)) / BigInt(1000000);
+      }
+    } else {
+      // Neither token is PVX, use a default approximation
+      // This is very simplified - a real implementation would convert through PVX pairs
+      totalValuePVX = (token0AmountBigInt + token1AmountBigInt) / BigInt(2);
+    }
+    
+    return {
+      token0Amount: token0AmountBigInt.toString(),
+      token1Amount: token1AmountBigInt.toString(),
+      totalValue: totalValuePVX.toString()
+    };
+  }
+  
+  async getPoolStats(poolId: number): Promise<{
+    volume24h: string;
+    volume7d: string;
+    fees24h: string;
+    tvl: string; // Total Value Locked
+    apr: string; // Annual Percentage Rate for LP providers
+  }> {
+    const pool = await this.getLiquidityPoolById(poolId);
+    if (!pool) {
+      throw new Error("Pool not found");
+    }
+    
+    // Get all swaps for this pool
+    const allPoolSwaps = await this.getSwapsByPool(poolId);
+    
+    // Calculate 24h volume
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const swaps24h = allPoolSwaps.filter(swap => swap.timestamp > oneDayAgo);
+    
+    let volume24h = BigInt(0);
+    let fees24h = BigInt(0);
+    
+    swaps24h.forEach(swap => {
+      volume24h += BigInt(swap.amount_in);
+      fees24h += BigInt(swap.fee_amount);
+    });
+    
+    // Calculate 7d volume
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const swaps7d = allPoolSwaps.filter(swap => swap.timestamp > sevenDaysAgo);
+    
+    let volume7d = BigInt(0);
+    swaps7d.forEach(swap => {
+      volume7d += BigInt(swap.amount_in);
+    });
+    
+    // Calculate TVL (Total Value Locked)
+    // For simplicity, we'll just add the PVX equivalent of both tokens
+    const pvxValue = await this.calculatePVXValue(pool);
+    
+    // Calculate APR (Annual Percentage Rate)
+    // This is simplified, typically calculated as: (Fee Revenue / TVL) * 365 / days_observed
+    let apr = 0;
+    if (swaps7d.length > 0 && pvxValue > 0) {
+      const weeklyFees = swaps7d.reduce((acc, swap) => acc + BigInt(swap.fee_amount), BigInt(0));
+      const annualizedFees = weeklyFees * BigInt(52); // 52 weeks in a year
+      
+      // APR = (annualized fees / TVL) * 100
+      apr = Number(annualizedFees * BigInt(10000) / BigInt(pvxValue)) / 100;
+    }
+    
+    return {
+      volume24h: volume24h.toString(),
+      volume7d: volume7d.toString(),
+      fees24h: fees24h.toString(),
+      tvl: pvxValue.toString(),
+      apr: apr.toFixed(2)
+    };
+  }
+  
+  // Helper method to calculate PVX value of a pool
+  private async calculatePVXValue(pool: LiquidityPool): Promise<number> {
+    let pvxValue = 0;
+    
+    // Convert token0 to PVX value
+    if (pool.token0_id === 1) { // If token0 is PVX
+      pvxValue += Number(pool.token0_amount);
+    } else {
+      // Simplified conversion based on our sample data
+      switch (pool.token0_id) {
+        case 2: // USDC (1 USDC = 333.33 PVX)
+          pvxValue += Number(pool.token0_amount) * 333.33;
+          break;
+        case 3: // ETH (1 ETH = 2000 PVX)
+          pvxValue += (Number(pool.token0_amount) / 1e18) * 2000;
+          break;
+        case 4: // PXENERGY (1 PXENERGY = 0.2 PVX)
+          pvxValue += Number(pool.token0_amount) * 0.2;
+          break;
+        default:
+          // Unknown token, minimal contribution
+          pvxValue += Number(pool.token0_amount) * 0.1;
+      }
+    }
+    
+    // Convert token1 to PVX value
+    if (pool.token1_id === 1) { // If token1 is PVX
+      pvxValue += Number(pool.token1_amount);
+    } else {
+      // Simplified conversion based on our sample data
+      switch (pool.token1_id) {
+        case 2: // USDC (1 USDC = 333.33 PVX)
+          pvxValue += Number(pool.token1_amount) * 333.33;
+          break;
+        case 3: // ETH (1 ETH = 2000 PVX)
+          pvxValue += (Number(pool.token1_amount) / 1e18) * 2000;
+          break;
+        case 4: // PXENERGY (1 PXENERGY = 0.2 PVX)
+          pvxValue += Number(pool.token1_amount) * 0.2;
+          break;
+        default:
+          // Unknown token, minimal contribution
+          pvxValue += Number(pool.token1_amount) * 0.1;
+      }
+    }
+    
+    return pvxValue;
+  }
 }
 
 // Initialize db connection
