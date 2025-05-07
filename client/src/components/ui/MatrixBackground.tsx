@@ -15,7 +15,7 @@ export function MatrixBackground() {
     canvas.height = window.innerHeight;
     
     // Matrix characters (binary, crypto symbols, and Japanese-like characters)
-    const chars = "01ΦΨΣΩμλBTC ETH PVX 私ドラゴンビットコイン仮想通貨マイニング暗号化技術サトシナカモト分散型台帳スマートコントラクトノード秘密鍵公開鍵ウォレット";
+    const chars = "01ΦΨΣΩμλBTC ETH PVX 私ドラゴンビットコイン仮想通貨マイニング暗号化技術サトシナカモト分散型台帳スマートコントラクトノード秘密鍵公開鍵ウォレット革新技術未来世界仮想空間分散処理匿名性システム永続性取引証明ブロック連鎖マイナー手数料数学的問題計算能力プロトコル合意形成自律組織";
     const fontSize = 14;
     const columns = Math.floor(canvas.width / fontSize);
     
@@ -117,5 +117,5 @@ export function MatrixBackground() {
     };
   }, []);
   
-  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full -z-10 opacity-40 pointer-events-none" />;
+  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-0 opacity-40 pointer-events-none" />;
 }

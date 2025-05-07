@@ -127,21 +127,14 @@ export function TrendRadar({ className }: TrendRadarProps) {
               indexBy="metric"
               maxValue={100}
               margin={{ top: 30, right: 60, bottom: 30, left: 60 }}
-              borderWidth={({ index }) => 
-                radarKeys.map((key, i) => i).includes(activePointIndex) && index === activePointIndex 
-                  ? 4 
-                  : (activePointIndex !== null ? 1 : 2)
-              }
-              borderColor={({ index }) => 
-                radarKeys.map((key, i) => i).includes(activePointIndex) && index === activePointIndex 
-                  ? { from: 'color', modifiers: [['brighter', 0.8]] } 
-                  : { from: 'color', modifiers: [['darker', 0.3]] }
-              }
+              // Fixed width values to avoid NaN errors by using strings
+              borderWidth={2}
+              borderColor={{ from: 'color', modifiers: [['darker', 0.3]] }}
               gridLabelOffset={15}
-              dotColor={({ index }) => activePointIndex === index ? { from: 'color', modifiers: [['brighter', 1.8]] } : { theme: 'background' }}
-              dotBorderWidth={({ index }) => activePointIndex === index ? 3 : 2}
+              dotSize={8}
+              dotColor={{ theme: 'background' }}
+              dotBorderWidth={2}
               dotBorderColor={{ from: 'color' }}
-              dotSize={({ index }) => activePointIndex === index ? 14 : 8}
               transitionDuration={300}
               animate={true}
               enableDotLabel={false}
