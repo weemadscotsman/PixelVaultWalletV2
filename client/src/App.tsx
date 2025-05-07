@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import LearningPage from "@/pages/learning-page";
@@ -15,6 +16,9 @@ import DropsPage from "@/pages/DropsPage";
 import BadgesPage from "@/pages/BadgesPage";
 import UTRDashboardPage from "@/pages/UTRDashboardPage";
 import DEXPage from "@/pages/DEXPage";
+import ProfilePage from "@/pages/ProfilePage";
+import SettingsPage from "@/pages/SettingsPage";
+import TerminalPage from "@/pages/TerminalPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -52,6 +56,8 @@ function App() {
       >
         <AuthProvider>
           <TooltipProvider>
+            {/* Matrix Background - this adds the kanji matrix rain effect */}
+            <MatrixBackground />
             <Toaster />
             <FeedbackButton />
             <Router />
