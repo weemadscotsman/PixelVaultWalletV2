@@ -386,6 +386,52 @@ export default function GovernancePage() {
                 </CardHeader>
                 <CardContent className="pt-6 pb-6">
                   <div className="space-y-6">
+                    {/* Rejection Details Section - Moved to top */}
+                    {selectedProposal.status === 'Rejected' && (
+                      <div className="bg-red-950/20 p-4 rounded border border-red-900/30">
+                        <div className="flex items-center gap-2 mb-3">
+                          <XCircle className="h-5 w-5 text-red-400" />
+                          <p className="text-gray-300">Rejection Details</p>
+                        </div>
+                        <p className="text-sm text-gray-400 mb-2">
+                          This proposal has been rejected by the community and will not be implemented.
+                        </p>
+                        <div className="flex justify-between items-center mt-4">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-red-400">Final Result:</p>
+                            <p className="text-sm text-red-400 font-bold">{selectedProposal.votes.against}% against</p>
+                          </div>
+                          <Button variant="outline" className="border-blue-900/50 text-blue-300 h-9 flex items-center gap-2">
+                            <span>View Details</span>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Implementation Details Section - Moved to top */}
+                    {selectedProposal.status === 'Passed' && (
+                      <div className="bg-green-950/20 p-4 rounded border border-green-900/30">
+                        <div className="flex items-center gap-2 mb-3">
+                          <CheckCircle className="h-5 w-5 text-green-400" />
+                          <p className="text-gray-300">Implementation Details</p>
+                        </div>
+                        <p className="text-sm text-gray-400 mb-2">
+                          This proposal has passed and will be implemented on {formatDate(selectedProposal.implementationDate!)}
+                        </p>
+                        <div className="flex justify-between items-center mt-4">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-green-400">Final Result:</p>
+                            <p className="text-sm text-green-400 font-bold">{selectedProposal.votes.for}% in favor</p>
+                          </div>
+                          <Button variant="outline" className="border-blue-900/50 text-blue-300 h-9 flex items-center gap-2">
+                            <span>View Details</span>
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="grid grid-cols-3 gap-4">
                       <div className="bg-gray-900/30 p-3 rounded">
                         <p className="text-xs text-gray-400">Proposer</p>
