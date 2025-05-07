@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { PageLayout } from "@/components/layout/PageLayout";
+import { AnimatedPageLayout } from "@/components/layout/AnimatedPageLayout";
 import { useWallet } from "@/hooks/use-wallet";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -370,7 +370,7 @@ export default function TerminalPage() {
   };
   
   return (
-    <PageLayout isConnected={!!wallet}>
+    <AnimatedPageLayout isConnected={!!wallet} variant="fade">
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-violet-500 bg-clip-text text-transparent pb-1">
@@ -515,6 +515,6 @@ export default function TerminalPage() {
           </div>
         </div>
       </div>
-    </PageLayout>
+    </AnimatedPageLayout>
   );
 }
