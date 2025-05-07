@@ -299,9 +299,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               className="h-full"
-              style={{ pointerEvents: 'auto' }}
+              style={{ pointerEvents: 'all' }}
             >
-              <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
+              <div className="relative z-10" style={{ pointerEvents: 'all' }}>
                 {children}
               </div>
             </motion.div>

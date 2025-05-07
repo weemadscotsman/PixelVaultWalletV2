@@ -692,34 +692,34 @@ export function simulateThringletInteraction(
   thringlet.lastInteraction = Date.now();
   
   // Determine new emotional state based on interaction type
-  let newState: ThringletEmotionalState;
+  let newState: ThringletEmotionState;
   
   switch (interactionType.toLowerCase()) {
     case 'pet':
     case 'praise':
     case 'feed':
       newState = Math.random() > 0.8 
-        ? ThringletEmotionalState.EXCITED 
-        : ThringletEmotionalState.HAPPY;
+        ? ThringletEmotionState.EXCITED 
+        : ThringletEmotionState.HAPPY;
       break;
     case 'ignore':
       newState = Math.random() > 0.7 
-        ? ThringletEmotionalState.SAD 
-        : ThringletEmotionalState.NEUTRAL;
+        ? ThringletEmotionState.SAD 
+        : ThringletEmotionState.NEUTRAL;
       break;
     case 'scold':
       newState = Math.random() > 0.6 
-        ? ThringletEmotionalState.ANGRY 
-        : ThringletEmotionalState.SAD;
+        ? ThringletEmotionState.ANGRY 
+        : ThringletEmotionState.SAD;
       break;
     case 'scare':
-      newState = ThringletEmotionalState.SCARED;
+      newState = ThringletEmotionState.SCARED;
       break;
     case 'gift':
-      newState = ThringletEmotionalState.LOVE;
+      newState = ThringletEmotionState.LOVE;
       break;
     default:
-      newState = ThringletEmotionalState.NEUTRAL;
+      newState = ThringletEmotionState.NEUTRAL;
   }
   
   // Update thringlet emotion
@@ -815,7 +815,7 @@ export function getThringletById(id: string): Thringlet {
     },
     createdAt: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000),
     zk_verified: true,
-    emotionalState: ThringletEmotionalState.NEUTRAL,
+    emotionalState: ThringletEmotionState.NEUTRAL,
     lastInteraction: Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000),
     interactionCount: Math.floor(Math.random() * 100),
     stateHistory: [],
