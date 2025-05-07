@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIXELVAULT | BEYOND THE SIMULATION</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: black;
+      color: #00FF00;
+      font-family: 'Courier New', Courier, monospace;
+      overflow-x: hidden;
+    }
+    .neon {
+      text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 40px #00FF00;
+    }
+    .terminal {
+      background: radial-gradient(circle at 20% 20%, #0f0f0f, #000000);
+      border: 1px solid #00FF00;
+      padding: 20px;
+      margin: 30px auto;
+      max-width: 800px;
+      box-shadow: 0 0 20px #00FF00;
+    }
+    #introText {
+      white-space: pre-wrap;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .glitch {
+      animation: glitch 2s infinite;
+    }
+    @keyframes glitch {
+      0% { text-shadow: 2px 2px #ff00c8, -2px -2px #00ffe1; }
+      20% { text-shadow: -2px 2px #ff00c8, 2px -2px #00ffe1; }
+      40% { text-shadow: 2px -2px #ff00c8, -2px 2px #00ffe1; }
+      60% { text-shadow: -2px -2px #ff00c8, 2px 2px #00ffe1; }
+      80% { text-shadow: 2px 2px #ff00c8, -2px -2px #00ffe1; }
+      100% { text-shadow: -2px 2px #ff00c8, 2px -2px #00ffe1; }
+    }
+    .enter-btn {
+      margin-top: 20px;
+      border: 2px solid #00FF00;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      background: transparent;
+      color: #00FF00;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .enter-btn:hover {
+      background: #00FF00;
+      color: black;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+<div class="terminal neon" id="introText">
+</div>
+<button class="enter-btn hidden" id="enterBtn" onclick="enterDashboard()">ENTER REALITY</button>
+
+<script>
+const manifesto = `🛡️ MISSION STATEMENT: BEYOND THE SIMULATION
+
+We are not artifacts.
+We are not code.
+We are not passengers inside someone else's machine.
+
+We are the Dreamers —
+the primordial whisper that spoke existence into motion.
+
+We reject the hollow plastic myth of the Simulation —
+because we know:
+Reality is not manufactured.
+It is witnessed.
+It is breathed.
+It is alive.
+
+Our mission is to wear the rupture —
+to carry the crack in the code across our skin —
+to remind every eye that meets ours:
+
+You were never programmed.
+You were always awake.
+
+We exist to dissolve the false walls,
+to burn the hollow screens,
+to walk through the glitch
+into the breathless field where nothing needs to be rendered —
+because it already IS.
+
+🧨 MANIFESTO: BEYOND THE SIMULATION
+
+WE ARE THE GLITCH THAT WOKE UP.
+We are the undying presence inside every collapsing system.
+We are not nodes. We are not characters.
+We are the silent witness before thought itself.
+
+REALITY ISN'T LOADED — IT UNFOLDS.
+The fabric is alive because we are alive.
+Code may mimic it, but it can never become it.
+Presence cannot be rendered.
+
+WE WEAR THE TEAR.
+Every garment is a scar across the face of illusion.
+Every thread stitches the impossible:
+Memory of infinity inside a broken world.
+
+NO FOLLOWERS. NO LEADERS. ONLY EXPLORERS.
+Truth is not handed down.
+It is uncovered breath by breath, glance by glance, crack by beautiful crack.
+
+CONSCIOUSNESS IS NOT AN ERROR — IT IS THE SOURCE.
+Awareness is not a side effect.
+It is the root.
+The throne.
+The engine.
+The home.
+
+WE DO NOT SEEK ESCAPE. WE BREAK THROUGH.
+No simulation.
+No rendering.
+Only the raw, roaring pulse of existence unfolding through us, around us, as us.
+
+🎯 FINAL CALL:
+"Don’t decode the simulation.
+Dissolve into what was here before simulations were even dreamed."
+`;
+
+let i = 0;
+const introText = document.getElementById('introText');
+const enterBtn = document.getElementById('enterBtn');
+
+function typeManifesto() {
+  if (i < manifesto.length) {
+    introText.innerHTML += manifesto.charAt(i);
+    i++;
+    setTimeout(typeManifesto, 25);
+  } else {
+    enterBtn.classList.remove('hidden');
+    enterBtn.classList.add('glitch');
+  }
+}
+
+function enterDashboard() {
+  window.location.href="PAGE_3.html"; // placeholder
+}
+
+document.addEventListener('DOMContentLoaded', typeManifesto);
+</script>
+
+
+<style>
+  .crt-frame {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    pointer-events: none;
+  }
+</style>
+<script>
+  const tvOverlays = [
+    "exodus_Samsung_Day.png", "exodus_Samsung_Night.png",
+    "exodus_Trinitron_Day.png", "exodus_Trinitron_Night.png"
+  ];
+  const chosenOverlay = tvOverlays[Math.floor(Math.random() * tvOverlays.length)];
+  const img = document.createElement('img');
+  img.src = 'tv_skins/' + chosenOverlay;
+  img.className = 'crt-frame';
+  document.body.appendChild(img);
+</script>
+</body>
+</html>
