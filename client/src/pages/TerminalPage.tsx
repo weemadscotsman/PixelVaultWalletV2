@@ -8,9 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Terminal as TerminalIcon, AlertCircle, Check, Copy } from "lucide-react";
-import { generateHash } from "@/lib/blockchain";
 import { useToast } from "@/hooks/use-toast";
 import { formatTokenAmount } from "@/lib/format";
+
+// Generate a random hash for simulation purposes
+function generateHash(length = 64) {
+  const characters = "0123456789abcdef";
+  let result = "0x";
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return result;
+}
 
 interface CommandResponse {
   command: string;

@@ -38,9 +38,9 @@ function Router() {
       <Route path="/badges" component={BadgesPage} />
       <Route path="/utr" component={UTRDashboardPage} />
       <Route path="/dex" component={DEXPage} />
-      <Route path="/terminal" component={() => <HomePage />} />
-      <Route path="/profile" component={() => <HomePage />} />
-      <Route path="/settings" component={() => <HomePage />} />
+      <Route path="/terminal" component={TerminalPage} />
+      <Route path="/profile" component={ProfilePage} />
+      <Route path="/settings" component={SettingsPage} />
       <Route component={NotFound} />
     </Switch>
   );

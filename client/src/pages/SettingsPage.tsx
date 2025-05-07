@@ -47,7 +47,7 @@ export default function SettingsPage() {
       toast({
         title: "Settings saved",
         description: "Your settings have been updated successfully.",
-        variant: "success",
+        variant: "default",
       });
     } catch (error) {
       toast({
@@ -255,7 +255,7 @@ export default function SettingsPage() {
                       checked={twoFactorEnabled}
                       onCheckedChange={setTwoFactorEnabled}
                     />
-                    <Badge variant={twoFactorEnabled ? "success" : "outline"} className="ml-2">
+                    <Badge variant={twoFactorEnabled ? "default" : "outline"} className={`ml-2 ${twoFactorEnabled ? "bg-green-600" : ""}`}>
                       {twoFactorEnabled ? "Enabled" : "Disabled"}
                     </Badge>
                   </div>
