@@ -121,48 +121,22 @@ export const checkMiningBadges = async (userId: string, blockCount: number, cons
   try {
     console.log(`Checking mining badges for user ${userId}, blocks: ${blockCount}, consecutive: ${consecutiveCount || 0}`);
     
-    // First block mined
+    // First block mined - "Block Pioneer" badge
     if (blockCount === 1) {
-      await badgeStorage.awardBadgeToUser(userId, 'mining-first-block');
+      await badgeStorage.awardBadgeToUser(userId, 'mining-first');
       console.log('Awarded first block mined badge');
     }
     
-    // Mining enthusiast - 10 blocks
-    if (blockCount >= 10) {
-      const result = await badgeStorage.updateBadgeProgress(userId, 'mining-10-blocks', 100);
+    // 100 blocks badge - "Mining Master" badge
+    if (blockCount >= 100) {
+      const result = await badgeStorage.updateBadgeProgress(userId, 'mining-master', 100);
       if (result.newlyEarned) {
-        console.log('Awarded 10 blocks mined badge');
+        console.log('Awarded 100 blocks mined badge');
       }
     } else if (blockCount > 1) {
-      // Update progress
-      const progress = Math.floor((blockCount / 10) * 100);
-      await badgeStorage.updateBadgeProgress(userId, 'mining-10-blocks', progress);
-    }
-    
-    // Mining expert - 50 blocks
-    if (blockCount >= 50) {
-      const result = await badgeStorage.updateBadgeProgress(userId, 'mining-50-blocks', 100);
-      if (result.newlyEarned) {
-        console.log('Awarded 50 blocks mined badge');
-      }
-    } else if (blockCount > 10) {
-      // Update progress
-      const progress = Math.floor((blockCount / 50) * 100);
-      await badgeStorage.updateBadgeProgress(userId, 'mining-50-blocks', progress);
-    }
-    
-    // Hash king - 10 consecutive blocks
-    if (consecutiveCount !== undefined) {
-      if (consecutiveCount >= 10) {
-        const result = await badgeStorage.updateBadgeProgress(userId, 'mining-hash-king', 100);
-        if (result.newlyEarned) {
-          console.log('Awarded hash king badge');
-        }
-      } else if (consecutiveCount > 1) {
-        // Update progress
-        const progress = Math.floor((consecutiveCount / 10) * 100);
-        await badgeStorage.updateBadgeProgress(userId, 'mining-hash-king', progress);
-      }
+      // Update progress towards 100 blocks
+      const progress = Math.floor((blockCount / 100) * 100);
+      await badgeStorage.updateBadgeProgress(userId, 'mining-master', progress);
     }
   } catch (error) {
     console.error('Error checking mining badges:', error);
@@ -174,22 +148,21 @@ export const checkThringletBadges = async (userId: string, level: number, evolut
   try {
     console.log(`Checking thringlet badges for user ${userId}, level: ${level}, evolution: ${evolution}, count: ${count}`);
     
-    // First thringlet badge
+    // First thringlet badge - "Thringlet Parent" badge
     if (count === 1) {
       await badgeStorage.awardBadgeToUser(userId, 'thringlet-first');
       console.log('Awarded first thringlet badge');
     }
     
-    // Evolved thringlet badge
-    if (evolution > 0) {
-      await badgeStorage.awardBadgeToUser(userId, 'thringlet-evolved');
-      console.log('Awarded thringlet evolved badge');
-    }
-    
-    // Max level thringlet badge
-    if (level >= 10) { // Assuming level 10 is max
-      await badgeStorage.awardBadgeToUser(userId, 'thringlet-max-level');
-      console.log('Awarded thringlet maximalist badge');
+    // Thringlet interactions - "Thringlet Whisperer" badge
+    // Track number of interactions with Thringlets
+    const totalInteractions = level * 10; // Simple approximation of interactions
+    if (totalInteractions >= 100) {
+      await badgeStorage.awardBadgeToUser(userId, 'thringlet-whisperer');
+      console.log('Awarded thringlet whisperer badge');
+    } else {
+      const progress = Math.floor((totalInteractions / 100) * 100);
+      await badgeStorage.updateBadgeProgress(userId, 'thringlet-whisperer', progress);
     }
   } catch (error) {
     console.error('Error checking thringlet badges:', error);
@@ -201,31 +174,19 @@ export const checkStakingBadges = async (userId: string, amount: string, duratio
   try {
     console.log(`Checking staking badges for user ${userId}, amount: ${amount}, duration: ${duration}, totalStaked: ${totalStaked || 'N/A'}`);
     
-    // First staking badge (already handled in transaction badges, but keeping it here as a backup)
-    await badgeStorage.awardBadgeToUser(userId, 'staking-first');
+    // First staking badge - "Stake Initiate" badge
+    await badgeStorage.awardBadgeToUser(userId, 'stake-first');
+    console.log('Awarded stake initiate badge');
     
-    // Long-term staker badge
-    if (duration >= 30) { // 30-day staking
-      await badgeStorage.awardBadgeToUser(userId, 'staking-long-term');
-      console.log('Awarded long-term staker badge');
-    }
-    
-    // Check large stake amount badges
+    // "Whale Staker" badge - Staked more than 10,000 PVX in a single pool
     const amountNum = parseFloat(amount);
-    if (amountNum >= 1000) {
-      await badgeStorage.awardBadgeToUser(userId, 'staking-whale');
-      console.log('Awarded staking whale badge');
-    }
-    
-    // Check total staked amount badges
-    if (totalStaked) {
-      const totalStakedNum = parseFloat(totalStaked);
-      
-      // Staking enthusiast - 5000 PVX total staked
-      if (totalStakedNum >= 5000) {
-        await badgeStorage.awardBadgeToUser(userId, 'staking-enthusiast');
-        console.log('Awarded staking enthusiast badge');
-      }
+    if (amountNum >= 10000) {
+      await badgeStorage.awardBadgeToUser(userId, 'stake-whale');
+      console.log('Awarded whale staker badge');
+    } else {
+      // Update progress toward whale badge
+      const progress = Math.min(100, Math.floor((amountNum / 10000) * 100));
+      await badgeStorage.updateBadgeProgress(userId, 'stake-whale', progress);
     }
   } catch (error) {
     console.error('Error checking staking badges:', error);
@@ -243,43 +204,30 @@ export const checkTransactionBadges = async (userId: string, txType: Transaction
       return;
     }
     
-    // Check for first transaction badge
+    // Check for first transaction badge - "First Transaction" badge
     if (txType === TransactionType.TRANSFER && txCount === 1) {
       await badgeStorage.awardBadgeToUser(userId, 'tx-first');
       console.log('Awarded first transaction badge');
     }
     
-    // Check for transaction count badges
-    if (txType === TransactionType.TRANSFER && txCount !== undefined) {
-      if (txCount >= 10) {
-        const result = await badgeStorage.updateBadgeProgress(userId, 'tx-10', 100);
-        if (result.newlyEarned) {
-          console.log('Awarded 10 transactions badge');
-        }
-      }
-      
-      if (txCount >= 100) {
-        const result = await badgeStorage.updateBadgeProgress(userId, 'tx-100', 100);
-        if (result.newlyEarned) {
-          console.log('Awarded 100 transactions badge');
-        }
-      } else if (txCount > 10) {
-        // Update progress for 100 transactions badge
-        const progress = Math.floor((txCount / 100) * 100);
-        await badgeStorage.updateBadgeProgress(userId, 'tx-100', progress);
-      }
+    // Check for big spender badge - "Big Spender" badge
+    // This would normally check transaction amount, but as a workaround we'll use count
+    // as a proxy for transaction volume
+    if (txType === TransactionType.TRANSFER && txCount !== undefined && txCount >= 5) {
+      await badgeStorage.awardBadgeToUser(userId, 'tx-big-spender');
+      console.log('Awarded big spender badge');
     }
     
-    // Check for first staking badge
+    // Check for first staking badge - "Stake Initiate" badge
     if (txType === TransactionType.STAKE) {
-      await badgeStorage.awardBadgeToUser(userId, 'staking-first');
-      console.log('Awarded first staking badge');
+      await badgeStorage.awardBadgeToUser(userId, 'stake-first');
+      console.log('Awarded stake initiate badge');
     }
     
-    // Check for governance badges
+    // Check for governance badges - "Governance Participant" badge
     if (txType === TransactionType.GOVERNANCE) {
-      await badgeStorage.awardBadgeToUser(userId, 'gov-first-vote');
-      console.log('Awarded governance voter badge');
+      await badgeStorage.awardBadgeToUser(userId, 'gov-first');
+      console.log('Awarded governance participant badge');
     }
     
   } catch (error) {
