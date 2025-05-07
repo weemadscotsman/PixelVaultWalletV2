@@ -11,7 +11,22 @@ interface Wallet {
   lastSynced: string;
 }
 
+interface WalletKeys {
+  publicKey: string;
+  privateKey: string;
+}
+
 interface CreateWalletRequest {
+  passphrase: string;
+}
+
+interface ImportWalletRequest {
+  privateKey: string;
+  passphrase: string;
+}
+
+interface ExportWalletRequest {
+  address: string;
   passphrase: string;
 }
 
@@ -67,6 +82,58 @@ export function useWallet() {
     },
   });
 
+  // Import existing wallet
+  const importWalletMutation = useMutation({
+    mutationFn: async (data: ImportWalletRequest) => {
+      const res = await apiRequest('POST', '/api/blockchain/wallet/import', data);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to import wallet');
+      }
+      return await res.json() as Wallet;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Wallet imported",
+        description: `Wallet imported successfully with address ${data.address}`,
+      });
+      setActiveWalletAddress(data.address);
+      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/wallets'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to import wallet",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Export wallet keys
+  const exportWalletKeysMutation = useMutation({
+    mutationFn: async (data: ExportWalletRequest) => {
+      const res = await apiRequest('POST', '/api/blockchain/wallet/export', data);
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to export wallet keys');
+      }
+      return await res.json() as WalletKeys;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Keys exported",
+        description: "Your wallet keys have been exported successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to export keys",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Get wallet by address
   const getWallet = (address?: string) => {
     const walletAddress = address || activeWallet;
@@ -83,6 +150,22 @@ export function useWallet() {
       },
       enabled: !!walletAddress, // Only run query if address is provided
       refetchInterval: 5000, // Refetch every 5 seconds
+    });
+  };
+
+  // Get all wallets
+  const getAllWallets = () => {
+    return useQuery({
+      queryKey: ['/api/blockchain/wallets'],
+      queryFn: async () => {
+        const res = await apiRequest('GET', '/api/blockchain/wallets');
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.error || 'Failed to fetch wallets');
+        }
+        return await res.json() as Wallet[];
+      },
+      refetchInterval: 15000, // Refetch every 15 seconds
     });
   };
 
@@ -140,10 +223,13 @@ export function useWallet() {
     
     // Queries
     getWallet,
+    getAllWallets,
     getWalletTransactions,
     
     // Mutations
     createWalletMutation,
+    importWalletMutation,
+    exportWalletKeysMutation,
     sendTransactionMutation,
   };
 }

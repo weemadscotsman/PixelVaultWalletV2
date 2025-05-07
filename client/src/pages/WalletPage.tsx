@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { WalletCard } from '@/components/wallet/WalletCard';
 import { TransactionsList } from '@/components/wallet/TransactionsList';
 import { CreateWalletForm } from '@/components/wallet/CreateWalletForm';
+import { ImportWalletForm } from '@/components/wallet/ImportWalletForm';
 
 export default function WalletPage() {
   const { activeWallet } = useWallet();
@@ -46,15 +47,7 @@ export default function WalletPage() {
               </TabsContent>
               
               <TabsContent value="import" className="mt-0">
-                <div className="bg-black/70 border-blue-900/50 p-8 rounded-lg text-center">
-                  <h3 className="text-xl font-bold text-blue-300 mb-4">Import Wallet</h3>
-                  <p className="text-gray-400 mb-6">
-                    Import functionality will be available in the next update. For now, please create a new wallet.
-                  </p>
-                  <Button className="bg-blue-700 hover:bg-blue-600 text-white">
-                    Create New Wallet Instead
-                  </Button>
-                </div>
+                <ImportWalletForm />
               </TabsContent>
             </Tabs>
             

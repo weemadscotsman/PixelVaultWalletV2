@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Wallet, Copy, Loader2 } from 'lucide-react';
+import { Wallet, Copy, Loader2, ShieldAlert, Send, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { shortenAddress, formatCryptoAmount } from '@/lib/utils';
 import { useWallet } from '@/hooks/use-wallet';
+import { ExportWalletKeys } from './ExportWalletKeys';
 
 export function WalletCard() {
   const { toast } = useToast();
@@ -127,14 +128,32 @@ export function WalletCard() {
               </p>
             </div>
           </div>
+          
+          {/* Key Management Section */}
+          <div className="bg-blue-950/10 p-4 rounded border border-blue-900/20">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-blue-300 font-medium flex items-center">
+                <ShieldAlert className="h-4 w-4 mr-1" />
+                Wallet Security
+              </p>
+            </div>
+            <p className="text-xs text-gray-400 mb-3">
+              Securely manage your wallet keys for backup and recovery
+            </p>
+            <div className="flex space-x-2">
+              <ExportWalletKeys walletAddress={wallet.address} />
+            </div>
+          </div>
         </div>
       </CardContent>
       <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
         <div className="w-full grid grid-cols-2 gap-4">
           <Button className="bg-blue-700 hover:bg-blue-600 text-white">
+            <Send className="h-4 w-4 mr-2" />
             Send PVX
           </Button>
           <Button variant="outline" className="border-blue-900/50 text-blue-300">
+            <Download className="h-4 w-4 mr-2" />
             Receive PVX
           </Button>
         </div>
