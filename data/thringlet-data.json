@@ -84,10 +84,10 @@
         "name": "Astro",
         "owner": "PVX_9703f23ff29015d96de825c2309ef249",
         "createdAt": 1746640049696,
-        "lastInteraction": 1746640049696,
-        "emotionalState": "neutral",
+        "lastInteraction": 1746640101163,
+        "emotionalState": "happy",
         "level": 1,
-        "experience": 0,
+        "experience": 10,
         "abilities": [
           "basic_movement"
         ],
@@ -106,6 +106,11 @@
             "state": "neutral",
             "timestamp": 1746640049696,
             "trigger": "creation"
+          },
+          {
+            "state": "happy",
+            "timestamp": 1746640101163,
+            "trigger": "Hey Astro, I brought you a special treat! I hope this makes you happy!"
           }
         ]
       }

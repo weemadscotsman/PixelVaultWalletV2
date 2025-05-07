@@ -162,3 +162,51 @@ export interface Thringlet {
   zk_verified?: boolean;
   abilities: string[];
 }
+
+/**
+ * Enum for achievement badge types
+ */
+export enum BadgeType {
+  TRANSACTION = 'transaction',
+  MINING = 'mining',
+  STAKING = 'staking',
+  GOVERNANCE = 'governance',
+  THRINGLET = 'thringlet',
+  SPECIAL = 'special'
+}
+
+/**
+ * Enum for achievement badge rarity levels
+ */
+export enum BadgeRarity {
+  COMMON = 'common',
+  UNCOMMON = 'uncommon',
+  RARE = 'rare',
+  EPIC = 'epic',
+  LEGENDARY = 'legendary',
+  MYTHIC = 'mythic'
+}
+
+/**
+ * Represents an achievement badge
+ */
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  type: BadgeType;
+  rarity: BadgeRarity;
+  icon: string; // Path to badge icon or icon identifier
+  requirement: string; // Human-readable requirement
+  secret: boolean; // If true, badge is hidden until earned
+}
+
+/**
+ * Represents a badge earned by a user
+ */
+export interface UserBadge {
+  badgeId: string;
+  userId: string; // User wallet address
+  earnedAt: number; // Timestamp when badge was earned
+  progress?: number; // Optional progress percentage for badges that track progress
+}
