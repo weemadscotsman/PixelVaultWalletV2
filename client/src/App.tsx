@@ -3,7 +3,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import LearningPage from "@/pages/learning-page";
@@ -22,16 +21,12 @@ import TerminalPage from "@/pages/TerminalPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
-import { AnimatePresence } from "framer-motion";
 
-// Router component
+// Basic Router Component (simplified to ensure functionality)
 function Router() {
-  // Get the current location for AnimatePresence
-  const [location] = useLocation();
-  
   return (
-    <AnimatePresence mode="sync" initial={false}>
-      <Switch key={location}>
+    <div className="w-full">
+      <Switch>
         <Route path="/" component={HomePage} />
         <Route path="/learning" component={LearningPage} />
         <Route path="/wallet" component={WalletPage} />
@@ -48,30 +43,21 @@ function Router() {
         <Route path="/settings" component={SettingsPage} />
         <Route component={NotFound} />
       </Switch>
-    </AnimatePresence>
+    </div>
   );
 }
 
+// Simplified App Component - removed animations and complex styling temporarily
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="dark"
-        enableSystem={false}
-      >
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <AuthProvider>
           <TooltipProvider>
-            {/* Matrix Background - this adds the kanji matrix rain effect */}
-            <div className="fixed inset-0 overflow-hidden" style={{ zIndex: -1 }}>
-              <MatrixBackground />
-            </div>
-            
-            {/* Main application - higher z-index to ensure interactivity */}
-            <div className="relative z-10 min-h-screen">
+            {/* Simple background color instead of matrix animation */}
+            <div className="bg-black min-h-screen text-white">
               <Router />
             </div>
-            
             <Toaster />
             <FeedbackButton />
           </TooltipProvider>
