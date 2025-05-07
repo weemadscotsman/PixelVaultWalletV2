@@ -41,6 +41,14 @@ interface TransactionRequest {
 export function useWallet() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  
+  // Check if there's a bad wallet address in localStorage and remove it
+  const storedWallet = localStorage.getItem('activeWallet');
+  if (storedWallet === 'PVX_21800303904d0d372b6fe9c67066650e') {
+    console.log('Removing invalid wallet from localStorage on initialization');
+    localStorage.removeItem('activeWallet');
+  }
+  
   const [activeWallet, setActiveWallet] = useState<string | null>(
     localStorage.getItem('activeWallet')
   );
