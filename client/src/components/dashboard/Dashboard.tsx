@@ -12,8 +12,10 @@ import {
   RefreshCw,
   Plus,
   ChevronRight,
-  Activity
+  Activity,
+  BarChart
 } from 'lucide-react';
+import { TrendRadar } from '@/components/blockchain/TrendRadar';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -650,6 +652,17 @@ export function Dashboard() {
             </Link>
           </CardFooter>
         </Card>
+      </div>
+      
+      {/* Blockchain Trend Radar */}
+      <div className="mt-6 mb-8">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-lg font-bold text-blue-300 flex items-center gap-2">
+            <BarChart className="w-5 h-5" />
+            <span>Blockchain Trends</span>
+          </h3>
+        </div>
+        <TrendRadar className="w-full" />
       </div>
       
       {/* Quick Actions */}

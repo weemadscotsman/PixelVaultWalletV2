@@ -6,12 +6,14 @@ import {
   Clock,
   Cpu,
   FileCode,
-  RefreshCw
+  RefreshCw,
+  BarChart
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TrendRadar } from '@/components/blockchain/TrendRadar';
 
 // Example blockchain data
 const blockchainData = {
@@ -116,6 +118,17 @@ export default function BlockchainPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+        
+        {/* Blockchain Trend Radar */}
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-lg font-bold text-blue-300 flex items-center gap-2">
+              <BarChart className="w-5 h-5" />
+              <span>Network Metrics Radar</span>
+            </h3>
+          </div>
+          <TrendRadar className="w-full" />
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
