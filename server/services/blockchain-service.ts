@@ -401,6 +401,31 @@ export async function getMiningStats(address: string): Promise<MiningStats> {
 }
 
 /**
+ * Get mining rewards for an address
+ */
+export async function getMiningRewards(address: string): Promise<any[]> {
+  // Get transactions related to mining (type: MINE or REWARD) for this address
+  const transactions = await getTransactionsByAddress(address);
+  
+  // Filter for mining rewards
+  const miningRewards = transactions
+    .filter(tx => 
+      tx.type === TransactionType.MINE || 
+      (tx.type === TransactionType.REWARD && tx.from === 'PVX_COINBASE')
+    )
+    .map((tx, index) => ({
+      id: `reward_${index}_${tx.hash.substring(0, 8)}`,
+      blockHeight: tx.nonce || 0, // Use nonce field for block height
+      amount: tx.amount,
+      timestamp: tx.timestamp,
+      address: address,
+      txHash: tx.hash
+    }));
+  
+  return miningRewards;
+}
+
+/**
  * Get network hashrate
  */
 export async function getNetworkHashrate(): Promise<number> {
