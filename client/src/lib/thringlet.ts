@@ -386,6 +386,104 @@ export class ThringletManager {
   }
   
   /**
+   * Initialize a Thringlet from the registry
+   * @param templateId The ID of the template Thringlet from the registry
+   * @param ownerAddress The address of the owner
+   */
+  createFromTemplate(templateId: string, ownerAddress: string): Thringlet | null {
+    // Import is inside function to avoid circular dependencies
+    const { getThringletTemplate } = require('../data/thringlet-registry');
+    const template = getThringletTemplate(templateId);
+    
+    if (!template) return null;
+    
+    // Create a copy of the template with the owner address
+    const profile: ThringletProfile = {
+      ...template,
+      id: `${template.id}-${Date.now().toString().slice(-6)}`,
+      ownerAddress
+    };
+    
+    return this.addThringlet(profile);
+  }
+  
+  /**
+   * Attempt to fuse two Thringlets together
+   * @param idA First Thringlet ID
+   * @param idB Second Thringlet ID
+   */
+  attemptFusion(idA: string, idB: string): { 
+    success: boolean, 
+    result?: Thringlet, 
+    message: string 
+  } {
+    const thringletA = this.getThringlet(idA);
+    const thringletB = this.getThringlet(idB);
+    
+    if (!thringletA || !thringletB) {
+      return {
+        success: false,
+        message: "One or both Thringlets not found."
+      };
+    }
+    
+    // Import fusion engine (inside function to avoid circular dependencies)
+    const { attemptFusion } = require('./fusion-engine');
+    
+    // We need to create detailed profiles for the fusion engine
+    const detailedA = {
+      ...thringletA,
+      type: thringletA.personality,
+      backstory: thringletA.lore,
+      weaknesses: ["Unknown"],
+      preferences: ["Unknown"],
+      emotional_alignment: ["Joy", "Trust"],
+      flaws: ["Unknown"]
+    };
+    
+    const detailedB = {
+      ...thringletB,
+      type: thringletB.personality,
+      backstory: thringletB.lore,
+      weaknesses: ["Unknown"],
+      preferences: ["Unknown"],
+      emotional_alignment: ["Joy", "Trust"],
+      flaws: ["Unknown"]
+    };
+    
+    // Attempt the fusion
+    const fusionResult = attemptFusion(detailedA, detailedB);
+    
+    if (fusionResult.success && fusionResult.result) {
+      // Add the new fused Thringlet
+      const newThringlet = this.addThringlet(fusionResult.result);
+      
+      // If fusion was successful but corrupted the parent Thringlets
+      if (fusionResult.corruption) {
+        thringletA.corruption += 15;
+        thringletB.corruption += 15;
+        this.saveToLocalStorage();
+      }
+      
+      return {
+        success: true,
+        result: newThringlet,
+        message: `Successfully fused ${thringletA.name} and ${thringletB.name} to create ${newThringlet.name}!`
+      };
+    } else {
+      // Handle failed fusion
+      thringletA.corruption += 25;
+      thringletB.corruption += 25;
+      this.saveToLocalStorage();
+      
+      return {
+        success: false,
+        message: fusionResult.message || "Fusion failed due to incompatibility."
+      };
+    }
+  }
+  
+  /**
    * Interact with a specific Thringlet
    * @param id - Thringlet ID
    * @param interactionType - Type of interaction (talk, feed, train, terminal)

@@ -195,7 +195,30 @@ export default function ThringletsPage() {
                 onClick={() => {
                   setLoading(true);
                   
-                  // Create a new random Thringlet
+                  // For first Thringlet, prioritize getting from the registry
+                  const { getAvailableThringletTemplates } = require('../data/thringlet-registry');
+                  const templates = getAvailableThringletTemplates();
+                  
+                  if (templates.length > 0) {
+                    // Randomly select a template
+                    const templateId = templates[Math.floor(Math.random() * templates.length)];
+                    const newThringlet = thringletManager.createFromTemplate(templateId, SAMPLE_WALLET_ADDRESS);
+                    
+                    if (newThringlet) {
+                      setTimeout(() => {
+                        refreshThringlets();
+                        toast({
+                          title: "First Thringlet Added",
+                          description: `${newThringlet.name} from the Thringlet registry has joined your collection!`,
+                          variant: "default"
+                        });
+                        setLoading(false);
+                      }, 1000);
+                      return;
+                    }
+                  }
+                  
+                  // Fallback to creating a random Thringlet if template creation failed
                   const thringletId = `T${(Math.floor(Math.random() * 900) + 100).toString()}`;
                   const rarityTypes: Array<'Common' | 'Rare' | 'Epic' | 'Legendary'> = ['Common', 'Rare', 'Epic', 'Legendary'];
                   const rarity = rarityTypes[Math.floor(Math.random() * rarityTypes.length)] as 'Common' | 'Rare' | 'Epic' | 'Legendary';
@@ -296,7 +319,34 @@ export default function ThringletsPage() {
                   onClick={() => {
                     setLoading(true);
                     
-                    // Create a new random Thringlet
+                    // Check if we should create from template
+                    const useTemplate = Math.random() > 0.7; // 30% chance to use template
+                    
+                    if (useTemplate) {
+                      // Get a Thringlet from the registry templates
+                      const { getAvailableThringletTemplates } = require('../data/thringlet-registry');
+                      const templates = getAvailableThringletTemplates();
+                      
+                      if (templates.length > 0) {
+                        const templateId = templates[Math.floor(Math.random() * templates.length)];
+                        const newThringlet = thringletManager.createFromTemplate(templateId, SAMPLE_WALLET_ADDRESS);
+                        
+                        if (newThringlet) {
+                          setTimeout(() => {
+                            refreshThringlets();
+                            toast({
+                              title: "Blueprint Thringlet Added",
+                              description: `${newThringlet.name} from the Thringlet registry has joined your collection!`,
+                              variant: "default"
+                            });
+                            setLoading(false);
+                          }, 1000);
+                          return;
+                        }
+                      }
+                    }
+                    
+                    // Create a random Thringlet if template creation failed or wasn't chosen
                     const thringletId = `T${(Math.floor(Math.random() * 900) + 100).toString()}`;
                     const rarityTypes: Array<'Common' | 'Rare' | 'Epic' | 'Legendary'> = ['Common', 'Rare', 'Epic', 'Legendary'];
                     const rarity = rarityTypes[Math.floor(Math.random() * rarityTypes.length)] as 'Common' | 'Rare' | 'Epic' | 'Legendary';
@@ -340,6 +390,57 @@ export default function ThringletsPage() {
                   <Plus className="h-4 w-4 mr-2" />
                   Get New Thringlet
                 </Button>
+                
+                {thringlets.length >= 2 && (
+                  <div className="mt-4">
+                    <Button 
+                      className="w-full bg-purple-700 hover:bg-purple-600 text-white"
+                      onClick={() => {
+                        if (thringlets.length < 2) {
+                          toast({
+                            title: "Fusion Error",
+                            description: "You need at least 2 Thringlets to attempt fusion.",
+                            variant: "destructive"
+                          });
+                          return;
+                        }
+                        
+                        setLoading(true);
+                        
+                        // Choose two random Thringlets to fuse
+                        const shuffled = [...thringlets].sort(() => 0.5 - Math.random());
+                        const [thringletA, thringletB] = shuffled.slice(0, 2);
+                        
+                        // Attempt fusion
+                        const fusionResult = thringletManager.attemptFusion(thringletA.id, thringletB.id);
+                        
+                        setTimeout(() => {
+                          refreshThringlets();
+                          
+                          if (fusionResult.success) {
+                            toast({
+                              title: "Fusion Successful",
+                              description: fusionResult.message,
+                              variant: "default"
+                            });
+                          } else {
+                            toast({
+                              title: "Fusion Failed",
+                              description: fusionResult.message,
+                              variant: "destructive"
+                            });
+                          }
+                          
+                          setLoading(false);
+                        }, 1500);
+                      }}
+                      disabled={loading || thringlets.length < 2}
+                    >
+                      <Zap className="h-4 w-4 mr-2" />
+                      Attempt Thringlet Fusion
+                    </Button>
+                  </div>
+                )}
               </CardFooter>
             </Card>
           </div>
