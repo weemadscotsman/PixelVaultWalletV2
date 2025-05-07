@@ -8,6 +8,7 @@ import { MiningService } from "./services/mining";
 import { StakingService } from "./services/staking";
 import { NFTService } from "./services/nft";
 import { thringletService } from "./services/thringlet";
+import { dexService } from "./services/dex";
 import badgeRoutes from "./routes/badge-routes";
 import utrRoutes from "./routes/utr-routes";
 import blockchainRoutes from "./routes/blockchain-routes";
@@ -1084,6 +1085,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to scan target' });
     }
   });
+
+  // Initialize DEX sample data
+  try {
+    await dexService.initializeSampleData();
+    console.log('DEX data initialized successfully');
+  } catch (error) {
+    console.error('Error initializing DEX data:', error);
+  }
 
   const httpServer = createServer(app);
   
