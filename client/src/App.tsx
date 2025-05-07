@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import LearningPage from "@/pages/learning-page";
@@ -21,45 +22,53 @@ import TerminalPage from "@/pages/TerminalPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
+import { AnimatePresence } from "framer-motion";
 
-// Basic Router Component (simplified to ensure functionality)
+// Router component
 function Router() {
+  // Get the current location for AnimatePresence
+  const [location] = useLocation();
+  
   return (
-    <div className="w-full">
-      <Switch>
-        <Route path="/" component={HomePage} />
-        <Route path="/learning" component={LearningPage} />
-        <Route path="/wallet" component={WalletPage} />
-        <Route path="/blockchain" component={BlockchainPage} />
-        <Route path="/staking" component={StakingPage} />
-        <Route path="/governance" component={GovernancePage} />
-        <Route path="/thringlets" component={ThringletsPage} />
-        <Route path="/drops" component={DropsPage} />
-        <Route path="/badges" component={BadgesPage} />
-        <Route path="/utr" component={UTRDashboardPage} />
-        <Route path="/dex" component={DEXPage} />
-        <Route path="/terminal" component={TerminalPage} />
-        <Route path="/profile" component={ProfilePage} />
-        <Route path="/settings" component={SettingsPage} />
-        <Route component={NotFound} />
-      </Switch>
-    </div>
+    <AnimatePresence mode="sync" initial={false}>
+      <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
+        <Switch key={location}>
+          <Route path="/" component={HomePage} />
+          <Route path="/learning" component={LearningPage} />
+          <Route path="/wallet" component={WalletPage} />
+          <Route path="/blockchain" component={BlockchainPage} />
+          <Route path="/staking" component={StakingPage} />
+          <Route path="/governance" component={GovernancePage} />
+          <Route path="/thringlets" component={ThringletsPage} />
+          <Route path="/drops" component={DropsPage} />
+          <Route path="/badges" component={BadgesPage} />
+          <Route path="/utr" component={UTRDashboardPage} />
+          <Route path="/dex" component={DEXPage} />
+          <Route path="/terminal" component={TerminalPage} />
+          <Route path="/profile" component={ProfilePage} />
+          <Route path="/settings" component={SettingsPage} />
+          <Route component={NotFound} />
+        </Switch>
+      </div>
+    </AnimatePresence>
   );
 }
 
-// Simplified App Component - removed animations and complex styling temporarily
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem={false}
+      >
         <AuthProvider>
           <TooltipProvider>
-            {/* Simple background color instead of matrix animation */}
-            <div className="bg-black min-h-screen text-white">
-              <Router />
-            </div>
+            {/* Matrix Background - this adds the kanji matrix rain effect */}
+            <MatrixBackground />
             <Toaster />
             <FeedbackButton />
+            <Router />
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
