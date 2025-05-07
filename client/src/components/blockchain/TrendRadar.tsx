@@ -56,7 +56,11 @@ export function TrendRadar({ className }: TrendRadarProps) {
       const { metric, ...values } = item;
       
       if (!acc.find((i: any) => i.metric === metric)) {
-        acc.push({ metric, ...values });
+        acc.push({ 
+          metric, 
+          ...values,
+          active: true // Add active property for all metrics
+        });
       }
       
       return acc;
@@ -121,6 +125,8 @@ export function TrendRadar({ className }: TrendRadarProps) {
               dotColor={{ theme: 'background' }}
               dotBorderWidth={2}
               dotBorderColor={{ from: 'color' }}
+              dotSize={({ index, data }) => radarData[index].active ? 12 : 8}
+              animate={true}
               enableDotLabel={false}
               colors={radarColors}
               blendMode="screen"
@@ -128,6 +134,28 @@ export function TrendRadar({ className }: TrendRadarProps) {
               gridShape="circular"
               gridLevels={5}
               gridLabel={(value) => ''}
+              tooltip={({ point }) => {
+                const metric = metrics.find(m => m.id === point.key);
+                const metricData = metric?.data[timeRange as TimeRange];
+                return (
+                  <div className="bg-slate-900 border border-blue-900/30 rounded p-2 text-xs shadow-md">
+                    <div className="font-semibold text-blue-300">{point.data.metric}</div>
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <div 
+                        className="w-2 h-2 rounded-full" 
+                        style={{ backgroundColor: point.color }}
+                      />
+                      <span className="text-slate-300">{point.key}: </span>
+                      <span className="font-medium text-blue-200">
+                        {metricData?.value.toLocaleString()} {metricData?.unit}
+                      </span>
+                    </div>
+                    <div className="text-slate-400 text-[10px] mt-1">
+                      Max: {metricData?.maxValue.toLocaleString()} {metricData?.unit}
+                    </div>
+                  </div>
+                );
+              }}
               theme={{
                 textColor: '#94a3b8',
                 labels: {
@@ -150,6 +178,7 @@ export function TrendRadar({ className }: TrendRadarProps) {
                     borderRadius: 4,
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                     padding: '8px 12px',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
                   }
                 }
               }}
