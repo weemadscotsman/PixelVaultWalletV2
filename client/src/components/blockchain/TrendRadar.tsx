@@ -30,6 +30,7 @@ interface TrendRadarProps {
 
 export function TrendRadar({ className }: TrendRadarProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>('24h');
+  const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   
   // Mock data - will be replaced with API data
   const { isLoading, error, data: blockchainTrends } = useQuery({
@@ -58,8 +59,7 @@ export function TrendRadar({ className }: TrendRadarProps) {
       if (!acc.find((i: any) => i.metric === metric)) {
         acc.push({ 
           metric, 
-          ...values,
-          active: true // Add active property for all metrics
+          ...values
         });
       }
       
@@ -118,24 +118,33 @@ export function TrendRadar({ className }: TrendRadarProps) {
               indexBy="metric"
               maxValue={100}
               margin={{ top: 30, right: 60, bottom: 30, left: 60 }}
-              borderWidth={2}
-              borderColor={{ from: 'color', modifiers: [] }}
+              borderWidth={({ index }) => radarKeys.map((key, i) => i).includes(activePointIndex) && index === activePointIndex ? 3 : 2}
+              borderColor={({ index }) => 
+                radarKeys.map((key, i) => i).includes(activePointIndex) && index === activePointIndex 
+                  ? { from: 'color', modifiers: [['brighter', 0.8]] } 
+                  : { from: 'color', modifiers: [] }
+              }
               gridLabelOffset={15}
-              dotSize={10}
-              dotColor={{ theme: 'background' }}
-              dotBorderWidth={2}
+              dotColor={({ index }) => activePointIndex === index ? { from: 'color', modifiers: [['brighter', 1.8]] } : { theme: 'background' }}
+              dotBorderWidth={({ index }) => activePointIndex === index ? 3 : 2}
               dotBorderColor={{ from: 'color' }}
-              dotSize={({ index, data }) => radarData[index].active ? 12 : 8}
+              dotSize={({ index }) => activePointIndex === index ? 14 : 8}
               animate={true}
               enableDotLabel={false}
               colors={radarColors}
               blendMode="screen"
               motionConfig="gentle"
+              onMouseEnter={(_data, index) => {
+                setActivePointIndex(index);
+              }}
+              onMouseLeave={() => {
+                setActivePointIndex(null);
+              }}
               gridShape="circular"
               gridLevels={5}
               gridLabel={(value) => ''}
               tooltip={({ point }) => {
-                const metric = metrics.find(m => m.id === point.key);
+                const metric = blockchainTrends?.metrics.find((m: any) => m.id === point.key);
                 const metricData = metric?.data[timeRange as TimeRange];
                 return (
                   <div className="bg-slate-900 border border-blue-900/30 rounded p-2 text-xs shadow-md">
@@ -157,7 +166,6 @@ export function TrendRadar({ className }: TrendRadarProps) {
                 );
               }}
               theme={{
-                textColor: '#94a3b8',
                 labels: {
                   text: {
                     fontSize: 12,
