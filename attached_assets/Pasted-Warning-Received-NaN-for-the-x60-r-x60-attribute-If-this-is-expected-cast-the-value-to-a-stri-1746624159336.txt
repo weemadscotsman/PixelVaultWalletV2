@@ -1,0 +1,47 @@
+Warning: Received NaN for the &#x60;r&#x60; attribute. If this is expected, cast the value to a string.
+    at circle
+    at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12178:15
+    at g
+    at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:3959:50
+    at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12182:15
+    at Z (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12736:15)
+    at g
+    at g
+    at svg
+    at en (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12174:15)
+    at re3 (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12763:15)
+    at div
+    at Sr (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12009:15)
+    at W (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:6355:15)
+    at Ar (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:11999:15)
+    at m (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:6227:15)
+    at qr (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12014:15)
+    at te (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12813:15)
+    at div
+    at jt (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@nivo_radar.js?v=96aa3055:12124:15)
+    at ne
+    at div
+    at div
+    at _c9 (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/src/components/ui/card.tsx:20:11)
+    at TrendRadar (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/src/components/blockchain/TrendRadar.tsx:26:30)
+    at div
+    at div
+    at Dashboard (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/src/components/dashboard/Dashboard.tsx:100:39)
+    at div
+    at MotionComponent (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=4bbc18d8:6536:40)
+    at PresenceChild (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=4bbc18d8:7742:24)
+    at AnimatePresence (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=4bbc18d8:7800:26)
+    at main
+    at div
+    at div
+    at DashboardLayout (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/src/components/dashboard/DashboardLayout.tsx:40:35)
+    at HomePage
+    at Route (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=edf7c303:323:16)
+    at Switch (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=edf7c303:379:17)
+    at Router (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/src/App.tsx?v=4eX3HOsiplM93GxgiITWK:44:22)
+    at Provider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=653a368d:38:15)
+    at TooltipProvider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=6157fafc:64:5)
+    at AuthProvider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-1duhu0zs1ooo2.riker.replit.dev/src/hooks/use-auth.tsx:22:32)
+    at V…

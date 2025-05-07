@@ -132,7 +132,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="flex h-screen bg-black text-white overflow-hidden">
       {/* Sidebar */}
       <motion.div 
-        className="h-full bg-black border-r border-blue-900/40"
+        className="h-full bg-black border-r border-blue-900/40 relative z-30"
+        style={{ pointerEvents: 'all' }}
         initial={{ width: 240 }}
         animate={{ width: sidebarCollapsed ? 80 : 240 }}
         transition={{ duration: 0.3 }}
@@ -267,9 +268,9 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </motion.div>
       
       {/* Main Content */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
+      <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         {/* Header */}
-        <header className="h-16 border-b border-blue-900/40 flex items-center px-6 bg-black/95">
+        <header className="h-16 border-b border-blue-900/40 flex items-center px-6 bg-black/95 relative z-20" style={{ pointerEvents: 'auto' }}>
           <h1 className="text-xl font-bold text-blue-300">
             {mainNavItems.find(item => item.path === location)?.name || 
              secondaryNavItems.find(item => item.path === location)?.name || 
@@ -289,7 +290,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
         
         {/* Dashboard Content */}
-        <main className="flex-1 overflow-y-auto bg-gradient-to-b from-black to-blue-950/20 p-6">
+        <main className="flex-1 overflow-y-auto bg-gradient-to-b from-black to-blue-950/20 p-6 relative z-10">
           <AnimatePresence mode="wait">
             <motion.div
               key={location}
@@ -298,8 +299,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
               className="h-full"
+              style={{ pointerEvents: 'auto' }}
             >
-              {children}
+              <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
+                {children}
+              </div>
             </motion.div>
           </AnimatePresence>
         </main>
