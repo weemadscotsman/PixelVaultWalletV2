@@ -19,7 +19,8 @@ import {
 import { PlusCircle, DropletIcon, WalletIcon, Percent, BarChart2 } from 'lucide-react';
 import { useWallet } from '@/hooks/use-wallet';
 import { useTokens, useLiquidityPools, useCreateLPPosition, useCreatePool } from '@/hooks/use-dex';
-import { formatTokenAmount, formatPercent } from '@/lib/format';
+// Import format utilities directly from relative path
+import { formatTokenAmount, formatPercent } from '../../lib/format';
 import { 
   Tabs, 
   TabsContent, 
@@ -644,61 +645,81 @@ export default function LiquidityPoolInterface() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {pools.map((pool) => {
-                      const token0 = tokens?.find(t => t.id === pool.token0_id);
-                      const token1 = tokens?.find(t => t.id === pool.token1_id);
-                      
-                      // Simplified calculations for demo
-                      const tvl = formatTokenAmount(
-                        (BigInt(pool.token0_amount) + BigInt(pool.token1_amount)).toString(),
-                        6
-                      );
-                      const volume = Math.floor(Math.random() * 100000).toString();
-                      
-                      return (
-                        <TableRow key={pool.id} className="border-slate-800">
-                          <TableCell className="font-medium">
-                            <div className="flex items-center">
-                              <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-violet-500 rounded-full mr-2" />
-                              <div>
-                                <span className="flex items-center">
-                                  {token0?.symbol}/{token1?.symbol}
-                                </span>
-                                <span className="text-xs text-gray-500">
-                                  {formatTokenAmount(pool.lp_token_supply, 0)} LP
-                                </span>
+                    {isLoadingPools ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          <div className="flex items-center justify-center">
+                            <Loader2 className="h-6 w-6 animate-spin text-blue-400 mr-2" />
+                            <span className="text-gray-400">Loading pools...</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : !pools || pools.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center py-8">
+                          <div className="flex flex-col items-center justify-center">
+                            <DropletIcon className="h-6 w-6 text-blue-400 mb-2" />
+                            <span className="text-gray-400">No liquidity pools available</span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      pools.map((pool) => {
+                        const token0 = tokens?.find(t => t.id === pool.token0_id);
+                        const token1 = tokens?.find(t => t.id === pool.token1_id);
+                        
+                        // Simplified calculations for demo
+                        const tvl = formatTokenAmount(
+                          (BigInt(pool.token0_amount) + BigInt(pool.token1_amount)).toString(),
+                          6
+                        );
+                        const volume = Math.floor(Math.random() * 100000).toString();
+                        
+                        return (
+                          <TableRow key={pool.id} className="border-slate-800">
+                            <TableCell className="font-medium">
+                              <div className="flex items-center">
+                                <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-violet-500 rounded-full mr-2" />
+                                <div>
+                                  <span className="flex items-center">
+                                    {token0?.symbol}/{token1?.symbol}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {formatTokenAmount(pool.lp_token_supply, 0)} LP
+                                  </span>
+                                </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="font-medium">{tvl}</span>
-                            <span className="text-xs text-gray-500 block">PVX</span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="font-medium">{formatTokenAmount(volume, 6)}</span>
-                            <span className="text-xs text-gray-500 block">PVX</span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <span className="font-medium">{pool.swap_fee_percent}%</span>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 rounded-full hover:bg-slate-800"
-                              onClick={() => {
-                                setSelectedPoolId(pool.id);
-                                setToken0Id(pool.token0_id);
-                                setToken1Id(pool.token1_id);
-                                setActiveTab('add');
-                              }}
-                            >
-                              <PlusCircle className="h-4 w-4" />
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span className="font-medium">{tvl}</span>
+                              <span className="text-xs text-gray-500 block">PVX</span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span className="font-medium">{formatTokenAmount(volume, 6)}</span>
+                              <span className="text-xs text-gray-500 block">PVX</span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <span className="font-medium">{pool.swap_fee_percent}%</span>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 rounded-full hover:bg-slate-800"
+                                onClick={() => {
+                                  setSelectedPoolId(pool.id);
+                                  setToken0Id(pool.token0_id);
+                                  setToken1Id(pool.token1_id);
+                                  setActiveTab('add');
+                                }}
+                              >
+                                <PlusCircle className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
                   </TableBody>
                 </Table>
               </div>

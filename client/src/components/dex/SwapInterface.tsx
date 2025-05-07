@@ -19,7 +19,8 @@ import {
 import { ArrowDownUp, RefreshCw, AlertCircle } from 'lucide-react';
 import { useWallet } from '@/hooks/use-wallet';
 import { useTokens, useLiquidityPools, useSwapQuote, useExecuteSwap } from '@/hooks/use-dex';
-import { formatTokenAmount } from '@/lib/format';
+// Import format utilities directly from relative path
+import { formatTokenAmount, formatPercent } from '../../lib/format';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
