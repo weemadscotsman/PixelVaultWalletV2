@@ -12,18 +12,42 @@
       "reward": "0"
     }
   ],
-  "transactions": [],
+  "transactions": [
+    {
+      "hash": "8e957f0a5efa30d4a40123715e1b50f5a41b3bfb7da037ce44e8f623b78cbad4",
+      "type": "transfer",
+      "from": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "to": "PVX_6f043634a52a0516153973ad701095ae",
+      "amount": "100",
+      "timestamp": 1746633047613,
+      "nonce": 26910,
+      "signature": "a2591e8c53620864b9f416a513e62e7f71e03224aa763c9e2e24c6288f2b5ec1",
+      "status": "pending"
+    }
+  ],
   "wallets": [
     [
       "PVX_1e1ee32c2770a6af3ca119759c539907",
       {
         "address": "PVX_1e1ee32c2770a6af3ca119759c539907",
         "publicKey": "814eb62f87583afb04aebb7abcdb8fb52a7150c8390111f4115ebbe389bcf24b",
-        "balance": "1000000",
+        "balance": "999900",
         "createdAt": "2025-05-07T15:49:53.480Z",
         "lastSynced": "2025-05-07T15:49:53.480Z",
         "passphraseSalt": "430f2740756b69721379cd9d553e9b66",
         "passphraseHash": "1e1ee32c2770a6af3ca119759c5399072ff483851fcd25a80f2329f6d4994026"
+      }
+    ],
+    [
+      "PVX_6f043634a52a0516153973ad701095ae",
+      {
+        "address": "PVX_6f043634a52a0516153973ad701095ae",
+        "publicKey": "0f5e161158170be64bbf3d3e539af045123d0b84cba28d3a5e7d40e76654ba0d",
+        "balance": "1000100",
+        "createdAt": "2025-05-07T15:50:41.364Z",
+        "lastSynced": "2025-05-07T15:50:41.364Z",
+        "passphraseSalt": "5d539cb2f66f6271d1182e3cd422b745",
+        "passphraseHash": "6f043634a52a0516153973ad701095aeb9f787baaca1219a3c890fb247de7164"
       }
     ]
   ],
