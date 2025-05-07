@@ -16,7 +16,7 @@ router.post('/create', walletController.createWallet);
 router.post('/import', walletController.importWallet);
 
 /**
- * Get wallet balance and info
+ * Get wallet info
  * GET /api/wallet/:address
  */
 router.get('/:address', walletController.getWallet);
@@ -28,7 +28,7 @@ router.get('/:address', walletController.getWallet);
 router.get('/:address/balance', walletController.getBalance);
 
 /**
- * Export wallet keys (with authorization)
+ * Export wallet keys
  * POST /api/wallet/:address/export
  */
 router.post('/:address/export', walletController.exportWalletKeys);

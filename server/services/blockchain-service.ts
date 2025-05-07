@@ -8,7 +8,7 @@ import {
   TransactionType,
   BlockchainTrends,
   Thringlet,
-  ThringletEmotionalState,
+  ThringletEmotionState,
   TransactionHash
 } from '@shared/types';
 

@@ -3,7 +3,7 @@ import {
   Transaction, 
   MiningStats, 
   TransactionType,
-  ThringletEmotionalState
+  ThringletEmotionState
 } from '@shared/types';
 
 // Wallet type for in-memory storage

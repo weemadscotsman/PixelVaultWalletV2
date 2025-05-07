@@ -1,89 +1,95 @@
-import type { Express, Request, Response, NextFunction } from "express";
-import { createServer, type Server } from "http";
-import blockchainRoutes from "./routes/blockchain-routes";
-import walletRoutes from "./routes/wallet-routes";
-import { WebSocketServer } from "ws";
+import express, { Express, Request, Response, NextFunction } from 'express';
+import { createServer, Server } from 'http';
+import walletRoutes from './routes/wallet';
+import txRoutes from './routes/tx';
+import stakeRoutes from './routes/stake';
+import thringletRoutes from './routes/thringlet';
+import authRoutes from './routes/auth';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Register blockchain API routes
-  app.use("/api/blockchain", blockchainRoutes);
-  
-  // Register wallet API routes - following the /api/wallet specification
-  app.use("/api/wallet", walletRoutes);
+  // PVX blockchain API routes
+  app.use('/api/wallet', walletRoutes);
+  app.use('/api/tx', txRoutes);
+  app.use('/api/stake', stakeRoutes);
+  app.use('/api/thringlet', thringletRoutes);
+  app.use('/api/auth', authRoutes);
+
+  // Add a simple health check endpoint
+  app.get('/api/health', (_req: Request, res: Response) => {
+    res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+  });
+
+  // Add a blockchain status endpoint
+  app.get('/api/status', (_req: Request, res: Response) => {
+    const lastBlockTimestamp = Date.now() - (Math.random() * 60000); // Random time in the last minute
+    
+    res.json({
+      node_status: 'connected',
+      last_block: {
+        height: 123456,
+        timestamp: new Date(lastBlockTimestamp).toISOString(),
+        transactions: 24
+      },
+      peer_count: 17,
+      sync_status: '100%',
+      network_hashrate: '487.23 MH/s'
+    });
+  });
 
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    console.error(err);
-    res.status(500).json({
-      error: err.message || "Internal server error",
+    console.error('Error occurred:', err);
+    
+    const statusCode = err.statusCode || 500;
+    const message = err.message || 'An unexpected error occurred';
+    
+    res.status(statusCode).json({
+      error: message,
+      timestamp: new Date().toISOString()
     });
   });
 
+  // Create and return HTTP server
   const httpServer = createServer(app);
-
-  // Create WebSocket server for real-time updates
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
-  
-  wss.on('connection', (ws) => {
-    console.log('Client connected to WebSocket');
-    
-    // Send initial connection status
-    ws.send(JSON.stringify({
-      type: 'CONNECTION_STATUS',
-      data: { connected: true }
-    }));
-    
-    // Handle messages from clients
-    ws.on('message', (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-        console.log('Received message:', data);
-        
-        // Handle different message types
-        if (data.type === 'SUBSCRIBE_BLOCKCHAIN') {
-          // Subscribe to blockchain events
-          console.log(`Client subscribed to blockchain updates for ${data.address || 'all'}`);
-        }
-      } catch (error) {
-        console.error('Error processing WebSocket message:', error);
-      }
-    });
-    
-    // Handle disconnection
-    ws.on('close', () => {
-      console.log('Client disconnected from WebSocket');
-    });
-  });
 
   return httpServer;
 }
 
-// Helper functions for formatting data
+// Utility function to shorten address for display
 export function shortenAddress(address: string): string {
   if (!address) return '';
-  if (address.length <= 13) return address;
-  return `${address.slice(0, 6)}...${address.slice(-6)}`;
+  if (address.length < 12) return address;
+  
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-// Calculate a security score for a drop (for demonstration)
+// Utility function to calculate a security score for airdrops
 export function calculateDropSecurityScore(drop: any): number {
-  let score = 70; // Base score
+  let score = 50; // Base score
   
-  // Add points for specific security features
-  if (drop.zkVerified) score += 15;
-  if (drop.multiSigRequired) score += 10;
-  if (drop.timeDelayedWithdrawals) score += 5;
+  // Smart contract verification adds security
+  if (drop.verified) score += 20;
   
-  return Math.min(score, 100); // Cap at 100
+  // Age of contract
+  const ageInDays = (Date.now() - drop.createdAt) / (1000 * 60 * 60 * 24);
+  if (ageInDays > 30) score += 15;
+  else if (ageInDays > 7) score += 5;
+  
+  // Number of participants
+  if (drop.participants > 1000) score += 15;
+  else if (drop.participants > 100) score += 5;
+  
+  // Cap at 100
+  return Math.min(100, score);
 }
 
-// Generate a random entity name for simulation
+// Generate random entity names for the simulation
 export function getRandomEntityName(): string {
-  const prefixes = ['Quantum', 'Neo', 'Cyber', 'Pixel', 'Digital', 'Crypto', 'Meta'];
-  const suffixes = ['Logic', 'Nexus', 'Matrix', 'Sphere', 'Chain', 'Vault', 'Forge'];
+  const prefixes = ['Neo', 'Cyber', 'Quantum', 'Pixel', 'Digital', 'Crypto', 'Block', 'Vault'];
+  const suffixes = ['Node', 'Chain', 'Matrix', 'Core', 'Net', 'Miner', 'Hash', 'Forge'];
   
-  const randomPrefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-  const randomSuffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
   
-  return `${randomPrefix}${randomSuffix}`;
+  return `${prefix}${suffix}`;
 }
