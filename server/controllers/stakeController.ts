@@ -56,7 +56,7 @@ export const startStaking = async (req: Request, res: Response) => {
     const now = Date.now();
     const stake: StakeRecord = {
       id: stakeId,
-      address,
+      walletAddress: address,
       poolId,
       amount,
       startTime: now,
@@ -149,7 +149,7 @@ export const stopStaking = async (req: Request, res: Response) => {
     }
     
     // Verify stake belongs to wallet
-    if (stake.address !== address) {
+    if (stake.walletAddress !== address) {
       return res.status(401).json({ error: 'Unauthorized: stake belongs to another wallet' });
     }
     
@@ -278,7 +278,7 @@ export const claimRewards = async (req: Request, res: Response) => {
     }
     
     // Verify stake belongs to wallet
-    if (stake.address !== address) {
+    if (stake.walletAddress !== address) {
       return res.status(401).json({ error: 'Unauthorized: stake belongs to another wallet' });
     }
     

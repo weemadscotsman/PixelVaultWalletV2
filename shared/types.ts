@@ -101,7 +101,7 @@ export interface BlockchainTrends {
  */
 export interface StakeRecord {
   id: string;
-  address: string;
+  walletAddress: string; // Address of the wallet that owns this stake
   poolId: string;
   amount: string;
   startTime: number;
