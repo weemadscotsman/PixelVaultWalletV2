@@ -417,7 +417,7 @@ export function AdvancedDropTerminal({
   
   // Claim a secret drop with code
   const claimDrop = async (code: string) => {
-    if (!wallet?.address) {
+    if (!wallet?.publicAddress) {
       addToCommandHistory('> Error: Wallet not connected');
       addToCommandHistory('> Connect your wallet to claim drops');
       return;
@@ -470,7 +470,7 @@ export function AdvancedDropTerminal({
         },
         body: JSON.stringify({
           dropCode: code,
-          address: wallet.address,
+          address: wallet.publicAddress,
         }),
       });
       
@@ -530,7 +530,7 @@ export function AdvancedDropTerminal({
   
   // Bond with a thringlet
   const bondThringlet = async (thringletId: string) => {
-    if (!wallet?.address) {
+    if (!wallet?.publicAddress) {
       addToCommandHistory('> Error: Wallet not connected');
       return;
     }
@@ -555,7 +555,7 @@ export function AdvancedDropTerminal({
         },
         body: JSON.stringify({
           thringletId,
-          address: wallet.address,
+          address: wallet.publicAddress,
         }),
       });
       
@@ -602,7 +602,7 @@ export function AdvancedDropTerminal({
   
   // Interact with a thringlet
   const interactWithThringlet = async (thringletId: string, interactionType: string) => {
-    if (!wallet?.address) {
+    if (!wallet?.publicAddress) {
       addToCommandHistory('> Error: Wallet not connected');
       return;
     }
@@ -631,7 +631,7 @@ export function AdvancedDropTerminal({
         },
         body: JSON.stringify({
           thringletId,
-          address: wallet.address,
+          address: wallet.publicAddress,
           interactionType,
         }),
       });
@@ -799,8 +799,8 @@ export function AdvancedDropTerminal({
     addToCommandHistory('> System Status:');
     addToCommandHistory(`> Access Level: ${accessLevel}`);
     
-    if (wallet?.address) {
-      const truncatedAddress = `${wallet.address.substring(0, 6)}...${wallet.address.substring(wallet.address.length - 4)}`;
+    if (wallet?.publicAddress) {
+      const truncatedAddress = `${wallet.publicAddress.substring(0, 6)}...${wallet.publicAddress.substring(wallet.publicAddress.length - 4)}`;
       addToCommandHistory(`> Wallet Connected: ${truncatedAddress}`);
       addToCommandHistory(`> Balance: ${wallet.balance.toLocaleString()} μPVX`);
       addToCommandHistory(`> Thringlets Owned: ${thringlets.length}`);
@@ -830,8 +830,8 @@ export function AdvancedDropTerminal({
       }
       
       // Refetch thringlets if wallet is connected
-      if (wallet?.address) {
-        const thringlentsResponse = await fetch(`/api/thringlets/owner/${wallet.address}`);
+      if (wallet?.publicAddress) {
+        const thringlentsResponse = await fetch(`/api/thringlets/owner/${wallet.publicAddress}`);
         if (thringlentsResponse.ok) {
           const thringletsData = await thringlentsResponse.json();
           setThringlets(thringletsData);
@@ -952,11 +952,11 @@ export function AdvancedDropTerminal({
           <div className="flex items-center space-x-2">
             <div className={cn(
               "h-2 w-2 rounded-full",
-              wallet?.address ? "bg-green-500" : "bg-red-500"
+              wallet?.publicAddress ? "bg-green-500" : "bg-red-500"
             )}></div>
             <div className="text-xs text-blue-400">
-              {wallet?.address ? (
-                `Wallet Connected: ${wallet.address.substring(0, 6)}...${wallet.address.substring(wallet.address.length - 4)}`
+              {wallet?.publicAddress ? (
+                `Wallet Connected: ${wallet.publicAddress.substring(0, 6)}...${wallet.publicAddress.substring(wallet.publicAddress.length - 4)}`
               ) : (
                 "No Wallet Connected"
               )}
