@@ -294,6 +294,12 @@ export function useWallet() {
         
         if (!res.ok) {
           console.error(`Error fetching wallet: ${res.status}`);
+          // If we get a 404, the wallet doesn't exist, so clear it from localStorage
+          if (res.status === 404) {
+            console.log('Wallet not found in backend, clearing from localStorage');
+            localStorage.removeItem('activeWallet');
+            setActiveWallet(null);
+          }
           return null;
         }
         
