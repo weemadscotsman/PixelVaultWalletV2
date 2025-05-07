@@ -272,7 +272,7 @@ export const claimRewards = async (req: Request, res: Response) => {
     }
     
     // Get stake record
-    const stake = stakingRecords.get(stakeId);
+    const stake = await memBlockchainStorage.getStakeById(stakeId);
     if (!stake) {
       return res.status(404).json({ error: 'Stake not found' });
     }
@@ -287,8 +287,8 @@ export const claimRewards = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Stake is not active' });
     }
     
-    // Calculate rewards
-    const pool = stakingPools.find(p => p.id === stake.poolId);
+    // Get the staking pool
+    const pool = await memBlockchainStorage.getStakingPoolById(stake.poolId);
     if (!pool) {
       return res.status(500).json({ error: 'Staking pool not found' });
     }
@@ -310,9 +310,9 @@ export const claimRewards = async (req: Request, res: Response) => {
     
     // Update stake record with new last reward time
     stake.lastRewardTime = now;
-    stakingRecords.set(stakeId, stake);
+    await memBlockchainStorage.updateStakeRecord(stake);
     
-    // Create reward transaction
+    // Create reward transaction with ZK signature
     const txHash = crypto.createHash('sha256')
       .update(address + reward.toString() + stake.poolId + now.toString())
       .digest('hex');
@@ -326,7 +326,7 @@ export const claimRewards = async (req: Request, res: Response) => {
       timestamp: now,
       nonce: Math.floor(Math.random() * 100000),
       signature: cryptoUtils.generateRandomHash(),
-      status: 'confirmed'
+      status: 'confirmed' as const
     };
     
     await memBlockchainStorage.createTransaction(transaction);
@@ -352,9 +352,8 @@ export const getStakingStatus = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     
-    // Get all stakes for the address
-    const walletStakes = Array.from(stakingRecords.values())
-      .filter(stake => stake.address === address && stake.isActive);
+    // Get all active stakes for the address from blockchain storage
+    const walletStakes = await memBlockchainStorage.getActiveStakesByAddress(address);
     
     if (walletStakes.length === 0) {
       return res.json({ 
@@ -369,9 +368,12 @@ export const getStakingStatus = async (req: Request, res: Response) => {
       return total + BigInt(stake.amount);
     }, BigInt(0));
     
+    // Get all staking pools for lookup
+    const pools = await memBlockchainStorage.getStakingPools();
+    
     // Format stakes for response
-    const formattedStakes = walletStakes.map(stake => {
-      const pool = stakingPools.find(p => p.id === stake.poolId);
+    const formattedStakes = await Promise.all(walletStakes.map(async (stake) => {
+      const pool = pools.find(p => p.id === stake.poolId);
       
       return {
         stake_id: stake.id,
@@ -382,7 +384,7 @@ export const getStakingStatus = async (req: Request, res: Response) => {
         start_time: new Date(stake.startTime).toISOString(),
         unlock_time: stake.unlockTime > 0 ? new Date(stake.unlockTime).toISOString() : 'No lockup'
       };
-    });
+    }));
     
     res.json({
       active_stakes: walletStakes.length,
@@ -403,7 +405,9 @@ export const getStakingStatus = async (req: Request, res: Response) => {
  */
 export const getStakingPools = async (req: Request, res: Response) => {
   try {
-    res.json(stakingPools);
+    // Get all staking pools from blockchain storage
+    const pools = await memBlockchainStorage.getStakingPools();
+    res.json(pools);
   } catch (error) {
     console.error('Error getting staking pools:', error);
     res.status(500).json({

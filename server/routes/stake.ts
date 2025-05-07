@@ -22,15 +22,15 @@ router.post('/stop', stakeController.stopStaking);
 router.post('/claim', stakeController.claimRewards);
 
 /**
- * Get staking status for a wallet
- * GET /api/stake/:address
- */
-router.get('/:address', stakeController.getStakingStatus);
-
-/**
  * Get available staking pools
  * GET /api/stake/pools
  */
 router.get('/pools', stakeController.getStakingPools);
+
+/**
+ * Get staking status for a wallet
+ * GET /api/stake/:address
+ */
+router.get('/:address', stakeController.getStakingStatus);
 
 export default router;
