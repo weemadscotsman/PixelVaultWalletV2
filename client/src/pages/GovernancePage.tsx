@@ -242,11 +242,11 @@ export default function GovernancePage() {
           <div>
             <Card className="bg-black/70 border-blue-900/50">
               <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <div className="flex flex-col gap-3">
                   <CardTitle className="text-blue-300">Proposals</CardTitle>
-                  <div className="flex h-8 items-center justify-center rounded-md bg-blue-900/20 p-0.5 text-blue-300 w-full sm:w-auto">
+                  <div className="flex h-8 items-center justify-center rounded-md bg-blue-900/20 p-0.5 text-blue-300 w-full">
                     <button
-                      className={`flex-1 sm:flex-auto inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                         activeTab === 'active' 
                           ? 'bg-blue-800 text-white shadow-sm' 
                           : 'text-blue-300 hover:bg-blue-800/20'
@@ -260,7 +260,7 @@ export default function GovernancePage() {
                       Active
                     </button>
                     <button
-                      className={`flex-1 sm:flex-auto inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                         activeTab === 'passed' 
                           ? 'bg-blue-800 text-white shadow-sm' 
                           : 'text-blue-300 hover:bg-blue-800/20'
@@ -274,7 +274,7 @@ export default function GovernancePage() {
                       Passed
                     </button>
                     <button
-                      className={`flex-1 sm:flex-auto inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      className={`flex-1 inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1 text-xs font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
                         activeTab === 'rejected' 
                           ? 'bg-blue-800 text-white shadow-sm' 
                           : 'text-blue-300 hover:bg-blue-800/20'
@@ -569,49 +569,7 @@ export default function GovernancePage() {
                       </>
                     )}
                     
-                    {selectedProposal.status === 'Passed' && (
-                      <div className="bg-green-950/20 p-4 rounded border border-green-900/30">
-                        <div className="flex items-center gap-2 mb-3">
-                          <CheckCircle className="h-5 w-5 text-green-400" />
-                          <p className="text-gray-300">Implementation Details</p>
-                        </div>
-                        <p className="text-sm text-gray-400 mb-2">
-                          This proposal has passed and will be implemented on {formatDate(selectedProposal.implementationDate!)}
-                        </p>
-                        <div className="flex justify-between items-center mt-4">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm text-green-400">Final Result:</p>
-                            <p className="text-sm text-green-400 font-bold">{selectedProposal.votes.for}% in favor</p>
-                          </div>
-                          <Button variant="outline" className="border-blue-900/50 text-blue-300 h-9 flex items-center gap-2">
-                            <span>View Details</span>
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {selectedProposal.status === 'Rejected' && (
-                      <div className="bg-red-950/20 p-4 rounded border border-red-900/30">
-                        <div className="flex items-center gap-2 mb-3">
-                          <XCircle className="h-5 w-5 text-red-400" />
-                          <p className="text-gray-300">Rejection Details</p>
-                        </div>
-                        <p className="text-sm text-gray-400 mb-2">
-                          This proposal has been rejected by the community and will not be implemented.
-                        </p>
-                        <div className="flex justify-between items-center mt-4">
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm text-red-400">Final Result:</p>
-                            <p className="text-sm text-red-400 font-bold">{selectedProposal.votes.against}% against</p>
-                          </div>
-                          <Button variant="outline" className="border-blue-900/50 text-blue-300 h-9 flex items-center gap-2">
-                            <span>View Details</span>
-                            <ChevronRight className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
+                    {/* Implementation and Rejection detail sections moved to top */}
                   </div>
                 </CardContent>
               </Card>
