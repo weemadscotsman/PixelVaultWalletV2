@@ -7,7 +7,7 @@ export interface Wallet {
 }
 
 export interface WalletInfo {
-  address: string;
+  publicAddress: string;
   balance: number;
   transactions: any[]; // Transaction[] from blockchain.ts
   lastUpdated: Date;

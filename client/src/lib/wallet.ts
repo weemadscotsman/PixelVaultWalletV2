@@ -135,7 +135,7 @@ export async function getWalletInfo(address: string): Promise<WalletInfo> {
     const transactions = await getWalletTransactions(address);
     
     return {
-      address,
+      publicAddress: address,
       balance,
       transactions,
       lastUpdated: new Date()
