@@ -1,0 +1,31 @@
+{
+  "blocks": [
+    {
+      "height": 0,
+      "hash": "6e97e888c5f03d60a7993fc8de0fc7238a8b83275b578d97957cd34f122990bf",
+      "previousHash": "0000000000000000000000000000000000000000000000000000000000000000",
+      "timestamp": 1714637462000,
+      "transactions": [],
+      "miner": "PVX_GENESIS_ADDR_00000000000000",
+      "nonce": "0",
+      "difficulty": 0.5,
+      "reward": "0"
+    }
+  ],
+  "transactions": [],
+  "wallets": [
+    [
+      "PVX_1e1ee32c2770a6af3ca119759c539907",
+      {
+        "address": "PVX_1e1ee32c2770a6af3ca119759c539907",
+        "publicKey": "814eb62f87583afb04aebb7abcdb8fb52a7150c8390111f4115ebbe389bcf24b",
+        "balance": "1000000",
+        "createdAt": "2025-05-07T15:49:53.480Z",
+        "lastSynced": "2025-05-07T15:49:53.480Z",
+        "passphraseSalt": "430f2740756b69721379cd9d553e9b66",
+        "passphraseHash": "1e1ee32c2770a6af3ca119759c5399072ff483851fcd25a80f2329f6d4994026"
+      }
+    ]
+  ],
+  "minerStats": []
+}
