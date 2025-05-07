@@ -85,12 +85,38 @@ export function useWallet() {
   // Import existing wallet
   const importWalletMutation = useMutation({
     mutationFn: async (data: ImportWalletRequest) => {
-      const res = await apiRequest('POST', '/api/blockchain/wallet/import', data);
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to import wallet');
+      console.log("Importing wallet with privateKey length:", data.privateKey.length);
+      
+      try {
+        // Create full URL for better debugging
+        const baseUrl = window.location.origin;
+        const url = `${baseUrl}/api/blockchain/wallet/import`;
+        console.log(`Making API request to ${url}`);
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+          credentials: 'include',
+        });
+        
+        console.log(`API Response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Error importing wallet:", errorText);
+          throw new Error(errorText || `Failed with status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log("Wallet import successful:", result.address);
+        return result as Wallet;
+      } catch (error) {
+        console.error("Exception during wallet import:", error);
+        throw error;
       }
-      return await res.json() as Wallet;
     },
     onSuccess: (data) => {
       toast({
@@ -113,12 +139,37 @@ export function useWallet() {
   const exportWalletKeysMutation = useMutation({
     mutationFn: async (data: ExportWalletRequest) => {
       const { address, passphrase } = data;
-      const res = await apiRequest('POST', `/api/blockchain/wallet/${address}/export`, { passphrase });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || 'Failed to export wallet keys');
+      console.log(`Exporting wallet keys for address: ${address}`);
+      
+      try {
+        const baseUrl = window.location.origin;
+        const url = `${baseUrl}/api/blockchain/wallet/${address}/export`;
+        console.log(`Making API request to ${url}`);
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ passphrase }),
+          credentials: 'include',
+        });
+        
+        console.log(`Export API Response status: ${response.status}`);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Error exporting wallet keys:", errorText);
+          throw new Error(errorText || `Failed with status ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log("Wallet keys exported successfully");
+        return result as WalletKeys;
+      } catch (error) {
+        console.error("Exception during wallet key export:", error);
+        throw error;
       }
-      return await res.json() as WalletKeys;
     },
     onSuccess: () => {
       toast({
@@ -217,10 +268,41 @@ export function useWallet() {
     },
   });
 
+  // Get active wallet data
+  const walletQuery = useQuery({
+    queryKey: ['/api/blockchain/wallet', activeWallet],
+    queryFn: async () => {
+      if (!activeWallet) return null;
+      
+      console.log(`Fetching wallet data for ${activeWallet}`);
+      try {
+        const res = await fetch(`/api/blockchain/wallet/${activeWallet}`, {
+          credentials: 'include'
+        });
+        
+        if (!res.ok) {
+          console.error(`Error fetching wallet: ${res.status}`);
+          return null;
+        }
+        
+        return await res.json() as Wallet;
+      } catch (error) {
+        console.error("Error fetching wallet data:", error);
+        return null;
+      }
+    },
+    enabled: !!activeWallet,
+    refetchInterval: 5000
+  });
+
   return {
     // State
     activeWallet,
     setActiveWalletAddress,
+    
+    // Wallet data
+    wallet: walletQuery.data,
+    isLoadingWallet: walletQuery.isLoading,
     
     // Queries
     getWallet,

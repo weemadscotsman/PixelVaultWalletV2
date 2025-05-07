@@ -149,13 +149,19 @@ export function ImportWalletForm() {
 
   // Form submission for private key
   const onSubmitPrivateKey = async (values: z.infer<typeof privateKeyFormSchema>) => {
-    await importWalletMutation.mutateAsync({ 
-      privateKey: values.privateKey,
-      passphrase: values.passphrase 
-    });
+    console.log("Submitting private key import form", { privateKeyLength: values.privateKey.length });
     
-    // Reset form
-    privateKeyForm.reset();
+    try {
+      await importWalletMutation.mutateAsync({ 
+        privateKey: values.privateKey,
+        passphrase: values.passphrase 
+      });
+      
+      // Reset form
+      privateKeyForm.reset();
+    } catch (error) {
+      console.error("Error importing wallet:", error);
+    }
   };
 
   // Form submission for JSON file
