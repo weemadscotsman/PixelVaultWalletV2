@@ -12,7 +12,7 @@ import {
   TransactionHash
 } from '@shared/types';
 import { checkMiningBadges } from '../controllers/badgeController';
-import { broadcastBlock, broadcastStatusUpdate } from '../utils/websocket';
+import { broadcastBlock, broadcastStatusUpdate, broadcastTransaction } from '../utils/websocket';
 
 // Constants for PVX blockchain
 const PVX_GENESIS_BLOCK_TIMESTAMP = 1714637462000; // May 1, 2024

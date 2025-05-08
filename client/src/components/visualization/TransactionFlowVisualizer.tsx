@@ -523,7 +523,7 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
                       {tx.note || `${shortenAddress(tx.fromAddress)} → ${shortenAddress(tx.toAddress)}`}
                     </div>
                     <div className="mt-1 text-[10px] font-mono flex justify-between">
-                      <span className="text-emerald-400">{tx.amount.toFixed(6)} μPVX</span>
+                      <span className="text-emerald-400">{formatAmount(tx.amount)} μPVX</span>
                       <span className="text-blue-400">Tx: {shortenAddress(tx.hash)}</span>
                     </div>
                   </div>
@@ -538,11 +538,46 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
 
   // Helper function to format transaction types for display
   const formatTransactionType = (type: string) => {
-    return type
+    // Handle various formats of transaction types coming from different API endpoints
+    const normalizedType = type.toLowerCase();
+    
+    // Map known types to nicely formatted display names
+    const typeMap: Record<string, string> = {
+      'transfer': 'Transfer',
+      'mining_reward': 'Mining Reward',
+      'staking_reward': 'Staking Reward',
+      'stake': 'Stake',
+      'unstake': 'Unstake',
+      'nft_mint': 'NFT Mint',
+      'nft_transfer': 'NFT Transfer',
+      'governance_proposal': 'Governance Proposal',
+      'governance_vote': 'Governance Vote',
+      'dex_swap': 'DEX Swap',
+      'dex_add_liquidity': 'Add Liquidity',
+      'dex_remove_liquidity': 'Remove Liquidity',
+      'reward': 'Reward' // For WebSocket broadcasts which might use this simpler type
+    };
+    
+    // Return mapped name if available, otherwise format the raw type
+    return typeMap[normalizedType] || type
       .replace(/_/g, ' ')
       .replace(/\b\w/g, l => l.toUpperCase());
   };
   
+  // Helper function to format amount values
+  const formatAmount = (amount: string | number): string => {
+    try {
+      // Convert to number if it's a string
+      const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+      
+      // Format with appropriate decimal places
+      return numAmount.toFixed(6);
+    } catch (error) {
+      // In case of parsing errors, return the original value as a string
+      return String(amount);
+    }
+  };
+
   // Helper function to shorten addresses for display
   const shortenAddress = (address: string): string => {
     if (address.startsWith('zk_PVX:')) {
