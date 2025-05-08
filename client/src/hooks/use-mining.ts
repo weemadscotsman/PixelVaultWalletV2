@@ -6,6 +6,8 @@ import { MiningReward, MiningStats } from "@/types/blockchain";
 import { useWallet } from "./use-wallet";
 import { useToast } from "./use-toast";
 
+export type HardwareType = 'cpu' | 'gpu' | 'asic';
+
 export function useMining() {
   const { wallet, refreshBalance } = useWallet();
   const { toast } = useToast();
@@ -16,6 +18,7 @@ export function useMining() {
   const [hashRate, setHashRate] = useState(0);
   const [blocksMined, setBlocksMined] = useState(0);
   const [threads, setThreads] = useState(2);
+  const [hardwareType, setHardwareType] = useState<HardwareType>('cpu');
   const [isStarting, setIsStarting] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
   const [blockReward, setBlockReward] = useState<number>(150);
@@ -146,7 +149,25 @@ export function useMining() {
   const { mutate: startMiningMutation } = useMutation({
     mutationFn: async () => {
       if (!wallet) throw new Error("No wallet available");
-      return { success: true };
+      
+      // Make API call to the blockchain service with hardware type
+      const res = await fetch('/api/blockchain/mining/start', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          address: wallet.publicAddress,
+          hardwareType: hardwareType
+        })
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to start mining');
+      }
+      
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/mining/stats?address=${wallet?.publicAddress || ''}`] });
@@ -168,7 +189,24 @@ export function useMining() {
   const { mutate: stopMiningMutation } = useMutation({
     mutationFn: async () => {
       if (!wallet) throw new Error("No wallet available");
-      return { success: true };
+      
+      // Make API call to the blockchain service to stop mining
+      const res = await fetch('/api/blockchain/mining/stop', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          address: wallet.publicAddress
+        })
+      });
+      
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || 'Failed to stop mining');
+      }
+      
+      return await res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/mining/stats?address=${wallet?.publicAddress || ''}`] });
