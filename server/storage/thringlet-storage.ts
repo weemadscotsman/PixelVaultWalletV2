@@ -60,6 +60,97 @@ export class ThringletStorage {
     // Create test data if empty
     this.loadFromFile();
     this.addTestThringlets();
+    this.migrateThringletPersonalityData();
+  }
+  
+  // Migrate thringlet data to ensure all personality fields are present
+  private migrateThringletPersonalityData() {
+    let needsMigration = false;
+    
+    this.thringlets.forEach((thringlet, id) => {
+      let updated = false;
+      
+      // Check and add missing personality fields
+      if (!thringlet.personalityTraits) {
+        thringlet.personalityTraits = [
+          ThringletPersonalityTrait.ANALYTICAL,
+          ThringletPersonalityTrait.CURIOUS
+        ];
+        updated = true;
+      }
+      
+      if (!thringlet.dominantTrait) {
+        thringlet.dominantTrait = thringlet.personalityTraits[0] || ThringletPersonalityTrait.ANALYTICAL;
+        updated = true;
+      }
+      
+      if (!thringlet.blockchainAffinities) {
+        thringlet.blockchainAffinities = [
+          BlockchainAffinity.MINING,
+          BlockchainAffinity.STAKING
+        ];
+        updated = true;
+      }
+      
+      if (!thringlet.dominantAffinity) {
+        thringlet.dominantAffinity = thringlet.blockchainAffinities[0] || BlockchainAffinity.MINING;
+        updated = true;
+      }
+      
+      if (!thringlet.traitIntensity) {
+        thringlet.traitIntensity = {} as Record<ThringletPersonalityTrait, number>;
+        
+        // Initialize trait intensities
+        Object.values(ThringletPersonalityTrait).forEach(trait => {
+          thringlet.traitIntensity[trait] = thringlet.personalityTraits?.includes(trait) ? 70 : 30;
+        });
+        updated = true;
+      }
+      
+      if (thringlet.miningInfluence === undefined) {
+        thringlet.miningInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+        updated = true;
+      }
+      
+      if (thringlet.stakingInfluence === undefined) {
+        thringlet.stakingInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+        updated = true;
+      }
+      
+      if (thringlet.tradingInfluence === undefined) {
+        thringlet.tradingInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+        updated = true;
+      }
+      
+      if (thringlet.governanceInfluence === undefined) {
+        thringlet.governanceInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+        updated = true;
+      }
+      
+      if (!thringlet.abilities) {
+        thringlet.abilities = ['basic_movement'];
+        updated = true;
+      }
+      
+      if (!thringlet.stateHistory) {
+        thringlet.stateHistory = [{
+          state: thringlet.emotionalState,
+          timestamp: Date.now(),
+          trigger: 'system_initialization'
+        }];
+        updated = true;
+      }
+      
+      if (updated) {
+        this.thringlets.set(id, thringlet);
+        needsMigration = true;
+      }
+    });
+    
+    if (needsMigration) {
+      console.log('Migrated Thringlet personality data');
+      this.saveToFile();
+    }
   }
   
   // Add some test thringlets
@@ -237,6 +328,66 @@ export class ThringletStorage {
   }
   
   async createThringlet(thringlet: Thringlet): Promise<Thringlet> {
+    // Ensure all personality fields are properly initialized
+    if (!thringlet.personalityTraits) {
+      thringlet.personalityTraits = [
+        ThringletPersonalityTrait.ANALYTICAL,
+        ThringletPersonalityTrait.CURIOUS
+      ];
+    }
+    
+    if (!thringlet.dominantTrait) {
+      thringlet.dominantTrait = thringlet.personalityTraits[0];
+    }
+    
+    if (!thringlet.blockchainAffinities) {
+      thringlet.blockchainAffinities = [
+        BlockchainAffinity.MINING,
+        BlockchainAffinity.STAKING
+      ];
+    }
+    
+    if (!thringlet.dominantAffinity) {
+      thringlet.dominantAffinity = thringlet.blockchainAffinities[0];
+    }
+    
+    if (!thringlet.traitIntensity) {
+      thringlet.traitIntensity = {} as Record<ThringletPersonalityTrait, number>;
+      
+      // Initialize trait intensities
+      Object.values(ThringletPersonalityTrait).forEach(trait => {
+        thringlet.traitIntensity[trait] = thringlet.personalityTraits?.includes(trait) ? 70 : 30;
+      });
+    }
+    
+    if (thringlet.miningInfluence === undefined) {
+      thringlet.miningInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+    }
+    
+    if (thringlet.stakingInfluence === undefined) {
+      thringlet.stakingInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+    }
+    
+    if (thringlet.tradingInfluence === undefined) {
+      thringlet.tradingInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+    }
+    
+    if (thringlet.governanceInfluence === undefined) {
+      thringlet.governanceInfluence = Math.floor(Math.random() * 50) + 50; // 50-100
+    }
+    
+    if (!thringlet.abilities) {
+      thringlet.abilities = ['basic_movement'];
+    }
+    
+    if (!thringlet.stateHistory) {
+      thringlet.stateHistory = [{
+        state: thringlet.emotionalState,
+        timestamp: Date.now(),
+        trigger: 'creation'
+      }];
+    }
+    
     this.thringlets.set(thringlet.id, thringlet);
     await this.saveToFile();
     return thringlet;

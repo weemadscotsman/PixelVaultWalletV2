@@ -41,7 +41,21 @@
           "social": null,
           "chaotic": null,
           "emotional": null
-        }
+        },
+        "personalityTraits": [
+          "analytical",
+          "curious"
+        ],
+        "dominantTrait": "analytical",
+        "blockchainAffinities": [
+          "mining",
+          "staking"
+        ],
+        "dominantAffinity": "mining",
+        "miningInfluence": 74,
+        "stakingInfluence": 97,
+        "tradingInfluence": 53,
+        "governanceInfluence": 86
       }
     ],
     [
@@ -80,7 +94,33 @@
             "timestamp": 1746604040195,
             "trigger": "level up"
           }
-        ]
+        ],
+        "personalityTraits": [
+          "analytical",
+          "curious"
+        ],
+        "dominantTrait": "analytical",
+        "blockchainAffinities": [
+          "mining",
+          "staking"
+        ],
+        "dominantAffinity": "mining",
+        "traitIntensity": {
+          "analytical": 70,
+          "adventurous": 30,
+          "cautious": 30,
+          "creative": 30,
+          "social": 30,
+          "curious": 70,
+          "protective": 30,
+          "chaotic": 30,
+          "logical": 30,
+          "emotional": 30
+        },
+        "miningInfluence": 66,
+        "stakingInfluence": 90,
+        "tradingInfluence": 57,
+        "governanceInfluence": 77
       }
     ],
     [
@@ -118,7 +158,33 @@
             "timestamp": 1746640101163,
             "trigger": "Hey Astro, I brought you a special treat! I hope this makes you happy!"
           }
-        ]
+        ],
+        "personalityTraits": [
+          "analytical",
+          "curious"
+        ],
+        "dominantTrait": "analytical",
+        "blockchainAffinities": [
+          "mining",
+          "staking"
+        ],
+        "dominantAffinity": "mining",
+        "traitIntensity": {
+          "analytical": 70,
+          "adventurous": 30,
+          "cautious": 30,
+          "creative": 30,
+          "social": 30,
+          "curious": 70,
+          "protective": 30,
+          "chaotic": 30,
+          "logical": 30,
+          "emotional": 30
+        },
+        "miningInfluence": 62,
+        "stakingInfluence": 51,
+        "tradingInfluence": 64,
+        "governanceInfluence": 94
       }
     ]
   ]
