@@ -52,6 +52,8 @@ export function StakingCard() {
   const { activeWallet } = useWallet();
   const { toast } = useToast();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isClaimDialogOpen, setIsClaimDialogOpen] = useState(false);
+  const [selectedStake, setSelectedStake] = useState<any>(null);
   
   // Fetch staking pools
   const { 
@@ -288,6 +290,27 @@ export function StakingCard() {
                         <p className="text-gray-300">{pool?.name || 'Unknown'}</p>
                       </div>
                     </div>
+                    {parseFloat(stake.rewards || '0') > 0 && (
+                      <div className="mt-3 flex justify-end">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="border-green-900/50 text-green-400 hover:bg-green-900/10"
+                          onClick={() => {
+                            setSelectedStake({
+                              id: stake.id,
+                              amount: stake.amount,
+                              poolName: pool?.name || 'Staking Pool',
+                              rewards: stake.rewards || '0'
+                            });
+                            setIsClaimDialogOpen(true);
+                          }}
+                        >
+                          <Award className="mr-2 h-4 w-4" />
+                          Claim Rewards
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -357,6 +380,18 @@ export function StakingCard() {
         onOpenChange={setIsCreateDialogOpen}
         stakingPools={stakingPools?.filter(pool => pool.active !== false) || [] as any[]}
       />
+      
+      {/* Claim Reward Dialog */}
+      {selectedStake && (
+        <ClaimRewardDialog
+          open={isClaimDialogOpen}
+          onOpenChange={setIsClaimDialogOpen}
+          stakeId={selectedStake.id}
+          stakeAmount={selectedStake.amount}
+          poolName={selectedStake.poolName}
+          rewards={selectedStake.rewards}
+        />
+      )}
     </Card>
   );
 }

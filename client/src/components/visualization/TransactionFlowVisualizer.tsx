@@ -142,13 +142,25 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
     const connectWebSocket = () => {
       // Determine protocol based on current connection
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      // Construct WebSocket URL dynamically with fallbacks for edge cases
+      const hostname = window.location.hostname || 'localhost';
+      // Use the port from location if available, otherwise use a fallback port
+      // Replit typically uses port 5000 for backend services
+      const port = window.location.port || '5000';
+      
+      // Build the complete URL with proper checks
+      let wsUrl = `${protocol}//${hostname}`;
+      if (port && ((protocol === 'ws:' && port !== '80') || (protocol === 'wss:' && port !== '443'))) {
+        wsUrl += `:${port}`;
+      }
+      wsUrl += '/ws';
       
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         return; // Already connected
       }
       
-      console.log('Connecting to WebSocket at:', wsUrl);
+      console.log('Attempting WebSocket connection to:', wsUrl);
       const socket = new WebSocket(wsUrl);
       wsRef.current = socket;
       

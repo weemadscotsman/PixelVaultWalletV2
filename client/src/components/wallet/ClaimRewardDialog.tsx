@@ -67,7 +67,7 @@ export function ClaimRewardDialog({
       toast({
         title: "Rewards claimed successfully!",
         description: `${formatCryptoAmount(data.reward)} has been credited to your wallet.`,
-        variant: "success"
+        variant: "default"
       });
       
       // Close the dialog
