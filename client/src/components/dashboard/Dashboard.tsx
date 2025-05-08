@@ -209,12 +209,12 @@ export function Dashboard() {
           </CardContent>
           <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-2">
             <div className="w-full flex justify-between items-center">
-              <Link href="/wallet/send">
+              <Link href="/wallet#send">
                 <Button variant="outline" size="sm" className="border-blue-900/50 text-blue-300">
                   Send
                 </Button>
               </Link>
-              <Link href="/wallet/receive">
+              <Link href="/wallet#receive">
                 <Button size="sm" className="bg-blue-700 hover:bg-blue-600 text-white">
                   Receive
                 </Button>
@@ -278,7 +278,7 @@ export function Dashboard() {
           </CardContent>
           <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-2">
             <div className="w-full flex justify-between items-center">
-              <Link href="/blockchain/explorer">
+              <Link href="/blockchain">
                 <Button variant="outline" size="sm" className="border-blue-900/50 text-blue-300">
                   Explorer
                 </Button>
@@ -339,7 +339,7 @@ export function Dashboard() {
             </div>
           </CardContent>
           <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-2">
-            <Link href="/staking/new">
+            <Link href="/staking">
               <Button size="sm" className="w-full bg-blue-700 hover:bg-blue-600 text-white">
                 <Plus className="w-4 h-4 mr-2" />
                 New Stake
@@ -416,7 +416,7 @@ export function Dashboard() {
             </div>
           </CardContent>
           <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-2">
-            <Link href="/governance/vote">
+            <Link href="/governance">
               <Button size="sm" className="w-full bg-blue-700 hover:bg-blue-600 text-white">
                 Vote Now
               </Button>
@@ -673,7 +673,7 @@ export function Dashboard() {
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <Link href="/wallet/send">
+          <Link href="/wallet#send">
             <div className="bg-black/70 border border-blue-900/50 rounded-lg p-4 text-center hover:bg-blue-900/10 transition-colors">
               <Wallet className="w-8 h-8 text-blue-400 mx-auto mb-2" />
               <p className="text-sm text-blue-300">Send μPVX</p>
@@ -687,14 +687,14 @@ export function Dashboard() {
             </div>
           </Link>
           
-          <Link href="/staking/new">
+          <Link href="/staking">
             <div className="bg-black/70 border border-blue-900/50 rounded-lg p-4 text-center hover:bg-blue-900/10 transition-colors">
               <Share2 className="w-8 h-8 text-purple-400 mx-auto mb-2" />
               <p className="text-sm text-blue-300">Stake Tokens</p>
             </div>
           </Link>
           
-          <Link href="/drops/terminal">
+          <Link href="/drops">
             <div className="bg-black/70 border border-blue-900/50 rounded-lg p-4 text-center hover:bg-blue-900/10 transition-colors">
               <Droplets className="w-8 h-8 text-cyan-400 mx-auto mb-2" />
               <p className="text-sm text-blue-300">Access Drops</p>
