@@ -35,7 +35,13 @@
             "timestamp": 1746640040195,
             "trigger": "user interaction"
           }
-        ]
+        ],
+        "traitIntensity": {
+          "adventurous": null,
+          "social": null,
+          "chaotic": null,
+          "emotional": null
+        }
       }
     ],
     [
