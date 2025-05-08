@@ -4,7 +4,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useMining, HardwareType } from "@/hooks/use-mining";
 import { useEffect, useState } from "react";
-import { Cpu, Gpu, Maximize } from "lucide-react";
+import { Cpu, MonitorSmartphone, Zap } from "lucide-react";
 
 export function MiningControls() {
   const { 
@@ -113,7 +113,7 @@ export function MiningControls() {
                       <div className="text-green-500 text-sm">GPU</div>
                       <div className="text-xs text-green-700">ENHANCED PERFORMANCE</div>
                     </div>
-                    <Gpu className="h-5 w-5 text-green-500" />
+                    <MonitorSmartphone className="h-5 w-5 text-green-500" />
                   </Label>
                 </div>
                 
@@ -124,7 +124,7 @@ export function MiningControls() {
                       <div className="text-green-500 text-sm">ASIC</div>
                       <div className="text-xs text-green-700">MAXIMUM HASHRATE</div>
                     </div>
-                    <Maximize className="h-5 w-5 text-green-500" />
+                    <Zap className="h-5 w-5 text-green-500" />
                   </Label>
                 </div>
               </RadioGroup>
