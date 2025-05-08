@@ -279,8 +279,8 @@ export function useMining() {
           break;
       }
 
-      // Start mining with selected threads and configured speed multiplier
-      minerRef.current.start(effectiveThreads, speedMultiplier);
+      // Start mining with selected threads, configured speed multiplier and hardware type
+      minerRef.current.start(effectiveThreads, speedMultiplier, hardwareType);
       
       // Report to server
       startMiningMutation();
