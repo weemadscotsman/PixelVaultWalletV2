@@ -4,6 +4,7 @@ import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
 import { TransactionType, StakeRecord } from '@shared/types';
 import { checkStakingBadges } from '../controllers/badgeController';
+import { broadcastTransaction } from '../utils/websocket';
 
 /**
  * Start staking
@@ -97,6 +98,9 @@ export const startStaking = async (req: Request, res: Response) => {
     };
     
     await memBlockchainStorage.createTransaction(transaction);
+    
+    // Broadcast the stake transaction to all connected clients
+    broadcastTransaction(transaction);
     
     // Check for staking-related achievements
     try {
@@ -219,6 +223,9 @@ export const stopStaking = async (req: Request, res: Response) => {
     
     await memBlockchainStorage.createTransaction(transaction);
     
+    // Broadcast the unstake transaction to all connected clients
+    broadcastTransaction(transaction);
+    
     // Create reward transaction if there is a reward
     if (reward > 0) {
       const rewardTxHash = crypto.createHash('sha256')
@@ -238,6 +245,9 @@ export const stopStaking = async (req: Request, res: Response) => {
       };
       
       await memBlockchainStorage.createTransaction(rewardTransaction);
+      
+      // Broadcast the reward transaction to all connected clients
+      broadcastTransaction(rewardTransaction);
     }
     
     res.status(200).json({
@@ -342,6 +352,9 @@ export const claimRewards = async (req: Request, res: Response) => {
     };
     
     await memBlockchainStorage.createTransaction(transaction);
+    
+    // Broadcast the transaction to all connected clients
+    broadcastTransaction(transaction);
     
     res.status(200).json({
       tx_hash: txHash,
