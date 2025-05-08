@@ -27,12 +27,12 @@ import { apiRequest } from "@/lib/queryClient";
 interface StakingPool {
   id: string;
   name: string;
-  description: string;
-  minAmount: string;
-  lockPeriod: number; // in days
-  apy: number;
+  description?: string; // Optional since it may not be present in API response
+  minStake: string; // Backend uses minStake, not minAmount
+  lockupPeriod: number; // Backend uses lockupPeriod, not lockPeriod
+  apy: string; // Backend returns as string
   totalStaked: string;
-  active: boolean;
+  active?: boolean; // Optional since it may not be present in API response
 }
 
 interface StakeRecord {
@@ -100,19 +100,21 @@ export function StakingCard() {
   });
   
   // Calculate total staked amount
-  const totalStaked = activeStakes?.reduce((sum, stake) => {
+  const totalStaked = activeStakes?.reduce((sum: number, stake: any) => {
     return sum + parseFloat(stake.amount);
   }, 0) || 0;
   
   // Calculate projected rewards (simplified calculation)
-  const projectedRewards = activeStakes?.reduce((sum, stake) => {
+  const projectedRewards = activeStakes?.reduce((sum: number, stake: any) => {
     const pool = stakingPools?.find(p => p.id === stake.poolId);
     if (!pool) return sum;
     
     const stakeAmount = parseFloat(stake.amount);
-    const dailyRate = pool.apy / 365 / 100; // Convert annual rate to daily
+    const dailyRate = parseFloat(pool.apy) / 365 / 100; // Convert annual rate to daily
+    
+    // For calculating duration, use unlockTime if available, otherwise estimate 30 days
     const startDate = new Date(stake.startTime);
-    const endDate = new Date(stake.endTime);
+    const endDate = stake.unlockTime ? new Date(stake.unlockTime) : new Date(startDate.getTime() + 30 * 24 * 60 * 60 * 1000);
     const daysStaked = (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24);
     
     // Daily compound interest calculation
@@ -241,7 +243,7 @@ export function StakingCard() {
           
           {activeStakes && activeStakes.length > 0 ? (
             <div className="space-y-3">
-              {activeStakes.map((stake) => {
+              {activeStakes.map((stake: any) => {
                 const pool = stakingPools?.find(p => p.id === stake.poolId);
                 return (
                   <div key={stake.id} className="bg-gray-900/30 border border-blue-900/20 rounded-md p-4">
@@ -308,7 +310,7 @@ export function StakingCard() {
           <h3 className="text-lg font-medium text-blue-300 mb-3">Available Staking Pools</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {stakingPools?.filter(pool => pool.active).map((pool) => (
+            {stakingPools?.filter(pool => pool.active !== false).map((pool) => (
               <div key={pool.id} className="bg-gray-900/30 border border-blue-900/20 rounded-md p-4">
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium text-blue-300">{pool.name}</h4>
@@ -320,11 +322,11 @@ export function StakingCard() {
                 <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                   <div>
                     <p className="text-gray-400">Min. Stake</p>
-                    <p className="text-gray-300">{formatCryptoAmount(pool.minAmount)}</p>
+                    <p className="text-gray-300">{formatCryptoAmount(pool.minStake)}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Lock Period</p>
-                    <p className="text-gray-300">{pool.lockPeriod} days</p>
+                    <p className="text-gray-300">{pool.lockupPeriod} days</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Total Staked</p>
@@ -351,7 +353,7 @@ export function StakingCard() {
       <CreateStakeDialog 
         open={isCreateDialogOpen} 
         onOpenChange={setIsCreateDialogOpen}
-        stakingPools={stakingPools?.filter(pool => pool.active) || []}
+        stakingPools={stakingPools?.filter(pool => pool.active) || [] as any[]}
       />
     </Card>
   );
