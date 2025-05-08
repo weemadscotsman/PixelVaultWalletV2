@@ -38,6 +38,7 @@ function Router() {
           <Route path="/learning" component={LearningPage} />
           <Route path="/wallet" component={WalletPage} />
           <Route path="/blockchain" component={BlockchainPage} />
+          <Route path="/blockchain/blocks" component={AllBlocksPage} />
           <Route path="/staking" component={StakingPage} />
           <Route path="/governance" component={GovernancePage} />
           <Route path="/thringlets" component={ThringletsPage} />

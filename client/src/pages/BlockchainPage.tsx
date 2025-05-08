@@ -19,6 +19,7 @@ import { useBlockchain } from '@/hooks/use-blockchain';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWallet } from '@/hooks/use-wallet';
 import { shortenAddress } from '@/lib/utils';
+import { Link } from 'wouter';
 
 export default function BlockchainPage() {
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
@@ -224,12 +225,14 @@ export default function BlockchainPage() {
                   )}
                 </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full border-blue-900/50 text-blue-300"
-                >
-                  View All Blocks
-                </Button>
+                <Link href="/blockchain/blocks">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-blue-900/50 text-blue-300"
+                  >
+                    View All Blocks
+                  </Button>
+                </Link>
               </CardFooter>
             </Card>
           </div>

@@ -13,7 +13,8 @@ import {
   Plus,
   ChevronRight,
   Activity,
-  BarChart
+  BarChart,
+  ArrowRight
 } from 'lucide-react';
 import { TrendRadar } from '@/components/blockchain/TrendRadar';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
@@ -639,7 +640,11 @@ export function Dashboard() {
                       + {formatCurrency(learningData.earnedRewards)}
                     </p>
                   </div>
-                  {/* Removed View All button to prevent errors */}
+                  <Link href="/learning">
+                    <Button variant="ghost" size="sm" className="text-blue-300 hover:text-blue-100 hover:bg-blue-900/30">
+                      View All <ArrowRight className="ml-1 w-4 h-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -669,7 +674,11 @@ export function Dashboard() {
       <div className="mt-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-bold text-blue-300">Quick Actions</h3>
-          {/* Removed View All button to prevent errors */}
+          <Link href="/settings#actions">
+            <Button variant="ghost" size="sm" className="text-blue-300 hover:text-blue-100 hover:bg-blue-900/30">
+              View All <ArrowRight className="ml-1 w-4 h-4" />
+            </Button>
+          </Link>
         </div>
         
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
