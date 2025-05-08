@@ -57,34 +57,42 @@ export class MemBlockchainStorage {
       {
         id: 'pool1',
         name: 'Genesis Pool',
+        description: 'The original PVX staking pool with no lockup period',
         apy: '8.5',
         totalStaked: '1500000000',
         minStake: '10000',
-        lockupPeriod: 0 // No lockup
+        lockupPeriod: 0, // No lockup
+        active: true
       },
       {
         id: 'pool2',
         name: 'Hodler Pool',
+        description: 'Higher APY with a short 7-day lockup period',
         apy: '12.0',
         totalStaked: '750000000',
         minStake: '100000',
-        lockupPeriod: 7 // 7 days
+        lockupPeriod: 7, // 7 days
+        active: true
       },
       {
         id: 'pool3',
         name: 'Validator Pool',
+        description: 'Premium returns for long-term stakers with 30-day lockup',
         apy: '15.0',
         totalStaked: '350000000',
         minStake: '1000000',
-        lockupPeriod: 30 // 30 days
+        lockupPeriod: 30, // 30 days
+        active: true
       },
       {
         id: 'pool4',
         name: 'ZK Privacy Pool',
+        description: 'Highest returns with enhanced privacy features',
         apy: '18.5',
         totalStaked: '200000000',
         minStake: '5000000',
-        lockupPeriod: 90 // 90 days
+        lockupPeriod: 90, // 90 days
+        active: true
       }
     ];
   }
