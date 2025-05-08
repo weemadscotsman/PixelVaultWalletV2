@@ -9,6 +9,9 @@ import authRoutes from './routes/auth';
 import blockchainRoutes from './routes/blockchain-routes';
 import badgeRoutes from './routes/badge';
 import utrRoutes from './routes/utr-routes';
+import dropsRoutes from './routes/drops';
+import governanceRoutes from './routes/governance';
+import learningRoutes from './routes/learning';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // PVX blockchain API routes
@@ -20,6 +23,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/blockchain', blockchainRoutes);
   app.use('/api/badge', badgeRoutes);
   app.use('/api/utr', utrRoutes);
+  app.use('/api/drops', dropsRoutes);
+  app.use('/api/governance', governanceRoutes);
+  app.use('/api/learning', learningRoutes);
 
   // Add a simple health check endpoint
   app.get('/api/health', (_req: Request, res: Response) => {

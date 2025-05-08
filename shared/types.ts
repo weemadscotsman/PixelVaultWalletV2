@@ -7,7 +7,113 @@ export enum TransactionType {
   MINE = 'mine',
   REWARD = 'reward',
   FEE = 'fee',
-  GOVERNANCE = 'governance'
+  GOVERNANCE = 'governance',
+  AIRDROP = 'airdrop',
+  NFT_MINT = 'nft_mint',
+  BADGE_AWARD = 'badge_award'
+}
+
+// Basic blockchain types
+export interface BlockchainStatus {
+  isRunning: boolean;
+  lastBlockHeight: number;
+  lastBlockHash: string;
+  lastBlockTime: number;
+  currentDifficulty: number;
+  hashRate: number;
+  pendingTransactions: number;
+  confirmedTransactions: number;
+  activeMiners: number;
+  activeStakers: number;
+}
+
+export interface Block {
+  height: number;
+  hash: string;
+  previousHash: string;
+  timestamp: number;
+  nonce: number;
+  difficulty: number;
+  miner: string;
+  transactions: Transaction[];
+  totalTransactions: number;
+  size: number;
+  merkleRoot: string;
+}
+
+export interface Transaction {
+  hash: string;
+  type: TransactionType;
+  from: string;
+  to: string;
+  amount: number;
+  timestamp: number;
+  nonce: number;
+  signature: string;
+  status: 'pending' | 'confirmed' | 'failed';
+  blockHeight?: number;
+  fee?: number;
+  metadata?: any;
+}
+
+export type TransactionHash = string;
+
+export interface MiningStats {
+  address: string;
+  blocksMined: number;
+  totalRewards: string;
+  lastBlockMined: number;
+  isCurrentlyMining: boolean;
+  hardware: 'CPU' | 'GPU' | 'ASIC';
+  joinedAt: Date;
+  currentHashRate: number;
+}
+
+export interface StakeRecord {
+  id: string;
+  walletAddress: string;
+  poolId: string;
+  amount: string;
+  startTime: number;
+  endTime: number | null;
+  isActive: boolean;
+  rewards: string;
+  lastRewardClaim: number;
+  autoCompound: boolean;
+}
+
+export interface StakingPool {
+  id: string;
+  name: string;
+  description: string;
+  apr: number;
+  minStakeAmount: number;
+  lockupPeriod: number;
+  totalStaked: string;
+  activeStakers: number;
+}
+
+export interface BlockchainTrends {
+  transactions: {
+    date: string;
+    count: number;
+  }[];
+  hashRate: {
+    date: string;
+    rate: number;
+  }[];
+  activeMinerCount: {
+    date: string;
+    count: number;
+  }[];
+  staking: {
+    date: string;
+    totalStaked: number;
+  }[];
+  difficulty: {
+    date: string;
+    level: number;
+  }[];
 }
 
 export enum BadgeType {
