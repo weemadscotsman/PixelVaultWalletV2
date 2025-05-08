@@ -12,6 +12,7 @@ import {
   TransactionHash
 } from '@shared/types';
 import { checkMiningBadges } from '../controllers/badgeController';
+import { broadcastBlock, broadcastStatusUpdate } from '../utils/websocket';
 
 // Constants for PVX blockchain
 const PVX_GENESIS_BLOCK_TIMESTAMP = 1714637462000; // May 1, 2024
@@ -546,6 +547,16 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
       },
       difficulty: newBlock.difficulty
     };
+    
+    // Broadcast new block and status via WebSocket for real-time updates
+    try {
+      broadcastBlock(newBlock);
+      broadcastStatusUpdate(blockchainStatus);
+      console.log(`New block broadcasted: ${newBlock.height} by miner ${minerAddress}`);
+    } catch (err) {
+      console.error('Error broadcasting block via WebSocket:', err);
+      // Continue even if WebSocket broadcast fails
+    }
     
     // Clear processed transactions from pending
     const processed = pendingTransactions.slice(0, 10).map(tx => tx.hash);
