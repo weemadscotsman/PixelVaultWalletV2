@@ -1,80 +1,80 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ResponsiveRadar } from '@nivo/radar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
-type TimeRange = '24h' | '7d' | '30d';
-
-type RadarDataPoint = {
-  metric: string;
+// Define key types and interfaces
+interface MetricDataPoint {
   value: number;
   maxValue: number;
-};
+  unit: string;
+}
 
-type TrendMetric = {
+interface MetricCategory {
   id: string;
   label: string;
   color: string;
   data: {
-    [key in TimeRange]: RadarDataPoint[];
+    [key: string]: MetricDataPoint;
   };
-};
+}
+
+interface BlockchainTrends {
+  metrics: MetricCategory[];
+}
 
 interface TrendRadarProps {
   className?: string;
 }
 
 export function TrendRadar({ className }: TrendRadarProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange>('24h');
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   
-  // Mock data - will be replaced with API data
-  const { isLoading, error, data: blockchainTrends } = useQuery({
-    queryKey: ['/api/blockchain/trends', timeRange],
+  // Fetch real blockchain data from the API
+  const { isLoading, error, data: blockchainTrends, refetch } = useQuery({
+    queryKey: ['/api/blockchain/trends'],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/blockchain/trends?timeRange=${timeRange}`);
+      const res = await apiRequest('GET', '/api/blockchain/trends');
       if (!res.ok) {
         throw new Error('Failed to fetch blockchain trends');
       }
-      return res.json();
+      return res.json() as Promise<BlockchainTrends>;
     },
-    placeholderData: getPlaceholderData(),
   });
 
-  // Generate radar chart data from the trends
+  // Process API data for the radar chart
   const radarData = React.useMemo(() => {
     if (!blockchainTrends) return [];
     
-    return blockchainTrends.metrics.map((metric: any) => {
-      // Check if values exist and are valid numbers
-      const value = metric.data[timeRange]?.value || 0;
-      const maxValue = metric.data[timeRange]?.maxValue || 1; // Prevent division by zero
+    // Extract the primary metric from each category
+    const processedData = blockchainTrends.metrics.map(metric => {
+      // For each metric category, get the first data point
+      const dataEntries = Object.entries(metric.data);
+      if (dataEntries.length === 0) return null;
       
-      // Calculate percentage and ensure it's a valid number
+      // Get the first metric in each category (e.g., "hashrate" from "mining")
+      const [dataKey, dataPoint] = dataEntries[0];
+      
+      // Calculate percentage relative to max value
+      const value = dataPoint.value || 0;
+      const maxValue = dataPoint.maxValue || 1; // Prevent division by zero
       const percentage = maxValue > 0 ? Math.round((value / maxValue) * 100) : 0;
       
       return {
-        metric: metric.label,
+        metric: `${metric.label} (${dataKey})`,
         [metric.id]: String(percentage), // Convert to string to avoid NaN errors
+        rawValue: value,
+        rawMax: maxValue,
+        unit: dataPoint.unit
       };
-    }).reduce((acc: any, item: any) => {
-      // Convert array of objects to a single object with all metrics
-      const { metric, ...values } = item;
-      
-      if (!acc.find((i: any) => i.metric === metric)) {
-        acc.push({ 
-          metric, 
-          ...values
-        });
-      }
-      
-      return acc;
-    }, []);
-  }, [blockchainTrends, timeRange]);
+    }).filter(Boolean);
+    
+    return processedData;
+  }, [blockchainTrends]);
   
   // Generate keys for the radar chart
   const radarKeys = React.useMemo(() => {
