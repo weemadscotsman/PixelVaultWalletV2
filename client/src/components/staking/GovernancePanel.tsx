@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { VetoGuardiansPanel } from "@/components/governance/VetoGuardiansPanel";
 import { useState } from "react";
 import { ProposalCard } from "./ProposalCard";
+import { Link } from "wouter";
 
 export function GovernancePanel() {
   const { proposals, votesCount, createProposal } = useStaking();
@@ -92,12 +93,14 @@ export function GovernancePanel() {
             <div className="flex justify-between items-center">
               <h4 className="text-sm uppercase text-gray-400">PIXELVAULT // GOVERNANCE</h4>
               {proposals.length > 2 && (
-                <Button 
-                  variant="link" 
-                  className="text-xs text-primary hover:text-primary-light"
-                >
-                  View All
-                </Button>
+                <Link href="/governance">
+                  <Button 
+                    variant="link" 
+                    className="text-xs text-primary hover:text-primary-light"
+                  >
+                    View All
+                  </Button>
+                </Link>
               )}
             </div>
             

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNFT } from "@/hooks/use-nft";
 import { timeAgo } from "@/lib/utils";
+import { Link } from "wouter";
 
 export function NFTCollection() {
   const { nfts, isLoading } = useNFT();
@@ -105,13 +106,15 @@ export function NFTCollection() {
           </div>
           
           {nfts.length > 4 && (
-            <Button 
-              variant="outline"
-              className="w-full mt-4 bg-background hover:bg-muted text-white"
-            >
-              <i className="ri-eye-line mr-2"></i>
-              View All NFTs
-            </Button>
+            <Link href="/nfts">
+              <Button 
+                variant="outline"
+                className="w-full mt-4 bg-background hover:bg-muted text-white"
+              >
+                <i className="ri-eye-line mr-2"></i>
+                View All NFTs
+              </Button>
+            </Link>
           )}
         </>
       )}
