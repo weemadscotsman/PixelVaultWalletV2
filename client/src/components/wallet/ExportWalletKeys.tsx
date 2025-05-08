@@ -39,20 +39,42 @@ export function ExportWalletKeys({ walletAddress }: ExportWalletKeysProps) {
   const [showPrivateKey, setShowPrivateKey] = useState(false);
   const [keyCopied, setKeyCopied] = useState<string | null>(null);
   
-  // Fetch wallet keys
+  // State for passphrase
+  const [passphrase, setPassphrase] = useState("");
+  const [isExporting, setIsExporting] = useState(false);
+  
+  // Reset state when dialog is closed
+  const handleDialogChange = (open: boolean) => {
+    setIsDialogOpen(open);
+    if (!open) {
+      // Reset state when dialog is closed
+      setPassphrase("");
+      setIsExporting(false);
+      setShowPrivateKey(false);
+      setKeyCopied(null);
+    }
+  };
+  
+  // Fetch wallet keys when passphrase is provided
   const { 
     data: walletKeys, 
     isLoading,
     error,
     refetch
   } = useQuery({
-    queryKey: ["walletKeys", walletAddress],
+    queryKey: ["walletKeys", walletAddress, passphrase],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/wallet/${walletAddress}/keys`);
+      if (!passphrase) {
+        throw new Error("Passphrase is required");
+      }
+      
+      const response = await apiRequest("POST", `/api/wallet/${walletAddress}/export`, {
+        passphrase
+      });
       const data = await response.json();
       return data;
     },
-    enabled: isDialogOpen && !!walletAddress,
+    enabled: isDialogOpen && !!walletAddress && !!passphrase && isExporting,
   });
   
   // Copy key to clipboard
@@ -218,7 +240,7 @@ export function ExportWalletKeys({ walletAddress }: ExportWalletKeysProps) {
   };
 
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+    <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
       <DialogTrigger asChild>
         <Button className="bg-blue-700 hover:bg-blue-600 text-white">
           <Key className="mr-2 h-4 w-4" />
@@ -245,6 +267,35 @@ export function ExportWalletKeys({ walletAddress }: ExportWalletKeysProps) {
           </AlertDescription>
         </Alert>
         
+        {!walletKeys && !isLoading && !error && (
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-gray-400">Enter your wallet passphrase to access your private keys</p>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-400" htmlFor="passphrase">
+                Wallet Passphrase
+              </label>
+              <input
+                id="passphrase"
+                type="password"
+                className="w-full bg-black/50 border border-blue-900/30 rounded px-3 py-2 text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter your passphrase"
+                value={passphrase}
+                onChange={(e) => setPassphrase(e.target.value)}
+              />
+            </div>
+            
+            <Button 
+              className="w-full bg-blue-700 hover:bg-blue-600 text-white"
+              onClick={() => setIsExporting(true)}
+              disabled={!passphrase}
+            >
+              <Key className="mr-2 h-4 w-4" />
+              Unlock Wallet Keys
+            </Button>
+          </div>
+        )}
+        
         {isLoading && (
           <div className="flex justify-center items-center p-6">
             <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
@@ -256,11 +307,14 @@ export function ExportWalletKeys({ walletAddress }: ExportWalletKeysProps) {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error retrieving keys</AlertTitle>
             <AlertDescription className="text-red-300">
-              Failed to load wallet keys. Please try again.
+              Failed to load wallet keys. Please verify your passphrase and try again.
               <Button 
                 variant="outline"
                 className="mt-2 w-full border-red-900/50 text-red-300"
-                onClick={() => refetch()}
+                onClick={() => {
+                  setIsExporting(false);
+                  setTimeout(() => setIsExporting(true), 100);
+                }}
               >
                 Retry
               </Button>
