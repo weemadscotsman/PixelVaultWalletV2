@@ -205,7 +205,7 @@ export class Thringlet implements ThringletState {
    */
   interact(type: string): { message: string, abilityActivated?: ThringletAbility } {
     this.lastInteraction = Date.now();
-    let response = { message: '' };
+    let response: { message: string, abilityActivated?: ThringletAbility } = { message: '' };
     
     // Record the interaction
     this.memory.push({

@@ -455,28 +455,58 @@ body {
 }
 
 @layer utilities {
-  /* Matrix Effect Background */
-  .matrix-background {
-    @apply fixed top-0 left-0 w-full h-full -z-10 opacity-15;
-    background: linear-gradient(rgba(0, 0, 0, 0.95), rgba(0, 0, 0, 0.95)), 
-                url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='0' y='10' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='20' y='20' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='40' y='30' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='60' y='40' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='80' y='50' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='0' y='60' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='20' y='70' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='40' y='80' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3Ctext x='60' y='90' fill='%2300FF00' font-family='monospace'%3E01010%3C/text%3E%3Ctext x='80' y='100' fill='%2300FF00' font-family='monospace'%3E10101%3C/text%3E%3C/svg%3E");
-    animation: matrix-scroll 20s linear infinite;
+  /* Matrix Effect Background - removed in favor of the dynamic MatrixBackground component */
+  
+  /* Make sure UI components are always above the matrix background */
+  .card, 
+  .button, 
+  .dialog, 
+  .dropdown-menu, 
+  .navbar, 
+  .sidebar,
+  .footer,
+  .tooltip,
+  .toast,
+  .badge,
+  .input,
+  .select,
+  .form {
+    position: relative; /* Ensure z-index works */
+    z-index: 10; /* Keep UI components above matrix rain */
   }
   
-  .matrix-rain {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: -5;
-    opacity: 0.2;
+  /* Add backdrop blur to certain UI components for better readability */
+  .card,
+  .dialog,
+  .dropdown-menu,
+  .tooltip,
+  .badge {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   
-  .matrix-rain canvas {
-    width: 100%;
-    height: 100%;
+  /* Improved text readability with text shadow */
+  .text-shadow-neon {
+    text-shadow: 0 0 5px rgba(0, 195, 255, 0.5), 0 0 10px rgba(0, 195, 255, 0.3);
+  }
+  
+  /* Pulse animation for rare/epic/legendary items */
+  @keyframes neon-pulse {
+    0% { box-shadow: 0 0 5px rgba(0, 195, 255, 0.5); }
+    50% { box-shadow: 0 0 15px rgba(0, 195, 255, 0.8); }
+    100% { box-shadow: 0 0 5px rgba(0, 195, 255, 0.5); }
+  }
+  
+  .legendary-glow {
+    animation: neon-pulse 3s infinite ease-in-out;
+  }
+  
+  .epic-glow {
+    animation: neon-pulse 4s infinite ease-in-out;
+  }
+  
+  .rare-glow {
+    animation: neon-pulse 5s infinite ease-in-out;
   }
   
   /* Terminal Styling */
