@@ -9,6 +9,7 @@ import HomePage from "@/pages/home-page";
 import LearningPage from "@/pages/learning-page";
 import WalletPage from "@/pages/WalletPage";
 import BlockchainPage from "@/pages/BlockchainPage";
+import AllBlocksPage from "@/pages/AllBlocksPage";
 import StakingPage from "@/pages/StakingPage";
 import GovernancePage from "@/pages/GovernancePage";
 import ThringletsPage from "@/pages/ThringletsPage";
