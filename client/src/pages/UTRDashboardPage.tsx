@@ -114,11 +114,11 @@ export function UTRDashboardPage() {
           <div className="space-y-6">
             <UTRStatsCard />
 
-            <Card className="overflow-hidden border border-gray-200 bg-transparent backdrop-blur-sm backdrop-filter bg-opacity-80 rounded-xl shadow-sm">
-              <CardHeader className="bg-gradient-to-b from-gray-900/70 to-gray-900/40 text-white p-4 pb-3">
-                <CardTitle className="text-xl font-bold tracking-tight">
+            <Card className="overflow-hidden border border-gray-800 bg-black/70 backdrop-blur-sm backdrop-filter rounded-xl shadow-md">
+              <CardHeader className="bg-gradient-to-b from-gray-900/90 to-gray-900/70 text-white p-4 pb-3 border-b border-gray-800/60">
+                <CardTitle className="text-xl font-bold tracking-tight text-shadow-neon bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
                   <div className="flex items-center">
-                    <BarChart4 className="mr-2 h-5 w-5" />
+                    <BarChart4 className="mr-2 h-5 w-5 text-cyan-400" />
                     Quick Stats
                   </div>
                 </CardTitle>
@@ -128,31 +128,31 @@ export function UTRDashboardPage() {
               </CardHeader>
               <CardContent className="p-4">
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/20 border border-gray-800/30">
-                    <span className="text-sm text-gray-400">Pending Txs</span>
-                    <span className="font-mono text-yellow-500 font-medium">12</span>
+                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/40 border border-gray-800/50 hover:bg-gray-800/40 transition-colors">
+                    <span className="text-sm text-gray-300">Pending Txs</span>
+                    <span className="font-mono text-yellow-400 font-medium">12</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/20 border border-gray-800/30">
-                    <span className="text-sm text-gray-400">24h Volume</span>
-                    <span className="font-mono text-green-500 font-medium">27.3M PVX</span>
+                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/40 border border-gray-800/50 hover:bg-gray-800/40 transition-colors">
+                    <span className="text-sm text-gray-300">24h Volume</span>
+                    <span className="font-mono text-green-400 font-medium">27.3M PVX</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/20 border border-gray-800/30">
-                    <span className="text-sm text-gray-400">Avg Tx Fee</span>
-                    <span className="font-mono text-blue-500 font-medium">0.00021 PVX</span>
+                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/40 border border-gray-800/50 hover:bg-gray-800/40 transition-colors">
+                    <span className="text-sm text-gray-300">Avg Tx Fee</span>
+                    <span className="font-mono text-blue-400 font-medium">0.00021 PVX</span>
                   </div>
-                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/20 border border-gray-800/30">
-                    <span className="text-sm text-gray-400">Txs Per Block</span>
-                    <span className="font-mono text-purple-500 font-medium">~38</span>
+                  <div className="flex justify-between items-center p-3 rounded bg-gray-900/40 border border-gray-800/50 hover:bg-gray-800/40 transition-colors">
+                    <span className="text-sm text-gray-300">Txs Per Block</span>
+                    <span className="font-mono text-purple-400 font-medium">~38</span>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="overflow-hidden border border-gray-200 bg-transparent backdrop-blur-sm backdrop-filter bg-opacity-80 rounded-xl shadow-sm">
-              <CardHeader className="bg-gradient-to-b from-gray-900/70 to-gray-900/40 text-white p-4 pb-3">
-                <CardTitle className="text-xl font-bold tracking-tight">
+            <Card className="overflow-hidden border border-gray-800 bg-black/70 backdrop-blur-sm backdrop-filter rounded-xl shadow-md">
+              <CardHeader className="bg-gradient-to-b from-gray-900/90 to-gray-900/70 text-white p-4 pb-3 border-b border-gray-800/60">
+                <CardTitle className="text-xl font-bold tracking-tight text-shadow-neon bg-gradient-to-r from-purple-400 to-pink-300 bg-clip-text text-transparent">
                   <div className="flex items-center">
-                    <PieChart className="mr-2 h-5 w-5" />
+                    <PieChart className="mr-2 h-5 w-5 text-purple-400" />
                     Asset Distribution
                   </div>
                 </CardTitle>
@@ -162,44 +162,44 @@ export function UTRDashboardPage() {
               </CardHeader>
               <CardContent className="p-4">
                 {/* In a real implementation, this would be a chart */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">PVX</span>
-                      <span className="text-sm text-gray-300">78.4%</span>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm text-gray-300 font-medium">PVX</span>
+                      <span className="text-sm text-cyan-400 font-mono">78.4%</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 mt-1">
-                      <div className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full" style={{ width: '78.4%' }}></div>
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-blue-500 to-cyan-400 h-2 rounded-full shadow-glow-cyan" style={{ width: '78.4%' }}></div>
                     </div>
                   </div>
                   
                   <div className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">NFTs</span>
-                      <span className="text-sm text-gray-300">12.2%</span>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm text-gray-300 font-medium">NFTs</span>
+                      <span className="text-sm text-pink-400 font-mono">12.2%</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 mt-1">
-                      <div className="bg-gradient-to-r from-pink-500 to-purple-400 h-2 rounded-full" style={{ width: '12.2%' }}></div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Thringlets</span>
-                      <span className="text-sm text-gray-300">6.8%</span>
-                    </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 mt-1">
-                      <div className="bg-gradient-to-r from-purple-500 to-indigo-400 h-2 rounded-full" style={{ width: '6.8%' }}></div>
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-pink-500 to-purple-400 h-2 rounded-full shadow-glow-pink" style={{ width: '12.2%' }}></div>
                     </div>
                   </div>
                   
                   <div className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-gray-400">Governance</span>
-                      <span className="text-sm text-gray-300">2.6%</span>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm text-gray-300 font-medium">Thringlets</span>
+                      <span className="text-sm text-indigo-400 font-mono">6.8%</span>
                     </div>
-                    <div className="w-full bg-gray-700 rounded-full h-2 mt-1">
-                      <div className="bg-gradient-to-r from-amber-500 to-orange-400 h-2 rounded-full" style={{ width: '2.6%' }}></div>
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-purple-500 to-indigo-400 h-2 rounded-full shadow-glow-indigo" style={{ width: '6.8%' }}></div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm text-gray-300 font-medium">Governance</span>
+                      <span className="text-sm text-orange-400 font-mono">2.6%</span>
+                    </div>
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-amber-500 to-orange-400 h-2 rounded-full shadow-glow-amber" style={{ width: '2.6%' }}></div>
                     </div>
                   </div>
                 </div>

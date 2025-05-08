@@ -88,35 +88,35 @@ const StatusBadge = ({ status }: { status: string }) => {
   switch (status) {
     case 'confirmed':
       return (
-        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex items-center gap-1">
+        <Badge variant="outline" className="bg-green-900/40 text-green-300 border-green-700/50 flex items-center gap-1">
           <Check className="h-3 w-3" />
           Confirmed
         </Badge>
       );
     case 'pending':
       return (
-        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 flex items-center gap-1">
+        <Badge variant="outline" className="bg-yellow-900/40 text-yellow-300 border-yellow-700/50 flex items-center gap-1">
           <Clock className="h-3 w-3" />
           Pending
         </Badge>
       );
     case 'failed':
       return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 flex items-center gap-1">
+        <Badge variant="outline" className="bg-red-900/40 text-red-300 border-red-700/50 flex items-center gap-1">
           <X className="h-3 w-3" />
           Failed
         </Badge>
       );
     case 'vetoed':
       return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-300 flex items-center gap-1">
+        <Badge variant="outline" className="bg-red-900/40 text-red-300 border-red-700/50 flex items-center gap-1">
           <AlertTriangle className="h-3 w-3" />
           Vetoed
         </Badge>
       );
     default:
       return (
-        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-300">
+        <Badge variant="outline" className="bg-gray-900/40 text-gray-300 border-gray-700/50">
           {status}
         </Badge>
       );
@@ -129,19 +129,19 @@ const TransactionTypeFilter = ({ currentType, onTypeChange }: {
 }) => {
   return (
     <div className="flex items-center gap-2">
-      <Filter className="h-4 w-4 text-gray-500" />
+      <Filter className="h-4 w-4 text-cyan-400" />
       <Select value={currentType} onValueChange={onTypeChange}>
-        <SelectTrigger className="w-[180px] h-8">
+        <SelectTrigger className="w-[180px] h-8 bg-gray-900/60 border-gray-700 text-gray-200 focus:ring-cyan-500/30 focus:border-cyan-500/50">
           <SelectValue placeholder="Filter by type" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Types</SelectItem>
-          <SelectItem value="transfer">Transfer</SelectItem>
-          <SelectItem value="mining_reward">Mining Reward</SelectItem>
-          <SelectItem value="stake">Stake</SelectItem>
-          <SelectItem value="dex_swap">DEX Swap</SelectItem>
-          <SelectItem value="governance_vote">Governance Vote</SelectItem>
-          <SelectItem value="nft_mint">NFT Mint</SelectItem>
+        <SelectContent className="bg-gray-900 border-gray-700">
+          <SelectItem value="all" className="text-gray-200 focus:bg-gray-800">All Types</SelectItem>
+          <SelectItem value="transfer" className="text-blue-300 focus:bg-gray-800">Transfer</SelectItem>
+          <SelectItem value="mining_reward" className="text-green-300 focus:bg-gray-800">Mining Reward</SelectItem>
+          <SelectItem value="stake" className="text-purple-300 focus:bg-gray-800">Stake</SelectItem>
+          <SelectItem value="dex_swap" className="text-orange-300 focus:bg-gray-800">DEX Swap</SelectItem>
+          <SelectItem value="governance_vote" className="text-cyan-300 focus:bg-gray-800">Governance Vote</SelectItem>
+          <SelectItem value="nft_mint" className="text-pink-300 focus:bg-gray-800">NFT Mint</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -154,17 +154,17 @@ const StatusFilter = ({ currentStatus, onStatusChange }: {
 }) => {
   return (
     <div className="flex items-center gap-2">
-      <Filter className="h-4 w-4 text-gray-500" />
+      <Filter className="h-4 w-4 text-purple-400" />
       <Select value={currentStatus} onValueChange={onStatusChange}>
-        <SelectTrigger className="w-[180px] h-8">
+        <SelectTrigger className="w-[180px] h-8 bg-gray-900/60 border-gray-700 text-gray-200 focus:ring-purple-500/30 focus:border-purple-500/50">
           <SelectValue placeholder="Filter by status" />
         </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All Statuses</SelectItem>
-          <SelectItem value="confirmed">Confirmed</SelectItem>
-          <SelectItem value="pending">Pending</SelectItem>
-          <SelectItem value="failed">Failed</SelectItem>
-          <SelectItem value="vetoed">Vetoed</SelectItem>
+        <SelectContent className="bg-gray-900 border-gray-700">
+          <SelectItem value="all" className="text-gray-200 focus:bg-gray-800">All Statuses</SelectItem>
+          <SelectItem value="confirmed" className="text-green-300 focus:bg-gray-800">Confirmed</SelectItem>
+          <SelectItem value="pending" className="text-yellow-300 focus:bg-gray-800">Pending</SelectItem>
+          <SelectItem value="failed" className="text-red-300 focus:bg-gray-800">Failed</SelectItem>
+          <SelectItem value="vetoed" className="text-red-300 focus:bg-gray-800">Vetoed</SelectItem>
         </SelectContent>
       </Select>
     </div>

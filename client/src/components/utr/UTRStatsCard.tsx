@@ -50,9 +50,9 @@ export function UTRStatsCard() {
   // Handle different states
   if (isLoading) {
     return (
-      <Card className="w-full h-full overflow-hidden border border-gray-200 bg-transparent backdrop-blur-sm backdrop-filter bg-opacity-80 rounded-xl shadow-sm">
-        <CardHeader className="bg-gradient-to-b from-gray-900/70 to-gray-900/40 text-white p-4 pb-3">
-          <CardTitle className="text-xl font-bold tracking-tight">
+      <Card className="w-full h-full overflow-hidden border border-gray-800 bg-black/70 backdrop-blur-sm backdrop-filter rounded-xl shadow-md">
+        <CardHeader className="bg-gradient-to-b from-gray-900/90 to-gray-900/70 text-white p-4 pb-3 border-b border-gray-800/60">
+          <CardTitle className="text-xl font-bold tracking-tight text-shadow-neon bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
             Transaction Statistics
           </CardTitle>
           <CardDescription className="text-gray-300 mt-1">
@@ -61,9 +61,9 @@ export function UTRStatsCard() {
         </CardHeader>
         <CardContent className="p-4">
           <div className="space-y-3">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-24 w-full" />
-            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-10 w-full bg-gray-800/50" />
+            <Skeleton className="h-24 w-full bg-gray-800/50" />
+            <Skeleton className="h-24 w-full bg-gray-800/50" />
           </div>
         </CardContent>
       </Card>
@@ -72,9 +72,9 @@ export function UTRStatsCard() {
 
   if (isError || !data) {
     return (
-      <Card className="w-full h-full overflow-hidden border border-gray-200 bg-transparent backdrop-blur-sm backdrop-filter bg-opacity-80 rounded-xl shadow-sm">
-        <CardHeader className="bg-gradient-to-b from-gray-900/70 to-gray-900/40 text-white p-4 pb-3">
-          <CardTitle className="text-xl font-bold tracking-tight">
+      <Card className="w-full h-full overflow-hidden border border-gray-800 bg-black/70 backdrop-blur-sm backdrop-filter rounded-xl shadow-md">
+        <CardHeader className="bg-gradient-to-b from-gray-900/90 to-gray-900/70 text-white p-4 pb-3 border-b border-gray-800/60">
+          <CardTitle className="text-xl font-bold tracking-tight text-shadow-neon bg-gradient-to-r from-red-400 to-orange-300 bg-clip-text text-transparent">
             Transaction Statistics
           </CardTitle>
           <CardDescription className="text-gray-300 mt-1">
@@ -82,8 +82,10 @@ export function UTRStatsCard() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4">
-          <div className="text-center p-6 text-gray-500">
-            <div className="mb-2">Unable to load transaction statistics</div>
+          <div className="text-center p-6 border border-red-900/30 rounded-lg bg-red-950/20">
+            <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+            <div className="text-gray-300 mb-2 font-medium">Unable to load transaction statistics</div>
+            <div className="text-sm text-gray-500">Try refreshing the page or check your connection</div>
           </div>
         </CardContent>
       </Card>
