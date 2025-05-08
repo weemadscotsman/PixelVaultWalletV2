@@ -20,6 +20,8 @@ import DEXPage from "@/pages/DEXPage";
 import ProfilePage from "@/pages/ProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
 import TerminalPage from "@/pages/TerminalPage";
+import NFTsPage from "@/pages/NFTsPage";
+import TransactionsPage from "@/pages/TransactionsPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -49,6 +51,8 @@ function Router() {
           <Route path="/terminal" component={TerminalPage} />
           <Route path="/profile" component={ProfilePage} />
           <Route path="/settings" component={SettingsPage} />
+          <Route path="/nfts" component={NFTsPage} />
+          <Route path="/transactions" component={TransactionsPage} />
           <Route component={NotFound} />
         </Switch>
       </div>

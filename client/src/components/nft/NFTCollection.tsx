@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useNFT } from "@/hooks/use-nft";
-import { timeAgo } from "@/lib/utils";
+import { timeAgo } from "@/lib/formatters";
 import { Link } from "wouter";
 
 export function NFTCollection() {
