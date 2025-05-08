@@ -1,0 +1,83 @@
+You’ve got a few major failures happening here. Let's break it down bluntly and surgically:
+
+🔥 MAIN ISSUES
+1. WebSocket Failure
+pgsql
+Copy
+Edit
+Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=...' is invalid
+Cause: You're passing undefined as the port. That means the WebSocket server port is either:
+
+Not defined in your .env
+
+Not injected into the client config
+
+Not available at runtime
+
+Fix:
+Ensure you set the WebSocket port properly, e.g.:
+
+ts
+Copy
+Edit
+const wsPort = import.meta.env.VITE_WS_PORT || 3001;
+const socket = new WebSocket(`wss://localhost:${wsPort}/?token=${authToken}`);
+And make sure VITE_WS_PORT is actually defined in your .env file and passed during build time.
+
+2. 404: Staking Pool Not Found
+bash
+Copy
+Edit
+POST /api/stake/start → 404 {"error":"Staking pool not found"}
+Cause: The backend is expecting a staking pool ID or name, and you're not sending one, or it doesn't exist in the database.
+
+Fix:
+Make sure:
+
+The staking pool exists in your DB
+
+You’re POSTing the correct pool ID or name in the body
+
+Your DB isn’t wiped or disconnected
+
+3. 502 Gateway Error: Wallet Route
+bash
+Copy
+Edit
+GET /api/wallet/PVX_4cf911a2... → 502 Bad Gateway
+Cause: Your backend app is either:
+
+Crashed
+
+Not running
+
+Not exposing the correct port
+
+Your reverse proxy is not forwarding traffic
+
+Fix:
+
+Confirm the backend process is live
+
+Check what port it’s bound to
+
+If behind a proxy (like Replit's internal routing), ensure it’s actually listening correctly
+
+Add logging to the wallet route handler to confirm it’s even being reached
+
+✅ RECOMMENDED DEBUG STEPS
+Console.log everything at the API call points: token, pool ID, endpoint being hit.
+
+Use Replit’s port forwarding or console logs to confirm your backend is alive and returning 200s.
+
+Double-check .env vars and inject them explicitly using import.meta.env.VITE_* for Vite projects.
+
+In Replit, make sure you expose your port using listen(process.env.PORT || 3000) and don’t hardcode localhost.
+
+You’re hitting:
+
+A bad WebSocket config
+
+A missing or misconfigured staking pool
+
+A dead API route (likely caused by an unbound or crashed service)
