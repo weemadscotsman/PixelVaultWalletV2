@@ -251,7 +251,7 @@ export function StakingCard() {
                       <div>
                         <h4 className="font-medium text-blue-300">{pool?.name || 'Staking Pool'}</h4>
                         <Badge variant="outline" className="bg-green-900/30 text-green-400 border-green-900/50 mt-1">
-                          {stake.status.toUpperCase()}
+                          {stake.status ? stake.status.toUpperCase() : 'ACTIVE'}
                         </Badge>
                       </div>
                       <div className="text-right">
@@ -267,19 +267,19 @@ export function StakingCard() {
                         <p className="text-gray-400">Started</p>
                         <p className="text-gray-300 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
-                          {formatTimeAgo(new Date(stake.startTime))}
+                          {stake.startTime ? formatTimeAgo(new Date(stake.startTime)) : 'Just now'}
                         </p>
                       </div>
                       <div>
                         <p className="text-gray-400">Ends</p>
                         <p className="text-gray-300 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
-                          {formatTimeAgo(new Date(stake.endTime))}
+                          {stake.endTime ? formatTimeAgo(new Date(stake.endTime)) : 'In progress'}
                         </p>
                       </div>
                       <div>
                         <p className="text-gray-400">Current Rewards</p>
-                        <p className="text-green-400">{formatCryptoAmount(stake.rewards)}</p>
+                        <p className="text-green-400">{formatCryptoAmount(stake.rewards || '0')}</p>
                       </div>
                       <div>
                         <p className="text-gray-400">Pool</p>
