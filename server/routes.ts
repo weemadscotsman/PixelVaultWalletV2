@@ -8,6 +8,7 @@ import thringletRoutes from './routes/thringlet';
 import authRoutes from './routes/auth';
 import blockchainRoutes from './routes/blockchain-routes';
 import badgeRoutes from './routes/badge';
+import utrRoutes from './routes/utr-routes';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // PVX blockchain API routes
@@ -18,6 +19,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/auth', authRoutes);
   app.use('/api/blockchain', blockchainRoutes);
   app.use('/api/badge', badgeRoutes);
+  app.use('/api/utr', utrRoutes);
 
   // Add a simple health check endpoint
   app.get('/api/health', (_req: Request, res: Response) => {
