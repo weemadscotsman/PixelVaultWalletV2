@@ -184,10 +184,10 @@ export function Dashboard() {
     if (blockchainStatusApi && !isLoadingBlockchain) {
       setBlockchainData(prev => ({
         ...prev,
-        currentHeight: blockchainStatusApi.latestBlockHeight,
-        difficulty: blockchainStatusApi.difficulty, 
-        hashRate: `${blockchainStatusApi.hashRate} H/s`,
-        lastBlockTime: new Date(blockchainStatusApi.lastBlockTime)
+        currentHeight: blockchainStatusApi.latestBlockHeight || prev.currentHeight,
+        difficulty: blockchainStatusApi.difficulty || prev.difficulty, 
+        hashRate: blockchainStatusApi.hashRate ? `${blockchainStatusApi.hashRate} H/s` : prev.hashRate,
+        lastBlockTime: blockchainStatusApi.lastBlockTime ? new Date(blockchainStatusApi.lastBlockTime) : prev.lastBlockTime
       }));
     }
   }, [blockchainStatusApi, isLoadingBlockchain]);
@@ -245,7 +245,9 @@ export function Dashboard() {
     });
   };
   
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number | undefined) => {
+    if (value === undefined || isNaN(value)) return '0 μPVX';
+    
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(2)}M μPVX`;
     } else if (value >= 1000) {
@@ -255,7 +257,9 @@ export function Dashboard() {
     }
   };
   
-  const formatTimeAgo = (date: Date) => {
+  const formatTimeAgo = (date: Date | undefined) => {
+    if (!date) return 'N/A';
+    
     const seconds = Math.floor((new Date().getTime() - date.getTime()) / 1000);
     
     if (seconds < 60) return `${seconds}s ago`;
@@ -321,29 +325,35 @@ export function Dashboard() {
               <div>
                 <p className="text-sm text-gray-400 mb-1">Recent Transactions</p>
                 <div className="space-y-2">
-                  {walletData.transactions.slice(0, 2).map(tx => (
-                    <div key={tx.id} className="flex justify-between items-center bg-gray-900/30 p-2 rounded">
-                      <div className="flex items-center">
-                        {tx.type === 'receive' ? (
-                          <ArrowDownRight className="w-4 h-4 text-green-400 mr-2" />
-                        ) : (
-                          <ArrowUpRight className="w-4 h-4 text-orange-400 mr-2" />
-                        )}
-                        <div>
-                          <p className="text-xs text-gray-300">{tx.type === 'receive' ? 'Received' : 'Sent'}</p>
-                          <p className="text-xs text-gray-500">
-                            {tx.type === 'receive' ? `From ${tx.from}` : `To ${tx.to}`}
+                  {walletData.transactions && walletData.transactions.length > 0 ? (
+                    walletData.transactions.slice(0, 2).map(tx => (
+                      <div key={tx.id || Math.random().toString()} className="flex justify-between items-center bg-gray-900/30 p-2 rounded">
+                        <div className="flex items-center">
+                          {tx.type === 'receive' ? (
+                            <ArrowDownRight className="w-4 h-4 text-green-400 mr-2" />
+                          ) : (
+                            <ArrowUpRight className="w-4 h-4 text-orange-400 mr-2" />
+                          )}
+                          <div>
+                            <p className="text-xs text-gray-300">{tx.type === 'receive' ? 'Received' : 'Sent'}</p>
+                            <p className="text-xs text-gray-500">
+                              {tx.type === 'receive' ? `From ${tx.from || 'Unknown'}` : `To ${tx.to || 'Unknown'}`}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className={`text-sm ${tx.type === 'receive' ? 'text-green-400' : 'text-orange-400'}`}>
+                            {tx.type === 'receive' ? '+' : '-'}{formatCurrency(tx.amount)}
                           </p>
+                          <p className="text-xs text-gray-500">{formatTimeAgo(tx.timestamp)}</p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-sm ${tx.type === 'receive' ? 'text-green-400' : 'text-orange-400'}`}>
-                          {tx.type === 'receive' ? '+' : '-'}{formatCurrency(tx.amount)}
-                        </p>
-                        <p className="text-xs text-gray-500">{formatTimeAgo(tx.timestamp)}</p>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center p-2 bg-gray-900/30 rounded">
+                      <p className="text-xs text-gray-400">No transactions yet</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             </div>
@@ -384,7 +394,7 @@ export function Dashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-900/30 p-3 rounded">
                   <p className="text-xs text-gray-400">Current Height</p>
-                  <p className="text-xl font-bold text-blue-300">{blockchainData.currentHeight.toLocaleString()}</p>
+                  <p className="text-xl font-bold text-blue-300">{blockchainData.currentHeight?.toLocaleString() || '0'}</p>
                 </div>
                 <div className="bg-gray-900/30 p-3 rounded">
                   <p className="text-xs text-gray-400">Difficulty</p>
