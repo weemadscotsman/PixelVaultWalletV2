@@ -1,5 +1,6 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import { createServer, Server } from 'http';
+import { WebSocketServer } from 'ws';
 import walletRoutes from './routes/wallet';
 import txRoutes from './routes/tx';
 import stakeRoutes from './routes/stake';
@@ -53,9 +54,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Create and return HTTP server
+  // Create HTTP server
   const httpServer = createServer(app);
-
+  
+  // Create WebSocket server for real-time blockchain updates
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // WebSocket connection handling
+  wss.on('connection', (ws) => {
+    console.log('WebSocket client connected');
+    
+    // Send welcome message
+    ws.send(JSON.stringify({
+      type: 'connection_established',
+      message: 'Connected to PVX blockchain WebSocket',
+      timestamp: new Date().toISOString()
+    }));
+    
+    // Handle client messages
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('Received WebSocket message:', data);
+        
+        // Handle message based on type
+        if (data.type === 'subscribe') {
+          // Handle subscription requests (e.g., subscribe to transaction updates)
+          ws.send(JSON.stringify({
+            type: 'subscription_success',
+            channel: data.channel,
+            timestamp: new Date().toISOString()
+          }));
+        }
+      } catch (err) {
+        console.error('Error processing WebSocket message:', err);
+      }
+    });
+    
+    // Handle disconnect
+    ws.on('close', () => {
+      console.log('WebSocket client disconnected');
+    });
+  });
+  
+  // Export WebSocket server as a global variable for other modules to use
+  (global as any).wss = wss;
+  
   return httpServer;
 }
 

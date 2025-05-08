@@ -4,6 +4,7 @@ import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
 import { TransactionType, Transaction } from '@shared/types';
 import { checkTransactionBadges } from './badgeController';
+import { broadcastTransaction } from '../utils/websocket';
 
 /**
  * Send transaction
@@ -83,6 +84,14 @@ export const sendTransaction = async (req: Request, res: Response) => {
     
     // Store transaction
     await memBlockchainStorage.createTransaction(transaction);
+    
+    // Broadcast transaction via WebSocket for real-time updates
+    try {
+      broadcastTransaction(transaction);
+    } catch (err) {
+      console.error('Error broadcasting transaction via WebSocket:', err);
+      // Continue even if WebSocket broadcast fails
+    }
     
     // Check for transaction-related achievements
     try {
