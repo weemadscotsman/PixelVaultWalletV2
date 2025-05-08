@@ -10,13 +10,10 @@ const DEFAULT_PORT = '5000';
 const isSecure = window.location.protocol === 'https:';
 const wsProtocol = isSecure ? 'wss' : 'ws';
 
-// Ensure we have a valid port, using location.port (from browser URL) or fallback to DEFAULT_PORT
-const port = window.location.port || DEFAULT_PORT;
-
-// Fallback to current hostname and port if not specified in environment
-// Don't include path ('/ws') - that's handled by the component
+// For Replit environments, we don't need to specify the port in the WebSocket URL
+// as it should use the same URL origin as the main application
 export const WS_URL = import.meta.env.VITE_WS_URL || 
-  `${wsProtocol}://${window.location.hostname}:${port}`;
+  `${wsProtocol}://${window.location.host}`;
 
 // API base URL
 export const API_URL = import.meta.env.VITE_API_URL || '';
