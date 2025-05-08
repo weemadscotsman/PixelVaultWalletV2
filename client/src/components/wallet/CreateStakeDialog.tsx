@@ -281,7 +281,7 @@ export function CreateStakeDialog({
                         <Calendar className="h-3 w-3 mr-1" />
                         Lock Period
                       </p>
-                      <p className="text-gray-300">{selectedPool.lockPeriod} days</p>
+                      <p className="text-gray-300">{selectedPool.lockupPeriod} days</p>
                     </div>
                     <div>
                       <p className="text-gray-400 flex items-center">
@@ -355,7 +355,7 @@ export function CreateStakeDialog({
                 <div className="rounded-lg bg-green-900/10 border border-green-900/30 p-4">
                   <h4 className="text-sm font-medium text-green-400 mb-2">Estimated Rewards</h4>
                   <div className="flex justify-between items-center">
-                    <span className="text-gray-300">After {selectedPool.lockPeriod} days:</span>
+                    <span className="text-gray-300">After {selectedPool.lockupPeriod} days:</span>
                     <span className="text-lg font-bold text-green-400">+{calculateRewards()} μPVX</span>
                   </div>
                 </div>
