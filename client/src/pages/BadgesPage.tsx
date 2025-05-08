@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AnimatedPageLayout } from '@/components/layout/AnimatedPageLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -58,7 +58,7 @@ export default function BadgesPage() {
   ];
   
   return (
-    <AnimatedPageLayout>
+    <PageLayout>
       <div className="container space-y-6 pt-6 pb-16">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-blue-300 text-shadow-neon">
@@ -176,6 +176,6 @@ export default function BadgesPage() {
           )}
         </div>
       </div>
-    </AnimatedPageLayout>
+    </PageLayout>
   );
 }

@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import type { Badge } from '@/types/badges';
+import { Badge } from '@shared/badges';
 import { cn } from '@/lib/utils';
 import { LucideProps } from 'lucide-react';
 import { 
   Award, Lock, HelpCircle, Power, Stamp, BarChart, Bot, 
   Shield, Flame, Medal, Trophy, Star, 
-  FileText, Database, Server, Archive, GraduationCap, EyeOff 
+  FileText, Database, Server, Archive, GraduationCap, EyeOff,
+  Wallet, ArrowRightLeft, Clock, Compass, Heart, Smile,
+  Crown, FileCode, Search, Box
 } from 'lucide-react';
 import {
   Dialog,
@@ -38,7 +40,16 @@ const IconMap: Record<string, React.ComponentType<LucideProps>> = {
   Archive,
   GraduationCap,
   EyeOff,
-  Pickaxe: Trophy // Use Trophy as substitute for Pickaxe
+  Pickaxe: Trophy, // Use Trophy as substitute for Pickaxe
+  Wallet,
+  ArrowRightLeft,
+  Clock,
+  Compass,
+  Heart,
+  Smile,
+  Crown,
+  FileCode,
+  Search
 };
 
 interface AchievementBadgeProps {
