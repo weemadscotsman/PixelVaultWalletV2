@@ -183,6 +183,8 @@ export function UTRList({ wallet, limit = 50 }: { wallet?: string; limit?: numbe
   const { data, isLoading, isError, error, refetch } = useQuery<UTREntry[]>({
     queryKey: [queryEndpoint, limit],
     enabled: true,
+    retry: 1,
+    staleTime: 60000, // 1 minute
   });
 
   // Filter the data based on selected filters

@@ -76,7 +76,10 @@ export function CreateStakeDialog({
   // Reset form when dialog opens
   useEffect(() => {
     if (open) {
+      // Always set the pool ID using the string ID format (e.g., 'pool1', 'pool2')
+      // This ensures it matches the IDs expected by the backend
       setPoolId(stakingPools.length > 0 ? stakingPools[0].id : "");
+      console.log("Selected initial pool ID:", stakingPools.length > 0 ? stakingPools[0].id : "none");
       setAmount("");
       setPassphrase("");
       setErrors({});
