@@ -16,7 +16,8 @@ import {
   UserCircle,
   Cpu,
   Medal,
-  Database
+  Database,
+  BarChart
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -99,6 +100,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       name: 'Learning Lab',
       icon: <BookOpen className="w-5 h-5" />,
       path: '/learning',
+      pageNumber: 3
+    },
+    {
+      name: 'TX Visualizer',
+      icon: <BarChart className="w-5 h-5" />,
+      path: '/visualizer',
       pageNumber: 3
     },
   ];
