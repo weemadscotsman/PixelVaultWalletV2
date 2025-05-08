@@ -1,0 +1,22 @@
+
+DOMException {}
+stack: "SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=YFh8dBZc_Bht' is invalid.↵ at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:218737)↵ at setupWebSocket (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@vite/client:536:19)↵ at fallback (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@vite/client:509:16)↵ at WebSocket.<anonymous> (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@vite/client:555:7)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: DOMException
+
+API Error: 404 for POST /api/stake/start {"error":"Staking pool not found"}
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+API Exception for POST /api/stake/start: 
+Error {}
+
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+404: {"error":"Staking pool not found"}
+at apiRequest (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/lib/queryClient.ts:21:13)
+at async Object.mutationFn (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/wallet/CreateStakeDialog.tsx:90:19)
