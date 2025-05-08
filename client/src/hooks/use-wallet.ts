@@ -281,6 +281,36 @@ export function useWallet() {
     refetchInterval: 5000
   });
 
+  // Function to refresh the wallet balance
+  const refreshWalletBalance = async () => {
+    if (activeWallet) {
+      try {
+        console.log("Manually refreshing wallet balance for:", activeWallet);
+        await queryClient.invalidateQueries({ queryKey: ['/api/wallet', activeWallet] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/wallet/history', activeWallet] });
+        await queryClient.invalidateQueries({ queryKey: ['/api/wallet/balance', activeWallet] });
+      } catch (error) {
+        console.error("Error refreshing wallet balance:", error);
+      }
+    }
+  };
+
+  // Function to load wallet from localStorage and refresh data
+  const loadWalletFromStorage = () => {
+    const storedAddress = localStorage.getItem('activeWallet');
+    if (storedAddress && storedAddress !== activeWallet) {
+      console.log("Loading wallet from storage:", storedAddress);
+      setActiveWallet(storedAddress);
+      // Trigger balance refresh
+      setTimeout(() => {
+        refreshWalletBalance();
+      }, 100);
+    } else if (activeWallet) {
+      // If wallet is already active, just refresh the balance
+      refreshWalletBalance();
+    }
+  };
+  
   return {
     // State
     activeWallet,
@@ -300,5 +330,9 @@ export function useWallet() {
     importWalletMutation,
     exportWalletKeysMutation,
     sendTransactionMutation,
+    
+    // Utility functions
+    refreshWalletBalance,
+    loadWalletFromStorage
   };
 }

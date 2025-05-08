@@ -141,9 +141,12 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   useEffect(() => {
     // Create WebSocket connection
     const connectWebSocket = () => {
-      // Use centralized WS_URL constant with fallback handling
-      // Make sure we append the WebSocket path
-      const wsUrl = `${WS_URL}/ws`;
+      // Use window.location to directly construct a valid WebSocket URL
+      // This avoids issues with undefined port
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      console.log('Using WebSocket URL:', wsUrl);
       
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         return; // Already connected
