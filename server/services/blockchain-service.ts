@@ -315,9 +315,9 @@ export async function sendTransaction(
 }
 
 /**
- * Start mining with address
+ * Start mining with address and hardware type
  */
-export async function startMining(address: string): Promise<MiningStats> {
+export async function startMining(address: string, hardwareType: string = 'cpu'): Promise<MiningStats> {
   // Validate wallet
   const wallet = await memBlockchainStorage.getWalletByAddress(address);
   
@@ -332,8 +332,31 @@ export async function startMining(address: string): Promise<MiningStats> {
     throw new Error('Already mining');
   }
   
-  // Generate random hashrate between 10 and 200 MH/s
-  const hashRate = (Math.random() * 190 + 10).toFixed(2);
+  // Generate hashrate based on hardware type
+  let hashRate: string;
+  let hardwareName: string;
+  
+  switch (hardwareType.toLowerCase()) {
+    case 'cpu':
+      // CPU: 10-100 MH/s
+      hashRate = (Math.random() * 90 + 10).toFixed(2);
+      hardwareName = 'CPU';
+      break;
+    case 'gpu':
+      // GPU: 100-500 MH/s
+      hashRate = (Math.random() * 400 + 100).toFixed(2);
+      hardwareName = 'GPU';
+      break;
+    case 'asic':
+      // ASIC: 500-2000 MH/s
+      hashRate = (Math.random() * 1500 + 500).toFixed(2);
+      hardwareName = 'ASIC';
+      break;
+    default:
+      // Default to CPU if invalid type
+      hashRate = (Math.random() * 90 + 10).toFixed(2);
+      hardwareName = 'CPU';
+  }
   
   const stats: MiningStats = {
     address,
@@ -341,6 +364,7 @@ export async function startMining(address: string): Promise<MiningStats> {
     totalRewards: minerStats ? minerStats.totalRewards : "0",
     isCurrentlyMining: true,
     currentHashRate: hashRate + " MH/s",
+    hardwareType: hardwareName,
     lastBlockMined: minerStats ? minerStats.lastBlockMined : undefined
   };
   

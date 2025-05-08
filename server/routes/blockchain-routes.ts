@@ -280,13 +280,16 @@ router.post('/transaction', async (req, res) => {
  */
 router.post('/mining/start', async (req, res) => {
   try {
-    const { address } = req.body;
+    const { address, hardwareType } = req.body;
     
     if (!address) {
       return res.status(400).json({ error: 'Wallet address is required' });
     }
     
-    const miningStats = await blockchainService.startMining(address);
+    // Default to CPU if hardware type not specified
+    const hardware = hardwareType || 'cpu';
+    
+    const miningStats = await blockchainService.startMining(address, hardware);
     res.json(miningStats);
   } catch (error) {
     res.status(500).json({
