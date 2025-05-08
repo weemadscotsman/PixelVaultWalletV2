@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { 
   Share2, 
@@ -6,12 +6,15 @@ import {
   ArrowUpRight,
   Clock,
   LineChart,
-  Calendar
+  Calendar,
+  Gift
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CreateStakeDialog } from '@/components/wallet/CreateStakeDialog';
+import { ClaimRewardDialog } from '@/components/wallet/ClaimRewardDialog';
 
 // Example staking data
 const stakingData = {
@@ -34,6 +37,10 @@ const stakingData = {
 };
 
 export default function StakingPage() {
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isClaimDialogOpen, setIsClaimDialogOpen] = useState(false);
+  const [selectedStake, setSelectedStake] = useState<{id: number, rewards: number} | null>(null);
+  
   const formatCurrency = (value: number) => {
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(2)}M μPVX`;
@@ -55,6 +62,18 @@ export default function StakingPage() {
     return diffDays;
   };
   
+  // Convert lockup periods to staking pools format required by CreateStakeDialog
+  const stakingPools = stakingData.lockupPeriods.map(period => ({
+    id: period.id.toString(),
+    name: `${period.name} Staking Pool`,
+    description: `Stake your PVX tokens for ${period.name} to earn ${period.apy}% APY`,
+    minStake: "1000", // Minimum stake amount in μPVX
+    lockupPeriod: parseInt(period.name), // Convert e.g. "30 Days" to 30
+    apy: period.apy.toString(),
+    totalStaked: "0",
+    active: true
+  }));
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
@@ -104,14 +123,29 @@ export default function StakingPage() {
                           <p className="text-xs text-gray-400">Earned Rewards</p>
                           <p className="text-xs text-green-400">+ {formatCurrency(stake.rewards)}</p>
                         </div>
-                        <Progress value={65} className="h-1" />
+                        <Progress value={65} className="h-1 mb-2" />
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="w-full mt-2 border-green-600 bg-green-900/20 hover:bg-green-900/30 text-green-400"
+                          onClick={() => {
+                            setSelectedStake({ id: stake.id, rewards: stake.rewards });
+                            setIsClaimDialogOpen(true);
+                          }}
+                        >
+                          <Gift className="h-3 w-3 mr-1" />
+                          Claim Rewards
+                        </Button>
                       </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
               <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-                <Button className="w-full bg-blue-700 hover:bg-blue-600 text-white">
+                <Button 
+                  className="w-full bg-blue-700 hover:bg-blue-600 text-white"
+                  onClick={() => setIsCreateDialogOpen(true)}
+                >
                   <Plus className="h-4 w-4 mr-2" />
                   Create New Stake
                 </Button>
@@ -167,7 +201,14 @@ export default function StakingPage() {
               <CardContent className="pt-4">
                 <div className="space-y-3">
                   {stakingData.lockupPeriods.map((period) => (
-                    <div key={period.id} className="flex justify-between items-center bg-gray-900/40 p-3 rounded hover:bg-gray-900/50 transition-colors cursor-pointer">
+                    <div 
+                      key={period.id} 
+                      className="flex justify-between items-center bg-gray-900/40 p-3 rounded hover:bg-gray-900/50 transition-colors cursor-pointer"
+                      onClick={() => {
+                        setIsCreateDialogOpen(true);
+                        // In a real implementation, we would pre-select this specific staking pool
+                      }}
+                    >
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 text-blue-400 mr-2" />
                         <p className="text-sm text-gray-300">{period.name}</p>
@@ -183,6 +224,21 @@ export default function StakingPage() {
           </div>
         </div>
       </div>
+      
+      {/* Create Stake Dialog */}
+      <CreateStakeDialog 
+        open={isCreateDialogOpen} 
+        onOpenChange={setIsCreateDialogOpen} 
+        stakingPools={stakingPools}
+      />
+      
+      {/* Claim Reward Dialog */}
+      <ClaimRewardDialog
+        open={isClaimDialogOpen}
+        onOpenChange={setIsClaimDialogOpen}
+        stakeId={selectedStake?.id?.toString() || ""}
+        rewardAmount={selectedStake?.rewards?.toString() || "0"}
+      />
     </DashboardLayout>
   );
 }
