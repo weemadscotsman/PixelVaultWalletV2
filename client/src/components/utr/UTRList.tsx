@@ -49,13 +49,13 @@ interface UTREntry {
 }
 
 const txTypeColors: Record<string, string> = {
-  transfer: 'bg-blue-100 text-blue-800',
-  mining_reward: 'bg-green-100 text-green-800',
-  stake: 'bg-purple-100 text-purple-800',
-  dex_swap: 'bg-orange-100 text-orange-800',
-  governance_vote: 'bg-cyan-100 text-cyan-800',
-  nft_mint: 'bg-pink-100 text-pink-800',
-  default: 'bg-gray-100 text-gray-800'
+  transfer: 'bg-blue-900/50 text-blue-300 border-blue-700/50',
+  mining_reward: 'bg-green-900/50 text-green-300 border-green-700/50',
+  stake: 'bg-purple-900/50 text-purple-300 border-purple-700/50',
+  dex_swap: 'bg-orange-900/50 text-orange-300 border-orange-700/50',
+  governance_vote: 'bg-cyan-900/50 text-cyan-300 border-cyan-700/50',
+  nft_mint: 'bg-pink-900/50 text-pink-300 border-pink-700/50',
+  default: 'bg-gray-900/50 text-gray-300 border-gray-700/50'
 };
 
 const formatAddress = (address: string) => {
@@ -201,11 +201,11 @@ export function UTRList({ wallet, limit = 50 }: { wallet?: string; limit?: numbe
   }) || [];
 
   return (
-    <Card className="w-full overflow-hidden border border-gray-200 bg-transparent backdrop-blur-sm backdrop-filter bg-opacity-80 rounded-xl shadow-sm">
-      <CardHeader className="bg-gradient-to-b from-gray-900/70 to-gray-900/40 text-white p-4 pb-3">
+    <Card className="w-full overflow-hidden border border-gray-800 bg-black/70 backdrop-blur-sm backdrop-filter rounded-xl shadow-md">
+      <CardHeader className="bg-gradient-to-b from-gray-900/90 to-gray-900/70 text-white p-4 pb-3 border-b border-gray-800/60">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <CardTitle className="text-xl font-bold tracking-tight text-shadow-neon">
+            <CardTitle className="text-xl font-bold tracking-tight text-shadow-neon bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
               Universal Transaction Registry
             </CardTitle>
             <CardDescription className="text-gray-300 mt-1">
@@ -237,66 +237,72 @@ export function UTRList({ wallet, limit = 50 }: { wallet?: string; limit?: numbe
           <div className="p-4 space-y-3">
             {Array.from({ length: 5 }).map((_, index) => (
               <div key={index} className="flex items-center space-x-4">
-                <Skeleton className="h-8 w-16" />
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="h-8 w-24" />
-                <Skeleton className="h-8 w-32 ml-auto" />
+                <Skeleton className="h-8 w-16 bg-gray-800/50" />
+                <Skeleton className="h-8 w-32 bg-gray-800/50" />
+                <Skeleton className="h-8 w-24 bg-gray-800/50" />
+                <Skeleton className="h-8 w-32 ml-auto bg-gray-800/50" />
               </div>
             ))}
           </div>
         ) : isError ? (
-          <div className="text-center p-6 text-gray-500">
-            <div className="mb-2">Error loading transactions: {(error as Error)?.message}</div>
+          <div className="text-center p-8 text-gray-400 border border-red-900/30 m-4 rounded-lg bg-red-950/20">
+            <AlertTriangle className="h-8 w-8 text-red-500 mx-auto mb-2" />
+            <div className="mb-2 font-medium">Error loading transactions</div>
+            <div className="text-sm text-gray-500">{(error as Error)?.message}</div>
           </div>
         ) : filteredData.length === 0 ? (
-          <div className="text-center p-6 text-gray-500">
-            <div className="mb-2">No transactions found with current filters</div>
+          <div className="text-center p-8 text-gray-400 border border-gray-800/30 m-4 rounded-lg bg-gray-900/20">
+            <Filter className="h-8 w-8 text-gray-500 mx-auto mb-2" />
+            <div className="mb-2 font-medium">No transactions found</div>
+            <div className="text-sm text-gray-500">Try adjusting your filters or refreshing</div>
           </div>
         ) : (
-          <Table>
-            <TableHeader className="bg-gray-900/20">
-              <TableRow>
-                <TableHead className="text-left pl-5">Type</TableHead>
-                <TableHead className="text-left">From</TableHead>
-                <TableHead className="text-left">To</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead className="text-center">Status</TableHead>
-                <TableHead className="text-right pr-5">Time</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredData.map((entry) => (
-                <TableRow key={entry.id} className="hover:bg-gray-800/10">
-                  <TableCell className="pl-5">
-                    <Badge 
-                      variant="outline" 
-                      className={txTypeColors[entry.tx_type] || txTypeColors.default}
-                    >
-                      {entry.tx_type.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {formatAddress(entry.from_address)}
-                  </TableCell>
-                  <TableCell className="font-mono text-sm">
-                    {formatAddress(entry.to_address)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex flex-col items-end">
-                      <span>{formatAmount(entry.amount, entry.asset_type)}</span>
-                      <span className="text-xs text-gray-500">{entry.asset_id}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <StatusBadge status={entry.status} />
-                  </TableCell>
-                  <TableCell className="text-right text-sm text-gray-500 pr-5">
-                    {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true })}
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="bg-gray-900/60 sticky top-0">
+                <TableRow className="border-b border-gray-800">
+                  <TableHead className="text-left pl-5 text-gray-300 font-medium">Type</TableHead>
+                  <TableHead className="text-left text-gray-300 font-medium">From</TableHead>
+                  <TableHead className="text-left text-gray-300 font-medium">To</TableHead>
+                  <TableHead className="text-right text-gray-300 font-medium">Amount</TableHead>
+                  <TableHead className="text-center text-gray-300 font-medium">Status</TableHead>
+                  <TableHead className="text-right pr-5 text-gray-300 font-medium">Time</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredData.map((entry) => (
+                  <TableRow key={entry.id} className="hover:bg-gray-800/40 border-b border-gray-800/30">
+                    <TableCell className="pl-5">
+                      <Badge 
+                        variant="outline" 
+                        className={txTypeColors[entry.tx_type] || txTypeColors.default}
+                      >
+                        {entry.tx_type.replace('_', ' ')}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-mono text-sm text-gray-300">
+                      {formatAddress(entry.from_address)}
+                    </TableCell>
+                    <TableCell className="font-mono text-sm text-gray-300">
+                      {formatAddress(entry.to_address)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex flex-col items-end">
+                        <span className="text-gray-200 font-medium">{formatAmount(entry.amount, entry.asset_type)}</span>
+                        <span className="text-xs text-gray-500">{entry.asset_id}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <StatusBadge status={entry.status} />
+                    </TableCell>
+                    <TableCell className="text-right text-sm text-gray-500 pr-5">
+                      {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true })}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </CardContent>
     </Card>
