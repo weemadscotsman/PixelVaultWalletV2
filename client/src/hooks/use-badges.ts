@@ -1,87 +1,139 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Badge, BadgeType, UserBadge } from '@shared/types';
-import { apiRequest } from '@/lib/queryClient';
-import { useToast } from './use-toast';
+import { useState, useEffect } from 'react';
+import { Badge, BadgeCategory, BadgeRarity } from '@shared/badges';
+import { badgeService } from '@/lib/badge-service';
 
 export function useBadges() {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-
-  // Get all visible badges
-  const getAllBadges = () => 
-    useQuery<Badge[]>({
-      queryKey: ['/api/badge'],
-      staleTime: 60000 * 5, // 5 minutes
-    });
-
-  // Get badges by type
-  const getBadgesByType = (type: BadgeType) =>
-    useQuery<Badge[]>({
-      queryKey: ['/api/badge/type', type],
-      staleTime: 60000 * 5, // 5 minutes
-    });
-
-  // Get a single badge by ID
-  const getBadgeById = (id: string) =>
-    useQuery<Badge>({
-      queryKey: ['/api/badge', id],
-      enabled: !!id,
-      staleTime: 60000 * 5, // 5 minutes
-    });
-
-  // Get badges for a user
-  const getUserBadges = (userId: string) =>
-    useQuery<(UserBadge & { badge: Badge })[]>({
-      queryKey: ['/api/badge/user', userId],
-      enabled: !!userId,
-      staleTime: 60000 * 5, // 5 minutes
-    });
-
-  // Update badge progress
-  const { mutate: updateBadgeProgress } = useMutation({
-    mutationFn: async ({ 
-      userId, 
-      badgeId, 
-      progress 
-    }: { 
-      userId: string; 
-      badgeId: string;
-
-      progress: number;
-    }) => {
-      const res = await apiRequest('POST', '/api/badge/progress', {
-        userId,
-        badgeId,
-        progress
-      });
-      return await res.json();
-    },
-    onSuccess: (data, variables) => {
-      // Invalidate badge queries
-      queryClient.invalidateQueries({ queryKey: ['/api/badge/user', variables.userId] });
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [completedBadges, setCompletedBadges] = useState<Badge[]>([]);
+  const [badgesInProgress, setBadgesInProgress] = useState<Badge[]>([]);
+  const [totalExperience, setTotalExperience] = useState(0);
+  const [userLevel, setUserLevel] = useState(1);
+  const [levelProgress, setLevelProgress] = useState({ currentXp: 0, requiredXp: 1000, percentage: 0 });
+  
+  // Initialize badges
+  useEffect(() => {
+    // Load badges
+    const allBadges = badgeService.getAllBadges();
+    setBadges(allBadges);
+    
+    // Set completed badges
+    setCompletedBadges(badgeService.getCompletedBadges());
+    
+    // Set badges in progress
+    setBadgesInProgress(badgeService.getBadgesInProgress());
+    
+    // Set experience and level
+    setTotalExperience(badgeService.getTotalExperience());
+    setUserLevel(badgeService.getUserLevel());
+    setLevelProgress(badgeService.getLevelProgress());
+  }, []);
+  
+  // Complete a badge
+  const completeBadge = (badgeId: string) => {
+    const updatedBadge = badgeService.completeBadge(badgeId);
+    if (updatedBadge) {
+      // Update badge lists
+      const allBadges = badgeService.getAllBadges();
+      setBadges(allBadges);
+      setCompletedBadges(badgeService.getCompletedBadges());
+      setBadgesInProgress(badgeService.getBadgesInProgress());
       
-      if (data.progress >= 100) {
-        toast({
-          title: 'Achievement Unlocked!',
-          description: `You've earned the ${data.badge.name} badge!`,
-        });
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Error',
-        description: `Failed to update badge progress: ${error.message}`,
-        variant: 'destructive',
-      });
+      // Update experience and level
+      setTotalExperience(badgeService.getTotalExperience());
+      setUserLevel(badgeService.getUserLevel());
+      setLevelProgress(badgeService.getLevelProgress());
+      
+      return updatedBadge;
     }
-  });
-
+    return undefined;
+  };
+  
+  // Update badge progress
+  const updateBadgeProgress = (badgeId: string, progress: number) => {
+    const updatedBadge = badgeService.updateBadgeProgress(badgeId, progress);
+    if (updatedBadge) {
+      // Update badge lists
+      const allBadges = badgeService.getAllBadges();
+      setBadges(allBadges);
+      setCompletedBadges(badgeService.getCompletedBadges());
+      setBadgesInProgress(badgeService.getBadgesInProgress());
+      
+      // Update experience and level if badge was completed
+      if (updatedBadge.completedAt) {
+        setTotalExperience(badgeService.getTotalExperience());
+        setUserLevel(badgeService.getUserLevel());
+        setLevelProgress(badgeService.getLevelProgress());
+      }
+      
+      return updatedBadge;
+    }
+    return undefined;
+  };
+  
+  // Increment badge progress
+  const incrementBadgeProgress = (badgeId: string, amount: number = 1) => {
+    const updatedBadge = badgeService.incrementBadgeProgress(badgeId, amount);
+    if (updatedBadge) {
+      // Update badge lists
+      const allBadges = badgeService.getAllBadges();
+      setBadges(allBadges);
+      setCompletedBadges(badgeService.getCompletedBadges());
+      setBadgesInProgress(badgeService.getBadgesInProgress());
+      
+      // Update experience and level if badge was completed
+      if (updatedBadge.completedAt) {
+        setTotalExperience(badgeService.getTotalExperience());
+        setUserLevel(badgeService.getUserLevel());
+        setLevelProgress(badgeService.getLevelProgress());
+      }
+      
+      return updatedBadge;
+    }
+    return undefined;
+  };
+  
+  // Get badge by ID
+  const getBadgeById = (badgeId: string) => {
+    return badgeService.getBadgeById(badgeId);
+  };
+  
+  // Get badges by category
+  const getBadgesByCategory = (category: BadgeCategory) => {
+    return badgeService.getBadgesByCategory(category);
+  };
+  
+  // Get badges by rarity
+  const getBadgesByRarity = (rarity: BadgeRarity) => {
+    return badgeService.getBadgesByRarity(rarity);
+  };
+  
+  // Reset all badges (useful for development/testing)
+  const resetAllBadges = () => {
+    badgeService.resetAllBadges();
+    
+    // Update all states
+    const allBadges = badgeService.getAllBadges();
+    setBadges(allBadges);
+    setCompletedBadges(badgeService.getCompletedBadges());
+    setBadgesInProgress(badgeService.getBadgesInProgress());
+    setTotalExperience(badgeService.getTotalExperience());
+    setUserLevel(badgeService.getUserLevel());
+    setLevelProgress(badgeService.getLevelProgress());
+  };
+  
   return {
-    getAllBadges,
-    getBadgesByType,
-    getBadgeById,
-    getUserBadges,
+    badges,
+    completedBadges,
+    badgesInProgress,
+    totalExperience,
+    userLevel,
+    levelProgress,
+    completeBadge,
     updateBadgeProgress,
-    isLoading: false // Default value for UI states
+    incrementBadgeProgress,
+    getBadgeById,
+    getBadgesByCategory,
+    getBadgesByRarity,
+    resetAllBadges
   };
 }

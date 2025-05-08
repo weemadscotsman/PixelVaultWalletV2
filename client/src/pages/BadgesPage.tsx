@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
-import { Award, Filter, Search, Loader2, Shield, Zap, Share2, Heart, Vote, Crown } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { AnimatedPageLayout } from '@/components/layout/AnimatedPageLayout';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge, BadgeType, BadgeRarity } from '@shared/types';
+import { 
+  Award, Search, Loader2, Flame, Dices, BarChart, Heart,
+  Vote, Trophy, Sparkles, GraduationCap, Bomb
+} from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
+import { Badge as BadgeType, BadgeCategory } from '@shared/badges';
 import { useBadges } from '@/hooks/use-badges';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { BadgeGrid } from '@/components/badges/BadgeGrid';
 import { useWallet } from '@/hooks/use-wallet';
 
 // Badge type to icon mapping
