@@ -390,57 +390,6 @@ export default function ThringletsPage() {
                   <Plus className="h-4 w-4 mr-2" />
                   Get New Thringlet
                 </Button>
-                
-                {thringlets.length >= 2 && (
-                  <div className="mt-4">
-                    <Button 
-                      className="w-full bg-purple-700 hover:bg-purple-600 text-white"
-                      onClick={() => {
-                        if (thringlets.length < 2) {
-                          toast({
-                            title: "Fusion Error",
-                            description: "You need at least 2 Thringlets to attempt fusion.",
-                            variant: "destructive"
-                          });
-                          return;
-                        }
-                        
-                        setLoading(true);
-                        
-                        // Choose two random Thringlets to fuse
-                        const shuffled = [...thringlets].sort(() => 0.5 - Math.random());
-                        const [thringletA, thringletB] = shuffled.slice(0, 2);
-                        
-                        // Attempt fusion
-                        const fusionResult = thringletManager.attemptFusion(thringletA.id, thringletB.id);
-                        
-                        setTimeout(() => {
-                          refreshThringlets();
-                          
-                          if (fusionResult.success) {
-                            toast({
-                              title: "Fusion Successful",
-                              description: fusionResult.message,
-                              variant: "default"
-                            });
-                          } else {
-                            toast({
-                              title: "Fusion Failed",
-                              description: fusionResult.message,
-                              variant: "destructive"
-                            });
-                          }
-                          
-                          setLoading(false);
-                        }, 1500);
-                      }}
-                      disabled={loading || thringlets.length < 2}
-                    >
-                      <Zap className="h-4 w-4 mr-2" />
-                      Attempt Thringlet Fusion
-                    </Button>
-                  </div>
-                )}
               </CardFooter>
             </Card>
           </div>
@@ -606,30 +555,81 @@ export default function ThringletsPage() {
                   )}
                 </CardContent>
                 <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-                  <div className="w-full grid grid-cols-3 gap-4">
-                    <Button 
-                      variant="outline" 
-                      className="border-blue-900/50 text-blue-300"
-                      onClick={() => handleInteraction('feed')}
-                      disabled={loading}
-                    >
-                      Feed
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      className="border-blue-900/50 text-blue-300"
-                      onClick={() => handleInteraction('train')}
-                      disabled={loading}
-                    >
-                      Train
-                    </Button>
-                    <Button 
-                      className="bg-blue-700 hover:bg-blue-600 text-white"
-                      onClick={() => handleInteraction('talk')}
-                      disabled={loading}
-                    >
-                      Talk
-                    </Button>
+                  <div className="w-full space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <Button 
+                        variant="outline" 
+                        className="border-blue-900/50 text-blue-300"
+                        onClick={() => handleInteraction('feed')}
+                        disabled={loading}
+                      >
+                        Feed
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="border-blue-900/50 text-blue-300"
+                        onClick={() => handleInteraction('train')}
+                        disabled={loading}
+                      >
+                        Train
+                      </Button>
+                      <Button 
+                        className="bg-blue-700 hover:bg-blue-600 text-white"
+                        onClick={() => handleInteraction('talk')}
+                        disabled={loading}
+                      >
+                        Talk
+                      </Button>
+                    </div>
+                    
+                    {thringlets.length >= 2 && (
+                      <Button 
+                        className="w-full bg-purple-700 hover:bg-purple-600 text-white"
+                        onClick={() => {
+                          if (thringlets.length < 2) {
+                            toast({
+                              title: "Fusion Error",
+                              description: "You need at least 2 Thringlets to attempt fusion.",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+                          
+                          setLoading(true);
+                          
+                          // Choose two random Thringlets to fuse
+                          const shuffled = [...thringlets].sort(() => 0.5 - Math.random());
+                          const [thringletA, thringletB] = shuffled.slice(0, 2);
+                          
+                          // Attempt fusion
+                          const fusionResult = thringletManager.attemptFusion(thringletA.id, thringletB.id);
+                          
+                          setTimeout(() => {
+                            refreshThringlets();
+                            
+                            if (fusionResult.success) {
+                              toast({
+                                title: "Fusion Successful",
+                                description: fusionResult.message,
+                                variant: "default"
+                              });
+                            } else {
+                              toast({
+                                title: "Fusion Failed",
+                                description: fusionResult.message,
+                                variant: "destructive"
+                              });
+                            }
+                            
+                            setLoading(false);
+                          }, 1500);
+                        }}
+                        disabled={loading || thringlets.length < 2}
+                      >
+                        <Zap className="h-4 w-4 mr-2" />
+                        Attempt Thringlet Fusion
+                      </Button>
+                    )}
                   </div>
                 </CardFooter>
               </Card>
