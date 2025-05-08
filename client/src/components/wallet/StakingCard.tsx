@@ -233,7 +233,7 @@ export function StakingCard() {
           </div>
           <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4">
             <p className="text-sm text-gray-400 mb-1">Available Pools</p>
-            <p className="text-xl font-bold text-blue-300">{stakingPools?.filter(p => p.active).length || 0}</p>
+            <p className="text-xl font-bold text-blue-300">{stakingPools?.filter(p => p.active !== false).length || 0}</p>
           </div>
         </div>
         
@@ -353,7 +353,7 @@ export function StakingCard() {
       <CreateStakeDialog 
         open={isCreateDialogOpen} 
         onOpenChange={setIsCreateDialogOpen}
-        stakingPools={stakingPools?.filter(pool => pool.active) || [] as any[]}
+        stakingPools={stakingPools?.filter(pool => pool.active !== false) || [] as any[]}
       />
     </Card>
   );

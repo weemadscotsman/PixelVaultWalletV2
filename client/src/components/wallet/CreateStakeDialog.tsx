@@ -40,12 +40,12 @@ import { formatCryptoAmount } from "@/lib/utils";
 interface StakingPool {
   id: string;
   name: string;
-  description: string;
-  minAmount: string;
-  lockPeriod: number; // in days
-  apy: number;
+  description?: string;
+  minStake: string;
+  lockupPeriod: number; // in days
+  apy: string;
   totalStaked: string;
-  active: boolean;
+  active?: boolean;
 }
 
 interface CreateStakeDialogProps {
@@ -93,8 +93,8 @@ export function CreateStakeDialog({
     const parsedAmount = parseFloat(amount);
     if (isNaN(parsedAmount)) return "0";
     
-    const dailyRate = selectedPool.apy / 365 / 100; // Daily interest rate
-    const days = selectedPool.lockPeriod;
+    const dailyRate = parseFloat(selectedPool.apy) / 365 / 100; // Daily interest rate
+    const days = selectedPool.lockupPeriod;
     
     // Daily compound interest calculation
     const futureValue = parsedAmount * Math.pow(1 + dailyRate, days);
@@ -159,8 +159,8 @@ export function CreateStakeDialog({
       const parsedAmount = parseFloat(amount);
       if (isNaN(parsedAmount) || parsedAmount <= 0) {
         newErrors.amount = "Amount must be greater than 0";
-      } else if (selectedPool && parsedAmount < parseFloat(selectedPool.minAmount)) {
-        newErrors.amount = `Minimum stake amount is ${selectedPool.minAmount} μPVX`;
+      } else if (selectedPool && parsedAmount < parseFloat(selectedPool.minStake)) {
+        newErrors.amount = `Minimum stake amount is ${selectedPool.minStake} μPVX`;
       } else if (wallet && parsedAmount > parseFloat(wallet.balance)) {
         newErrors.amount = "Amount exceeds available balance";
       }
@@ -274,7 +274,7 @@ export function CreateStakeDialog({
                         <Lock className="h-3 w-3 mr-1" />
                         Min Stake
                       </p>
-                      <p className="text-gray-300">{formatCryptoAmount(selectedPool.minAmount)}</p>
+                      <p className="text-gray-300">{formatCryptoAmount(selectedPool.minStake)}</p>
                     </div>
                     <div>
                       <p className="text-gray-400 flex items-center">
