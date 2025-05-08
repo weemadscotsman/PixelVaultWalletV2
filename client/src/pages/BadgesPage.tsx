@@ -8,16 +8,16 @@ import { cn } from '@/lib/utils';
 import { Badge, BadgeCategory } from '@shared/badges';
 import { useBadges } from '@/hooks/use-badges';
 import { BadgeGrid } from '@/components/badges/BadgeGrid';
-import { Award, Search, Loader2 } from 'lucide-react';
+import { Award, Search, Wallet, Database, Pickaxe, Coins, Bot, Settings, Trophy, Clock } from 'lucide-react';
 
 // Category icon map
 const categoryIcons: Record<string, React.ReactNode> = {
-  'Blockchain': <Award className="h-4 w-4" />,
-  'Wallet': <Award className="h-4 w-4" />,
-  'Mining': <Award className="h-4 w-4" />,
-  'Staking': <Award className="h-4 w-4" />,
-  'Thringlet': <Award className="h-4 w-4" />,
-  'System': <Award className="h-4 w-4" />
+  'Blockchain': <Database className="h-4 w-4" />,
+  'Wallet': <Wallet className="h-4 w-4" />,
+  'Mining': <Pickaxe className="h-4 w-4" />,
+  'Staking': <Coins className="h-4 w-4" />,
+  'Thringlet': <Bot className="h-4 w-4" />,
+  'System': <Settings className="h-4 w-4" />
 };
 
 export default function BadgesPage() {
@@ -57,8 +57,11 @@ export default function BadgesPage() {
     { value: 'System', label: 'System' }
   ];
   
+  // For now, we'll assume the wallet is connected since this page requires authentication
+  const isConnected = true;
+
   return (
-    <PageLayout>
+    <PageLayout isConnected={isConnected}>
       <div className="container space-y-6 pt-6 pb-16">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-blue-300 text-shadow-neon">
@@ -94,7 +97,7 @@ export default function BadgesPage() {
                   </p>
                 </div>
                 <div className="bg-purple-950/30 p-3 rounded-full">
-                  <Award className="h-6 w-6 text-purple-400" />
+                  <Trophy className="h-6 w-6 text-purple-400" />
                 </div>
               </div>
               <div className="mt-3">
@@ -118,7 +121,7 @@ export default function BadgesPage() {
                   </p>
                 </div>
                 <div className="bg-amber-950/30 p-3 rounded-full">
-                  <Award className="h-6 w-6 text-amber-400" />
+                  <Clock className="h-6 w-6 text-amber-400" />
                 </div>
               </div>
             </CardContent>
