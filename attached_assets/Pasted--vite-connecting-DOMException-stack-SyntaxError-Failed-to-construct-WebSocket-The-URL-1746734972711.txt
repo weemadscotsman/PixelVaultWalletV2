@@ -1,0 +1,37 @@
+[vite] connecting...
+DOMException {}
+stack: "SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=t6KwP9dz3uTB' is invalid.↵ at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:218737)↵ at setupWebSocket (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@vite/client:536:19)↵ at fallback (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@vite/client:509:16)↵ at WebSocket.<anonymous> (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@vite/client:555:7)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: DOMException
+
+API Request: GET /api/blockchain/trends?timeRange=24h undefined
+API Response: 200 for GET /api/blockchain/trends?timeRange=24h
+Fetching wallet data for PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Request: GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Response: 200 for GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Response: 200 for GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+Fetching wallet data for PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Response: 200 for GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+Fetching wallet data for PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Response: 200 for GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Response: 200 for GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+Fetching wallet data for PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Response: 200 for GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+Fetching wallet data for PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Response: 200 for GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Response: 200 for GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+Fetching wallet data for PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Response: 200 for GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined
+API Response: 200 for GET /api/wallet/history/PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+Fetching wallet data for PVX_4cf911a2bfc8c35d91d05346f0f2cd96
+API Request: GET /api/wallet/PVX_4cf911a2bfc8c35d91d05346f0f2cd96 undefined

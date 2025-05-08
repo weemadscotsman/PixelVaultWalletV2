@@ -7,6 +7,7 @@ import {
   TrendingUp, 
   Plus, 
   Loader2,
+  Award,
 } from "lucide-react";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateStakeDialog } from "@/components/wallet/CreateStakeDialog";
+import { ClaimRewardDialog } from "@/components/wallet/ClaimRewardDialog";
 import { formatCryptoAmount, formatTimeAgo } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
 
