@@ -30,27 +30,26 @@ import { ReceiveAddressCard } from '@/components/wallet/ReceiveAddressCard';
 import { ExportWalletKeys } from '@/components/wallet/ExportWalletKeys';
 import { StakingCard } from '@/components/wallet/StakingCard';
 import { formatCryptoAmount } from '@/lib/utils';
+import { useLocation, Link } from 'wouter';
 
 export default function WalletPage() {
   const { activeWallet, wallet, setActiveWalletAddress } = useWallet();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(activeWallet ? 'overview' : 'create');
   
-  // Check for hash in URL for direct tab navigation
+  // Check current location path for tab selection
+  const [location] = useLocation();
+  
   useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.substring(1);
-      if (hash && ['overview', 'send', 'receive', 'transactions', 'staking', 'security'].includes(hash)) {
-        setActiveTab(hash);
-      }
-    };
-    
-    // Check on mount and when hash changes
-    handleHashChange();
-    window.addEventListener('hashchange', handleHashChange);
-    
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
+    // Extract the tab from the path if it exists
+    const pathTab = location.split('/').pop();
+    if (pathTab && ['overview', 'send', 'receive', 'transactions', 'staking', 'security'].includes(pathTab)) {
+      setActiveTab(pathTab);
+    } else if (location === '/wallet') {
+      // Default to overview when at the base wallet path
+      setActiveTab(activeWallet ? 'overview' : 'create');
+    }
+  }, [location, activeWallet]);
 
   return (
     <DashboardLayout>
