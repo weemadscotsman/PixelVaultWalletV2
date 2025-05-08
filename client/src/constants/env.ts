@@ -11,8 +11,9 @@ const isSecure = window.location.protocol === 'https:';
 const wsProtocol = isSecure ? 'wss' : 'ws';
 
 // Fallback to current hostname and default port if not specified in environment
+// Don't include path ('/ws') - that's handled by the component
 export const WS_URL = import.meta.env.VITE_WS_URL || 
-  `${wsProtocol}://${window.location.hostname}:${import.meta.env.VITE_SERVER_PORT || DEFAULT_PORT}`;
+  `${wsProtocol}://${window.location.hostname}${window.location.port ? ':'+window.location.port : ''}`;
 
 // API base URL
 export const API_URL = import.meta.env.VITE_API_URL || '';
