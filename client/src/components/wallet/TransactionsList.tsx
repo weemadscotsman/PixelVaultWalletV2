@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { useWallet } from '@/hooks/use-wallet';
 import { shortenAddress, formatCryptoAmount, formatTimeAgo } from '@/lib/utils';
+import { Link } from 'wouter';
 
 interface TransactionsListProps {
   fullView?: boolean;
@@ -218,13 +219,14 @@ export function TransactionsList({ fullView = false }: TransactionsListProps) {
         </div>
       </CardContent>
       <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
-        <Button 
-          variant="outline" 
-          className="w-full border-blue-900/50 text-blue-300"
-          onClick={() => window.location.hash = '#transactions'}
-        >
-          View All Transactions
-        </Button>
+        <Link href="/transactions">
+          <Button 
+            variant="outline" 
+            className="w-full border-blue-900/50 text-blue-300"
+          >
+            View All Transactions
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
