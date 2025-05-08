@@ -4,14 +4,14 @@ import { MiningReward, MiningStats } from "@/types/blockchain";
 const API_BASE_URL = "/api/blockchain";
 
 // Start mining process
-export async function startMining(address: string, threads: number = 2): Promise<boolean> {
+export async function startMining(address: string, threads: number = 2, hardwareType: string = 'cpu'): Promise<boolean> {
   try {
     const response = await fetch(`${API_BASE_URL}/mining/start`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ address, threads }),
+      body: JSON.stringify({ address, threads, hardwareType }),
     });
 
     if (!response.ok) {
@@ -98,7 +98,7 @@ export class WebWorkerMiner {
     this.onBlockFound = onBlockFound;
   }
 
-  public start(threads: number = 2): void {
+  public start(threads: number = 2, speedMultiplier: number = 1, hardwareType: string = 'cpu'): void {
     if (this.isRunning) {
       console.warn("Miner is already running");
       return;
@@ -111,10 +111,10 @@ export class WebWorkerMiner {
     
     // Simulate mining with periodic updates
     this.isRunning = true;
-    this.simulateMining(threads);
+    this.simulateMining(threads, speedMultiplier);
     
     // Report mining started to server
-    startMining(this.address, threads)
+    startMining(this.address, threads, hardwareType)
       .catch(error => console.error("Error reporting mining start to server:", error));
   }
 
@@ -138,13 +138,13 @@ export class WebWorkerMiner {
       .catch(error => console.error("Error reporting mining stop to server:", error));
   }
 
-  private simulateMining(threads: number): void {
+  private simulateMining(threads: number, speedMultiplier: number = 1): void {
     // This is a simplified simulation
     // In a real implementation, this would be replaced by actual mining logic
     
-    // Simulate hash rate based on threads
+    // Simulate hash rate based on threads and hardware type
     const baseHashRate = 50; // hashes per second per thread
-    const maxHashRate = baseHashRate * threads;
+    const maxHashRate = baseHashRate * threads * speedMultiplier;
     
     // Periodically update hash rate with some variability
     const updateInterval = setInterval(() => {
@@ -158,9 +158,12 @@ export class WebWorkerMiner {
       this.hashRate = maxHashRate * (1 + variability);
       this.onHashRateUpdate(this.hashRate);
       
-      // Simulate finding a block (very low probability)
+      // Simulate finding a block (probability increases with hardware capabilities)
       // In a real implementation, this would be based on actual mining results
-      const findBlockProbability = 0.001; // 0.1% chance per update
+      const baseFindBlockProbability = 0.001; // 0.1% chance per update for CPU
+      const hardwareFactor = Math.min(speedMultiplier, 5); // Cap the probability increase
+      const findBlockProbability = baseFindBlockProbability * hardwareFactor;
+      
       if (Math.random() < findBlockProbability) {
         // Simulate block found
         const mockBlockHeight = 3420000 + Math.floor(Math.random() * 10000);

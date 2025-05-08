@@ -261,8 +261,26 @@ export function useMining() {
         );
       }
 
-      // Start mining with selected threads
-      minerRef.current.start(threads);
+      // Apply hardware-specific settings
+      let effectiveThreads = threads;
+      let speedMultiplier = 1;
+      
+      switch(hardwareType) {
+        case 'cpu':
+          speedMultiplier = 1;
+          break;
+        case 'gpu':
+          speedMultiplier = 15; // GPUs are ~15x faster than CPUs
+          effectiveThreads = Math.min(threads * 4, 32); // GPUs can handle more parallel work
+          break;
+        case 'asic':
+          speedMultiplier = 100; // ASICs are ~100x faster than CPUs
+          effectiveThreads = Math.min(threads * 8, 64); // ASICs are highly parallel
+          break;
+      }
+
+      // Start mining with selected threads and configured speed multiplier
+      minerRef.current.start(effectiveThreads, speedMultiplier);
       
       // Report to server
       startMiningMutation();
@@ -273,7 +291,7 @@ export function useMining() {
       
       toast({
         title: "Mining Started",
-        description: `Mining started with ${threads} threads`,
+        description: `Mining started with ${hardwareType.toUpperCase()} (${threads} threads)`,
       });
     } catch (error) {
       console.error("Error starting mining:", error);
@@ -284,7 +302,7 @@ export function useMining() {
       });
       setIsStarting(false);
     }
-  }, [wallet, isMining, isStarting, threads, startMiningMutation, refreshBalance, toast]);
+  }, [wallet, isMining, isStarting, threads, hardwareType, startMiningMutation, refreshBalance, toast]);
 
   // Stop mining function
   const stopMining = useCallback(() => {
@@ -360,6 +378,8 @@ export function useMining() {
     blocksMined,
     threads,
     setThreads,
+    hardwareType,
+    setHardwareType,
     startMining,
     stopMining,
     isStarting,
