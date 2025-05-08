@@ -14,86 +14,21 @@ import {
   ChevronRight,
   Activity,
   BarChart,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import { TrendRadar } from '@/components/blockchain/TrendRadar';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Link } from 'wouter';
-
-// Example wallet data
-const walletData = {
-  publicAddress: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
-  balance: 432914.832651,
-  transactions: [
-    { id: 1, type: 'receive', amount: 5000, from: '0x3a...4b2c', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
-    { id: 2, type: 'send', amount: 2500, to: '0x8d...9f3e', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
-    { id: 3, type: 'receive', amount: 10000, from: '0x5e...2a1d', timestamp: new Date(Date.now() - 1000 * 60 * 120) },
-  ]
-};
-
-// Example blockchain data
-const blockchainData = {
-  currentHeight: 3421897,
-  difficulty: 3.75,
-  hashRate: '14.2 TH/s',
-  lastBlockTime: new Date(Date.now() - 1000 * 15)
-};
-
-// Example staking data
-const stakingData = {
-  totalStaked: 120000,
-  activeStakes: 3,
-  rewards: 3245.21,
-  stakingPower: 85
-};
-
-// Example governance data
-const governanceData = {
-  activeProposals: 2,
-  votingPower: 8500,
-  votingStatus: 'Open',
-  nextVoteEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3)
-};
-
-// Example thringlets data
-const thringletData = {
-  owned: 3,
-  rarity: {
-    common: 1,
-    rare: 1,
-    legendary: 1
-  },
-  emotions: {
-    joyful: 2,
-    curious: 1
-  }
-};
-
-// Example drops data
-const dropsData = {
-  available: 2,
-  recentDrop: {
-    id: 'pvx-matrix-001',
-    name: 'Matrix Pill',
-    rarity: 'Rare',
-    expiry: new Date(Date.now() + 1000 * 60 * 60 * 24)
-  },
-  upcomingDrop: {
-    name: 'Quantum Key',
-    rarity: 'Epic',
-    releaseTime: new Date(Date.now() + 1000 * 60 * 60 * 48)
-  }
-};
-
-// Example learning data
-const learningData = {
-  completedModules: 3,
-  currentModule: 'Proof of Stake',
-  progress: 68,
-  earnedRewards: 1500
-};
+import { useWallet } from '@/hooks/use-wallet';
+import { useStaking } from '@/hooks/use-staking';
+import { useBlockchainMetrics } from '@/hooks/use-blockchain-metrics';
+import { useTransactionHistory } from '@/hooks/use-transaction-history';
+import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
+import { Transaction } from '@/types/blockchain';
 
 export function Dashboard() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
