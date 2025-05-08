@@ -10,10 +10,13 @@ const DEFAULT_PORT = '5000';
 const isSecure = window.location.protocol === 'https:';
 const wsProtocol = isSecure ? 'wss' : 'ws';
 
-// Fallback to current hostname and default port if not specified in environment
+// Ensure we have a valid port, using location.port (from browser URL) or fallback to DEFAULT_PORT
+const port = window.location.port || DEFAULT_PORT;
+
+// Fallback to current hostname and port if not specified in environment
 // Don't include path ('/ws') - that's handled by the component
 export const WS_URL = import.meta.env.VITE_WS_URL || 
-  `${wsProtocol}://${window.location.hostname}${window.location.port ? ':'+window.location.port : ''}`;
+  `${wsProtocol}://${window.location.hostname}:${port}`;
 
 // API base URL
 export const API_URL = import.meta.env.VITE_API_URL || '';
