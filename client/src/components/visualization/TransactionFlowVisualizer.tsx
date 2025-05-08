@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Transaction } from "@shared/types";
+import { Transaction, Block } from "@shared/types";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { useToast } from "@/hooks/use-toast";
 import { ArrowRightCircle, CircleDollarSign, Database, Shield, Gem } from "lucide-react";
 
 interface TransactionFlowVisualizerProps {
@@ -56,6 +57,8 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const animationFrameRef = useRef<number>(0);
   const nodesRef = useRef<Record<string, TransactionNode>>({});
+  const wsRef = useRef<WebSocket | null>(null);
+  const { toast } = useToast();
   
   // Add demo transactions if no real transactions are provided
   const allTransactions = transactions.length > 0 ? transactions : [
@@ -132,6 +135,79 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
       };
     }
   }, []);
+
+  // Set up WebSocket connection for real-time transaction updates
+  useEffect(() => {
+    // Create WebSocket connection
+    const connectWebSocket = () => {
+      // Determine protocol based on current connection
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      
+      if (wsRef.current?.readyState === WebSocket.OPEN) {
+        return; // Already connected
+      }
+      
+      console.log('Connecting to WebSocket at:', wsUrl);
+      const socket = new WebSocket(wsUrl);
+      wsRef.current = socket;
+      
+      socket.onopen = () => {
+        console.log('WebSocket connection established');
+        toast({
+          title: 'Blockchain Connected',
+          description: 'Real-time transaction updates enabled',
+          variant: 'default',
+        });
+      };
+      
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          
+          if (data.type === 'transaction') {
+            // Convert timestamp to Date
+            const transaction = {
+              ...data.transaction,
+              timestamp: new Date(data.transaction.timestamp),
+              id: data.transaction.hash // Use hash as ID if not provided
+            };
+            
+            // Add the new transaction to the beginning of our list
+            setVisibleTransactions(prev => {
+              const newTxs = [transaction, ...prev].slice(0, maxDisplay);
+              return newTxs;
+            });
+            
+            console.log('Received real-time transaction:', transaction);
+          }
+        } catch (error) {
+          console.error('Error processing WebSocket message:', error);
+        }
+      };
+      
+      socket.onclose = () => {
+        console.log('WebSocket connection closed. Attempting to reconnect...');
+        // Try to reconnect in 3 seconds
+        setTimeout(connectWebSocket, 3000);
+      };
+      
+      socket.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        socket.close(); // This will trigger onclose and the reconnection attempt
+      };
+    };
+    
+    connectWebSocket();
+    
+    return () => {
+      // Clean up WebSocket connection
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, [maxDisplay]);
 
   // Update visible transactions
   useEffect(() => {

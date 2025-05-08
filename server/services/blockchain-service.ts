@@ -968,6 +968,14 @@ async function mineNewBlock() {
     };
 
     await memBlockchainStorage.createTransaction(rewardTx);
+    
+    // Broadcast mining reward transaction via WebSocket for real-time updates
+    try {
+      broadcastTransaction(rewardTx);
+    } catch (err) {
+      console.error('Error broadcasting mining reward transaction via WebSocket:', err);
+      // Continue even if WebSocket broadcast fails
+    }
 
     // Credit the miner's wallet
     const minerWallet = await memBlockchainStorage.getWalletByAddress(selectedMiner.address);
@@ -995,7 +1003,16 @@ async function mineNewBlock() {
       difficulty: newBlock.difficulty
     };
 
-    console.log(`New block mined: ${newBlock.height} by miner ${selectedMiner.address}`);
+    // Broadcast new block and status update via WebSocket for real-time updates
+    try {
+      broadcastBlock(newBlock);
+      broadcastStatusUpdate(blockchainStatus);
+      console.log(`New block mined: ${newBlock.height} by miner ${selectedMiner.address}`);
+      console.log(`Block broadcasted via WebSocket`);
+    } catch (err) {
+      console.error('Error broadcasting block via WebSocket:', err);
+      // Continue execution even if WebSocket broadcast fails
+    }
   } catch (error) {
     console.error('Error mining new block:', error);
   }
@@ -1039,6 +1056,14 @@ async function distributeStakingRewards() {
             };
             
             await memBlockchainStorage.createTransaction(rewardTx);
+            
+            // Broadcast staking reward transaction via WebSocket for real-time updates
+            try {
+              broadcastTransaction(rewardTx);
+            } catch (err) {
+              console.error('Error broadcasting staking reward transaction via WebSocket:', err);
+              // Continue even if WebSocket broadcast fails
+            }
             
             // Credit the staker's wallet
             const wallet = await memBlockchainStorage.getWalletByAddress(stake.walletAddress);
