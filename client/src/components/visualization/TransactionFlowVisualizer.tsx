@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRightCircle, CircleDollarSign, Database, Shield, Gem } from "lucide-react";
+import { WS_URL } from "@/constants/env";
 
 interface TransactionFlowVisualizerProps {
   transactions: Transaction[];
@@ -140,25 +141,9 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   useEffect(() => {
     // Create WebSocket connection
     const connectWebSocket = () => {
-      // Determine protocol based on current connection
-      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-      
-      // Construct WebSocket URL dynamically with fallbacks for edge cases
-      const hostname = window.location.hostname || 'localhost';
-      
-      // Build the complete URL with proper checks
-      // For Replit: We don't need to include the port as the proxy handles WebSocket connections
-      // automatically to the same host
-      let wsUrl = `${protocol}//${hostname}`;
-      
-      // Only add port for local development or if explicitly required
-      // If we're on default ports (80 for ws, 443 for wss) or an empty port, don't append port
-      const port = window.location.port;
-      if (port && port !== '80' && port !== '443' && port !== '') {
-        wsUrl += `:${port}`;
-      }
-      
-      wsUrl += '/ws';
+      // Use centralized WS_URL constant with fallback handling
+      // Make sure we append the WebSocket path
+      const wsUrl = `${WS_URL}/ws`;
       
       if (wsRef.current?.readyState === WebSocket.OPEN) {
         return; // Already connected
