@@ -453,25 +453,25 @@ export function Dashboard() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm text-gray-400">Total Staked</p>
-                  <p className="text-2xl font-bold text-blue-300">{formatCurrency(stakingData.totalStaked)}</p>
+                  <p className="text-2xl font-bold text-blue-300">{formatCurrency(stakingPanelData.totalStaked)}</p>
                 </div>
                 <div className="bg-purple-900/30 px-2 py-1 rounded text-purple-300 text-xs">
-                  {stakingData.activeStakes} Active Stakes
+                  {stakingPanelData.activeStakes} Active Stakes
                 </div>
               </div>
               
               <div className="bg-gray-900/30 p-3 rounded">
                 <div className="flex justify-between mb-1">
                   <p className="text-xs text-gray-400">Staking Power</p>
-                  <p className="text-xs text-blue-300">{stakingData.stakingPower}%</p>
+                  <p className="text-xs text-blue-300">{stakingPanelData.stakingPower}%</p>
                 </div>
-                <Progress value={stakingData.stakingPower} className="h-2" />
+                <Progress value={stakingPanelData.stakingPower} className="h-2" />
               </div>
               
               <div className="bg-gray-900/30 p-3 rounded">
                 <p className="text-xs text-gray-400 mb-1">Rewards Earned</p>
                 <div className="flex justify-between items-center">
-                  <p className="text-lg font-bold text-green-400">+ {formatCurrency(stakingData.rewards)}</p>
+                  <p className="text-lg font-bold text-green-400">+ {formatCurrency(stakingPanelData.rewards)}</p>
                   <Button variant="outline" size="sm" className="h-7 text-xs border-green-900/50 text-green-400">
                     Claim
                   </Button>
