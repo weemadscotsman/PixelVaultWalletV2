@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Wallet, 
   ArrowUpRight, 
@@ -30,11 +30,94 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { Transaction } from '@/types/blockchain';
 
+// Default data to use while loading or when real data is unavailable
+const defaultWalletData = {
+  publicAddress: '0x7f5c764cbc14f9669b88837ca1490cca17c31607',
+  balance: 432914.832651,
+  transactions: [
+    { id: 1, type: 'receive', amount: 5000, from: '0x3a...4b2c', timestamp: new Date(Date.now() - 1000 * 60 * 5) },
+    { id: 2, type: 'send', amount: 2500, to: '0x8d...9f3e', timestamp: new Date(Date.now() - 1000 * 60 * 30) },
+    { id: 3, type: 'receive', amount: 10000, from: '0x5e...2a1d', timestamp: new Date(Date.now() - 1000 * 60 * 120) },
+  ]
+};
+
+// Default blockchain data
+const defaultBlockchainData = {
+  currentHeight: 3421897,
+  difficulty: 3.75,
+  hashRate: '14.2 TH/s',
+  lastBlockTime: new Date(Date.now() - 1000 * 15)
+};
+
+// Default staking data
+const defaultStakingData = {
+  totalStaked: 120000,
+  activeStakes: 3,
+  rewards: 3245.21,
+  stakingPower: 85
+};
+
+// Default governance data
+const defaultGovernanceData = {
+  activeProposals: 2,
+  votingPower: 8500,
+  votingStatus: 'Open',
+  nextVoteEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3)
+};
+
+// Default thringlets data
+const defaultThringletData = {
+  owned: 3,
+  rarity: {
+    common: 1,
+    rare: 1,
+    legendary: 1
+  },
+  emotions: {
+    joyful: 2,
+    curious: 1
+  }
+};
+
+// Default drops data
+const defaultDropsData = {
+  available: 2,
+  recentDrop: {
+    id: 'pvx-matrix-001',
+    name: 'Matrix Pill',
+    rarity: 'Rare',
+    expiry: new Date(Date.now() + 1000 * 60 * 60 * 24)
+  },
+  upcomingDrop: {
+    name: 'Quantum Key',
+    rarity: 'Epic',
+    releaseTime: new Date(Date.now() + 1000 * 60 * 60 * 48)
+  }
+};
+
+// Default learning data
+const defaultLearningData = {
+  completedModules: 3,
+  currentModule: 'Proof of Stake',
+  progress: 68,
+  earnedRewards: 1500
+};
+
 export function Dashboard() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   
+  // Using the default data until we fully implement the API integration
+  const [walletData, setWalletData] = useState(defaultWalletData);
+  const [blockchainData, setBlockchainData] = useState(defaultBlockchainData);
+  const [stakingData, setStakingData] = useState(defaultStakingData);
+  const [governanceData, setGovernanceData] = useState(defaultGovernanceData);
+  const [thringletData, setThringletData] = useState(defaultThringletData);
+  const [dropsData, setDropsData] = useState(defaultDropsData);
+  const [learningData, setLearningData] = useState(defaultLearningData);
+  
   const handleRefresh = () => {
     setRefreshing(true);
+    // In the future, we'll fetch actual data here
     setTimeout(() => {
       setRefreshing(false);
     }, 1500);
