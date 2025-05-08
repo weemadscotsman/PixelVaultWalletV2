@@ -33,13 +33,12 @@ interface TrendRadarProps {
 
 export function TrendRadar({ className }: TrendRadarProps) {
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
-  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
   
   // Fetch real blockchain data from the API
   const { isLoading, error, data: blockchainTrends, refetch } = useQuery({
-    queryKey: ['/api/blockchain/trends', timeRange],
+    queryKey: ['/api/blockchain/trends'],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/blockchain/trends?timeRange=${timeRange}`);
+      const res = await apiRequest('GET', '/api/blockchain/trends');
       if (!res.ok) {
         throw new Error('Failed to fetch blockchain trends');
       }
@@ -51,28 +50,28 @@ export function TrendRadar({ className }: TrendRadarProps) {
   const radarData = React.useMemo(() => {
     if (!blockchainTrends) return [];
     
-    // Extract the primary metric from each category
-    const processedData = blockchainTrends.metrics.map(metric => {
-      // For each metric category, get the first data point
-      const dataEntries = Object.entries(metric.data);
-      if (dataEntries.length === 0) return null;
-      
-      // Get the first metric in each category (e.g., "hashrate" from "mining")
-      const [dataKey, dataPoint] = dataEntries[0];
-      
-      // Calculate percentage relative to max value
-      const value = dataPoint.value || 0;
-      const maxValue = dataPoint.maxValue || 1; // Prevent division by zero
-      const percentage = maxValue > 0 ? Math.round((value / maxValue) * 100) : 0;
-      
-      return {
-        metric: `${metric.label} (${dataKey})`,
-        [metric.id]: String(percentage), // Convert to string to avoid NaN errors
-        rawValue: value,
-        rawMax: maxValue,
-        unit: dataPoint.unit
-      };
-    }).filter(Boolean);
+    // Create an array to hold all the metric data points for the radar
+    const processedData: Array<Record<string, any>> = [];
+    
+    // For each metric category (mining, network, etc.)
+    blockchainTrends.metrics.forEach(metric => {
+      // For each data point in this category (hashrate, difficulty, etc.)
+      Object.entries(metric.data).forEach(([dataKey, dataPoint]) => {
+        // Calculate percentage relative to max value (for radar chart, which works on 0-100 scale)
+        const value = dataPoint.value || 0;
+        const maxValue = dataPoint.maxValue || 1; // Prevent division by zero
+        const percentage = maxValue > 0 ? Math.round((value / maxValue) * 100) : 0;
+        
+        // Add this data point to our array
+        processedData.push({
+          metric: `${metric.label} (${dataKey})`, // e.g. "Mining Activity (hashrate)"
+          [metric.id]: String(percentage), // e.g. "mining": "60"
+          rawValue: value,
+          rawMax: maxValue,
+          unit: dataPoint.unit
+        });
+      });
+    });
     
     return processedData;
   }, [blockchainTrends]);
@@ -95,16 +94,14 @@ export function TrendRadar({ className }: TrendRadarProps) {
         <div className="flex justify-between items-center">
           <CardTitle className="text-blue-300">Blockchain Trend Radar</CardTitle>
           <div className="flex items-center gap-2">
-            <Select value={timeRange} onValueChange={(value) => setTimeRange(value as '24h' | '7d' | '30d')}>
-              <SelectTrigger className="w-24 h-8 text-xs border-blue-900/50 bg-blue-950/30">
-                <SelectValue placeholder="Time Range" />
-              </SelectTrigger>
-              <SelectContent className="bg-gray-900 border-blue-900/50">
-                <SelectItem value="24h">24 Hours</SelectItem>
-                <SelectItem value="7d">7 Days</SelectItem>
-                <SelectItem value="30d">30 Days</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button 
+              variant="outline"
+              size="sm"
+              className="h-8 px-3 bg-transparent hover:bg-gray-800/60 border-blue-900/50 text-blue-400 hover:text-blue-300"
+              onClick={() => refetch()}
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -152,8 +149,6 @@ export function TrendRadar({ className }: TrendRadarProps) {
               gridLevels={5}
               gridLabel={(value) => ''}
               tooltip={({ point }) => {
-                const metric = blockchainTrends?.metrics.find((m) => m.id === point.key);
-                const metricData = metric?.data[timeRange];
                 return (
                   <div className="bg-slate-900 border border-blue-900/30 rounded p-2 text-xs shadow-md">
                     <div className="font-semibold text-blue-300">{point.data.metric}</div>
@@ -164,11 +159,11 @@ export function TrendRadar({ className }: TrendRadarProps) {
                       />
                       <span className="text-slate-300">{point.key}: </span>
                       <span className="font-medium text-blue-200">
-                        {metricData?.value.toLocaleString()} {metricData?.unit}
+                        {point.data.rawValue?.toLocaleString()} {point.data.unit}
                       </span>
                     </div>
                     <div className="text-slate-400 text-[10px] mt-1">
-                      Max: {metricData?.maxValue.toLocaleString()} {metricData?.unit}
+                      Max: {point.data.rawMax?.toLocaleString()} {point.data.unit}
                     </div>
                   </div>
                 );
