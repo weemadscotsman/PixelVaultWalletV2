@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Badge } from '@shared/badges';
+import type { Badge } from '@/types/badges';
 import { cn } from '@/lib/utils';
 import { LucideProps } from 'lucide-react';
 import { 
