@@ -505,7 +505,7 @@ export function Dashboard() {
             </div>
           </CardContent>
           <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-2">
-            <Link href="/thringlets/interact">
+            <Link href="/thringlets">
               <Button size="sm" className="w-full bg-pink-700 hover:bg-pink-600 text-white">
                 Interact
               </Button>
@@ -555,7 +555,7 @@ export function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <Link href={`/drops/${dropsData.recentDrop.id}`}>
+                  <Link href="/drops">
                     <Button variant="outline" size="sm" className="h-7 text-xs border-cyan-900/50 text-cyan-400">
                       Claim
                     </Button>
@@ -585,7 +585,7 @@ export function Dashboard() {
             </div>
           </CardContent>
           <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-2">
-            <Link href="/drops/terminal">
+            <Link href="/drops">
               <Button size="sm" className="w-full bg-cyan-700 hover:bg-cyan-600 text-white">
                 Open Drop Terminal
               </Button>
