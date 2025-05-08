@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Copy, QrCode, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { QRCodeSVG } from "qrcode.react";
 import { useWallet } from "@/hooks/use-wallet";
 import { useToast } from "@/hooks/use-toast";
 
@@ -37,23 +38,46 @@ export function ReceiveAddressCard() {
   // Generate QR code data
   const qrCodeData = wallet?.address ? `PVX:${wallet.address}` : "";
   
+  // QR code reference for download
+  const qrCodeRef = useRef<HTMLDivElement>(null);
+  
   // Download QR code
   const downloadQRCode = () => {
-    const qrCanvas = document.getElementById('wallet-qr-code') as HTMLCanvasElement;
-    if (!qrCanvas) return;
+    if (!qrCodeRef.current || !wallet?.address) return;
     
-    const url = qrCanvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `pvx-wallet-qr-${wallet?.address.substring(0, 8)}.png`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const svgElement = qrCodeRef.current.querySelector('svg');
+    if (!svgElement) return;
     
-    toast({
-      title: "QR code downloaded",
-      description: "QR code image has been downloaded",
-    });
+    // Create a canvas and draw the SVG on it
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const img = new Image();
+    
+    canvas.width = 300;
+    canvas.height = 300;
+    
+    img.onload = () => {
+      if (!ctx) return;
+      ctx.fillStyle = 'white';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      
+      const pngUrl = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = pngUrl;
+      a.download = `pvx-wallet-qr-${wallet.address.substring(4, 12)}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      
+      toast({
+        title: "QR code downloaded",
+        description: "QR code image has been downloaded",
+      });
+    };
+    
+    img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
   };
 
   return (
@@ -76,12 +100,15 @@ export function ReceiveAddressCard() {
         ) : (
           <div className="space-y-6">
             <div className="flex justify-center">
-              <div className="bg-white p-2 rounded-md">
+              <div className="bg-white p-4 rounded-md" ref={qrCodeRef}>
                 {/* QR Code */}
-                <canvas 
-                  id="wallet-qr-code"
-                  className="w-48 h-48"
-                  data-qr={qrCodeData}
+                <QRCodeSVG 
+                  value={qrCodeData}
+                  size={192}
+                  bgColor={"#FFFFFF"}
+                  fgColor={"#000000"}
+                  level={"H"}
+                  includeMargin={true}
                 />
               </div>
             </div>
