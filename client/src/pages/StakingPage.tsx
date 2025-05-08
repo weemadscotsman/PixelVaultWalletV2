@@ -89,12 +89,12 @@ export default function StakingPage() {
                       </div>
                       
                       <div className="grid grid-cols-2 gap-4 mb-3">
-                        <div>
-                          <p className="text-xs text-gray-400">Start Date</p>
+                        <div className="bg-gray-900/40 p-2 rounded">
+                          <p className="text-xs text-gray-400 mb-1">Start Date</p>
                           <p className="text-sm text-gray-300">{formatDate(stake.startDate)}</p>
                         </div>
-                        <div>
-                          <p className="text-xs text-gray-400">End Date</p>
+                        <div className="bg-gray-900/40 p-2 rounded">
+                          <p className="text-xs text-gray-400 mb-1">End Date</p>
                           <p className="text-sm text-gray-300">{formatDate(stake.endDate)}</p>
                         </div>
                       </div>
@@ -126,23 +126,23 @@ export default function StakingPage() {
               </CardHeader>
               <CardContent className="pt-4">
                 <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-gray-400">Total Staked</p>
+                  <div className="bg-gray-900/40 p-3 rounded flex flex-col">
+                    <p className="text-sm text-gray-400 mb-1">Total Staked</p>
                     <p className="text-2xl font-bold text-blue-300">{formatCurrency(stakingData.totalStaked)}</p>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-gray-900/30 p-3 rounded">
-                      <p className="text-xs text-gray-400">Active Stakes</p>
+                    <div className="bg-gray-900/40 p-3 rounded flex flex-col justify-between h-full">
+                      <p className="text-xs text-gray-400 mb-1">Active Stakes</p>
                       <p className="text-lg font-bold text-blue-300">{stakingData.activeStakes}</p>
                     </div>
-                    <div className="bg-gray-900/30 p-3 rounded">
-                      <p className="text-xs text-gray-400">Current APY</p>
+                    <div className="bg-gray-900/40 p-3 rounded flex flex-col justify-between h-full">
+                      <p className="text-xs text-gray-400 mb-1">Current APY</p>
                       <p className="text-lg font-bold text-green-400">{stakingData.apy}%</p>
                     </div>
                   </div>
                   
-                  <div className="bg-gray-900/30 p-3 rounded">
+                  <div className="bg-gray-900/40 p-3 rounded">
                     <div className="flex justify-between mb-1">
                       <p className="text-xs text-gray-400">Staking Power</p>
                       <p className="text-xs text-blue-300">{stakingData.stakingPower}%</p>
@@ -167,7 +167,7 @@ export default function StakingPage() {
               <CardContent className="pt-4">
                 <div className="space-y-3">
                   {stakingData.lockupPeriods.map((period) => (
-                    <div key={period.id} className="flex justify-between items-center bg-gray-900/30 p-3 rounded hover:bg-gray-900/50 transition-colors cursor-pointer">
+                    <div key={period.id} className="flex justify-between items-center bg-gray-900/40 p-3 rounded hover:bg-gray-900/50 transition-colors cursor-pointer">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 text-blue-400 mr-2" />
                         <p className="text-sm text-gray-300">{period.name}</p>

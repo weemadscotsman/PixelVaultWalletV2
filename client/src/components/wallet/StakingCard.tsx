@@ -266,27 +266,27 @@ export function StakingCard() {
                         </p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 text-sm">
-                      <div>
-                        <p className="text-gray-400">Started</p>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="bg-gray-900/40 p-2 rounded">
+                        <p className="text-gray-400 mb-1">Started</p>
                         <p className="text-gray-300 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
                           {stake.startTime ? formatTimeAgo(new Date(stake.startTime)) : 'Just now'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-gray-400">Ends</p>
+                      <div className="bg-gray-900/40 p-2 rounded">
+                        <p className="text-gray-400 mb-1">Ends</p>
                         <p className="text-gray-300 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
                           {stake.endTime ? formatTimeAgo(new Date(stake.endTime)) : 'In progress'}
                         </p>
                       </div>
-                      <div>
-                        <p className="text-gray-400">Current Rewards</p>
+                      <div className="bg-gray-900/40 p-2 rounded">
+                        <p className="text-gray-400 mb-1">Current Rewards</p>
                         <p className="text-green-400">{formatCryptoAmount(stake.rewards || '0')}</p>
                       </div>
-                      <div>
-                        <p className="text-gray-400">Pool</p>
+                      <div className="bg-gray-900/40 p-2 rounded">
+                        <p className="text-gray-400 mb-1">Pool</p>
                         <p className="text-gray-300">{pool?.name || 'Unknown'}</p>
                       </div>
                     </div>
@@ -344,17 +344,17 @@ export function StakingCard() {
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-400 mb-3">{pool.description}</p>
-                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                  <div>
-                    <p className="text-gray-400">Min. Stake</p>
+                <div className="grid grid-cols-3 gap-2 text-sm mb-3">
+                  <div className="bg-gray-900/40 p-2 rounded">
+                    <p className="text-gray-400 mb-1">Min. Stake</p>
                     <p className="text-gray-300">{formatCryptoAmount(pool.minStake)}</p>
                   </div>
-                  <div>
-                    <p className="text-gray-400">Lock Period</p>
+                  <div className="bg-gray-900/40 p-2 rounded">
+                    <p className="text-gray-400 mb-1">Lock Period</p>
                     <p className="text-gray-300">{pool.lockupPeriod} days</p>
                   </div>
-                  <div>
-                    <p className="text-gray-400">Total Staked</p>
+                  <div className="bg-gray-900/40 p-2 rounded">
+                    <p className="text-gray-400 mb-1">Total Staked</p>
                     <p className="text-gray-300">{formatCryptoAmount(pool.totalStaked)}</p>
                   </div>
                 </div>
