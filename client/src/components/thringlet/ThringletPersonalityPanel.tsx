@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { ArrowUpRight, Brain, Zap, Chart, Lock, Coins, Shuffle, MessageSquare } from 'lucide-react';
+import { ArrowUpRight, Brain, Zap, BarChart2, Lock, Coins, Shuffle, MessageSquare } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -88,7 +88,7 @@ export function ThringletPersonalityPanel({ thringletId }: ThringletPersonalityP
               <Brain className="w-3 h-3 mr-1" /> Traits
             </TabsTrigger>
             <TabsTrigger value="affinities" className="text-xs">
-              <Chart className="w-3 h-3 mr-1" /> Affinities
+              <BarChart2 className="w-3 h-3 mr-1" /> Affinities
             </TabsTrigger>
             <TabsTrigger value="interact" className="text-xs">
               <MessageSquare className="w-3 h-3 mr-1" /> Interact

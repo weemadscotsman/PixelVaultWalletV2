@@ -23,6 +23,7 @@ import { thringletManager } from '@/lib/thringlet';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { ThringletTerminal } from '@/components/thringlet/ThringletTerminal';
+import { ThringletPersonalityPanel } from '@/components/thringlet/ThringletPersonalityPanel';
 
 // Sample wallet address for testing
 const SAMPLE_WALLET_ADDRESS = '0x7f5c764cbc14f9669b88837ca1490cca17c31607';
@@ -553,6 +554,12 @@ export default function ThringletsPage() {
                       <p className="text-sm">{interactionMessage}</p>
                     </div>
                   )}
+                  
+                  {/* Thringlet Personality Panel */}
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium text-blue-300 mb-2">Blockchain Personality</h3>
+                    <ThringletPersonalityPanel thringletId={selectedThringlet.id} />
+                  </div>
                 </CardContent>
                 <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
                   <div className="w-full space-y-4">
