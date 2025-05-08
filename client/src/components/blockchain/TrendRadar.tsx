@@ -33,12 +33,13 @@ interface TrendRadarProps {
 
 export function TrendRadar({ className }: TrendRadarProps) {
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
+  const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('24h');
   
   // Fetch real blockchain data from the API
   const { isLoading, error, data: blockchainTrends, refetch } = useQuery({
-    queryKey: ['/api/blockchain/trends'],
+    queryKey: ['/api/blockchain/trends', timeRange],
     queryFn: async () => {
-      const res = await apiRequest('GET', '/api/blockchain/trends');
+      const res = await apiRequest('GET', `/api/blockchain/trends?timeRange=${timeRange}`);
       if (!res.ok) {
         throw new Error('Failed to fetch blockchain trends');
       }
@@ -94,7 +95,7 @@ export function TrendRadar({ className }: TrendRadarProps) {
         <div className="flex justify-between items-center">
           <CardTitle className="text-blue-300">Blockchain Trend Radar</CardTitle>
           <div className="flex items-center gap-2">
-            <Select value={timeRange} onValueChange={(value) => setTimeRange(value as TimeRange)}>
+            <Select value={timeRange} onValueChange={(value) => setTimeRange(value as '24h' | '7d' | '30d')}>
               <SelectTrigger className="w-24 h-8 text-xs border-blue-900/50 bg-blue-950/30">
                 <SelectValue placeholder="Time Range" />
               </SelectTrigger>
@@ -151,8 +152,8 @@ export function TrendRadar({ className }: TrendRadarProps) {
               gridLevels={5}
               gridLabel={(value) => ''}
               tooltip={({ point }) => {
-                const metric = blockchainTrends?.metrics.find((m: any) => m.id === point.key);
-                const metricData = metric?.data[timeRange as TimeRange];
+                const metric = blockchainTrends?.metrics.find((m) => m.id === point.key);
+                const metricData = metric?.data[timeRange];
                 return (
                   <div className="bg-slate-900 border border-blue-900/30 rounded p-2 text-xs shadow-md">
                     <div className="font-semibold text-blue-300">{point.data.metric}</div>
