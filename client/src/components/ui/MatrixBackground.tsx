@@ -1,7 +1,39 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function MatrixBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [intensity, setIntensity] = useState(40); // Default intensity
+  
+  // Get matrix intensity from CSS variable or localStorage
+  useEffect(() => {
+    const getMatrixIntensity = () => {
+      // Check localStorage first
+      const savedSettings = localStorage.getItem('pvx_user_settings');
+      if (savedSettings) {
+        try {
+          const settings = JSON.parse(savedSettings);
+          if (settings.matrixIntensity !== undefined) {
+            return settings.matrixIntensity;
+          }
+        } catch (e) {
+          console.error("Error parsing saved settings:", e);
+        }
+      }
+      
+      // Fallback to default
+      return 40;
+    };
+    
+    setIntensity(getMatrixIntensity());
+    
+    // Listen for settings changes
+    const handleStorageChange = () => {
+      setIntensity(getMatrixIntensity());
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,7 +67,9 @@ export function MatrixBackground() {
     // Drawing function
     const draw = () => {
       // Semi-transparent black to create fade effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.06)'; // Slightly more transparent for better trail effect
+      // Adjust fade effect based on intensity
+      const fadeOpacity = 0.04 + ((100 - intensity) / 1000); // More transparent at lower intensity
+      ctx.fillStyle = `rgba(0, 0, 0, ${fadeOpacity})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < drops.length; i++) {
@@ -49,24 +83,15 @@ export function MatrixBackground() {
         
         // Special highlight for the first character in each column
         if (drops[i] > 0 && drops[i] < 1) {
-          // Bright white for the leading character
-          ctx.fillStyle = 'rgba(220, 255, 220, 1)';
+          // Bright neon blue for the leading character
+          ctx.fillStyle = 'rgba(0, 200, 255, 1)';
         } else {
           // Randomize brightness for more realistic effect
           const brightness = Math.random() * 50 + 50; // 50-100%
           
-          // Use CSS variable for color to support theme switching
-          const computedStyle = getComputedStyle(document.documentElement);
-          const themeColor = computedStyle.getPropertyValue('--primary-color') || '#4ade80';
-          
-          // Check if using cyberpunk mode and adjust color accordingly
-          if (document.documentElement.classList.contains('cyberpunk-theme')) {
-            const hue = (i * 3) % 360; // Cycle through colors based on column
-            ctx.fillStyle = `hsla(${hue}, 100%, 60%, 0.9)`;
-          } else {
-            // Default matrix green with varying brightness
-            ctx.fillStyle = `rgba(0, ${brightness + 100}, 0, 0.9)`;
-          }
+          // Default to a consistent neon blue color
+          const alpha = (intensity / 100) * 0.9; // Adjust opacity based on intensity
+          ctx.fillStyle = `rgba(0, ${brightness + 120}, 220, ${alpha})`;
         }
         
         ctx.font = `${fontSize}px monospace`;
@@ -115,7 +140,17 @@ export function MatrixBackground() {
       clearInterval(interval);
       window.removeEventListener('resize', handleResize);
     };
-  }, []);
+  }, [intensity]); // Re-initialize when intensity changes
   
-  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full z-0 opacity-40 pointer-events-none" />;
+  return (
+    <canvas 
+      ref={canvasRef} 
+      className="fixed top-0 left-0 w-full h-full z-[-999] pointer-events-none" 
+      style={{ 
+        opacity: intensity / 100, 
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+      }} 
+    />
+  );
 }
