@@ -5,7 +5,7 @@ import { LucideProps } from 'lucide-react';
 import { 
   Award, Lock, HelpCircle, Power, Stamp, BarChart, Bot, 
   Shield, Flame, Medal, Trophy, Star, 
-  FileText, Diamond, Server, Archive, GraduationCap, EyeOff 
+  FileText, Database, Server, Archive, GraduationCap, EyeOff 
 } from 'lucide-react';
 import {
   Dialog,
@@ -33,11 +33,12 @@ const IconMap: Record<string, React.ComponentType<LucideProps>> = {
   Trophy,
   Star,
   FileText,
-  Diamond,
+  Diamond: Database, // Use Database icon as substitute for Diamond
   Server,
   Archive,
   GraduationCap,
-  EyeOff
+  EyeOff,
+  Pickaxe: Trophy // Use Trophy as substitute for Pickaxe
 };
 
 interface AchievementBadgeProps {
@@ -128,9 +129,9 @@ export function AchievementBadge({
         title={isSecret ? 'Secret Badge' : badge.name}
       >
         {isLocked ? (
-          <Icons.Lock className="w-1/2 h-1/2 opacity-60" />
+          <Lock className="w-1/2 h-1/2 opacity-60" />
         ) : isSecret ? (
-          <Icons.HelpCircle className="w-1/2 h-1/2 opacity-60" />
+          <HelpCircle className="w-1/2 h-1/2 opacity-60" />
         ) : (
           <IconComponent className="w-1/2 h-1/2" />
         )}
@@ -167,9 +168,9 @@ export function AchievementBadge({
                 style={{ color: isLocked ? '#888' : badge.color }}
               >
                 {isLocked ? (
-                  <Icons.Lock className="w-5 h-5 opacity-60" />
+                  <Lock className="w-5 h-5 opacity-60" />
                 ) : isSecret ? (
-                  <Icons.HelpCircle className="w-5 h-5 opacity-60" />
+                  <HelpCircle className="w-5 h-5 opacity-60" />
                 ) : (
                   <IconComponent className="w-5 h-5" />
                 )}
