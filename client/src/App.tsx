@@ -22,6 +22,7 @@ import SettingsPage from "@/pages/SettingsPage";
 import TerminalPage from "@/pages/TerminalPage";
 import NFTsPage from "@/pages/NFTsPage";
 import TransactionsPage from "@/pages/TransactionsPage";
+import ActionsPage from "@/pages/ActionsPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -53,6 +54,7 @@ function Router() {
           <Route path="/settings" component={SettingsPage} />
           <Route path="/nfts" component={NFTsPage} />
           <Route path="/transactions" component={TransactionsPage} />
+          <Route path="/actions" component={ActionsPage} />
           <Route component={NotFound} />
         </Switch>
       </div>

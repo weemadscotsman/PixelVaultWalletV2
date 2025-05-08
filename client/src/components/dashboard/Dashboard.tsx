@@ -674,7 +674,7 @@ export function Dashboard() {
       <div className="mt-6">
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-lg font-bold text-blue-300">Quick Actions</h3>
-          <Link href="/settings#actions">
+          <Link href="/actions">
             <Button variant="ghost" size="sm" className="text-blue-300 hover:text-blue-100 hover:bg-blue-900/30">
               View All <ArrowRight className="ml-1 w-4 h-4" />
             </Button>
