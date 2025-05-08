@@ -33,4 +33,22 @@ router.post('/create', thringletController.createThringlet);
  */
 router.get('/all', thringletController.getAllThringlets);
 
+/**
+ * Get thringlet personality traits
+ * GET /api/thringlet/personality/:id
+ */
+router.get('/personality/:id', thringletController.getThringletPersonality);
+
+/**
+ * Update thringlet personality based on blockchain activity
+ * POST /api/thringlet/update-personality
+ */
+router.post('/update-personality', thringletController.updatePersonalityFromActivity);
+
+/**
+ * Get personalized response from thringlet based on personality
+ * POST /api/thringlet/personality-response
+ */
+router.post('/personality-response', thringletController.getPersonalizedResponse);
+
 export default router;

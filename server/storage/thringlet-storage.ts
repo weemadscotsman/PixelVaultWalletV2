@@ -1,4 +1,8 @@
-import { ThringletEmotionState } from '@shared/types';
+import { 
+  ThringletEmotionState, 
+  ThringletPersonalityTrait, 
+  BlockchainAffinity 
+} from '@shared/types';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -13,12 +17,26 @@ export interface Thringlet {
   level: number;
   experience: number;
   abilities: string[];
+  // Personality system
+  personalityTraits: ThringletPersonalityTrait[];
+  dominantTrait: ThringletPersonalityTrait;
+  blockchainAffinities: BlockchainAffinity[];
+  dominantAffinity: BlockchainAffinity;
+  // Per-trait intensity values (0-100)
+  traitIntensity: Record<ThringletPersonalityTrait, number>;
+  // Blockchain activity influences
+  miningInfluence: number;      // How mining activity affects this companion
+  stakingInfluence: number;     // How staking affects this companion
+  tradingInfluence: number;     // How trading affects this companion
+  governanceInfluence: number;  // How governance participation affects this companion
+  // Visual appearance
   visual: {
     baseColor: string;
     eyeColor: string;
     appendages: number;
     specialFeatures: string[];
   };
+  // Emotional history
   stateHistory: {
     state: ThringletEmotionState;
     timestamp: number;
@@ -57,6 +75,36 @@ export class ThringletStorage {
         level: 3,
         experience: 250,
         abilities: ['basic_movement', 'teleport'],
+        // Personality traits
+        personalityTraits: [
+          ThringletPersonalityTrait.ANALYTICAL,
+          ThringletPersonalityTrait.CURIOUS,
+          ThringletPersonalityTrait.CREATIVE
+        ],
+        dominantTrait: ThringletPersonalityTrait.ANALYTICAL,
+        blockchainAffinities: [
+          BlockchainAffinity.PRIVACY,
+          BlockchainAffinity.INNOVATION
+        ],
+        dominantAffinity: BlockchainAffinity.PRIVACY,
+        traitIntensity: {
+          [ThringletPersonalityTrait.ANALYTICAL]: 85,
+          [ThringletPersonalityTrait.ADVENTUROUS]: 30,
+          [ThringletPersonalityTrait.CAUTIOUS]: 45,
+          [ThringletPersonalityTrait.CREATIVE]: 70,
+          [ThringletPersonalityTrait.SOCIAL]: 35,
+          [ThringletPersonalityTrait.CURIOUS]: 75,
+          [ThringletPersonalityTrait.PROTECTIVE]: 50,
+          [ThringletPersonalityTrait.CHAOTIC]: 20,
+          [ThringletPersonalityTrait.LOGICAL]: 65,
+          [ThringletPersonalityTrait.EMOTIONAL]: 25
+        },
+        // Blockchain activity influences
+        miningInfluence: 70,
+        stakingInfluence: 40,
+        tradingInfluence: -20,
+        governanceInfluence: 50,
+        // Visual
         visual: {
           baseColor: 'purple',
           eyeColor: 'teal',
@@ -84,6 +132,36 @@ export class ThringletStorage {
         level: 5,
         experience: 490,
         abilities: ['basic_movement', 'invisibility', 'energy_burst'],
+        // Personality traits
+        personalityTraits: [
+          ThringletPersonalityTrait.ADVENTUROUS,
+          ThringletPersonalityTrait.CHAOTIC,
+          ThringletPersonalityTrait.EMOTIONAL
+        ],
+        dominantTrait: ThringletPersonalityTrait.ADVENTUROUS,
+        blockchainAffinities: [
+          BlockchainAffinity.MINING,
+          BlockchainAffinity.DEFI
+        ],
+        dominantAffinity: BlockchainAffinity.MINING,
+        traitIntensity: {
+          [ThringletPersonalityTrait.ANALYTICAL]: 25,
+          [ThringletPersonalityTrait.ADVENTUROUS]: 90,
+          [ThringletPersonalityTrait.CAUTIOUS]: 15,
+          [ThringletPersonalityTrait.CREATIVE]: 55,
+          [ThringletPersonalityTrait.SOCIAL]: 60,
+          [ThringletPersonalityTrait.CURIOUS]: 50,
+          [ThringletPersonalityTrait.PROTECTIVE]: 20,
+          [ThringletPersonalityTrait.CHAOTIC]: 75,
+          [ThringletPersonalityTrait.LOGICAL]: 30,
+          [ThringletPersonalityTrait.EMOTIONAL]: 70
+        },
+        // Blockchain activity influences
+        miningInfluence: 90,
+        stakingInfluence: -10,
+        tradingInfluence: 70,
+        governanceInfluence: -30,
+        // Visual
         visual: {
           baseColor: 'orange',
           eyeColor: 'blue',

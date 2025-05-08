@@ -1,8 +1,13 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
-import { ThringletEmotionState } from '@shared/types';
+import { 
+  ThringletEmotionState, 
+  ThringletPersonalityTrait, 
+  BlockchainAffinity 
+} from '@shared/types';
 import { thringletStorage, Thringlet } from '../storage/thringlet-storage';
 import { checkThringletBadges } from '../controllers/badgeController';
+import { personalityService } from '../services/personality-service';
 
 /**
  * Process input to thringlet emotion engine
@@ -257,7 +262,10 @@ export const createThringlet = async (req: Request, res: Response) => {
       }
     }
     
-    // Create thringlet
+    // Generate personality traits
+    const personality = personalityService.generateInitialPersonality();
+    
+    // Create thringlet with personality traits
     const thringlet: Thringlet = {
       id,
       name,
@@ -268,6 +276,18 @@ export const createThringlet = async (req: Request, res: Response) => {
       level: 1,
       experience: 0,
       abilities: ['basic_movement'],
+      // Personality system
+      personalityTraits: personality.personalityTraits,
+      dominantTrait: personality.dominantTrait,
+      blockchainAffinities: personality.blockchainAffinities,
+      dominantAffinity: personality.dominantAffinity,
+      traitIntensity: personality.traitIntensity,
+      // Blockchain activity influences
+      miningInfluence: personality.miningInfluence,
+      stakingInfluence: personality.stakingInfluence,
+      tradingInfluence: personality.tradingInfluence,
+      governanceInfluence: personality.governanceInfluence,
+      // Visual appearance
       visual: {
         baseColor,
         eyeColor,
@@ -341,6 +361,129 @@ export const getAllThringlets = async (req: Request, res: Response) => {
     console.error('Error getting all thringlets:', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to get thringlets'
+    });
+  }
+};
+
+/**
+ * Get thringlet personality traits
+ * GET /api/thringlet/personality/:id
+ */
+export const getThringletPersonality = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    // Get thringlet
+    const thringlet = await thringletStorage.getThringlet(id);
+    if (!thringlet) {
+      return res.status(404).json({ error: 'Thringlet not found' });
+    }
+    
+    // Return personality data
+    res.json({
+      id: thringlet.id,
+      personalityTraits: thringlet.personalityTraits,
+      dominantTrait: thringlet.dominantTrait,
+      blockchainAffinities: thringlet.blockchainAffinities,
+      dominantAffinity: thringlet.dominantAffinity,
+      traitIntensity: thringlet.traitIntensity,
+      miningInfluence: thringlet.miningInfluence,
+      stakingInfluence: thringlet.stakingInfluence,
+      tradingInfluence: thringlet.tradingInfluence,
+      governanceInfluence: thringlet.governanceInfluence
+    });
+  } catch (error) {
+    console.error('Error getting thringlet personality:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get thringlet personality'
+    });
+  }
+};
+
+/**
+ * Update thringlet personality based on blockchain activity
+ * POST /api/thringlet/update-personality
+ */
+export const updatePersonalityFromActivity = async (req: Request, res: Response) => {
+  try {
+    const { thringletId } = req.body;
+    
+    if (!thringletId) {
+      return res.status(400).json({ error: 'Thringlet ID is required' });
+    }
+    
+    // Get thringlet
+    const thringlet = await thringletStorage.getThringlet(thringletId);
+    if (!thringlet) {
+      return res.status(404).json({ error: 'Thringlet not found' });
+    }
+    
+    // Update personality based on blockchain activity
+    const updates = await personalityService.updatePersonalityFromBlockchainActivity(thringlet);
+    
+    if (Object.keys(updates).length === 0) {
+      return res.json({
+        id: thringletId,
+        message: 'No personality changes detected',
+        updated: false
+      });
+    }
+    
+    // Apply updates
+    const updatedThringlet = await thringletStorage.updateThringlet(thringletId, updates);
+    
+    res.json({
+      id: thringletId,
+      message: 'Personality updated based on blockchain activity',
+      updated: true,
+      changes: {
+        dominantTrait: updates.dominantTrait !== thringlet.dominantTrait,
+        emotionalState: updates.emotionalState !== thringlet.emotionalState,
+        experience: updates.experience !== thringlet.experience
+      }
+    });
+  } catch (error) {
+    console.error('Error updating thringlet personality:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to update thringlet personality'
+    });
+  }
+};
+
+/**
+ * Get personalized response from thringlet based on personality
+ * POST /api/thringlet/personality-response
+ */
+export const getPersonalizedResponse = async (req: Request, res: Response) => {
+  try {
+    const { thringletId, input } = req.body;
+    
+    if (!thringletId || !input) {
+      return res.status(400).json({ error: 'Thringlet ID and input are required' });
+    }
+    
+    // Get thringlet
+    const thringlet = await thringletStorage.getThringlet(thringletId);
+    if (!thringlet) {
+      return res.status(404).json({ error: 'Thringlet not found' });
+    }
+    
+    // Get personalized response
+    const response = personalityService.getPersonalizedResponse(thringlet, input);
+    
+    res.json({
+      id: thringletId,
+      input,
+      response,
+      personality: {
+        dominantTrait: thringlet.dominantTrait,
+        dominantAffinity: thringlet.dominantAffinity
+      }
+    });
+  } catch (error) {
+    console.error('Error getting personalized thringlet response:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get personalized response'
     });
   }
 };
