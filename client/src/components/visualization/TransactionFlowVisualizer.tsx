@@ -145,15 +145,19 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
       
       // Construct WebSocket URL dynamically with fallbacks for edge cases
       const hostname = window.location.hostname || 'localhost';
-      // Use the port from location if available, otherwise use a fallback port
-      // Replit typically uses port 5000 for backend services
-      const port = window.location.port || '5000';
       
       // Build the complete URL with proper checks
+      // For Replit: We don't need to include the port as the proxy handles WebSocket connections
+      // automatically to the same host
       let wsUrl = `${protocol}//${hostname}`;
-      if (port && ((protocol === 'ws:' && port !== '80') || (protocol === 'wss:' && port !== '443'))) {
+      
+      // Only add port for local development or if explicitly required
+      // If we're on default ports (80 for ws, 443 for wss) or an empty port, don't append port
+      const port = window.location.port;
+      if (port && port !== '80' && port !== '443' && port !== '') {
         wsUrl += `:${port}`;
       }
+      
       wsUrl += '/ws';
       
       if (wsRef.current?.readyState === WebSocket.OPEN) {

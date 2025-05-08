@@ -223,21 +223,21 @@ export function StakingCard() {
       <CardContent className="pt-6">
         {/* Staking Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4">
-            <p className="text-sm text-gray-400 mb-1">Total Staked</p>
-            <p className="text-xl font-bold text-blue-300">{formatCryptoAmount(totalStaked)}</p>
+          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+            <p className="text-sm text-gray-400">Total Staked</p>
+            <p className="text-xl font-bold text-blue-300 mt-2">{formatCryptoAmount(totalStaked)}</p>
           </div>
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4">
-            <p className="text-sm text-gray-400 mb-1">Active Stakes</p>
-            <p className="text-xl font-bold text-blue-300">{activeStakes?.length || 0}</p>
+          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+            <p className="text-sm text-gray-400">Active Stakes</p>
+            <p className="text-xl font-bold text-blue-300 mt-2">{activeStakes?.length || 0}</p>
           </div>
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4">
-            <p className="text-sm text-gray-400 mb-1">Est. Rewards</p>
-            <p className="text-xl font-bold text-green-400">+{formatCryptoAmount(projectedRewards)}</p>
+          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+            <p className="text-sm text-gray-400">Est. Rewards</p>
+            <p className="text-xl font-bold text-green-400 mt-2">+{formatCryptoAmount(projectedRewards)}</p>
           </div>
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4">
-            <p className="text-sm text-gray-400 mb-1">Available Pools</p>
-            <p className="text-xl font-bold text-blue-300">{stakingPools?.filter(p => p.active !== false).length || 0}</p>
+          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+            <p className="text-sm text-gray-400">Available Pools</p>
+            <p className="text-xl font-bold text-blue-300 mt-2">{stakingPools?.filter(p => p.active !== false).length || 0}</p>
           </div>
         </div>
         
