@@ -97,7 +97,6 @@ export default function WalletPage() {
                   onClick={() => {
                     setActiveTab('create');
                     setActiveWalletAddress(null);
-                    window.location.hash = '';
                   }}
                 >
                   <ShieldAlert className="h-4 w-4 mr-2" />
@@ -133,24 +132,36 @@ export default function WalletPage() {
             {/* Tab Navigation */}
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid grid-cols-6 bg-black/70 border border-blue-900/50 mb-6">
-                <TabsTrigger value="overview" onClick={() => window.location.hash = 'overview'} className="data-[state=active]:bg-blue-900/30">
-                  <BarChart4 className="w-4 h-4 mr-2" /> Overview
-                </TabsTrigger>
-                <TabsTrigger value="send" onClick={() => window.location.hash = 'send'} className="data-[state=active]:bg-blue-900/30">
-                  <Send className="w-4 h-4 mr-2" /> Send
-                </TabsTrigger>
-                <TabsTrigger value="receive" onClick={() => window.location.hash = 'receive'} className="data-[state=active]:bg-blue-900/30">
-                  <QrCode className="w-4 h-4 mr-2" /> Receive
-                </TabsTrigger>
-                <TabsTrigger value="staking" onClick={() => window.location.hash = 'staking'} className="data-[state=active]:bg-blue-900/30">
-                  <Coins className="w-4 h-4 mr-2" /> Staking
-                </TabsTrigger>
-                <TabsTrigger value="transactions" onClick={() => window.location.hash = 'transactions'} className="data-[state=active]:bg-blue-900/30">
-                  <History className="w-4 h-4 mr-2" /> History
-                </TabsTrigger>
-                <TabsTrigger value="security" onClick={() => window.location.hash = 'security'} className="data-[state=active]:bg-blue-900/30">
-                  <ShieldAlert className="w-4 h-4 mr-2" /> Security
-                </TabsTrigger>
+                <Link href="/wallet/overview">
+                  <TabsTrigger value="overview" className="data-[state=active]:bg-blue-900/30">
+                    <BarChart4 className="w-4 h-4 mr-2" /> Overview
+                  </TabsTrigger>
+                </Link>
+                <Link href="/wallet/send">
+                  <TabsTrigger value="send" className="data-[state=active]:bg-blue-900/30">
+                    <Send className="w-4 h-4 mr-2" /> Send
+                  </TabsTrigger>
+                </Link>
+                <Link href="/wallet/receive">
+                  <TabsTrigger value="receive" className="data-[state=active]:bg-blue-900/30">
+                    <QrCode className="w-4 h-4 mr-2" /> Receive
+                  </TabsTrigger>
+                </Link>
+                <Link href="/wallet/staking">
+                  <TabsTrigger value="staking" className="data-[state=active]:bg-blue-900/30">
+                    <Coins className="w-4 h-4 mr-2" /> Staking
+                  </TabsTrigger>
+                </Link>
+                <Link href="/wallet/transactions">
+                  <TabsTrigger value="transactions" className="data-[state=active]:bg-blue-900/30">
+                    <History className="w-4 h-4 mr-2" /> History
+                  </TabsTrigger>
+                </Link>
+                <Link href="/wallet/security">
+                  <TabsTrigger value="security" className="data-[state=active]:bg-blue-900/30">
+                    <ShieldAlert className="w-4 h-4 mr-2" /> Security
+                  </TabsTrigger>
+                </Link>
               </TabsList>
               
               {/* Overview Tab - Shows wallet summary, quick actions, and recent transactions */}
@@ -199,21 +210,23 @@ export default function WalletPage() {
                           </div>
                           
                           <div className="pt-4 flex gap-3">
-                            <Button 
-                              className="flex-1 bg-blue-700 hover:bg-blue-600 text-white"
-                              onClick={() => setActiveTab('send')}
-                            >
-                              <Send className="mr-2 h-4 w-4" />
-                              Send
-                            </Button>
-                            <Button 
-                              variant="outline"
-                              className="flex-1 border-blue-900/50 text-blue-300"
-                              onClick={() => setActiveTab('receive')}
-                            >
-                              <QrCode className="mr-2 h-4 w-4" />
-                              Receive
-                            </Button>
+                            <Link href="/wallet/send" className="flex-1">
+                              <Button 
+                                className="w-full bg-blue-700 hover:bg-blue-600 text-white"
+                              >
+                                <Send className="mr-2 h-4 w-4" />
+                                Send
+                              </Button>
+                            </Link>
+                            <Link href="/wallet/receive" className="flex-1">
+                              <Button 
+                                variant="outline"
+                                className="w-full border-blue-900/50 text-blue-300"
+                              >
+                                <QrCode className="mr-2 h-4 w-4" />
+                                Receive
+                              </Button>
+                            </Link>
                           </div>
                         </div>
                       </CardContent>
@@ -247,13 +260,14 @@ export default function WalletPage() {
                           </div>
                         </div>
                         <div className="flex gap-3">
-                          <Button 
-                            className="flex-1 bg-blue-700 hover:bg-blue-600 text-white"
-                            onClick={() => setActiveTab('staking')}
-                          >
-                            <Coins className="mr-2 h-4 w-4" />
-                            Manage Stakes
-                          </Button>
+                          <Link href="/wallet/staking" className="flex-1">
+                            <Button 
+                              className="w-full bg-blue-700 hover:bg-blue-600 text-white"
+                            >
+                              <Coins className="mr-2 h-4 w-4" />
+                              Manage Stakes
+                            </Button>
+                          </Link>
                           <Button 
                             variant="outline"
                             className="flex-1 border-green-900/50 text-green-300"
@@ -275,14 +289,15 @@ export default function WalletPage() {
                             <History className="inline-block mr-2 h-5 w-5" />
                             Recent Transactions
                           </CardTitle>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-300 h-8"
-                            onClick={() => setActiveTab('transactions')}
-                          >
-                            View All
-                          </Button>
+                          <Link href="/wallet/transactions">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-blue-300 h-8"
+                            >
+                              View All
+                            </Button>
+                          </Link>
                         </div>
                       </CardHeader>
                       <CardContent className="pt-6">

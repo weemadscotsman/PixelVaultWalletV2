@@ -40,6 +40,12 @@ function Router() {
           <Route path="/" component={HomePage} />
           <Route path="/learning" component={LearningPage} />
           <Route path="/wallet" component={WalletPage} />
+          <Route path="/wallet/overview" component={WalletPage} />
+          <Route path="/wallet/send" component={WalletPage} />
+          <Route path="/wallet/receive" component={WalletPage} />
+          <Route path="/wallet/transactions" component={WalletPage} />
+          <Route path="/wallet/staking" component={WalletPage} />
+          <Route path="/wallet/security" component={WalletPage} />
           <Route path="/blockchain" component={BlockchainPage} />
           <Route path="/blockchain/blocks" component={AllBlocksPage} />
           <Route path="/staking" component={StakingPage} />
