@@ -203,16 +203,16 @@ export function UTRList({ wallet, limit = 50 }: { wallet?: string; limit?: numbe
   return (
     <Card className="w-full overflow-hidden border border-gray-200 bg-transparent backdrop-blur-sm backdrop-filter bg-opacity-80 rounded-xl shadow-sm">
       <CardHeader className="bg-gradient-to-b from-gray-900/70 to-gray-900/40 text-white p-4 pb-3">
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <CardTitle className="text-xl font-bold tracking-tight">
+            <CardTitle className="text-xl font-bold tracking-tight text-shadow-neon">
               Universal Transaction Registry
             </CardTitle>
             <CardDescription className="text-gray-300 mt-1">
               {wallet ? 'Wallet transactions' : 'Recent blockchain activity'}
             </CardDescription>
           </div>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-2 w-full md:w-auto">
             <TransactionTypeFilter 
               currentType={typeFilter} 
               onTypeChange={setTypeFilter} 
@@ -224,7 +224,7 @@ export function UTRList({ wallet, limit = 50 }: { wallet?: string; limit?: numbe
             <Button 
               variant="outline" 
               size="sm" 
-              className="h-8 px-2 bg-transparent hover:bg-gray-800"
+              className="h-8 px-2 bg-transparent hover:bg-gray-800/60 border-gray-700 text-cyan-400 hover:text-cyan-300"
               onClick={() => refetch()}
             >
               <RefreshCw className="h-4 w-4" />
