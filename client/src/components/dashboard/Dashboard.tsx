@@ -27,8 +27,9 @@ import { useStaking } from '@/hooks/use-staking';
 import { useBlockchainMetrics } from '@/hooks/use-blockchain-metrics';
 import { useTransactionHistory } from '@/hooks/use-transaction-history';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Transaction } from '@/types/blockchain';
+import { shortenAddress } from '@/lib/utils';
 
 // Default data to use while loading or when real data is unavailable
 const defaultWalletData = {
@@ -105,22 +106,143 @@ const defaultLearningData = {
 
 export function Dashboard() {
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  // Using the default data until we fully implement the API integration
+  // Use states for fallback data
   const [walletData, setWalletData] = useState(defaultWalletData);
   const [blockchainData, setBlockchainData] = useState(defaultBlockchainData);
-  const [stakingData, setStakingData] = useState(defaultStakingData);
+  const [stakingPanelData, setStakingPanelData] = useState(defaultStakingData);
   const [governanceData, setGovernanceData] = useState(defaultGovernanceData);
   const [thringletData, setThringletData] = useState(defaultThringletData);
   const [dropsData, setDropsData] = useState(defaultDropsData);
   const [learningData, setLearningData] = useState(defaultLearningData);
   
+  // Get active wallet from wallet hook
+  const { activeWallet, wallet, getWallet } = useWallet();
+  
+  // Get blockchain metrics hook
+  const blockchainMetrics = useBlockchainMetrics();
+  
+  // Get staking hook
+  const stakingHook = useStaking();
+  
+  // Query for active wallet data
+  const { data: walletDataApi, isLoading: isLoadingWallet } = getWallet();
+  
+  // Query for blockchain status
+  const { data: blockchainStatusApi, isLoading: isLoadingBlockchain } = useQuery({
+    queryKey: ['/api/blockchain/status'],
+  });
+  
+  // Query for wallet transactions
+  const { data: walletTransactionsApi, isLoading: isLoadingTransactions } = useTransactionHistory(activeWallet || undefined);
+  
+  // Query for staking data
+  const { data: activeStakesApi, isLoading: isLoadingStakes } = useQuery({
+    queryKey: ['/api/stake/status', activeWallet],
+    enabled: !!activeWallet
+  });
+  
+  // Query for staking pools
+  const { data: stakingPoolsApi, isLoading: isLoadingPools } = useQuery({
+    queryKey: ['/api/stake/pools'],
+  });
+  
+  // Update wallet data from API
+  useEffect(() => {
+    if (walletDataApi && !isLoadingWallet) {
+      setWalletData(prev => ({
+        ...prev,
+        publicAddress: walletDataApi.address,
+        balance: parseFloat(walletDataApi.balance)
+      }));
+    }
+  }, [walletDataApi, isLoadingWallet]);
+  
+  // Update transaction data from API
+  useEffect(() => {
+    if (walletTransactionsApi && !isLoadingTransactions) {
+      const formattedTransactions = walletTransactionsApi.slice(0, 3).map((tx, index) => ({
+        id: index + 1,
+        type: tx.senderAddress === activeWallet ? 'send' : 'receive',
+        amount: parseFloat(tx.amount),
+        from: tx.senderAddress !== activeWallet ? tx.senderAddress : undefined,
+        to: tx.receiverAddress !== activeWallet ? tx.receiverAddress : undefined,
+        timestamp: new Date(tx.timestamp)
+      }));
+      
+      setWalletData(prev => ({
+        ...prev,
+        transactions: formattedTransactions
+      }));
+    }
+  }, [walletTransactionsApi, isLoadingTransactions, activeWallet]);
+  
+  // Update blockchain data from API
+  useEffect(() => {
+    if (blockchainStatusApi && !isLoadingBlockchain) {
+      setBlockchainData(prev => ({
+        ...prev,
+        currentHeight: blockchainStatusApi.latestBlockHeight,
+        difficulty: blockchainStatusApi.difficulty, 
+        hashRate: `${blockchainStatusApi.hashRate} H/s`,
+        lastBlockTime: new Date(blockchainStatusApi.lastBlockTime)
+      }));
+    }
+  }, [blockchainStatusApi, isLoadingBlockchain]);
+  
+  // Update staking data from API
+  useEffect(() => {
+    if (activeStakesApi && stakingPoolsApi && !isLoadingStakes && !isLoadingPools) {
+      // Calculate total staked
+      const totalStaked = Array.isArray(activeStakesApi) 
+        ? activeStakesApi.reduce((sum: number, stake: any) => {
+            return sum + parseFloat(stake.amount);
+          }, 0)
+        : 0;
+      
+      // Calculate rewards
+      const totalRewards = Array.isArray(activeStakesApi) 
+        ? activeStakesApi.reduce((sum: number, stake: any) => {
+            return sum + parseFloat(stake.pendingRewards || '0');
+          }, 0)
+        : 0;
+      
+      setStakingPanelData(prev => ({
+        ...prev,
+        totalStaked,
+        activeStakes: Array.isArray(activeStakesApi) ? activeStakesApi.length : 0,
+        rewards: totalRewards,
+        stakingPower: Math.min(Math.round((totalStaked / 1000000) * 100), 100) // Cap at 100%
+      }));
+    }
+  }, [activeStakesApi, stakingPoolsApi, isLoadingStakes, isLoadingPools]);
+  
   const handleRefresh = () => {
     setRefreshing(true);
-    // In the future, we'll fetch actual data here
-    setTimeout(() => {
+    
+    // Refresh all dashboard data queries
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: ['/api/wallet'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/blockchain/status'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/wallet/history'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/stake/status'] }),
+      queryClient.invalidateQueries({ queryKey: ['/api/stake/pools'] })
+    ]).then(() => {
+      toast({
+        title: "Dashboard Refreshed",
+        description: "All blockchain data has been updated",
+      });
       setRefreshing(false);
-    }, 1500);
+    }).catch(() => {
+      toast({
+        title: "Refresh Failed",
+        description: "Could not refresh some blockchain data",
+        variant: "destructive"
+      });
+      setRefreshing(false);
+    });
   };
   
   const formatCurrency = (value: number) => {
