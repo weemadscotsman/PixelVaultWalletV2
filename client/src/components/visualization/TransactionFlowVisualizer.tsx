@@ -186,7 +186,12 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   useEffect(() => {
     // Take the most recent transactions up to maxDisplay
     const recent = [...allTransactions]
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+      .sort((a, b) => {
+        // Handle both number timestamps and Date objects
+        const timestampA = a.timestamp instanceof Date ? a.timestamp.getTime() : a.timestamp;
+        const timestampB = b.timestamp instanceof Date ? b.timestamp.getTime() : b.timestamp;
+        return timestampB - timestampA;
+      })
       .slice(0, maxDisplay);
     
     // If array is the same length and has the same IDs, don't update to avoid rerenders
