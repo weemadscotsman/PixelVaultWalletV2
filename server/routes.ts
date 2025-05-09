@@ -12,6 +12,7 @@ import utrRoutes from './routes/utr-routes';
 import dropsRoutes from './routes/drops';
 import governanceRoutes from './routes/governance';
 import learningRoutes from './routes/learning';
+import { memBlockchainStorage } from './mem-blockchain';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // PVX blockchain API routes
@@ -50,11 +51,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Route compatibility mappings for frontend
-  // Redirect /api/transactions/recent to /api/tx/recent
   app.get('/api/transactions/recent', (req: Request, res: Response) => {
     console.log('[ROUTE COMPATIBILITY] Redirecting /api/transactions/recent to /api/tx/recent');
-    req.url = '/api/tx/recent';
-    txRoutes(req, res);
+    // Forward the request to the txRoutes controller but use appropriate path
+    res.redirect(307, '/api/tx/recent' + (req.query.limit ? `?limit=${req.query.limit}` : ''));
   });
 
   // Error handling middleware
