@@ -388,10 +388,14 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
  */
 export const sendTransaction = async (req: Request, res: Response) => {
   try {
-    const { from, to, amount, passphrase, note } = req.body;
+    const { from, to, amount, passphrase, note, signature, nonce } = req.body;
     
+    // Basic field validation
     if (!from || !to || !amount || !passphrase) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ 
+        error: 'Missing required fields',
+        details: 'Transaction must include from, to, amount, and passphrase'
+      });
     }
     
     // Get sender wallet - try DB first, then memory storage
@@ -407,9 +411,6 @@ export const sendTransaction = async (req: Request, res: Response) => {
     let recipient = await walletDao.getWalletByAddress(to);
     if (!recipient) {
       recipient = await memBlockchainStorage.getWalletByAddress(to);
-    }
-    if (!recipient) {
-      return res.status(404).json({ error: 'Recipient wallet not found' });
     }
     
     // Verify passphrase
@@ -429,48 +430,74 @@ export const sendTransaction = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
     
-    // Create transaction
+    // Generate a transaction hash
+    const txHash = crypto.createHash('sha256')
+      .update(`${from}${to}${amount}${Date.now()}`)
+      .digest('hex');
+    
+    // Current nonce or 0 if not set
+    const currentNonce = sender.nonce || 0;
+    
+    // Create transaction with proper signature and nonce
     const tx: any = {
-      hash: crypto.randomBytes(32).toString('hex'),
+      hash: txHash,
       from,
       to,
       amount: Number(amount),
-      fee: 0,
+      fee: 10, // Fixed fee
       timestamp: Date.now(),
       type: 'TRANSFER',
       status: 'pending',
-      blockHeight: 0,
-      nonce: 0,
-      signature: '',
+      blockHeight: null,
+      nonce: currentNonce + 1, // Increment nonce
+      signature: signature || hash, // Use provided signature or hash
       metadata: { note: note || '' }
     };
     
-    await memBlockchainStorage.createTransaction(tx);
-    
-    // Update balances
-    sender.balance = (balanceBigInt - amountBigInt).toString();
-    recipient.balance = (BigInt(recipient.balance) + amountBigInt).toString();
-    
-    await memBlockchainStorage.updateWallet(sender);
-    await memBlockchainStorage.updateWallet(recipient);
-    
-    // Update transaction status to confirmed
-    tx.status = 'confirmed';
-    if (tx.metadata) {
-      tx.metadata.confirmations = 1;
-    } else {
-      tx.metadata = { confirmations: 1 };
+    try {
+      // Import transaction engine
+      const { commitTransaction } = require('../transaction-engine');
+      
+      // This will validate signature, nonce, and commit transaction
+      await commitTransaction(tx);
+      
+      // If commit succeeded, update balances
+      sender.balance = (balanceBigInt - amountBigInt).toString();
+      sender.nonce = currentNonce + 1;
+      await walletDao.updateWallet(sender);
+      
+      if (recipient) {
+        const recipientBalanceBigInt = BigInt(recipient.balance);
+        recipient.balance = (recipientBalanceBigInt + amountBigInt).toString();
+        await walletDao.updateWallet(recipient);
+        await memBlockchainStorage.updateWallet(recipient);
+      }
+      
+      // Update transaction status to confirmed
+      tx.status = 'confirmed';
+      if (tx.metadata) {
+        tx.metadata.confirmations = 1;
+      } else {
+        tx.metadata = { confirmations: 1 };
+      }
+      await memBlockchainStorage.updateTransaction(tx);
+      
+      res.status(201).json({
+        hash: tx.hash,
+        from,
+        to,
+        amount,
+        timestamp: tx.timestamp,
+        status: tx.status,
+        nonce: tx.nonce
+      });
+    } catch (error) {
+      console.error('Transaction validation failed:', error);
+      return res.status(400).json({
+        error: error instanceof Error ? error.message : 'Transaction validation failed',
+        txHash
+      });
     }
-    await memBlockchainStorage.updateTransaction(tx);
-    
-    res.status(201).json({
-      hash: tx.hash,
-      from,
-      to,
-      amount,
-      timestamp: tx.timestamp,
-      status: tx.status
-    });
   } catch (error) {
     console.error('Error sending transaction:', error);
     res.status(500).json({

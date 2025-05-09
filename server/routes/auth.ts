@@ -1,5 +1,6 @@
 import express from 'express';
 import * as authController from '../controllers/authController';
+import { authenticateJWT } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -10,21 +11,15 @@ const router = express.Router();
 router.post('/login', authController.login);
 
 /**
- * Register a new account
- * POST /api/auth/register
- */
-router.post('/register', authController.register);
-
-/**
  * Logout from account
  * POST /api/auth/logout
  */
 router.post('/logout', authController.logout);
 
 /**
- * Get current user info
- * GET /api/auth/user
+ * Refresh JWT token
+ * POST /api/auth/refresh
  */
-router.get('/user', authController.getCurrentUser);
+router.post('/refresh', authenticateJWT, authController.refreshToken);
 
 export default router;

@@ -1,188 +1,129 @@
 import { Request, Response } from 'express';
+import { generateToken, revokeToken } from '../middleware/auth';
 import crypto from 'crypto';
-import jwt from 'jsonwebtoken';
-
-// In-memory storage for users
-const users = new Map();
-
-// Secret key for JWT
-const JWT_SECRET = process.env.JWT_SECRET || 'pvx-blockchain-secret-key';
+import { walletDao } from '../database/walletDao';
+import { memBlockchainStorage } from '../mem-blockchain';
 
 /**
- * Login to account
+ * Login with wallet credentials
  * POST /api/auth/login
  */
 export const login = async (req: Request, res: Response) => {
   try {
-    const { username, password } = req.body;
+    const { address, passphrase } = req.body;
     
-    if (!username || !password) {
-      return res.status(400).json({ error: 'Username and password are required' });
+    if (!address || !passphrase) {
+      return res.status(400).json({ error: 'Address and passphrase are required' });
     }
     
-    // Get user
-    const user = users.get(username);
-    if (!user) {
-      return res.status(401).json({ error: 'Invalid username or password' });
+    // Try to get the wallet from DB first, then memory storage
+    let wallet = await walletDao.getWalletByAddress(address);
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(address);
     }
     
-    // Verify password
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    // Verify passphrase
     const hash = crypto.createHash('sha256')
-      .update(password + user.salt)
+      .update(passphrase + wallet.passphraseSalt)
       .digest('hex');
     
-    if (hash !== user.password) {
-      return res.status(401).json({ error: 'Invalid username or password' });
+    if (hash !== wallet.passphraseHash) {
+      return res.status(401).json({ error: 'Invalid passphrase' });
     }
     
     // Generate JWT token
-    const token = jwt.sign(
-      { id: user.id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    const token = generateToken(address);
+    
+    // Issue a refresh token (in a real implementation, this would be stored in a database)
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    
+    // Set refresh token as HTTP-only cookie
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      path: '/api/auth/refresh'
+    });
     
     res.json({
       token,
       user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        wallets: user.wallets,
-        role: user.role
+        address: wallet.address,
+        balance: wallet.balance,
+        publicKey: wallet.publicKey
       }
     });
   } catch (error) {
-    console.error('Error logging in:', error);
+    console.error('Login error:', error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to login'
+      error: error instanceof Error ? error.message : 'Authentication failed'
     });
   }
 };
 
 /**
- * Register a new account
- * POST /api/auth/register
- */
-export const register = async (req: Request, res: Response) => {
-  try {
-    const { username, password, email } = req.body;
-    
-    if (!username || !password || !email) {
-      return res.status(400).json({ error: 'Username, password, and email are required' });
-    }
-    
-    // Check if username already exists
-    if (users.has(username)) {
-      return res.status(400).json({ error: 'Username already exists' });
-    }
-    
-    // Generate salt
-    const salt = crypto.randomBytes(16).toString('hex');
-    
-    // Hash password
-    const hash = crypto.createHash('sha256')
-      .update(password + salt)
-      .digest('hex');
-    
-    // Generate user ID
-    const id = crypto.randomBytes(16).toString('hex');
-    
-    // Create user
-    const user = {
-      id,
-      username,
-      email,
-      password: hash,
-      salt,
-      wallets: [],
-      role: 'user',
-      createdAt: Date.now()
-    };
-    
-    // Save user
-    users.set(username, user);
-    
-    // Generate JWT token
-    const token = jwt.sign(
-      { id: user.id, username: user.username },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-    
-    res.status(201).json({
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        wallets: user.wallets,
-        role: user.role
-      }
-    });
-  } catch (error) {
-    console.error('Error registering:', error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to register'
-    });
-  }
-};
-
-/**
- * Logout from account
+ * Logout 
  * POST /api/auth/logout
  */
-export const logout = async (req: Request, res: Response) => {
+export const logout = (req: Request, res: Response) => {
   try {
-    // In a real implementation, you would invalidate the token
-    // For now, we just return a success message
-    res.json({ message: 'Logged out successfully' });
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    if (token) {
+      // Revoke the token
+      revokeToken(token);
+    }
+    
+    // Clear refresh token cookie
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      path: '/api/auth/refresh'
+    });
+    
+    res.json({ message: 'Logout successful' });
   } catch (error) {
-    console.error('Error logging out:', error);
+    console.error('Logout error:', error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to logout'
+      error: error instanceof Error ? error.message : 'Logout failed'
     });
   }
 };
 
 /**
- * Get current user info
- * GET /api/auth/user
+ * Refresh token
+ * POST /api/auth/refresh
  */
-export const getCurrentUser = async (req: Request, res: Response) => {
+export const refreshToken = (req: Request, res: Response) => {
   try {
-    // Get token from authorization header
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'No token provided' });
+    const refreshToken = req.cookies.refresh_token;
+    
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Refresh token not found' });
     }
     
-    const token = authHeader.split(' ')[1];
+    // In a real implementation, we would validate the refresh token against a database
+    // For now, we'll just issue a new token if the refresh token exists
     
-    // Verify token
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as { id: string, username: string };
-      
-      // Get user
-      const user = users.get(decoded.username);
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      
-      res.json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        wallets: user.wallets,
-        role: user.role
-      });
-    } catch (err) {
-      return res.status(401).json({ error: 'Invalid token' });
+    // Get the address from the user property (added by middleware)
+    const address = (req as any).user?.walletAddress;
+    
+    if (!address) {
+      return res.status(401).json({ error: 'Invalid session' });
     }
+    
+    // Generate a new token
+    const token = generateToken(address);
+    
+    res.json({ token });
   } catch (error) {
-    console.error('Error getting current user:', error);
+    console.error('Token refresh error:', error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to get current user'
+      error: error instanceof Error ? error.message : 'Token refresh failed'
     });
   }
 };

@@ -1,7 +1,11 @@
 import express from 'express';
 import * as stakeController from '../controllers/stakeController';
+import { authenticateJWT } from '../middleware/auth';
 
 const router = express.Router();
+
+// Apply JWT authentication to all stake routes
+router.use(authenticateJWT);
 
 /**
  * Start staking (stake PVX tokens)

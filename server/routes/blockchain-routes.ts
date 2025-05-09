@@ -1,7 +1,12 @@
 import express from 'express';
 import * as blockchainService from '../services/blockchain-service';
+import { authenticateJWT, validateWalletOwnership } from '../middleware/auth';
+import { standardLimiter, miningLimiter, transactionLimiter } from '../middleware/rate-limiters';
 
 const router = express.Router();
+
+// Apply rate limiting to all blockchain routes
+router.use(standardLimiter);
 
 /**
  * Get blockchain metrics - key data for dashboard display
@@ -302,7 +307,7 @@ router.post('/transaction', async (req, res) => {
  * Start mining
  * POST /api/blockchain/mining/start
  */
-router.post('/mining/start', async (req, res) => {
+router.post('/mining/start', authenticateJWT, validateWalletOwnership, miningLimiter, async (req, res) => {
   try {
     const { address, hardwareType } = req.body;
     

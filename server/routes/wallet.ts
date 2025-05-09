@@ -1,7 +1,12 @@
 import express from 'express';
 import * as walletController from '../controllers/walletController';
+import { authenticateJWT } from '../middleware/auth';
+import { walletCreationLimiter } from '../middleware/rate-limiters';
 
 const router = express.Router();
+
+// Apply JWT authentication to all wallet routes
+router.use(authenticateJWT);
 
 /**
  * Get all wallets
