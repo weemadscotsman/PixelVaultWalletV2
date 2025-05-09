@@ -16,7 +16,7 @@ export interface Wallet {
   publicKey: string;
   balance: string;
   createdAt: Date;
-  lastSynced: Date;
+  lastUpdated: Date; // Changed from lastSynced to match database schema
   passphraseSalt: string;
   passphraseHash: string;
 }
@@ -139,7 +139,7 @@ export class MemBlockchainStorage {
           const restoredWallet = {
             ...wallet,
             createdAt: new Date(wallet.createdAt),
-            lastSynced: new Date(wallet.lastSynced)
+            lastUpdated: new Date(wallet.lastUpdated || wallet.lastSynced) // Support both field names for backward compatibility
           };
           return [key, restoredWallet];
         }));

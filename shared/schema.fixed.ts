@@ -1,12 +1,17 @@
-import { pgTable, varchar, text, integer, timestamp, boolean, jsonb, bigint, primaryKey } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, text, integer, timestamp, boolean, jsonb, primaryKey } from 'drizzle-orm/pg-core';
+
+// Custom bigint function with proper configuration
+const bigint = (name: string) => {
+  return integer(name);
+};
 
 // Blocks table
 export const blocks = pgTable('blocks', {
   height: integer('height').primaryKey(),
   hash: varchar('hash', { length: 64 }).notNull().unique(),
   previousHash: varchar('previous_hash', { length: 64 }).notNull(),
-  timestamp: bigint('timestamp', { mode: 'number' }).notNull(),
-  nonce: bigint('nonce', { mode: 'number' }).notNull(),
+  timestamp: bigint('timestamp').notNull(),
+  nonce: bigint('nonce').notNull(),
   difficulty: integer('difficulty').notNull(),
   miner: varchar('miner', { length: 100 }).notNull(),
   merkleRoot: varchar('merkle_root', { length: 64 }).notNull(),
@@ -21,24 +26,24 @@ export const transactions = pgTable('transactions', {
   type: varchar('type', { length: 20 }).notNull(),
   fromAddress: varchar('from_address', { length: 100 }).notNull(),
   toAddress: varchar('to_address', { length: 100 }).notNull(),
-  amount: bigint('amount', { mode: 'number' }).notNull(),
-  timestamp: bigint('timestamp', { mode: 'number' }).notNull(),
-  nonce: bigint('nonce', { mode: 'number' }).notNull(),
+  amount: bigint('amount').notNull(),
+  timestamp: bigint('timestamp').notNull(),
+  nonce: bigint('nonce').notNull(),
   signature: text('signature').notNull(),
   status: varchar('status', { length: 20 }).notNull(),
   blockHeight: integer('block_height'),
-  fee: bigint('fee', { mode: 'number' }),
+  fee: bigint('fee'),
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// Wallets table
+// Wallets table - using last_updated instead of last_synced
 export const wallets = pgTable('wallets', {
   address: varchar('address', { length: 100 }).primaryKey(),
   publicKey: text('public_key').notNull(),
   balance: varchar('balance', { length: 100 }).notNull(),
   createdAt: timestamp('created_at').notNull(),
-  lastSynced: timestamp('last_synced').notNull(),
+  lastUpdated: timestamp('last_updated').notNull(), // Using last_updated column name for database
   passphraseSalt: varchar('passphrase_salt', { length: 100 }),
   passphraseHash: varchar('passphrase_hash', { length: 100 }),
 });
@@ -48,7 +53,7 @@ export const minerStats = pgTable('miner_stats', {
   address: varchar('address', { length: 100 }).primaryKey(),
   blocksMined: integer('blocks_mined').notNull(),
   totalRewards: varchar('total_rewards', { length: 100 }).notNull(),
-  lastBlockMined: bigint('last_block_mined', { mode: 'number' }).notNull(),
+  lastBlockMined: bigint('last_block_mined').notNull(),
   isCurrentlyMining: boolean('is_currently_mining').notNull(),
   hardware: varchar('hardware', { length: 10 }).notNull(),
   joinedAt: timestamp('joined_at').notNull(),
@@ -62,11 +67,11 @@ export const stakeRecords = pgTable('stake_records', {
   walletAddress: varchar('wallet_address', { length: 100 }).notNull(),
   poolId: varchar('pool_id', { length: 100 }).notNull(),
   amount: varchar('amount', { length: 100 }).notNull(),
-  startTime: bigint('start_time', { mode: 'number' }).notNull(),
-  endTime: bigint('end_time', { mode: 'number' }),
+  startTime: bigint('start_time').notNull(),
+  endTime: bigint('end_time'),
   isActive: boolean('is_active').notNull(),
   rewards: varchar('rewards', { length: 100 }).notNull(),
-  lastRewardClaim: bigint('last_reward_claim', { mode: 'number' }).notNull(),
+  lastRewardClaim: bigint('last_reward_claim').notNull(),
   autoCompound: boolean('auto_compound').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -95,24 +100,26 @@ export const badges = pgTable('badges', {
   tier: varchar('tier', { length: 20 }).notNull(),
   category: varchar('category', { length: 20 }).notNull(),
   requirements: jsonb('requirements'),
-  dateAdded: bigint('date_added', { mode: 'number' }).notNull(),
+  dateAdded: bigint('date_added').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-// User badges table (many-to-many)
+// User badges table
 export const userBadges = pgTable('user_badges', {
   userId: varchar('user_id', { length: 100 }).notNull(),
   badgeId: varchar('badge_id', { length: 100 }).notNull(),
   obtained: boolean('obtained').notNull(),
-  dateObtained: bigint('date_obtained', { mode: 'number' }),
+  dateObtained: bigint('date_obtained'),
   progress: integer('progress'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, table => ({
-  pk: primaryKey({ columns: [table.userId, table.badgeId] }),
-}));
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.userId, table.badgeId] }),
+  };
+});
 
-// Thringlet table
+// Thringlets table
 export const thringlets = pgTable('thringlets', {
   id: varchar('id', { length: 100 }).primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
@@ -124,7 +131,7 @@ export const thringlets = pgTable('thringlets', {
   experience: integer('experience').notNull(),
   backstory: text('backstory').notNull(),
   abilities: jsonb('abilities').notNull(),
-  lastInteraction: bigint('last_interaction', { mode: 'number' }).notNull(),
+  lastInteraction: bigint('last_interaction').notNull(),
   stats: jsonb('stats').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
@@ -136,12 +143,12 @@ export const governanceProposals = pgTable('governance_proposals', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description').notNull(),
   proposer: varchar('proposer', { length: 100 }).notNull(),
-  createdAt: bigint('created_at', { mode: 'number' }).notNull(),
-  endTime: bigint('end_time', { mode: 'number' }).notNull(),
+  createdAt: bigint('created_at').notNull(),
+  endTime: bigint('end_time').notNull(),
   status: varchar('status', { length: 20 }).notNull(),
-  votesFor: bigint('votes_for', { mode: 'number' }).notNull(),
-  votesAgainst: bigint('votes_against', { mode: 'number' }).notNull(),
-  votesAbstain: bigint('votes_abstain', { mode: 'number' }).notNull(),
+  votesFor: bigint('votes_for').notNull(),
+  votesAgainst: bigint('votes_against').notNull(),
+  votesAbstain: bigint('votes_abstain').notNull(),
   minimumVotingPower: integer('minimum_voting_power').notNull(),
   category: varchar('category', { length: 20 }).notNull(),
   parameterChanges: jsonb('parameter_changes'),
@@ -154,41 +161,43 @@ export const governanceVotes = pgTable('governance_votes', {
   proposalId: varchar('proposal_id', { length: 100 }).notNull(),
   voterAddress: varchar('voter_address', { length: 100 }).notNull(),
   voteType: varchar('vote_type', { length: 10 }).notNull(),
-  votingPower: bigint('voting_power', { mode: 'number' }).notNull(),
-  timestamp: bigint('timestamp', { mode: 'number' }).notNull(),
+  votingPower: bigint('voting_power').notNull(),
+  timestamp: bigint('timestamp').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-}, table => ({
-  pk: primaryKey({ columns: [table.proposalId, table.voterAddress] }),
-}));
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.proposalId, table.voterAddress] }),
+  };
+});
 
 // Drops table
 export const drops = pgTable('drops', {
   id: varchar('id', { length: 100 }).primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   description: text('description').notNull(),
-  type: varchar('type', { length: 20 }).notNull(),
-  rarity: varchar('rarity', { length: 20 }).notNull(),
-  imageUrl: varchar('image_url', { length: 255 }).notNull(),
-  tokenAmount: integer('token_amount'),
-  createdAt: timestamp('created_at').notNull(),
-  expiresAt: timestamp('expires_at').notNull(),
-  claimLimit: integer('claim_limit').notNull(),
-  minWalletAge: integer('min_wallet_age').notNull(),
-  minStakingAmount: integer('min_staking_amount').notNull(),
-  minMiningBlocks: integer('min_mining_blocks').notNull(),
-  securityScore: integer('security_score').notNull(),
+  totalTokens: varchar('total_tokens', { length: 100 }).notNull(),
+  remainingTokens: varchar('remaining_tokens', { length: 100 }).notNull(),
+  startDate: bigint('start_date').notNull(),
+  endDate: bigint('end_date').notNull(),
+  claimRequirements: jsonb('claim_requirements'),
+  isActive: boolean('is_active').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
 
-// Drop claims table (many-to-many)
+// Drop claims table
 export const dropClaims = pgTable('drop_claims', {
   dropId: varchar('drop_id', { length: 100 }).notNull(),
   walletAddress: varchar('wallet_address', { length: 100 }).notNull(),
-  claimedAt: timestamp('claimed_at').defaultNow().notNull(),
+  claimedAmount: varchar('claimed_amount', { length: 100 }).notNull(),
+  claimedAt: bigint('claimed_at').notNull(),
   transactionHash: varchar('transaction_hash', { length: 64 }),
-}, table => ({
-  pk: primaryKey({ columns: [table.dropId, table.walletAddress] }),
-}));
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.dropId, table.walletAddress] }),
+  };
+});
 
 // Learning modules table
 export const learningModules = pgTable('learning_modules', {
@@ -196,11 +205,10 @@ export const learningModules = pgTable('learning_modules', {
   title: varchar('title', { length: 255 }).notNull(),
   description: text('description').notNull(),
   difficulty: varchar('difficulty', { length: 20 }).notNull(),
-  type: varchar('type', { length: 20 }).notNull(),
-  xpReward: integer('xp_reward').notNull(),
-  tokenReward: integer('token_reward').notNull(),
-  badgeId: varchar('badge_id', { length: 100 }),
-  completionCriteria: jsonb('completion_criteria'),
+  rewardAmount: varchar('reward_amount', { length: 100 }).notNull(),
+  content: text('content').notNull(),
+  order: integer('order').notNull(),
+  isActive: boolean('is_active').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 });
@@ -209,10 +217,12 @@ export const learningModules = pgTable('learning_modules', {
 export const learningQuestions = pgTable('learning_questions', {
   id: varchar('id', { length: 100 }).primaryKey(),
   moduleId: varchar('module_id', { length: 100 }).notNull(),
-  text: text('text').notNull(),
+  question: text('question').notNull(),
   options: jsonb('options').notNull(),
   correctOption: integer('correct_option').notNull(),
   explanation: text('explanation').notNull(),
+  points: integer('points').notNull(),
+  order: integer('order').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -222,11 +232,20 @@ export const userLearningProgress = pgTable('user_learning_progress', {
   moduleId: varchar('module_id', { length: 100 }).notNull(),
   completed: boolean('completed').notNull(),
   score: integer('score').notNull(),
-  attemptsCount: integer('attempts_count').notNull(),
-  lastAttemptDate: bigint('last_attempt_date', { mode: 'number' }).notNull(),
-  rewardsClaimed: boolean('rewards_claimed').notNull(),
+  completedAt: bigint('completed_at'),
+  rewardClaimed: boolean('reward_claimed').notNull(),
+  rewardTxHash: varchar('reward_tx_hash', { length: 64 }),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-}, table => ({
-  pk: primaryKey({ columns: [table.userId, table.moduleId] }),
-}));
+}, (table) => {
+  return {
+    pk: primaryKey({ columns: [table.userId, table.moduleId] }),
+  };
+});
+
+// Sessions table for storing user sessions
+export const sessions = pgTable('sessions', {
+  sid: varchar('sid').primaryKey(),
+  sess: jsonb('sess').notNull(),
+  expire: timestamp('expire').notNull(),
+});

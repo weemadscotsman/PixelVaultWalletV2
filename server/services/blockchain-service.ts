@@ -141,7 +141,7 @@ export async function createWallet(passphrase: string): Promise<string> {
     publicKey,
     balance: "100000", // 0.1 PVX as starting balance for testing
     createdAt: new Date(),
-    lastSynced: new Date(),
+    lastUpdated: new Date(), // Changed from lastSynced to match database schema
     passphraseSalt: salt,
     passphraseHash: hash
   });
@@ -213,7 +213,7 @@ export async function importWallet(privateKey: string, passphrase: string): Prom
     // Update existing wallet passphrase
     existingWallet.passphraseSalt = salt;
     existingWallet.passphraseHash = hash;
-    existingWallet.lastSynced = new Date();
+    existingWallet.lastUpdated = new Date(); // Changed from lastSynced to match database schema
     await memBlockchainStorage.updateWallet(existingWallet);
   } else {
     // Create new wallet
@@ -222,7 +222,7 @@ export async function importWallet(privateKey: string, passphrase: string): Prom
       publicKey,
       balance: "0",
       createdAt: new Date(),
-      lastSynced: new Date(),
+      lastUpdated: new Date(), // Changed from lastSynced to match database schema
       passphraseSalt: salt,
       passphraseHash: hash
     });
@@ -297,7 +297,7 @@ export async function sendTransaction(
       publicKey: generateRandomHash(),
       balance: amount,
       createdAt: new Date(),
-      lastSynced: new Date(),
+      lastUpdated: new Date(), // Changed from lastSynced to match database schema
       passphraseSalt: '',
       passphraseHash: ''
     });

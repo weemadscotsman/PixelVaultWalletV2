@@ -76,7 +76,7 @@ export const sendTransaction = async (req: Request, res: Response) => {
         publicKey: cryptoUtils.generateRandomHash(),
         balance: amount,
         createdAt: new Date(),
-        lastSynced: new Date(),
+        lastUpdated: new Date(), // Changed from lastSynced to match database schema
         passphraseSalt: '',
         passphraseHash: ''
       });
