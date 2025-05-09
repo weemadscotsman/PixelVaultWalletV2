@@ -3,10 +3,10 @@ import { Transaction } from "@shared/types";
 
 export function useTransactionHistory(limit = 20) {
   return useQuery<Transaction[]>({
-    queryKey: ['/api/transactions/recent', limit],
+    queryKey: ['/api/tx/recent', limit],
     queryFn: async () => {
       try {
-        const response = await fetch(`/api/transactions/recent?limit=${limit}`);
+        const response = await fetch(`/api/tx/recent?limit=${limit}`);
         if (!response.ok) {
           throw new Error('Failed to fetch recent transactions');
         }
