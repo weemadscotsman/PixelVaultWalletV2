@@ -4,6 +4,30 @@ import * as blockchainService from '../services/blockchain-service';
 const router = express.Router();
 
 /**
+ * Get blockchain metrics - key data for dashboard display
+ * GET /api/blockchain/metrics
+ */
+router.get('/metrics', (req, res) => {
+  try {
+    const status = blockchainService.getBlockchainStatus();
+    const stats = {
+      latestBlockHeight: status.height || 0,
+      difficulty: status.difficulty || 1,
+      hashRate: status.networkHashRate || "0 H/s",
+      lastBlockTime: status.lastBlockTime || Date.now(),
+      activeMiners: status.activeMiners || 0,
+      pendingTransactions: status.pendingTransactions || 0,
+      totalTransactions: status.totalTransactions || 0
+    };
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get blockchain metrics'
+    });
+  }
+});
+
+/**
  * Connect to blockchain
  * GET /api/blockchain/connect
  */

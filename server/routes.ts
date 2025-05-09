@@ -48,6 +48,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       network_hashrate: '487.23 MH/s'
     });
   });
+  
+  // Route compatibility mappings for frontend
+  // Redirect /api/transactions/recent to /api/tx/recent
+  app.get('/api/transactions/recent', (req: Request, res: Response) => {
+    console.log('[ROUTE COMPATIBILITY] Redirecting /api/transactions/recent to /api/tx/recent');
+    req.url = '/api/tx/recent';
+    txRoutes(req, res);
+  });
 
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

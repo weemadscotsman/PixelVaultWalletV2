@@ -33,4 +33,20 @@ router.get('/pools', stakeController.getStakingPools);
  */
 router.get('/status/:address', stakeController.getStakingStatus);
 
+/**
+ * Get user's staking status from query param
+ * GET /api/stake/status?address=xyz
+ */
+router.get('/status', (req, res) => {
+  const address = req.query.address || req.query.limit; // Accept both formats
+  
+  if (!address) {
+    return res.status(400).json({ error: 'Address parameter is required' });
+  }
+  
+  // Call the controller with the address parameter
+  req.params.address = address.toString();
+  stakeController.getStakingStatus(req, res);
+});
+
 export default router;
