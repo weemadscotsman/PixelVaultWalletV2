@@ -10,6 +10,12 @@ const router = express.Router();
 router.post('/send', txController.sendTransaction);
 
 /**
+ * Get recent transactions
+ * GET /api/tx/recent
+ */
+router.get('/recent', txController.getRecentTransactions);
+
+/**
  * Get transaction history for wallet
  * GET /api/tx/history/:address
  */
@@ -20,11 +26,5 @@ router.get('/history/:address', txController.getTransactionHistory);
  * GET /api/tx/:hash
  */
 router.get('/:hash', txController.getTransactionDetails);
-
-/**
- * Get recent transactions
- * GET /api/tx/recent
- */
-router.get('/recent', txController.getRecentTransactions);
 
 export default router;
