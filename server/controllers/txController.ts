@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
+import { transactionDao } from '../database/transactionDao';
+import { walletDao } from '../database/walletDao';
 import * as cryptoUtils from '../utils/crypto';
 import { TransactionType, Transaction } from '../types';
 import { checkTransactionBadges } from './badgeController';
@@ -123,18 +125,30 @@ export const sendTransaction = async (req: Request, res: Response) => {
 export const getTransactionHistory = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
+    const limit = Number(req.query.limit) || 20;
+    const offset = Number(req.query.offset) || 0;
     
-    // Get transactions for address
-    const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+    // Check if wallet exists
+    const wallet = await walletDao.getWalletByAddress(address);
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
     
-    // Format for response
+    // Get transactions from database for address
+    const transactions = await transactionDao.getTransactionsByAddress(address, limit, offset);
+    
+    // Format for response with consistent property names
     const formattedTxs = transactions.map(tx => ({
       tx_type: tx.type,
       amount: tx.amount,
       to: tx.to,
       from: tx.from,
       timestamp: tx.timestamp,
-      hash: tx.hash
+      hash: tx.hash,
+      nonce: tx.nonce,
+      status: tx.status,
+      fee: tx.fee || 0,
+      block_height: tx.blockHeight
     }));
     
     res.json(formattedTxs);
@@ -154,8 +168,8 @@ export const getTransactionDetails = async (req: Request, res: Response) => {
   try {
     const { hash } = req.params;
     
-    // Get transaction by hash
-    const transaction = await memBlockchainStorage.getTransactionByHash(hash);
+    // Get transaction by hash from the database
+    const transaction = await transactionDao.getTransactionByHash(hash);
     
     if (!transaction) {
       return res.status(404).json({ error: 'Transaction not found' });
@@ -169,7 +183,11 @@ export const getTransactionDetails = async (req: Request, res: Response) => {
       amount: transaction.amount,
       timestamp: transaction.timestamp,
       nonce: transaction.nonce,
-      status: transaction.status
+      signature: transaction.signature,
+      status: transaction.status,
+      block_height: transaction.blockHeight,
+      fee: transaction.fee || 0,
+      metadata: transaction.metadata
     });
   } catch (error) {
     console.error('Error getting transaction details:', error);
@@ -187,8 +205,8 @@ export const getRecentTransactions = async (req: Request, res: Response) => {
   try {
     const limit = Number(req.query.limit) || 10;
     
-    // Get recent transactions
-    const transactions = await memBlockchainStorage.getRecentTransactions(limit);
+    // Get recent transactions from database
+    const transactions = await transactionDao.getRecentTransactions(limit);
     
     // Format for response
     const formattedTxs = transactions.map(tx => ({
@@ -197,7 +215,11 @@ export const getRecentTransactions = async (req: Request, res: Response) => {
       to: tx.to,
       from: tx.from,
       timestamp: tx.timestamp,
-      hash: tx.hash
+      hash: tx.hash,
+      nonce: tx.nonce,
+      status: tx.status,
+      fee: tx.fee || 0,
+      block_height: tx.blockHeight
     }));
     
     res.json(formattedTxs);

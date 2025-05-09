@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import * as cryptoUtils from '../utils/crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
+import { walletDao } from '../database/walletDao';
+import { transactionDao } from '../database/transactionDao';
 
 /**
  * Create a new wallet
@@ -279,16 +281,20 @@ export const getAllWallets = async (req: Request, res: Response) => {
 export const getTransactionHistory = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
-    const wallet = await memBlockchainStorage.getWalletByAddress(address);
+    const limit = Number(req.query.limit) || 20;
+    const offset = Number(req.query.offset) || 0;
+    
+    // Use DAO to check if wallet exists
+    const wallet = await walletDao.getWalletByAddress(address);
     
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
-    // Get transactions involving this wallet
-    const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+    // Get transactions involving this wallet from database
+    const transactions = await transactionDao.getTransactionsByAddress(address, limit, offset);
     
-    // Format transaction history
+    // Format transaction history with consistent property names
     const txHistory = transactions.map(tx => ({
       hash: tx.hash,
       type: tx.type,
@@ -296,9 +302,12 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
       timestamp: new Date(tx.timestamp).toISOString(),
       from: tx.from,
       to: tx.to,
-      fee: tx.fee,
-      note: tx.note,
-      status: tx.status
+      fee: tx.fee || 0,
+      nonce: tx.nonce,
+      signature: tx.signature,
+      status: tx.status,
+      block_height: tx.blockHeight,
+      metadata: tx.metadata
     }));
     
     // Sort by timestamp (newest first)
