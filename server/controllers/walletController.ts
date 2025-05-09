@@ -160,8 +160,16 @@ export const getWallet = async (req: Request, res: Response) => {
 export const getBalance = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
-    const wallet = await memBlockchainStorage.getWalletByAddress(address);
     
+    // Try to get the wallet from DB first
+    let wallet = await walletDao.getWalletByAddress(address);
+    
+    // If not found in DB, try memory storage
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(address);
+    }
+    
+    // If still not found, return 404
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
@@ -229,7 +237,15 @@ export const exportWalletKeys = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Passphrase is required' });
     }
     
-    const wallet = await memBlockchainStorage.getWalletByAddress(address);
+    // Try to get the wallet from DB first
+    let wallet = await walletDao.getWalletByAddress(address);
+    
+    // If not found in DB, try memory storage
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(address);
+    }
+    
+    // If still not found, return 404
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
@@ -352,14 +368,20 @@ export const sendTransaction = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    // Get sender wallet
-    const sender = await memBlockchainStorage.getWalletByAddress(from);
+    // Get sender wallet - try DB first, then memory storage
+    let sender = await walletDao.getWalletByAddress(from);
+    if (!sender) {
+      sender = await memBlockchainStorage.getWalletByAddress(from);
+    }
     if (!sender) {
       return res.status(404).json({ error: 'Sender wallet not found' });
     }
     
-    // Get recipient wallet
-    const recipient = await memBlockchainStorage.getWalletByAddress(to);
+    // Get recipient wallet - try DB first, then memory storage
+    let recipient = await walletDao.getWalletByAddress(to);
+    if (!recipient) {
+      recipient = await memBlockchainStorage.getWalletByAddress(to);
+    }
     if (!recipient) {
       return res.status(404).json({ error: 'Recipient wallet not found' });
     }
@@ -434,8 +456,16 @@ export const sendTransaction = async (req: Request, res: Response) => {
 export const getStakingInfo = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
-    const wallet = await memBlockchainStorage.getWalletByAddress(address);
     
+    // Try to get the wallet from DB first
+    let wallet = await walletDao.getWalletByAddress(address);
+    
+    // If not found in DB, try memory storage
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(address);
+    }
+    
+    // If still not found, return 404
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
