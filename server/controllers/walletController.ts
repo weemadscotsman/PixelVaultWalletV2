@@ -56,6 +56,14 @@ export const createWallet = async (req: Request, res: Response) => {
     };
     
     // Create wallet in database
+    console.log('Creating wallet with data:', {
+      address: walletData.address,
+      publicKey: walletData.publicKey,
+      balance: walletData.balance,
+      passphraseSalt: walletData.passphraseSalt,
+      passphraseHash: walletData.passphraseHash ? 'exists' : 'missing',
+    });
+    
     const wallet = await walletDao.createWallet(walletData);
     
     // Also create in memory storage for backup
