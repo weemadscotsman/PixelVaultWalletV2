@@ -88,7 +88,7 @@ export const startStaking = async (req: Request, res: Response) => {
     
     const transaction = {
       hash: txHash,
-      type: 'STAKE_START',
+      type: 'STAKE_START' as const,
       from: address,
       to: `STAKE_POOL_${poolId}`,
       amount,
@@ -98,7 +98,39 @@ export const startStaking = async (req: Request, res: Response) => {
       status: 'confirmed' as const
     };
     
+    // Store in in-memory blockchain first
     await memBlockchainStorage.createTransaction(transaction);
+    
+    // Then, persist to database
+    try {
+      const { transactionDao } = await import('../database/transactionDao');
+      
+      // Create DB transaction object (converting from memory format)
+      const dbTransaction = {
+        hash: txHash,
+        type: 'STAKE_START' as const,
+        from: address,
+        to: `STAKE_POOL_${poolId}`,
+        amount: parseInt(amount),
+        timestamp: now,
+        nonce: Math.floor(Math.random() * 100000),
+        signature: cryptoUtils.generateRandomHash(),
+        status: 'confirmed' as const,
+        metadata: { 
+          stakeId,
+          poolId,
+          poolName: pool.name,
+          lockupPeriod: pool.lockupPeriod
+        }
+      };
+      
+      // Persist to database
+      await transactionDao.createTransaction(dbTransaction);
+      console.log(`STAKE_START transaction [${txHash}] saved to database for ${address}`);
+    } catch (dbError) {
+      console.error('Failed to persist stake start transaction to database:', dbError);
+      // Don't fail the entire transaction if DB persistence fails
+    }
     
     // Broadcast the stake transaction to all connected clients
     broadcastTransaction(transaction);
