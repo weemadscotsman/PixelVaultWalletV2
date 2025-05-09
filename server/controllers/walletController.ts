@@ -31,16 +31,24 @@ export const createWallet = async (req: Request, res: Response) => {
       .update(address)
       .digest('hex');
     
-    // Create wallet in storage
-    await memBlockchainStorage.createWallet({
+    // Check if wallet already exists in database
+    const existingWallet = await walletDao.getWalletByAddress(address);
+    if (existingWallet) {
+      return res.status(400).json({ error: 'Wallet with this address already exists' });
+    }
+    
+    // Create wallet in database
+    const wallet = await walletDao.createWallet({
       address,
       publicKey,
       balance: "1000000", // 1 PVX initial balance for testing
       createdAt: new Date(),
-      lastSynced: new Date(),
+      lastUpdated: new Date(),
       passphraseSalt: salt,
       passphraseHash: hash
     });
+    
+    console.log('Created new wallet:', address);
     
     res.status(201).json({
       address,
@@ -84,22 +92,24 @@ export const importWallet = async (req: Request, res: Response) => {
       .update(passphrase + salt)
       .digest('hex');
     
-    // Check if wallet already exists
-    const existingWallet = await memBlockchainStorage.getWalletByAddress(address);
+    // Check if wallet already exists in database
+    const existingWallet = await walletDao.getWalletByAddress(address);
     if (existingWallet) {
       return res.status(400).json({ error: 'Wallet already exists' });
     }
     
-    // Create wallet in storage
-    await memBlockchainStorage.createWallet({
+    // Create wallet in database
+    await walletDao.createWallet({
       address,
       publicKey,
       balance: "1000000", // 1 PVX initial balance for testing
       createdAt: new Date(),
-      lastSynced: new Date(),
+      lastUpdated: new Date(),
       passphraseSalt: salt,
       passphraseHash
     });
+    
+    console.log('Imported wallet:', address);
     
     res.status(201).json({
       address,
@@ -120,7 +130,9 @@ export const importWallet = async (req: Request, res: Response) => {
 export const getWallet = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
-    const wallet = await memBlockchainStorage.getWalletByAddress(address);
+    
+    // Use DAO to fetch wallet from database
+    const wallet = await walletDao.getWalletByAddress(address);
     
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
@@ -130,7 +142,8 @@ export const getWallet = async (req: Request, res: Response) => {
       address: wallet.address,
       publicKey: wallet.publicKey,
       balance: wallet.balance,
-      createdAt: wallet.createdAt
+      createdAt: wallet.createdAt,
+      lastUpdated: wallet.lastUpdated
     });
   } catch (error) {
     console.error('Error getting wallet:', error);
