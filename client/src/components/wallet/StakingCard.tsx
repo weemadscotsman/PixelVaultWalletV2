@@ -223,19 +223,19 @@ export function StakingCard() {
       <CardContent className="pt-6">
         {/* Staking Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+          <div key="total-staked" className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
             <p className="text-sm text-gray-400">Total Staked</p>
             <p className="text-xl font-bold text-blue-300 mt-2">{formatCryptoAmount(totalStaked)}</p>
           </div>
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+          <div key="active-stakes" className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
             <p className="text-sm text-gray-400">Active Stakes</p>
             <p className="text-xl font-bold text-blue-300 mt-2">{activeStakes?.length || 0}</p>
           </div>
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+          <div key="est-rewards" className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
             <p className="text-sm text-gray-400">Est. Rewards</p>
             <p className="text-xl font-bold text-green-400 mt-2">+{formatCryptoAmount(projectedRewards)}</p>
           </div>
-          <div className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
+          <div key="available-pools" className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
             <p className="text-sm text-gray-400">Available Pools</p>
             <p className="text-xl font-bold text-blue-300 mt-2">{stakingPools?.filter(p => p.active !== false).length || 0}</p>
           </div>
@@ -267,25 +267,25 @@ export function StakingCard() {
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="bg-gray-900/40 p-2 rounded">
+                      <div key={`${stake.id}-start`} className="bg-gray-900/40 p-2 rounded">
                         <p className="text-gray-400 mb-1">Started</p>
                         <p className="text-gray-300 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
                           {stake.startTime ? formatTimeAgo(new Date(stake.startTime)) : 'Just now'}
                         </p>
                       </div>
-                      <div className="bg-gray-900/40 p-2 rounded">
+                      <div key={`${stake.id}-end`} className="bg-gray-900/40 p-2 rounded">
                         <p className="text-gray-400 mb-1">Ends</p>
                         <p className="text-gray-300 flex items-center">
                           <Clock className="h-3 w-3 mr-1" />
                           {stake.endTime ? formatTimeAgo(new Date(stake.endTime)) : 'In progress'}
                         </p>
                       </div>
-                      <div className="bg-gray-900/40 p-2 rounded">
+                      <div key={`${stake.id}-rewards`} className="bg-gray-900/40 p-2 rounded">
                         <p className="text-gray-400 mb-1">Current Rewards</p>
                         <p className="text-green-400">{formatCryptoAmount(stake.rewards || '0')}</p>
                       </div>
-                      <div className="bg-gray-900/40 p-2 rounded">
+                      <div key={`${stake.id}-pool`} className="bg-gray-900/40 p-2 rounded">
                         <p className="text-gray-400 mb-1">Pool</p>
                         <p className="text-gray-300">{pool?.name || 'Unknown'}</p>
                       </div>
@@ -345,15 +345,15 @@ export function StakingCard() {
                 </div>
                 <p className="text-sm text-gray-400 mb-3">{pool.description}</p>
                 <div className="grid grid-cols-3 gap-2 text-sm mb-3">
-                  <div className="bg-gray-900/40 p-2 rounded">
+                  <div key={`${pool.id}-min-stake`} className="bg-gray-900/40 p-2 rounded">
                     <p className="text-gray-400 mb-1">Min. Stake</p>
                     <p className="text-gray-300">{formatCryptoAmount(pool.minStake)}</p>
                   </div>
-                  <div className="bg-gray-900/40 p-2 rounded">
+                  <div key={`${pool.id}-lock-period`} className="bg-gray-900/40 p-2 rounded">
                     <p className="text-gray-400 mb-1">Lock Period</p>
                     <p className="text-gray-300">{pool.lockupPeriod} days</p>
                   </div>
-                  <div className="bg-gray-900/40 p-2 rounded">
+                  <div key={`${pool.id}-total-staked`} className="bg-gray-900/40 p-2 rounded">
                     <p className="text-gray-400 mb-1">Total Staked</p>
                     <p className="text-gray-300">{formatCryptoAmount(pool.totalStaked)}</p>
                   </div>
