@@ -65,24 +65,41 @@ export class WalletDao {
    */
   async getWalletByAddress(address: string): Promise<Wallet | undefined> {
     try {
+      // First, log raw SQL query results for debugging
+      const sqlQuery = `SELECT * FROM wallets WHERE address = '${address}'`;
+      let rawResult;
+      try {
+        rawResult = await db.execute(sqlQuery);
+        console.log('DIRECT SQL QUERY RESULT:', rawResult.rows && rawResult.rows.length > 0 ? 
+          rawResult.rows[0] : 'No wallet found in direct SQL query');
+      } catch (sqlError) {
+        console.error('Error executing direct SQL query:', sqlError);
+      }
+      
+      // Now do the normal Drizzle ORM query
       const result = await db.select()
         .from(wallets)
         .where(eq(wallets.address, address))
         .limit(1);
       
-      if (result.length === 0) {
+      if (!result || result.length === 0) {
+        console.log(`No wallet found for address ${address}`);
         return undefined;
       }
       
       // Convert database format to Wallet with snake_case to camelCase mapping
       const dbWallet = result[0];
       
+      console.log('WalletDao.getWalletByAddress - Complete DB result:', JSON.stringify(dbWallet, null, 2));
+      
       console.log('WalletDao.getWalletByAddress - Raw DB result:', {
         address: dbWallet.address,
         public_key: dbWallet.public_key ? 'exists' : 'missing',
         balance: dbWallet.balance,
         passphrase_salt: dbWallet.passphrase_salt ? 'exists' : 'missing',
-        passphrase_hash: dbWallet.passphrase_hash ? 'exists' : 'missing'
+        passphrase_hash: dbWallet.passphrase_hash ? 'exists' : 'missing',
+        salt_value: dbWallet.passphrase_salt,
+        hash_value: dbWallet.passphrase_hash
       });
       
       // Make sure we explicitly extract all fields from the DB result
@@ -96,6 +113,14 @@ export class WalletDao {
         passphraseSalt: dbWallet.passphrase_salt,
         passphraseHash: dbWallet.passphrase_hash
       };
+      
+      console.log('Mapped Wallet object:', {
+        address: wallet.address,
+        hasPassphraseSalt: Boolean(wallet.passphraseSalt),
+        hasPassphraseHash: Boolean(wallet.passphraseHash),
+        salt_value: wallet.passphraseSalt,
+        hash_value: wallet.passphraseHash
+      });
       
       return wallet;
     } catch (error) {
