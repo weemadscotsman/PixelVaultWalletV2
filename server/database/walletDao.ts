@@ -14,15 +14,15 @@ export class WalletDao {
    */
   async createWallet(wallet: Wallet): Promise<Wallet> {
     try {
-      // Convert wallet to database format
+      // Convert wallet to database format with snake_case field names to match DB schema
       const dbWallet = {
         address: wallet.address,
-        publicKey: wallet.publicKey,
+        public_key: wallet.publicKey,
         balance: wallet.balance,
-        createdAt: wallet.createdAt,
-        lastSynced: wallet.lastSynced,
-        passphraseSalt: wallet.passphraseSalt,
-        passphraseHash: wallet.passphraseHash,
+        created_at: wallet.createdAt,
+        last_synced: wallet.lastSynced,
+        passphrase_salt: wallet.passphraseSalt,
+        passphrase_hash: wallet.passphraseHash,
       };
 
       // Insert wallet
@@ -52,16 +52,16 @@ export class WalletDao {
         return undefined;
       }
       
-      // Convert database format to Wallet
+      // Convert database format to Wallet with snake_case to camelCase mapping
       const dbWallet = result[0];
       return {
         address: dbWallet.address,
-        publicKey: dbWallet.publicKey,
+        publicKey: dbWallet.public_key,
         balance: dbWallet.balance,
-        createdAt: dbWallet.createdAt,
-        lastSynced: dbWallet.lastSynced,
-        passphraseSalt: dbWallet.passphraseSalt || undefined,
-        passphraseHash: dbWallet.passphraseHash || undefined,
+        createdAt: dbWallet.created_at,
+        lastSynced: dbWallet.last_synced,
+        passphraseSalt: dbWallet.passphrase_salt || undefined,
+        passphraseHash: dbWallet.passphrase_hash || undefined,
       };
     } catch (error) {
       console.error('Error getting wallet by address:', error);
@@ -82,12 +82,12 @@ export class WalletDao {
         return this.createWallet(wallet);
       }
       
-      // Convert wallet to database format
+      // Convert wallet to database format with snake_case field names
       const dbWallet = {
         balance: wallet.balance,
-        lastSynced: wallet.lastSynced,
-        passphraseSalt: wallet.passphraseSalt,
-        passphraseHash: wallet.passphraseHash,
+        last_synced: wallet.lastSynced,
+        passphrase_salt: wallet.passphraseSalt,
+        passphrase_hash: wallet.passphraseHash,
       };
 
       // Update wallet
@@ -111,15 +111,15 @@ export class WalletDao {
     try {
       const result = await db.select().from(wallets);
       
-      // Convert database format to Wallet[]
+      // Convert database format to Wallet[] with snake_case to camelCase mapping
       return result.map(dbWallet => ({
         address: dbWallet.address,
-        publicKey: dbWallet.publicKey,
+        publicKey: dbWallet.public_key,
         balance: dbWallet.balance,
-        createdAt: dbWallet.createdAt,
-        lastSynced: dbWallet.lastSynced,
-        passphraseSalt: dbWallet.passphraseSalt || undefined,
-        passphraseHash: dbWallet.passphraseHash || undefined,
+        createdAt: dbWallet.created_at,
+        lastSynced: dbWallet.last_synced,
+        passphraseSalt: dbWallet.passphrase_salt || undefined,
+        passphraseHash: dbWallet.passphrase_hash || undefined,
       }));
     } catch (error) {
       console.error('Error getting all wallets:', error);
@@ -145,7 +145,7 @@ export class WalletDao {
       await db.update(wallets)
         .set({ 
           balance, 
-          lastSynced: new Date() 
+          last_synced: new Date() 
         })
         .where(eq(wallets.address, address));
       
