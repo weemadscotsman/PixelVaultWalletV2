@@ -86,7 +86,7 @@ export class WalletDao {
       // Convert wallet to database format with snake_case field names
       const dbWallet = {
         balance: wallet.balance,
-        last_updated: wallet.lastSynced, // Use last_updated instead of last_synced
+        last_updated: wallet.lastUpdated || wallet.lastSynced, // Use lastUpdated with fallback to lastSynced
         passphrase_salt: wallet.passphraseSalt,
         passphrase_hash: wallet.passphraseHash,
       };

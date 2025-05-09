@@ -1,0 +1,224 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+Blockchain data loaded from file
+Thringlet data loaded from file
+[BACKEND LIFECYCLE] Stage 1: .env loaded. Raw process.env.PORT: undefined
+[BACKEND LIFECYCLE] Stage 2: App initialized. Attempting to use PORT: 5000
+[BACKEND LIFECYCLE] Stage 3: Core middleware (trust proxy, cors, json, urlencoded) added.
+[BACKEND LIFECYCLE] Stage 4: /api/ping route added.
+[BACKEND LIFECYCLE] Stage 9: Calling startServer function...
+[BACKEND LIFECYCLE] Stage 5: Starting server initialization process...
+[BACKEND LIFECYCLE] Stage 5a: Checking database connection...
+[BACKEND LIFECYCLE] Stage 5b: Database connection successful
+Initializing database...
+Creating tables if they don't exist...
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "blocks" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "transactions" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "wallets" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "miner_stats" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "staking_pools" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "stake_records" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "badges" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "user_badges" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "thringlets" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "governance_proposals" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "governance_votes" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "drops" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "drop_claims" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "learning_modules" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "learning_questions" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "user_learning_progress" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "sessions" already exists, skipping',
+  file: 'parse_utilcmd.c',
+  line: '207',
+  routine: 'transformCreateStmt'
+}
+{
+  severity_local: 'NOTICE',
+  severity: 'NOTICE',
+  code: '42P07',
+  message: 'relation "idx_session_expire" already exists, skipping',
+  file: 'index.c',
+  line: '877',
+  routine: 'index_create'
+}
+All tables created successfully
+Database initialization completed
+No additional seeding required - done during initialization
+[BACKEND LIFECYCLE] Stage 6: Initializing PVX blockchain...
+Blockchain initialized and running
+[BACKEND LIFECYCLE] Stage 6a: Connected to PVX blockchain successfully
+[BACKEND LIFECYCLE] Stage 7: Mounting feature API routes...
+[BACKEND LIFECYCLE] Stage 7a: Feature routes mounted successfully.
+[BACKEND LIFECYCLE] Stage 7b: Error handling middleware added.
+[BACKEND LIFECYCLE] Stage 7c: API 404 handling middleware added.
+[BACKEND LIFECYCLE] Stage 8: Setting up Vite for development...
+✅ [BACKEND ONLINE] Server successfully listening on port 5000
+   Test Ping: http://localhost:5000/api/ping
+   Wallet Create (POST): http://localhost:5000/api/wallet/create
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Wallet creation hash data: {
+  passphrase: 'TestWallet123',
+  salt: '1a00a8880b1479d4d30aba7fa483fd68',
+  hash: 'a5a86dcdfa84040815d7a399ba1e2ec200cd5027fd4a82aca7fdbd5eba37c258',
+  hashMethod: 'sha256(passphrase + salt)'
+}
+Wallet creation hash data: {
+  passphrase: 'FU-0DGSORJHAJ0WRU',
+  salt: '24df03e997c766fd5043b058190b6654',
+  hash: '9c386d81bdea6f063593498c335ee640f80908aaceca35718dec89445c26a48d',
+  hashMethod: 'sha256(passphrase + salt)'
+}
+Blockchain data saved to file
+Created new wallet: PVX_a5a86dcdfa84040815d7a399ba1e2ec2
+Blockchain data saved to file
+Created new wallet: PVX_9c386d81bdea6f063593498c335ee640
+Wallet login attempt: {
+  address: 'PVX_a5a86dcdfa84040815d7a399ba1e2ec2',
+  inputHash: '5da4ce174f68e019b7bac7702046f5f259138dcb07360b9a245eee8a66843887',
+  storedHash: undefined,
+  salt: undefined,
+  match: false
+}
+Wallet login attempt: {
+  address: 'PVX_9c386d81bdea6f063593498c335ee640',
+  inputHash: '5b318e78221d3b2df1898798b93af5d179426cd530b52f4e732cca753ee33213',
+  storedHash: undefined,
+  salt: undefined,
+  match: false
