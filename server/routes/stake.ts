@@ -1,5 +1,5 @@
 import express from 'express';
-import * as stakeController from '../controllers/stakeController';
+import * as stakeController from '../controllers/stakeController.fixed';
 import { authenticateJWT } from '../middleware/auth';
 
 const router = express.Router();
