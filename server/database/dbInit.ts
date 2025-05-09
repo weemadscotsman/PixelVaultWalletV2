@@ -329,7 +329,7 @@ export async function initializeDatabase() {
           description: 'Balanced risk and reward with a moderate lockup period.',
           apr: 12,
           minStakeAmount: 500,
-          lockupPeriod: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
+          lockupPeriod: 2592000, // 30 days in seconds (instead of milliseconds to avoid integer overflow)
           totalStaked: '0',
           activeStakers: 0
         },
@@ -339,7 +339,7 @@ export async function initializeDatabase() {
           description: 'Higher potential returns for a longer commitment.',
           apr: 25,
           minStakeAmount: 1000,
-          lockupPeriod: 90 * 24 * 60 * 60 * 1000, // 90 days in milliseconds
+          lockupPeriod: 7776000, // 90 days in seconds (instead of milliseconds to avoid integer overflow)
           totalStaked: '0',
           activeStakers: 0
         },
@@ -349,7 +349,7 @@ export async function initializeDatabase() {
           description: 'Maximum returns for early network supporters with the longest lockup.',
           apr: 42,
           minStakeAmount: 5000,
-          lockupPeriod: 180 * 24 * 60 * 60 * 1000, // 180 days in milliseconds
+          lockupPeriod: 15552000, // 180 days in seconds (instead of milliseconds to avoid integer overflow)
           totalStaked: '0',
           activeStakers: 0
         }
