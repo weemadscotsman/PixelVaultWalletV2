@@ -1078,27 +1078,30 @@ async function distributeStakingRewards() {
         try {
           const { transactionDao } = await import('../database/transactionDao');
           
-          // Create database transaction object (mapping from memory format)
-          const dbTransaction = {
+          // In TransactionDao.createTransaction, it expects a Transaction object and does the DB mapping internally
+          // So we'll just create a Transaction with the metadata we need
+          const txForDb: Transaction = {
             hash: rewardTx.hash,
-            type: rewardTx.type,
+            type: rewardTx.type as TransactionType,
             from: rewardTx.from,
             to: rewardTx.to,
-            amount: rewardTx.amount,
-            timestamp: rewardTx.timestamp,
+            amount: Number(rewardTx.amount),
+            timestamp: Number(rewardTx.timestamp),
             nonce: rewardTx.nonce,
             signature: rewardTx.signature,
-            status: rewardTx.status,
+            status: rewardTx.status as 'pending' | 'confirmed' | 'failed',
+            blockHeight: rewardTx.blockHeight,
+            fee: rewardTx.fee,
             metadata: {
               stakeId: stake.id,
               poolId: stake.poolId,
-              poolApr: pool.apy,
+              poolApr: pool.apy || pool.apr,
               rewardDate: now
             }
           };
           
-          // Store in database
-          await transactionDao.createTransaction(dbTransaction);
+          // Store in database - the DAO will handle the field name conversion
+          await transactionDao.createTransaction(txForDb);
           console.log(`Staking reward transaction [${rewardTx.hash}] persisted to database for ${stake.walletAddress}`);
         } catch (dbError) {
           console.error('Failed to persist staking reward to database:', dbError);
