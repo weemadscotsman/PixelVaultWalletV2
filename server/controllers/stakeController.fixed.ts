@@ -16,31 +16,58 @@ export const startStaking = async (req: Request, res: Response) => {
   try {
     const { address, amount, poolId, passphrase } = req.body;
     
+    console.log('🚨 DEBUG START STAKING REQUEST:', { 
+      address, 
+      poolId, 
+      amountLength: amount ? amount.length : 0 
+    });
+    
     if (!address || !amount || !poolId || !passphrase) {
       return res.status(400).json({ 
         error: 'Address, amount, pool ID, and passphrase are required' 
       });
     }
     
-    // Try to get the wallet from DB first, then memory storage
-    let wallet = await walletDao.getWalletByAddress(address);
-    console.log('Wallet from DB for staking:', wallet ? {
-      address: wallet.address,
-      hasPublicKey: Boolean(wallet.publicKey),
-      hasPassphraseSalt: Boolean(wallet.passphraseSalt),
-      hasPassphraseHash: Boolean(wallet.passphraseHash),
-      source: 'database'
-    } : 'Not found in database');
+    try {
+      // Direct SQL query for debugging
+      const sqlResult = await db.execute(`SELECT * FROM wallets WHERE address = '${address}'`);
+      console.log('DIRECT SQL DEBUG Query Result:', sqlResult);
+    } catch (sqlErr) {
+      console.error('SQL DEBUG Query Error:', sqlErr);
+    }
     
-    if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
-      console.log('Wallet from memory for staking:', wallet ? {
+    // Try to get the wallet from DB first, then memory storage
+    let wallet;
+    try {
+      console.log('Attempting to get wallet from DAO...');
+      wallet = await walletDao.getWalletByAddress(address);
+      console.log('Wallet from DB for staking:', wallet ? {
         address: wallet.address,
         hasPublicKey: Boolean(wallet.publicKey),
         hasPassphraseSalt: Boolean(wallet.passphraseSalt),
         hasPassphraseHash: Boolean(wallet.passphraseHash),
-        source: 'memory'
-      } : 'Not found in memory storage');
+        source: 'database',
+        rawObject: JSON.stringify(wallet)
+      } : 'Not found in database');
+    } catch (dbErr) {
+      console.error('Error retrieving wallet from DAO:', dbErr);
+    }
+    
+    if (!wallet) {
+      try {
+        console.log('Attempting to get wallet from memory storage...');
+        wallet = await memBlockchainStorage.getWalletByAddress(address);
+        console.log('Wallet from memory for staking:', wallet ? {
+          address: wallet.address,
+          hasPublicKey: Boolean(wallet.publicKey),
+          hasPassphraseSalt: Boolean(wallet.passphraseSalt),
+          hasPassphraseHash: Boolean(wallet.passphraseHash),
+          source: 'memory',
+          rawObject: JSON.stringify(wallet)
+        } : 'Not found in memory storage');
+      } catch (memErr) {
+        console.error('Error retrieving wallet from memory storage:', memErr);
+      }
     }
     
     if (!wallet) {
@@ -244,31 +271,57 @@ export const stopStaking = async (req: Request, res: Response) => {
   try {
     const { stakeId, address, passphrase } = req.body;
     
+    console.log('🚨 DEBUG STOP STAKING REQUEST:', { 
+      stakeId,
+      address, 
+    });
+    
     if (!stakeId || !address || !passphrase) {
       return res.status(400).json({ 
         error: 'Stake ID, address, and passphrase are required' 
       });
     }
     
-    // Try to get the wallet from DB first, then memory storage
-    let wallet = await walletDao.getWalletByAddress(address);
-    console.log('Wallet from DB for stop staking:', wallet ? {
-      address: wallet.address,
-      hasPublicKey: Boolean(wallet.publicKey),
-      hasPassphraseSalt: Boolean(wallet.passphraseSalt),
-      hasPassphraseHash: Boolean(wallet.passphraseHash),
-      source: 'database'
-    } : 'Not found in database');
+    try {
+      // Direct SQL query for debugging
+      const sqlResult = await db.execute(`SELECT * FROM wallets WHERE address = '${address}'`);
+      console.log('DIRECT SQL DEBUG Query Result for stop staking:', sqlResult);
+    } catch (sqlErr) {
+      console.error('SQL DEBUG Query Error for stop staking:', sqlErr);
+    }
     
-    if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
-      console.log('Wallet from memory for stop staking:', wallet ? {
+    // Try to get the wallet from DB first, then memory storage
+    let wallet;
+    try {
+      console.log('Attempting to get wallet from DAO for stop staking...');
+      wallet = await walletDao.getWalletByAddress(address);
+      console.log('Wallet from DB for stop staking:', wallet ? {
         address: wallet.address,
         hasPublicKey: Boolean(wallet.publicKey),
         hasPassphraseSalt: Boolean(wallet.passphraseSalt),
         hasPassphraseHash: Boolean(wallet.passphraseHash),
-        source: 'memory'
-      } : 'Not found in memory storage');
+        source: 'database',
+        rawObject: JSON.stringify(wallet)
+      } : 'Not found in database');
+    } catch (dbErr) {
+      console.error('Error retrieving wallet from DAO for stop staking:', dbErr);
+    }
+    
+    if (!wallet) {
+      try {
+        console.log('Attempting to get wallet from memory storage for stop staking...');
+        wallet = await memBlockchainStorage.getWalletByAddress(address);
+        console.log('Wallet from memory for stop staking:', wallet ? {
+          address: wallet.address,
+          hasPublicKey: Boolean(wallet.publicKey),
+          hasPassphraseSalt: Boolean(wallet.passphraseSalt),
+          hasPassphraseHash: Boolean(wallet.passphraseHash),
+          source: 'memory',
+          rawObject: JSON.stringify(wallet)
+        } : 'Not found in memory storage');
+      } catch (memErr) {
+        console.error('Error retrieving wallet from memory storage for stop staking:', memErr);
+      }
     }
     
     if (!wallet) {
@@ -515,31 +568,57 @@ export const claimRewards = async (req: Request, res: Response) => {
   try {
     const { stakeId, address, passphrase } = req.body;
     
+    console.log('🚨 DEBUG CLAIM REWARDS REQUEST:', { 
+      stakeId,
+      address, 
+    });
+    
     if (!stakeId || !address || !passphrase) {
       return res.status(400).json({ 
         error: 'Stake ID, address, and passphrase are required' 
       });
     }
     
-    // Try to get the wallet from DB first, then memory storage
-    let wallet = await walletDao.getWalletByAddress(address);
-    console.log('Wallet from DB for claim rewards:', wallet ? {
-      address: wallet.address,
-      hasPublicKey: Boolean(wallet.publicKey),
-      hasPassphraseSalt: Boolean(wallet.passphraseSalt),
-      hasPassphraseHash: Boolean(wallet.passphraseHash),
-      source: 'database'
-    } : 'Not found in database');
+    try {
+      // Direct SQL query for debugging
+      const sqlResult = await db.execute(`SELECT * FROM wallets WHERE address = '${address}'`);
+      console.log('DIRECT SQL DEBUG Query Result for claim rewards:', sqlResult);
+    } catch (sqlErr) {
+      console.error('SQL DEBUG Query Error for claim rewards:', sqlErr);
+    }
     
-    if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
-      console.log('Wallet from memory for claim rewards:', wallet ? {
+    // Try to get the wallet from DB first, then memory storage
+    let wallet;
+    try {
+      console.log('Attempting to get wallet from DAO for claim rewards...');
+      wallet = await walletDao.getWalletByAddress(address);
+      console.log('Wallet from DB for claim rewards:', wallet ? {
         address: wallet.address,
         hasPublicKey: Boolean(wallet.publicKey),
         hasPassphraseSalt: Boolean(wallet.passphraseSalt),
         hasPassphraseHash: Boolean(wallet.passphraseHash),
-        source: 'memory'
-      } : 'Not found in memory storage');
+        source: 'database',
+        rawObject: JSON.stringify(wallet)
+      } : 'Not found in database');
+    } catch (dbErr) {
+      console.error('Error retrieving wallet from DAO for claim rewards:', dbErr);
+    }
+    
+    if (!wallet) {
+      try {
+        console.log('Attempting to get wallet from memory storage for claim rewards...');
+        wallet = await memBlockchainStorage.getWalletByAddress(address);
+        console.log('Wallet from memory for claim rewards:', wallet ? {
+          address: wallet.address,
+          hasPublicKey: Boolean(wallet.publicKey),
+          hasPassphraseSalt: Boolean(wallet.passphraseSalt),
+          hasPassphraseHash: Boolean(wallet.passphraseHash),
+          source: 'memory',
+          rawObject: JSON.stringify(wallet)
+        } : 'Not found in memory storage');
+      } catch (memErr) {
+        console.error('Error retrieving wallet from memory storage for claim rewards:', memErr);
+      }
     }
     
     if (!wallet) {
