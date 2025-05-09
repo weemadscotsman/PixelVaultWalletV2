@@ -16,7 +16,8 @@ export interface Wallet {
   publicKey: string;
   balance: string;
   createdAt: Date;
-  lastUpdated: Date; // Changed from lastSynced to match database schema
+  lastUpdated: Date; // Primary timestamp field for last update
+  lastSynced?: Date; // Kept for backward compatibility
   passphraseSalt: string;
   passphraseHash: string;
 }
@@ -136,10 +137,12 @@ export class MemBlockchainStorage {
         
         // Restore wallets with proper Date objects
         this.wallets = new Map(data.wallets.map(([key, wallet]) => {
+          const lastUpdatedTimestamp = new Date(wallet.lastUpdated || wallet.lastSynced);
           const restoredWallet = {
             ...wallet,
             createdAt: new Date(wallet.createdAt),
-            lastUpdated: new Date(wallet.lastUpdated || wallet.lastSynced) // Support both field names for backward compatibility
+            lastUpdated: lastUpdatedTimestamp,
+            lastSynced: lastUpdatedTimestamp // Ensure both fields are present
           };
           return [key, restoredWallet];
         }));

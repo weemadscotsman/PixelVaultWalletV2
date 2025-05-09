@@ -59,7 +59,8 @@ export class WalletDao {
         publicKey: dbWallet.public_key,
         balance: dbWallet.balance,
         createdAt: dbWallet.created_at,
-        lastSynced: dbWallet.last_updated, // Map from last_updated to lastSynced
+        lastUpdated: dbWallet.last_updated,
+        lastSynced: dbWallet.last_updated, // Keep both for compatibility
         passphraseSalt: dbWallet.passphrase_salt || undefined,
         passphraseHash: dbWallet.passphrase_hash || undefined,
       };
@@ -117,7 +118,8 @@ export class WalletDao {
         publicKey: dbWallet.public_key,
         balance: dbWallet.balance,
         createdAt: dbWallet.created_at,
-        lastSynced: dbWallet.last_updated, // Map from last_updated to lastSynced
+        lastUpdated: dbWallet.last_updated,
+        lastSynced: dbWallet.last_updated, // Keep both for compatibility
         passphraseSalt: dbWallet.passphrase_salt || undefined,
         passphraseHash: dbWallet.passphrase_hash || undefined,
       }));
@@ -153,6 +155,7 @@ export class WalletDao {
       return {
         ...existingWallet,
         balance,
+        lastUpdated: new Date(),
         lastSynced: new Date()
       };
     } catch (error) {

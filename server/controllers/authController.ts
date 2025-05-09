@@ -31,6 +31,14 @@ export const login = async (req: Request, res: Response) => {
       .update(passphrase + wallet.passphraseSalt)
       .digest('hex');
     
+    console.log('Wallet login attempt:', {
+      address,
+      inputHash: hash, 
+      storedHash: wallet.passphraseHash,
+      salt: wallet.passphraseSalt,
+      match: hash === wallet.passphraseHash
+    });
+    
     if (hash !== wallet.passphraseHash) {
       return res.status(401).json({ error: 'Invalid passphrase' });
     }

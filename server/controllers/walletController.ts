@@ -23,6 +23,13 @@ export const createWallet = async (req: Request, res: Response) => {
       .update(passphrase + salt)
       .digest('hex');
     
+    console.log('Wallet creation hash data:', {
+      passphrase,
+      salt,
+      hash,
+      hashMethod: 'sha256(passphrase + salt)'
+    });
+    
     // Generate address from hash
     const address = 'PVX_' + hash.substring(0, 32);
     
