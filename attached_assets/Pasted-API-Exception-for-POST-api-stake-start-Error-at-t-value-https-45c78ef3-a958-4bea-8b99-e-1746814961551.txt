@@ -1,0 +1,26 @@
+API Exception for POST /api/stake/start: 
+Error {}
+
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Selected initial pool ID: 1
+404: {"error":"Staking pool not found"}
+at apiRequest (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/lib/queryClient.ts:27:13)
+at async Object.mutationFn (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/wallet/CreateStakeDialog.tsx:91:19)
+Fetching wallet data for PVX_1e1ee32c2770a6af3ca119759c539907
+API Request: GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907 undefined
+API Response: 200 for GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907
+Fetching wallet data for PVX_1e1ee32c2770a6af3ca119759c539907
+API Request: GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907 undefined
+API Response: 200 for GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907
+Fetching wallet data for PVX_1e1ee32c2770a6af3ca119759c539907
+API Request: GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907 undefined
+API Response: 200 for GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907
+Fetching wallet data for PVX_1e1ee32c2770a6af3ca119759c539907
+API Request: GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907 undefined
+API Response: 200 for GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907
+Fetching wallet data for PVX_1e1ee32c2770a6af3ca119759c539907
+API Request: GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907 undefined
+API Response: 200 for GET /api/wallet/PVX_1e1ee32c2770a6af3ca119759c539907
