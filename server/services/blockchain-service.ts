@@ -93,8 +93,7 @@ export async function connectToBlockchain(): Promise<BlockchainStatus> {
       peers: 5 + Math.floor(Math.random() * 20) // Simulate 5-25 peers
     };
     
-    // Initialize blockchain services
-    initializeBlockchain();
+    // REMOVED initializeBlockchain() call to fix infinite recursion
     
     return blockchainStatus;
   } catch (error) {
@@ -1124,13 +1123,16 @@ function startBlockchainProcesses() {
  * Initialize the blockchain
  * This should be called at server startup
  */
+// Make this function exportable to match the import in server/index.ts
 export async function initializeBlockchain() {
   try {
     await connectToBlockchain();
     startBlockchainProcesses();
     console.log('Blockchain initialized and running');
+    return blockchainStatus;
   } catch (error) {
     console.error('Error initializing blockchain:', error);
+    return blockchainStatus;
   }
 }
 
