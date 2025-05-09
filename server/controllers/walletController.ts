@@ -333,8 +333,16 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
-    // Get transactions involving this wallet from database
-    const transactions = await transactionDao.getTransactionsByAddress(address, limit, offset);
+    // Get transactions involving this wallet from database first
+    let transactions = await transactionDao.getTransactionsByAddress(address, limit, offset);
+    
+    // If no transactions in DB, try memory storage
+    if (!transactions || transactions.length === 0) {
+      const memTransactions = await memBlockchainStorage.getTransactionsByAddress(address);
+      if (memTransactions && memTransactions.length > 0) {
+        transactions = memTransactions.slice(offset, offset + limit);
+      }
+    }
     
     // Format transaction history with consistent property names
     const txHistory = transactions.map(tx => ({
