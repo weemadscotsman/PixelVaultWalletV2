@@ -10,7 +10,7 @@ const wsProtocol = isSecure ? 'wss' : 'ws';
 // For Replit environments, we don't need to specify the port in the WebSocket URL
 // as it should use the same URL origin as the main application
 export const WS_URL = import.meta.env.VITE_WS_URL || 
-  `${wsProtocol}://${window.location.host}/ws`;
+  `${wsProtocol}://${window.location.hostname}${window.location.port ? ':' + window.location.port : ''}/ws`;
 
 // WebSocket reconnection settings
 export const WS_RECONNECT_INTERVAL = 3000; // 3 seconds
