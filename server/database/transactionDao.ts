@@ -14,18 +14,18 @@ export class TransactionDao {
    */
   async createTransaction(transaction: Transaction): Promise<Transaction> {
     try {
-      // Convert transaction to database format
+      // Convert transaction to database format with snake_case field names to match DB schema
       const dbTransaction = {
         hash: transaction.hash,
         type: transaction.type,
-        fromAddress: transaction.from,
-        toAddress: transaction.to,
+        from_address: transaction.from,
+        to_address: transaction.to,
         amount: BigInt(transaction.amount),
         timestamp: BigInt(transaction.timestamp),
         nonce: BigInt(transaction.nonce),
         signature: transaction.signature,
         status: transaction.status,
-        blockHeight: transaction.blockHeight,
+        block_height: transaction.blockHeight,
         fee: transaction.fee ? BigInt(transaction.fee) : null,
         metadata: transaction.metadata ? transaction.metadata : null,
       };
@@ -91,7 +91,7 @@ export class TransactionDao {
       const result = await db.select()
         .from(transactions)
         .where(
-          sql`${transactions.fromAddress} = ${address} OR ${transactions.toAddress} = ${address}`
+          sql`${transactions.from_address} = ${address} OR ${transactions.to_address} = ${address}`
         )
         .orderBy(desc(transactions.timestamp))
         .limit(limit)

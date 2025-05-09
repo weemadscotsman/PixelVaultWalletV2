@@ -457,12 +457,12 @@ export const claimRewards = async (req: Request, res: Response) => {
       // Import transactionDao from our database layer
       const { transactionDao } = await import('../database/transactionDao');
       
-      // Create DB transaction object (converting from memory format)
+      // Create DB transaction object matching the DAO format
       const dbTransaction = {
         hash: txHash,
         type: 'STAKING_REWARD' as const,
-        from: `STAKE_POOL_${stake.poolId}`,
-        to: address,
+        from: `STAKE_POOL_${stake.poolId}`,  // DAO will map this to fromAddress
+        to: address,                         // DAO will map this to toAddress
         amount: reward,  // Number format for DB
         timestamp: now,
         nonce: Math.floor(Math.random() * 100000),
