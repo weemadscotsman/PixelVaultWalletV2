@@ -54,7 +54,7 @@ async function createTablesIfNotExist(client: postgres.Sql<{}>) {
       public_key TEXT NOT NULL,
       balance VARCHAR(100) NOT NULL,
       created_at TIMESTAMP NOT NULL,
-      last_synced TIMESTAMP NOT NULL,
+      last_updated TIMESTAMP NOT NULL,
       passphrase_salt VARCHAR(100),
       passphrase_hash VARCHAR(100)
     )
