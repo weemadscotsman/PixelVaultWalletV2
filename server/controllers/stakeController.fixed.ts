@@ -148,9 +148,33 @@ export const startStaking = async (req: Request, res: Response) => {
       }
     }
     
-    // Check balance
-    if (BigInt(wallet.balance) < BigInt(amount)) {
-      return res.status(400).json({ error: 'Insufficient balance' });
+    // Check balance - handle decimal values by removing them
+    // Convert from string representations that may contain decimals
+    try {
+      // Remove decimal point and trailing zeros for BigInt comparison
+      const balanceInt = wallet.balance.includes('.') 
+        ? wallet.balance.split('.')[0]
+        : wallet.balance;
+      
+      const amountInt = amount.includes('.')
+        ? amount.split('.')[0]
+        : amount;
+      
+      console.log('Converting balance and amount to BigInt:', {
+        originalBalance: wallet.balance,
+        balanceInt,
+        originalAmount: amount,
+        amountInt
+      });
+
+      if (BigInt(balanceInt) < BigInt(amountInt)) {
+        return res.status(400).json({ error: 'Insufficient balance' });
+      }
+    } catch (error) {
+      console.error('Error in BigInt conversion:', error);
+      return res.status(400).json({ 
+        error: 'Invalid amount format. Please provide a valid integer amount.' 
+      });
     }
     
     // Find pool
@@ -161,9 +185,32 @@ export const startStaking = async (req: Request, res: Response) => {
     
     // Check minimum stake
     const minRequiredStake = pool.minStake || '10000'; // Default minimum if not specified
-    if (BigInt(amount) < BigInt(minRequiredStake)) {
+    try {
+      // Remove decimal point and trailing zeros for BigInt comparison
+      const amountInt = amount.includes('.')
+        ? amount.split('.')[0]
+        : amount;
+      
+      const minStakeInt = minRequiredStake.includes('.')
+        ? minRequiredStake.split('.')[0]
+        : minRequiredStake;
+      
+      console.log('Converting min stake check to BigInt:', {
+        originalAmount: amount,
+        amountInt,
+        originalMinStake: minRequiredStake,
+        minStakeInt
+      });
+
+      if (BigInt(amountInt) < BigInt(minStakeInt)) {
+        return res.status(400).json({ 
+          error: `Minimum stake for this pool is ${minRequiredStake} μPVX` 
+        });
+      }
+    } catch (error) {
+      console.error('Error in min stake BigInt conversion:', error);
       return res.status(400).json({ 
-        error: `Minimum stake for this pool is ${minRequiredStake} μPVX` 
+        error: `Invalid amount format. Minimum stake for this pool is ${minRequiredStake} μPVX` 
       });
     }
     
@@ -185,14 +232,58 @@ export const startStaking = async (req: Request, res: Response) => {
     await memBlockchainStorage.createStakeRecord(stake);
     
     // Update pool's total staked amount
-    const newTotalStaked = BigInt(pool.totalStaked) + BigInt(amount);
-    pool.totalStaked = newTotalStaked.toString();
-    await memBlockchainStorage.updateStakingPool(pool);
+    try {
+      // Convert from string representations that may contain decimals
+      const poolTotalStakedInt = pool.totalStaked.includes('.') 
+        ? pool.totalStaked.split('.')[0]
+        : pool.totalStaked;
+      
+      const amountInt = amount.includes('.')
+        ? amount.split('.')[0]
+        : amount;
+      
+      console.log('Converting pool and amount to BigInt for addition:', {
+        poolTotalStaked: pool.totalStaked,
+        poolTotalStakedInt,
+        originalAmount: amount,
+        amountInt
+      });
+
+      const newTotalStaked = BigInt(poolTotalStakedInt) + BigInt(amountInt);
+      pool.totalStaked = newTotalStaked.toString();
+      await memBlockchainStorage.updateStakingPool(pool);
+    } catch (error) {
+      console.error('Error updating pool total staked:', error);
+      // Continue with execution - this is not critical for user experience
+    }
     
     // Update wallet balance (remove staked amount)
-    const newBalance = BigInt(wallet.balance) - BigInt(amount);
-    wallet.balance = newBalance.toString();
-    await memBlockchainStorage.updateWallet(wallet);
+    try {
+      // Convert from string representations that may contain decimals
+      const walletBalanceInt = wallet.balance.includes('.') 
+        ? wallet.balance.split('.')[0]
+        : wallet.balance;
+      
+      const amountInt = amount.includes('.')
+        ? amount.split('.')[0]
+        : amount;
+      
+      console.log('Converting wallet balance and amount to BigInt for subtraction:', {
+        walletBalance: wallet.balance,
+        walletBalanceInt,
+        originalAmount: amount,
+        amountInt
+      });
+
+      const newBalance = BigInt(walletBalanceInt) - BigInt(amountInt);
+      wallet.balance = newBalance.toString();
+      await memBlockchainStorage.updateWallet(wallet);
+    } catch (error) {
+      console.error('Error updating wallet balance:', error);
+      return res.status(500).json({
+        error: 'Failed to update wallet balance. Please try again.'
+      });
+    }
     
     // Create stake transaction with secure ZK signature
     const txHash = crypto.createHash('sha256')
@@ -446,15 +537,63 @@ export const stopStaking = async (req: Request, res: Response) => {
     const reward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysStaked / 365));
     
     // Update wallet balance (return staked amount + reward)
-    const totalReturn = BigInt(stake.amount) + BigInt(reward);
-    const newBalance = BigInt(wallet.balance) + totalReturn;
-    wallet.balance = newBalance.toString();
-    await memBlockchainStorage.updateWallet(wallet);
+    try {
+      // Convert from string representations that may contain decimals
+      const walletBalanceInt = wallet.balance.includes('.') 
+        ? wallet.balance.split('.')[0]
+        : wallet.balance;
+      
+      const stakeAmountInt = stake.amount.includes('.')
+        ? stake.amount.split('.')[0]
+        : stake.amount;
+      
+      const rewardInt = reward.toString();
+      
+      console.log('Converting wallet balance, stake amount, and reward to BigInt for stopStaking:', {
+        walletBalance: wallet.balance,
+        walletBalanceInt,
+        stakeAmount: stake.amount,
+        stakeAmountInt,
+        reward,
+        rewardInt
+      });
+
+      const totalReturn = BigInt(stakeAmountInt) + BigInt(rewardInt);
+      const newBalance = BigInt(walletBalanceInt) + totalReturn;
+      wallet.balance = newBalance.toString();
+      await memBlockchainStorage.updateWallet(wallet);
+    } catch (error) {
+      console.error('Error updating wallet balance in stopStaking:', error);
+      return res.status(500).json({
+        error: 'Failed to update wallet balance. Please try again.'
+      });
+    }
     
     // Update pool's total staked amount
-    const newTotalStaked = BigInt(pool.totalStaked) - BigInt(stake.amount);
-    pool.totalStaked = newTotalStaked.toString();
-    await memBlockchainStorage.updateStakingPool(pool);
+    try {
+      // Convert from string representations that may contain decimals
+      const poolTotalStakedInt = pool.totalStaked.includes('.') 
+        ? pool.totalStaked.split('.')[0]
+        : pool.totalStaked;
+      
+      const stakeAmountInt = stake.amount.includes('.')
+        ? stake.amount.split('.')[0]
+        : stake.amount;
+      
+      console.log('Converting pool total staked and stake amount to BigInt for stopStaking:', {
+        poolTotalStaked: pool.totalStaked,
+        poolTotalStakedInt,
+        stakeAmount: stake.amount,
+        stakeAmountInt
+      });
+
+      const newTotalStaked = BigInt(poolTotalStakedInt) - BigInt(stakeAmountInt);
+      pool.totalStaked = newTotalStaked.toString();
+      await memBlockchainStorage.updateStakingPool(pool);
+    } catch (error) {
+      console.error('Error updating pool total staked in stopStaking:', error);
+      // Continue with execution - this is not critical for user experience
+    }
     
     // Mark stake as inactive and update in blockchain storage
     stake.isActive = false;
@@ -744,9 +883,30 @@ export const claimRewards = async (req: Request, res: Response) => {
     }
     
     // Update wallet balance (add reward)
-    const newBalance = BigInt(wallet.balance) + BigInt(reward);
-    wallet.balance = newBalance.toString();
-    await memBlockchainStorage.updateWallet(wallet);
+    try {
+      // Convert from string representations that may contain decimals
+      const walletBalanceInt = wallet.balance.includes('.') 
+        ? wallet.balance.split('.')[0]
+        : wallet.balance;
+      
+      const rewardInt = reward.toString();
+      
+      console.log('Converting wallet balance and reward to BigInt for claimRewards:', {
+        walletBalance: wallet.balance,
+        walletBalanceInt,
+        reward,
+        rewardInt
+      });
+
+      const newBalance = BigInt(walletBalanceInt) + BigInt(rewardInt);
+      wallet.balance = newBalance.toString();
+      await memBlockchainStorage.updateWallet(wallet);
+    } catch (error) {
+      console.error('Error updating wallet balance in claimRewards:', error);
+      return res.status(500).json({
+        error: 'Failed to update wallet balance. Please try again.'
+      });
+    }
     
     // Update stake record with new last reward time
     stake.lastRewardTime = now;
