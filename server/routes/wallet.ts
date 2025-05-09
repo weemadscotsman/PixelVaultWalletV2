@@ -5,7 +5,13 @@ import { walletCreationLimiter } from '../middleware/rate-limiters';
 
 const router = express.Router();
 
-// Apply JWT authentication to all wallet routes
+/**
+ * Create a new wallet - accessible without authentication
+ * POST /api/wallet/create
+ */
+router.post('/create', walletCreationLimiter, walletController.createWallet);
+
+// Apply JWT authentication to all other wallet routes
 router.use(authenticateJWT);
 
 /**
@@ -13,12 +19,6 @@ router.use(authenticateJWT);
  * GET /api/wallet/all
  */
 router.get('/all', walletController.getAllWallets);
-
-/**
- * Create a new wallet
- * POST /api/wallet/create
- */
-router.post('/create', walletController.createWallet);
 
 /**
  * Import an existing wallet
