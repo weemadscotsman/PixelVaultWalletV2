@@ -443,10 +443,11 @@ export async function initializeDatabase() {
           title: 'Blockchain Basics',
           description: 'Learn the fundamental concepts of blockchain technology.',
           difficulty: 'beginner',
-          rewardAmount: '100', // Using reward_amount column from schema.fixed.ts
-          content: 'Learn about the fundamental concepts of blockchain technology, including distributed ledgers, consensus mechanisms, and cryptographic principles.',
-          order: 1,
-          isActive: true
+          type: 'quiz',
+          xpReward: 100,
+          tokenReward: 50,
+          badgeId: 'blockchain_basics',
+          completionCriteria: { questionsRequired: 3 }
         }
       ]);
       
@@ -455,32 +456,26 @@ export async function initializeDatabase() {
         {
           id: createId(),
           moduleId: moduleId,
-          question: 'What is a blockchain?', // Using 'question' instead of 'text'
+          text: 'What is a blockchain?', // Using 'text' as per the actual column name
           options: ['A type of cryptocurrency', 'A distributed ledger technology', 'A programming language', 'A cloud storage solution'],
           correctOption: 1,
-          explanation: 'A blockchain is a distributed ledger technology that maintains a continuously growing list of records called blocks that are linked and secured using cryptography.',
-          points: 10, // Added required field
-          order: 1    // Added required field
+          explanation: 'A blockchain is a distributed ledger technology that maintains a continuously growing list of records called blocks that are linked and secured using cryptography.'
         },
         {
           id: createId(),
           moduleId: moduleId,
-          question: 'What is the purpose of mining in a blockchain?', // Using 'question' instead of 'text'
+          text: 'What is the purpose of mining in a blockchain?', // Using 'text' as per the actual column name
           options: ['To create new cryptocurrencies', 'To validate and add transactions to the blockchain', 'To hack into user accounts', 'To encrypt messages'],
           correctOption: 1,
-          explanation: 'Mining is the process by which new transactions are verified and added to the blockchain. Miners solve complex puzzles to validate transactions and secure the network.',
-          points: 15, // Added required field
-          order: 2    // Added required field
+          explanation: 'Mining is the process by which new transactions are verified and added to the blockchain. Miners solve complex puzzles to validate transactions and secure the network.'
         },
         {
           id: createId(),
           moduleId: moduleId,
-          question: 'What is a private key in blockchain?', // Using 'question' instead of 'text'
+          text: 'What is a private key in blockchain?', // Using 'text' as per the actual column name
           options: ['A password to access your email', 'A secret code used to sign transactions and prove ownership', 'A public identifier shared with others', 'The blockchain network ID'],
           correctOption: 1,
-          explanation: 'A private key is a secret, alphanumeric password that allows users to sign transactions and access their cryptocurrency. It should never be shared with others.',
-          points: 20, // Added required field
-          order: 3    // Added required field
+          explanation: 'A private key is a secret, alphanumeric password that allows users to sign transactions and access their cryptocurrency. It should never be shared with others.'
         }
       ]);
       
