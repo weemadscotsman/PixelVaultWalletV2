@@ -1,14 +1,29 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Transaction, Block } from "@shared/types";
+import { Transaction as BaseTransaction, Block } from "@shared/types";
 import { formatDistanceToNow } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowRightCircle, CircleDollarSign, Database, Shield, Gem } from "lucide-react";
 import { useWebSocket } from "@/hooks/useWebSocket";
 
+// Create a unified Transaction type that works with both our internal model and the API
+type UnifiedTransaction = Partial<BaseTransaction> & {
+  id?: string;
+  hash: string;
+  type: string;
+  amount: number;
+  timestamp: number | Date;
+  // Support both naming conventions
+  fromAddress?: string;
+  toAddress?: string;
+  from?: string;
+  to?: string;
+  note?: string;
+};
+
 interface TransactionFlowVisualizerProps {
-  transactions: Transaction[];
+  transactions: UnifiedTransaction[];
   maxDisplay?: number;
   animationSpeed?: number;
 }
@@ -28,7 +43,7 @@ interface TransactionConnection {
   progress: number;
   speed: number;
   completed: boolean;
-  transaction: Transaction;
+  transaction: UnifiedTransaction;
 }
 
 const transactionTypeIcons = {
@@ -54,7 +69,7 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [connections, setConnections] = useState<TransactionConnection[]>([]);
-  const [visibleTransactions, setVisibleTransactions] = useState<Transaction[]>([]);
+  const [visibleTransactions, setVisibleTransactions] = useState<UnifiedTransaction[]>([]);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const animationFrameRef = useRef<number>(0);
   const nodesRef = useRef<Record<string, TransactionNode>>({});
@@ -212,8 +227,12 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
     const allAddresses = new Set<string>();
     
     visibleTransactions.forEach(tx => {
-      allAddresses.add(tx.fromAddress);
-      allAddresses.add(tx.toAddress);
+      // Handle both from/to and fromAddress/toAddress fields
+      const fromAddr = tx.fromAddress || tx.from;
+      const toAddr = tx.toAddress || tx.to;
+      
+      if (fromAddr) allAddresses.add(fromAddr);
+      if (toAddr) allAddresses.add(toAddr);
     });
     
     // Position nodes around the perimeter of a circle
@@ -234,12 +253,29 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
     
     // Create connections for transactions
     const newConnections: TransactionConnection[] = visibleTransactions.map(tx => {
-      const start = nodes[tx.fromAddress];
-      const end = nodes[tx.toAddress];
+      // Handle both from/to and fromAddress/toAddress fields
+      const fromAddr = tx.fromAddress || tx.from;
+      const toAddr = tx.toAddress || tx.to;
+      
+      // Only create connections if both addresses exist in the nodes
+      if (!fromAddr || !toAddr || !nodes[fromAddr] || !nodes[toAddr]) {
+        console.warn('Skipping transaction with missing addresses', tx);
+        // Return a dummy connection that won't be rendered
+        return {
+          start: { x: 0, y: 0, radius: 0, color: '' },
+          end: { x: 0, y: 0, radius: 0, color: '' },
+          width: 0,
+          color: '#000000',
+          progress: 0,
+          speed: 0,
+          completed: true,
+          transaction: tx
+        };
+      }
       
       return {
-        start,
-        end,
+        start: nodes[fromAddr],
+        end: nodes[toAddr],
         width: getTransactionWidth(tx.amount),
         color: getTransactionColor(tx.type),
         progress: 0,
@@ -498,7 +534,7 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
                       </span>
                     </div>
                     <div className="mt-1 text-[10px] text-gray-300 truncate max-w-[300px]">
-                      {tx.note || `${shortenAddress(tx.fromAddress)} → ${shortenAddress(tx.toAddress)}`}
+                      {tx.note || `${shortenAddress(tx.fromAddress || tx.from || '')} → ${shortenAddress(tx.toAddress || tx.to || '')}`}
                     </div>
                     <div className="mt-1 text-[10px] font-mono flex justify-between">
                       <span className="text-emerald-400">{formatAmount(tx.amount)} μPVX</span>
@@ -557,7 +593,8 @@ export const TransactionFlowVisualizer: React.FC<TransactionFlowVisualizerProps>
   };
 
   // Helper function to shorten addresses for display
-  const shortenAddress = (address: string): string => {
+  const shortenAddress = (address: string | undefined | null): string => {
+    if (!address) return 'Unknown';
     if (address.startsWith('zk_PVX:')) {
       return address;
     }
