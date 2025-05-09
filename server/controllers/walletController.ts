@@ -180,8 +180,9 @@ export const getBalance = async (req: Request, res: Response) => {
     
     for (const stake of activeStakes) {
       const pool = await memBlockchainStorage.getStakingPoolById(stake.poolId);
-      if (pool) {
-        const timeSinceLastReward = now - stake.lastRewardTime;
+      if (pool && pool.apy) {
+        const lastRewardTime = stake.lastRewardTime || stake.lastRewardClaim || stake.startTime || Date.now();
+        const timeSinceLastReward = now - lastRewardTime;
         const daysSinceLastReward = timeSinceLastReward / (24 * 60 * 60 * 1000);
         const apyDecimal = parseFloat(pool.apy) / 100;
         const reward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysSinceLastReward / 365));
