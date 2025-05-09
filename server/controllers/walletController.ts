@@ -275,7 +275,7 @@ export const getAllWallets = async (req: Request, res: Response) => {
       publicKey: wallet.publicKey,
       balance: wallet.balance,
       createdAt: wallet.createdAt,
-      lastSynced: wallet.lastSynced
+      lastSynced: wallet.lastUpdated || new Date() // Use lastUpdated instead of lastSynced
     }));
     
     res.json(walletsResponse);
@@ -456,7 +456,8 @@ export const getStakingInfo = async (req: Request, res: Response) => {
       
       // Calculate pending rewards for this stake
       const now = Date.now();
-      const timeSinceLastReward = now - stake.lastRewardTime;
+      const lastRewardTime = stake.lastRewardTime || stake.lastRewardClaim || stake.startTime || Date.now();
+      const timeSinceLastReward = now - lastRewardTime;
       const daysSinceLastReward = timeSinceLastReward / (24 * 60 * 60 * 1000);
       const apyDecimal = parseFloat(pool?.apy || "0") / 100;
       const pendingReward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysSinceLastReward / 365));
@@ -468,9 +469,9 @@ export const getStakingInfo = async (req: Request, res: Response) => {
         amount: stake.amount,
         apy: pool?.apy || '0',
         start_time: new Date(stake.startTime).toISOString(),
-        unlock_time: stake.unlockTime > 0 ? new Date(stake.unlockTime).toISOString() : 'No lockup',
+        unlock_time: stake.unlockTime && stake.unlockTime > 0 ? new Date(stake.unlockTime).toISOString() : 'No lockup',
         pending_reward: pendingReward.toString(),
-        last_reward_time: new Date(stake.lastRewardTime).toISOString()
+        last_reward_time: lastRewardTime ? new Date(lastRewardTime).toISOString() : new Date(stake.startTime).toISOString()
       };
     }));
     
