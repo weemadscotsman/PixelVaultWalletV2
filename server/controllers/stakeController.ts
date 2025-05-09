@@ -212,7 +212,7 @@ export const stopStaking = async (req: Request, res: Response) => {
     
     const transaction = {
       hash: txHash,
-      type: 'STAKE_END',
+      type: 'STAKE_END' as const,
       from: `STAKE_POOL_${stake.poolId}`,
       to: address,
       amount: stake.amount,
@@ -222,7 +222,39 @@ export const stopStaking = async (req: Request, res: Response) => {
       status: 'confirmed' as const
     };
     
+    // Store in in-memory blockchain first
     await memBlockchainStorage.createTransaction(transaction);
+    
+    // Then, persist to database
+    try {
+      const { transactionDao } = await import('../database/transactionDao');
+      
+      // Create DB transaction object (converting from memory format)
+      const dbTransaction = {
+        hash: txHash,
+        type: 'STAKE_END' as const,
+        from: `STAKE_POOL_${stake.poolId}`,
+        to: address,
+        amount: parseInt(stake.amount),
+        timestamp: now,
+        nonce: Math.floor(Math.random() * 100000),
+        signature: cryptoUtils.generateRandomHash(),
+        status: 'confirmed' as const,
+        metadata: { 
+          stakeId: stakeId,
+          poolId: stake.poolId,
+          stakeStartTime: stake.startTime,
+          stakeDuration: now - stake.startTime
+        }
+      };
+      
+      // Persist to database
+      await transactionDao.createTransaction(dbTransaction);
+      console.log(`STAKE_END transaction [${txHash}] saved to database for ${address}`);
+    } catch (dbError) {
+      console.error('Failed to persist stake end transaction to database:', dbError);
+      // Don't fail the entire transaction if DB persistence fails
+    }
     
     // Broadcast the unstake transaction to all connected clients
     broadcastTransaction(transaction);
@@ -235,7 +267,7 @@ export const stopStaking = async (req: Request, res: Response) => {
       
       const rewardTransaction = {
         hash: rewardTxHash,
-        type: 'STAKING_REWARD',
+        type: 'STAKING_REWARD' as const,
         from: `STAKE_POOL_${stake.poolId}`,
         to: address,
         amount: reward.toString(),
@@ -245,7 +277,39 @@ export const stopStaking = async (req: Request, res: Response) => {
         status: 'confirmed' as const
       };
       
+      // Store in in-memory blockchain first
       await memBlockchainStorage.createTransaction(rewardTransaction);
+      
+      // Then, persist to database
+      try {
+        const { transactionDao } = await import('../database/transactionDao');
+        
+        // Create DB transaction object (converting from memory format)
+        const dbRewardTransaction = {
+          hash: rewardTxHash,
+          type: 'STAKING_REWARD' as const,
+          from: `STAKE_POOL_${stake.poolId}`,
+          to: address,
+          amount: parseInt(reward.toString()),
+          timestamp: now + 1,
+          nonce: Math.floor(Math.random() * 100000),
+          signature: cryptoUtils.generateRandomHash(),
+          status: 'confirmed' as const,
+          metadata: { 
+            stakeId: stakeId,
+            poolId: stake.poolId,
+            apyAtTime: pool.apy,
+            stakeDuration: now - stake.startTime
+          }
+        };
+        
+        // Persist to database
+        await transactionDao.createTransaction(dbRewardTransaction);
+        console.log(`STAKING_REWARD transaction [${rewardTxHash}] saved to database for ${address}`);
+      } catch (dbError) {
+        console.error('Failed to persist staking reward transaction to database:', dbError);
+        // Don't fail the entire transaction if DB persistence fails
+      }
       
       // Broadcast the reward transaction to all connected clients
       broadcastTransaction(rewardTransaction);
@@ -340,9 +404,10 @@ export const claimRewards = async (req: Request, res: Response) => {
       .update(address + reward.toString() + stake.poolId + now.toString())
       .digest('hex');
     
-    const transaction = {
+    // Transaction for the in-memory blockchain
+    const memTransaction = {
       hash: txHash,
-      type: 'STAKING_REWARD',
+      type: 'STAKING_REWARD' as const,
       from: `STAKE_POOL_${stake.poolId}`,
       to: address,
       amount: reward.toString(),
@@ -352,10 +417,44 @@ export const claimRewards = async (req: Request, res: Response) => {
       status: 'confirmed' as const
     };
     
-    await memBlockchainStorage.createTransaction(transaction);
+    // First, create transaction in in-memory storage
+    await memBlockchainStorage.createTransaction(memTransaction);
+    
+    // Then, create transaction in database
+    try {
+      // Import transactionDao from our database layer
+      const { transactionDao } = await import('../database/transactionDao');
+      
+      // Create DB transaction object (converting from memory format)
+      const dbTransaction = {
+        hash: txHash,
+        type: 'STAKING_REWARD' as const,
+        from: `STAKE_POOL_${stake.poolId}`,
+        to: address,
+        amount: reward,  // Number format for DB
+        timestamp: now,
+        nonce: Math.floor(Math.random() * 100000),
+        signature: cryptoUtils.generateRandomHash(),
+        status: 'confirmed' as const,
+        metadata: { 
+          stakeId: stakeId,
+          poolId: stake.poolId,
+          apyAtTime: pool.apy,
+          rewardCalculation: `${stake.amount} * ${apyDecimal} * (${daysSinceLastReward}/365)` 
+        }
+      };
+      
+      // Persist to database
+      await transactionDao.createTransaction(dbTransaction);
+      console.log(`STAKING_REWARD transaction [${txHash}] saved to database for ${address}`);
+    } catch (dbError) {
+      console.error('Failed to persist staking reward to database:', dbError);
+      // Don't fail the entire transaction if DB persistence fails
+      // We already updated the in-memory state, which is the source of truth for the UI
+    }
     
     // Broadcast the transaction to all connected clients
-    broadcastTransaction(transaction);
+    broadcastTransaction(memTransaction);
     
     res.status(200).json({
       tx_hash: txHash,
