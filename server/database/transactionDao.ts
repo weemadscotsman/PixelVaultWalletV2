@@ -1,4 +1,4 @@
-import { eq, desc, and, sql } from 'drizzle-orm';
+import { eq, desc, and, or, sql } from 'drizzle-orm';
 import { db } from './index';
 import { transactions } from './schema';
 import { Transaction, TransactionType } from '@shared/types';
@@ -91,13 +91,16 @@ export class TransactionDao {
       const result = await db.select()
         .from(transactions)
         .where(
-          sql`${transactions.fromAddress} = ${address} OR ${transactions.toAddress} = ${address}`
+          or(
+            eq(transactions.fromAddress, address),
+            eq(transactions.toAddress, address)
+          )
         )
         .orderBy(desc(transactions.timestamp))
         .limit(limit)
         .offset(offset);
       
-      // Convert database format to Transaction[] with snake_case to camelCase mapping
+      // Convert database format to Transaction[] with camelCase mapping
       return result.map(dbTx => ({
         hash: dbTx.hash,
         type: dbTx.type as TransactionType,
@@ -130,7 +133,7 @@ export class TransactionDao {
         .where(eq(transactions.blockHeight, blockHeight))
         .orderBy(desc(transactions.timestamp));
       
-      // Convert database format to Transaction[] with snake_case to camelCase mapping
+      // Convert database format to Transaction[] with camelCase mapping
       return result.map(dbTx => ({
         hash: dbTx.hash,
         type: dbTx.type as TransactionType,
