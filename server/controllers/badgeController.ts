@@ -121,22 +121,43 @@ export const checkMiningBadges = async (userId: string, blockCount: number, cons
   try {
     console.log(`Checking mining badges for user ${userId}, blocks: ${blockCount}, consecutive: ${consecutiveCount || 0}`);
     
-    // First block mined - "Block Pioneer" badge
+    // First block mined - "Block Miner" badge
     if (blockCount === 1) {
-      await badgeStorage.awardBadgeToUser(userId, 'mining-first');
-      console.log('Awarded first block mined badge');
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'mining-first-block');
+        console.log('Awarded first block mined badge');
+      } catch (err) {
+        console.warn('Error awarding first block badge:', err);
+      }
     }
     
-    // 100 blocks badge - "Mining Master" badge
-    if (blockCount >= 100) {
-      const result = await badgeStorage.updateBadgeProgress(userId, 'mining-master', 100);
-      if (result.newlyEarned) {
-        console.log('Awarded 100 blocks mined badge');
+    // 50 blocks badge - "Mining Expert" badge
+    if (blockCount >= 50) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'mining-50-blocks');
+        console.log('Awarded 50 blocks mined badge');
+      } catch (err) {
+        console.warn('Error awarding 50 blocks badge:', err);
       }
-    } else if (blockCount > 1) {
-      // Update progress towards 100 blocks
-      const progress = Math.floor((blockCount / 100) * 100);
-      await badgeStorage.updateBadgeProgress(userId, 'mining-master', progress);
+    } 
+    // 10 blocks badge - "Mining Enthusiast" badge
+    else if (blockCount >= 10) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'mining-10-blocks');
+        console.log('Awarded 10 blocks mined badge');
+      } catch (err) {
+        console.warn('Error awarding 10 blocks badge:', err);
+      }
+    }
+    
+    // Check consecutive mining - "Hash King" badge
+    if (consecutiveCount && consecutiveCount >= 10) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'mining-hash-king');
+        console.log('Awarded Hash King badge for consecutive mining');
+      } catch (err) {
+        console.warn('Error awarding hash king badge:', err);
+      }
     }
   } catch (error) {
     console.error('Error checking mining badges:', error);
@@ -148,21 +169,34 @@ export const checkThringletBadges = async (userId: string, level: number, evolut
   try {
     console.log(`Checking thringlet badges for user ${userId}, level: ${level}, evolution: ${evolution}, count: ${count}`);
     
-    // First thringlet badge - "Thringlet Parent" badge
+    // First thringlet badge - "Thringlet Owner" badge
     if (count === 1) {
-      await badgeStorage.awardBadgeToUser(userId, 'thringlet-first');
-      console.log('Awarded first thringlet badge');
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'thringlet-first');
+        console.log('Awarded first thringlet badge');
+      } catch (err) {
+        console.warn('Error awarding first thringlet badge:', err);
+      }
     }
     
-    // Thringlet interactions - "Thringlet Whisperer" badge
-    // Track number of interactions with Thringlets
-    const totalInteractions = level * 10; // Simple approximation of interactions
-    if (totalInteractions >= 100) {
-      await badgeStorage.awardBadgeToUser(userId, 'thringlet-whisperer');
-      console.log('Awarded thringlet whisperer badge');
-    } else {
-      const progress = Math.floor((totalInteractions / 100) * 100);
-      await badgeStorage.updateBadgeProgress(userId, 'thringlet-whisperer', progress);
+    // Check for evolved badge
+    if (evolution > 0) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'thringlet-evolved');
+        console.log('Awarded thringlet evolved badge');
+      } catch (err) {
+        console.warn('Error awarding thringlet evolved badge:', err);
+      }
+    }
+    
+    // Check for max level badge
+    if (level >= 10) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'thringlet-max-level');
+        console.log('Awarded thringlet maximalist badge');
+      } catch (err) {
+        console.warn('Error awarding thringlet maximalist badge:', err);
+      }
     }
   } catch (error) {
     console.error('Error checking thringlet badges:', error);
@@ -174,19 +208,33 @@ export const checkStakingBadges = async (userId: string, amount: string, duratio
   try {
     console.log(`Checking staking badges for user ${userId}, amount: ${amount}, duration: ${duration}, totalStaked: ${totalStaked || 'N/A'}`);
     
-    // First staking badge - "Stake Initiate" badge
-    await badgeStorage.awardBadgeToUser(userId, 'stake-first');
-    console.log('Awarded stake initiate badge');
+    // First staking badge - "Stake Novice" badge
+    try {
+      await badgeStorage.awardBadgeToUser(userId, 'staking-first');
+      console.log('Awarded stake novice badge');
+    } catch (err) {
+      console.warn('Error awarding staking first badge:', err);
+    }
     
-    // "Whale Staker" badge - Staked more than 10,000 PVX in a single pool
+    // "Whale Staker" badge - Staked over 1000 PVX at once
     const amountNum = parseFloat(amount);
-    if (amountNum >= 10000) {
-      await badgeStorage.awardBadgeToUser(userId, 'stake-whale');
-      console.log('Awarded whale staker badge');
-    } else {
-      // Update progress toward whale badge
-      const progress = Math.min(100, Math.floor((amountNum / 10000) * 100));
-      await badgeStorage.updateBadgeProgress(userId, 'stake-whale', progress);
+    if (amountNum >= 1000) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'staking-1000pvx');
+        console.log('Awarded whale staker badge');
+      } catch (err) {
+        console.warn('Error awarding whale staker badge:', err);
+      }
+    }
+    
+    // "Stake Holder" badge - Maintained a stake for 30 days
+    if (duration >= 30) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'staking-30days');
+        console.log('Awarded stake holder badge');
+      } catch (err) {
+        console.warn('Error awarding stake holder badge:', err);
+      }
     }
   } catch (error) {
     console.error('Error checking staking badges:', error);
@@ -206,28 +254,62 @@ export const checkTransactionBadges = async (userId: string, txType: Transaction
     
     // Check for first transaction badge - "First Transaction" badge
     if (txType === TransactionType.TRANSFER && txCount === 1) {
-      await badgeStorage.awardBadgeToUser(userId, 'tx-first');
-      console.log('Awarded first transaction badge');
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'tx-first');
+        console.log('Awarded first transaction badge');
+      } catch (err) {
+        console.warn('Error awarding first transaction badge:', err);
+      }
+    }
+    
+    // Check for transaction adept badge - 10 transactions
+    if (txType === TransactionType.TRANSFER && txCount !== undefined && txCount >= 10) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'tx-10');
+        console.log('Awarded transaction adept badge');
+      } catch (err) {
+        console.warn('Error awarding transaction adept badge:', err);
+      }
+    }
+    
+    // Check for transaction master badge - 100 transactions
+    if (txType === TransactionType.TRANSFER && txCount !== undefined && txCount >= 100) {
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'tx-100');
+        console.log('Awarded transaction master badge');
+      } catch (err) {
+        console.warn('Error awarding transaction master badge:', err);
+      }
     }
     
     // Check for big spender badge - "Big Spender" badge
-    // This would normally check transaction amount, but as a workaround we'll use count
-    // as a proxy for transaction volume
     if (txType === TransactionType.TRANSFER && txCount !== undefined && txCount >= 5) {
-      await badgeStorage.awardBadgeToUser(userId, 'tx-big-spender');
-      console.log('Awarded big spender badge');
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'tx-big-spender');
+        console.log('Awarded big spender badge');
+      } catch (err) {
+        console.warn('Error awarding big spender badge:', err);
+      }
     }
     
-    // Check for first staking badge - "Stake Initiate" badge
+    // Check for first staking badge - "Stake Novice" badge
     if (txType === TransactionType.STAKE) {
-      await badgeStorage.awardBadgeToUser(userId, 'stake-first');
-      console.log('Awarded stake initiate badge');
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'staking-first');
+        console.log('Awarded stake novice badge');
+      } catch (err) {
+        console.warn('Error awarding stake novice badge:', err);
+      }
     }
     
-    // Check for governance badges - "Governance Participant" badge
+    // Check for governance badges - "Governance Voter" badge
     if (txType === TransactionType.GOVERNANCE) {
-      await badgeStorage.awardBadgeToUser(userId, 'gov-first');
-      console.log('Awarded governance participant badge');
+      try {
+        await badgeStorage.awardBadgeToUser(userId, 'gov-first-vote');
+        console.log('Awarded governance voter badge');
+      } catch (err) {
+        console.warn('Error awarding governance voter badge:', err);
+      }
     }
     
   } catch (error) {
