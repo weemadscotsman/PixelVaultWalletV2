@@ -1,7 +1,7 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import { sql } from 'drizzle-orm';
 import postgres from 'postgres';
-import * as schema from '@shared/schema.fixed';
+import * as schema from './schema';  // Use the correct schema that matches our database
 import { createId, formatCurrency } from '@shared/utils';
 import { memBlockchainStorage } from '../mem-blockchain';
 
