@@ -1053,17 +1053,17 @@ async function distributeStakingRewards() {
         
         // Update stake record
         stake.lastRewardTime = now;
-        stake.totalRewards = (BigInt(stake.totalRewards || '0') + BigInt(reward)).toString();
+        stake.rewards = (BigInt(stake.rewards || '0') + BigInt(reward)).toString();
         await memBlockchainStorage.updateStakeRecord(stake);
         
         // Create reward transaction
         const rewardTx: Transaction = {
             hash: crypto.createHash('sha256')
-              .update('stake_reward_' + stake.address + now.toString())
+              .update('stake_reward_' + stake.walletAddress + now.toString())
               .digest('hex'),
             type: 'STAKING_REWARD' as TransactionType, 
             from: 'PVX_COINBASE',
-            to: stake.address,
+            to: stake.walletAddress,
             amount: reward,
             timestamp: now,
             nonce: Math.floor(Math.random() * 100000),
@@ -1071,14 +1071,55 @@ async function distributeStakingRewards() {
             status: 'confirmed'
         };
         
-        // Store reward transaction
+        // Store reward transaction in memory first
         await memBlockchainStorage.createTransaction(rewardTx);
         
+        // Persist transaction to database
+        try {
+          const { transactionDao } = await import('../database/transactionDao');
+          
+          // Create database transaction object (mapping from memory format)
+          const dbTransaction = {
+            hash: rewardTx.hash,
+            type: rewardTx.type,
+            from: rewardTx.from,
+            to: rewardTx.to,
+            amount: rewardTx.amount,
+            timestamp: rewardTx.timestamp,
+            nonce: rewardTx.nonce,
+            signature: rewardTx.signature,
+            status: rewardTx.status,
+            metadata: {
+              stakeId: stake.id,
+              poolId: stake.poolId,
+              poolApr: pool.apy,
+              rewardDate: now
+            }
+          };
+          
+          // Store in database
+          await transactionDao.createTransaction(dbTransaction);
+          console.log(`Staking reward transaction [${rewardTx.hash}] persisted to database for ${stake.walletAddress}`);
+        } catch (dbError) {
+          console.error('Failed to persist staking reward to database:', dbError);
+          // Continue even if database persistence fails
+        }
+        
         // Update wallet balance
-        const wallet = await memBlockchainStorage.getWalletByAddress(stake.address);
+        const wallet = await memBlockchainStorage.getWalletByAddress(stake.walletAddress);
         if (wallet) {
           wallet.balance = (BigInt(wallet.balance) + BigInt(reward)).toString();
           await memBlockchainStorage.updateWallet(wallet);
+          
+          // Also update the wallet in the database if possible
+          try {
+            const { walletDao } = await import('../database/walletDao');
+            await walletDao.updateWallet(wallet);
+            console.log(`Wallet balance updated in database for ${stake.walletAddress}`);
+          } catch (dbError) {
+            console.error('Failed to update wallet balance in database:', dbError);
+            // Continue even if database update fails
+          }
         }
         
         // Broadcast reward transaction
@@ -1088,7 +1129,7 @@ async function distributeStakingRewards() {
           console.error('Error broadcasting staking reward via WebSocket:', err);
         }
         
-        console.log(`Staking reward: ${reward} μPVX sent to ${stake.address}`);
+        console.log(`Staking reward: ${reward} μPVX sent to ${stake.walletAddress}`);
       }
     }
   } catch (error) {
