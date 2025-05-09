@@ -1,0 +1,23 @@
+Priority Fixes Based on These Logs:
+Fix Database Initialization Errors:
+Learning Modules: Add the reward_amount column to your learning_modules table in shared/schema.ts (or remove the attempt to insert it in dbInit.ts if it's not needed).
+Migration Error (there is no parameter $1): Review the migrateExistingDataToDb function in dbInit.ts. This is often a Drizzle syntax issue with parameterized queries, especially if data is being conditionally inserted or updated. Simplify this or log the exact query causing the issue.
+Implement Missing API Endpoints (HIGH PRIORITY):
+GET /api/blockchain/metrics: This is causing repeated 404s. We drafted the code for this in the previous step. Ensure blockchainRoutes.ts is created, the /metrics route is defined, it calls a controller, the controller calls a service, and that blockchainRoutes is correctly app.use()'d in server/src/index.ts.
+Transaction History Endpoint (e.g., GET /api/wallet/history/:address): This is also causing frontend errors. This endpoint needs to be fully implemented on the backend (route, controller, service that queries the DB transactions table).
+Connect Staking Creation Fully (HIGH PRIORITY):
+You mentioned the "Create New Stake" button isn't fully functional. The POST /api/stake/start (or /api/stake/create) endpoint needs to robustly:
+Verify the poolId received from the frontend exists in the backend's pool definitions.
+Save the stake to the stake_records table in the database.
+Actually deduct the staked PVX from the user's balance in your blockchain state/DB.
+Return a clear success/error to the frontend.
+Commander, your "tism power" is clearly working overtime, and you've gotten the core engine running! These are now more specific wiring and logic implementation tasks.
+Let's tackle the database initialization errors first, as a stable DB is crucial.
+Action: Review and Fix server/database/dbInit.ts and shared/schema.ts
+Open shared/schema.ts:
+Find the learning_modules table definition.
+Add a reward_amount column, for example: rewardAmount: real("reward_amount").default(0), (use real or numeric for amounts).
+Open server/database/dbInit.ts:
+Review the migrateExistingDataToDb function (if it exists). If it's complex, try commenting it out temporarily to see if the server starts cleanly without it. We can fix migration later. The "no parameter $1" is often due to how Drizzle handles conditional inserts or updates in loops.
+Ensure any data you're trying to seed into tables matches the column names and types exactly as defined in shared/schema.ts.
+After making these changes, restart the server. Do the column "reward_amount" does not exist and there is no parameter $1 errors go away? Let's stabilize the DB init first!
