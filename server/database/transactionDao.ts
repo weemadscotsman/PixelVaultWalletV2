@@ -14,18 +14,18 @@ export class TransactionDao {
    */
   async createTransaction(transaction: Transaction): Promise<Transaction> {
     try {
-      // Convert transaction to database format with snake_case field names to match DB schema
+      // Convert transaction to database format with camelCase field names to match DB schema
       const dbTransaction = {
         hash: transaction.hash,
         type: transaction.type,
-        from_address: transaction.from,
-        to_address: transaction.to,
+        fromAddress: transaction.from,
+        toAddress: transaction.to,
         amount: BigInt(transaction.amount),
         timestamp: BigInt(transaction.timestamp),
         nonce: BigInt(transaction.nonce),
         signature: transaction.signature,
         status: transaction.status,
-        block_height: transaction.blockHeight,
+        blockHeight: transaction.blockHeight,
         fee: transaction.fee ? BigInt(transaction.fee) : null,
         metadata: transaction.metadata ? transaction.metadata : null,
       };
@@ -57,19 +57,19 @@ export class TransactionDao {
         return null;
       }
       
-      // Convert database format to Transaction with snake_case to camelCase mapping
+      // Convert database format to Transaction with camelCase mapping
       const dbTx = result[0];
       return {
         hash: dbTx.hash,
         type: dbTx.type as TransactionType,
-        from: dbTx.from_address,
-        to: dbTx.to_address,
+        from: dbTx.fromAddress,
+        to: dbTx.toAddress,
         amount: Number(dbTx.amount),
         timestamp: Number(dbTx.timestamp),
         nonce: Number(dbTx.nonce),
         signature: dbTx.signature,
         status: dbTx.status as 'pending' | 'confirmed' | 'failed',
-        blockHeight: dbTx.block_height || undefined,
+        blockHeight: dbTx.blockHeight || undefined,
         fee: dbTx.fee ? Number(dbTx.fee) : undefined,
         metadata: dbTx.metadata || undefined,
       };
@@ -91,7 +91,7 @@ export class TransactionDao {
       const result = await db.select()
         .from(transactions)
         .where(
-          sql`${transactions.from_address} = ${address} OR ${transactions.to_address} = ${address}`
+          sql`${transactions.fromAddress} = ${address} OR ${transactions.toAddress} = ${address}`
         )
         .orderBy(desc(transactions.timestamp))
         .limit(limit)
@@ -101,14 +101,14 @@ export class TransactionDao {
       return result.map(dbTx => ({
         hash: dbTx.hash,
         type: dbTx.type as TransactionType,
-        from: dbTx.from_address,
-        to: dbTx.to_address,
+        from: dbTx.fromAddress,
+        to: dbTx.toAddress,
         amount: Number(dbTx.amount),
         timestamp: Number(dbTx.timestamp),
         nonce: Number(dbTx.nonce),
         signature: dbTx.signature,
         status: dbTx.status as 'pending' | 'confirmed' | 'failed',
-        blockHeight: dbTx.block_height || undefined,
+        blockHeight: dbTx.blockHeight || undefined,
         fee: dbTx.fee ? Number(dbTx.fee) : undefined,
         metadata: dbTx.metadata || undefined,
       }));
@@ -127,21 +127,21 @@ export class TransactionDao {
     try {
       const result = await db.select()
         .from(transactions)
-        .where(eq(transactions.block_height, blockHeight))
+        .where(eq(transactions.blockHeight, blockHeight))
         .orderBy(desc(transactions.timestamp));
       
       // Convert database format to Transaction[] with snake_case to camelCase mapping
       return result.map(dbTx => ({
         hash: dbTx.hash,
         type: dbTx.type as TransactionType,
-        from: dbTx.from_address,
-        to: dbTx.to_address,
+        from: dbTx.fromAddress,
+        to: dbTx.toAddress,
         amount: Number(dbTx.amount),
         timestamp: Number(dbTx.timestamp),
         nonce: Number(dbTx.nonce),
         signature: dbTx.signature,
         status: dbTx.status as 'pending' | 'confirmed' | 'failed',
-        blockHeight: dbTx.block_height || undefined,
+        blockHeight: dbTx.blockHeight || undefined,
         fee: dbTx.fee ? Number(dbTx.fee) : undefined,
         metadata: dbTx.metadata || undefined,
       }));
@@ -162,7 +162,7 @@ export class TransactionDao {
     try {
       const updateData: any = { status };
       if (blockHeight !== undefined) {
-        updateData.block_height = blockHeight;
+        updateData.blockHeight = blockHeight;
       }
       
       await db.update(transactions)
@@ -189,18 +189,18 @@ export class TransactionDao {
         .orderBy(desc(transactions.timestamp))
         .limit(limit);
       
-      // Convert database format to Transaction[] with snake_case to camelCase mapping
+      // Convert database format to Transaction[] with camelCase mapping
       return result.map(dbTx => ({
         hash: dbTx.hash,
         type: dbTx.type as TransactionType,
-        from: dbTx.from_address,
-        to: dbTx.to_address,
+        from: dbTx.fromAddress,
+        to: dbTx.toAddress,
         amount: Number(dbTx.amount),
         timestamp: Number(dbTx.timestamp),
         nonce: Number(dbTx.nonce),
         signature: dbTx.signature,
         status: dbTx.status as 'pending' | 'confirmed' | 'failed',
-        blockHeight: dbTx.block_height || undefined,
+        blockHeight: dbTx.blockHeight || undefined,
         fee: dbTx.fee ? Number(dbTx.fee) : undefined,
         metadata: dbTx.metadata || undefined,
       }));
@@ -263,18 +263,18 @@ export class TransactionDao {
         .where(eq(transactions.status, 'pending'))
         .orderBy(desc(transactions.timestamp));
       
-      // Convert database format to Transaction[] with snake_case to camelCase mapping
+      // Convert database format to Transaction[] with camelCase mapping
       return result.map(dbTx => ({
         hash: dbTx.hash,
         type: dbTx.type as TransactionType,
-        from: dbTx.from_address,
-        to: dbTx.to_address,
+        from: dbTx.fromAddress,
+        to: dbTx.toAddress,
         amount: Number(dbTx.amount),
         timestamp: Number(dbTx.timestamp),
         nonce: Number(dbTx.nonce),
         signature: dbTx.signature,
         status: 'pending',
-        blockHeight: dbTx.block_height || undefined,
+        blockHeight: dbTx.blockHeight || undefined,
         fee: dbTx.fee ? Number(dbTx.fee) : undefined,
         metadata: dbTx.metadata || undefined,
       }));
