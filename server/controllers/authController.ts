@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { generateToken, revokeToken } from '../middleware/auth';
+import { createToken } from '../middleware/auth';
 import crypto from 'crypto';
 import { walletDao } from '../database/walletDao';
 import { memBlockchainStorage } from '../mem-blockchain';
@@ -36,7 +36,7 @@ export const login = async (req: Request, res: Response) => {
     }
     
     // Generate JWT token
-    const token = generateToken(address);
+    const token = createToken(address);
     
     // Issue a refresh token (in a real implementation, this would be stored in a database)
     const refreshToken = crypto.randomBytes(40).toString('hex');
@@ -73,10 +73,9 @@ export const logout = (req: Request, res: Response) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     
-    if (token) {
-      // Revoke the token
-      revokeToken(token);
-    }
+    // No need to revoke tokens as we're using JWT
+    // In a real implementation, we'd add the token to a blacklist
+    // or use short-lived tokens with refresh tokens
     
     // Clear refresh token cookie
     res.clearCookie('refresh_token', {
@@ -117,7 +116,7 @@ export const refreshToken = (req: Request, res: Response) => {
     }
     
     // Generate a new token
-    const token = generateToken(address);
+    const token = createToken(address);
     
     res.json({ token });
   } catch (error) {

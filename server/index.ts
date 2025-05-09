@@ -22,10 +22,12 @@ if (isNaN(PORT)) {
 console.log(`[BACKEND LIFECYCLE] Stage 2: App initialized. Attempting to use PORT: ${PORT}`);
 
 // --- Middleware ---
+// Trust proxies - needed for rate limiting to work correctly with X-Forwarded-For headers
+app.set('trust proxy', 1);
 app.use(cors({ origin: '*' })); // Allow all for dev
 app.use(json());
 app.use(urlencoded({ extended: true }));
-console.log("[BACKEND LIFECYCLE] Stage 3: Core middleware (cors, json, urlencoded) added.");
+console.log("[BACKEND LIFECYCLE] Stage 3: Core middleware (trust proxy, cors, json, urlencoded) added.");
 
 // --- Basic Test Route ---
 app.get('/api/ping', (req: Request, res: Response) => {

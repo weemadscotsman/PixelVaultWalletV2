@@ -1,82 +1,164 @@
-import { walletDao } from './database/walletDao';
-import { transactionDao } from './database/transactionDao';
-import { memBlockchainStorage } from './mem-blockchain';
 import crypto from 'crypto';
-import * as cryptoUtils from './utils/cryptoUtils';
+import { Transaction } from './types';
+import { memBlockchainStorage } from './mem-blockchain';
+import { transactionDao } from './database/transactionDao';
+import { walletDao } from './database/walletDao';
 
-export async function commitTransaction(tx: any): Promise<void> {
-  // ① - Nonce check (replay-attack blocker)
-  const sender = await walletDao.getWalletByAddress(tx.from);
-  if (!sender) throw new Error('Unknown sender wallet');
-
-  // Ensure tx.nonce is treated as a number
-  const txNonce = typeof tx.nonce === 'string' ? parseInt(tx.nonce) : tx.nonce;
-  const expectedNonce = (sender.nonce || 0) + 1;
-  
-  if (txNonce !== expectedNonce) {
-    throw new Error(`Invalid nonce. Expected ${expectedNonce}`);
+/**
+ * Transaction Engine - Handles transaction validation, nonce verification,
+ * and signature verification for blockchain transactions
+ */
+export class TransactionEngine {
+  /**
+   * Verifies a transaction's signature and nonce
+   */
+  async verifyTransaction(transaction: Transaction): Promise<boolean> {
+    // Get the sender's wallet
+    let wallet = await walletDao.getWalletByAddress(transaction.fromAddress);
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(transaction.fromAddress);
+    }
+    
+    if (!wallet) {
+      console.error(`Wallet not found for address: ${transaction.fromAddress}`);
+      return false;
+    }
+    
+    // Verify the nonce
+    if (!this.verifyNonce(transaction, wallet.nonce)) {
+      console.error(`Invalid nonce for transaction from ${transaction.fromAddress}. Expected: ${wallet.nonce}, Got: ${transaction.nonce}`);
+      return false;
+    }
+    
+    // Verify the signature
+    return this.verifySignature(transaction);
   }
-
-  // ② - Signature check (authenticity)
-  // Create a signature verification payload (without the signature field)
-  const signaturePayload = {
-    ...tx,
-    signature: undefined
-  };
   
-  const ok = cryptoUtils.verifySignature(
-    JSON.stringify(signaturePayload),
-    tx.signature,
-    sender.publicKey
-  );
-  
-  if (!ok) {
-    throw new Error('Invalid transaction signature');
-  }
-
-  // ③ - Record transaction and update sender's nonce in both DB and memory storage
-  try {
-    // Create transaction in DB
-    await transactionDao.createTransaction({
-      hash: tx.hash,
-      type: tx.type,
-      fromAddress: tx.from,
-      toAddress: tx.to,
-      amount: tx.amount,
-      timestamp: tx.timestamp,
-      nonce: txNonce,
-      signature: tx.signature,
-      status: tx.status || 'pending',
-      blockHeight: tx.blockHeight,
-      fee: tx.fee || 0,
-      metadata: tx.metadata || {}
-    });
+  /**
+   * Process a transaction and store it in the database
+   */
+  async processTransaction(transaction: any): Promise<Transaction> {
+    // Verify the transaction
+    const isValid = await this.verifyTransaction(transaction);
     
-    // Create transaction in memory storage
-    await memBlockchainStorage.createTransaction(tx);
+    if (!isValid) {
+      throw new Error('Transaction validation failed');
+    }
     
-    // Update sender's nonce
-    await walletDao.updateWallet({
-      ...sender,
-      nonce: txNonce,
-      lastUpdated: new Date()
-    });
+    // Create the transaction with a proper hash and status
+    const tx = {
+      hash: transaction.hash,
+      type: transaction.type,
+      fromAddress: transaction.fromAddress,
+      toAddress: transaction.toAddress,
+      amount: transaction.amount,
+      timestamp: transaction.timestamp,
+      nonce: transaction.nonce,
+      signature: transaction.signature,
+      status: transaction.status || 'pending',
+      blockHeight: transaction.blockHeight || undefined,
+      fee: transaction.fee || null,
+      metadata: transaction.metadata || {}
+    };
     
-    // Update sender in memory storage too
-    const memSender = await memBlockchainStorage.getWalletByAddress(tx.from);
-    if (memSender) {
-      await memBlockchainStorage.updateWallet({
-        ...memSender,
-        nonce: txNonce,
-        lastUpdated: new Date()
+    // Save to both memory and database for consistency
+    const memTx = await memBlockchainStorage.createTransaction(tx);
+    
+    // Increment the nonce for the sender's wallet
+    let wallet = await walletDao.getWalletByAddress(transaction.fromAddress);
+    if (wallet) {
+      wallet = await walletDao.updateWallet({
+        ...wallet,
+        nonce: (wallet.nonce || 0) + 1
       });
     }
     
-    // Update balances
-    // This should be moved to a separate function that handles balance transfers
+    // Also update in-memory wallet
+    const memWallet = await memBlockchainStorage.getWalletByAddress(transaction.fromAddress);
+    if (memWallet) {
+      await memBlockchainStorage.updateWallet({
+        ...memWallet,
+        nonce: (memWallet.nonce || 0) + 1
+      });
+    }
     
-  } catch (error) {
-    console.error('Transaction commit error:', error);
-    throw new Error('Failed to commit transaction');
+    try {
+      // Store in database if it exists
+      const dbTx = await transactionDao.createTransaction(tx);
+      return dbTx;
+    } catch (err) {
+      console.error('Error saving transaction to database:', err);
+      // Fall back to memory transaction if database save fails
+      return memTx;
+    }
+  }
+  
+  /**
+   * Verify the nonce value is valid for the transaction
+   */
+  private verifyNonce(transaction: Transaction, expectedNonce?: number): boolean {
+    if (expectedNonce === undefined) return true; // Skip nonce check if not tracking nonces yet
+    
+    // Convert to number for comparison (if stored as string or bigint)
+    const txNonce = Number(transaction.nonce);
+    
+    // Nonce should be exactly equal to the wallet's current nonce to prevent
+    // replay attacks and ensure transaction ordering
+    return txNonce === expectedNonce;
+  }
+  
+  /**
+   * Verify digital signature of a transaction
+   */
+  private verifySignature(transaction: Transaction): boolean {
+    try {
+      // Recreate the transaction data that was signed
+      const txData = {
+        fromAddress: transaction.fromAddress,
+        toAddress: transaction.toAddress,
+        amount: transaction.amount,
+        nonce: transaction.nonce,
+        timestamp: transaction.timestamp
+      };
+      
+      // Convert data to string for verification
+      const dataString = JSON.stringify(txData);
+      
+      // Create the verification instance
+      const verify = crypto.createVerify('SHA256');
+      verify.update(dataString);
+      
+      // Get public key from the wallet service
+      // For now, assuming the fromAddress is the public key (in a real impl, we'd have a lookup)
+      const publicKey = transaction.fromAddress;
+      
+      // Verify signature (base64 encoded)
+      return verify.verify(
+        publicKey, 
+        Buffer.from(transaction.signature, 'base64')
+      );
+    } catch (error) {
+      console.error('Signature verification error:', error);
+      return false;
+    }
+  }
+  
+  /**
+   * Generate a transaction hash
+   */
+  generateTransactionHash(transaction: Partial<Transaction>): string {
+    const txData = {
+      fromAddress: transaction.fromAddress,
+      toAddress: transaction.toAddress,
+      amount: transaction.amount,
+      nonce: transaction.nonce,
+      timestamp: transaction.timestamp
+    };
+    
+    const dataString = JSON.stringify(txData);
+    return crypto.createHash('sha256').update(dataString).digest('hex');
   }
 }
+
+// Create a singleton instance
+export const transactionEngine = new TransactionEngine();

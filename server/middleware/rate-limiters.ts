@@ -6,11 +6,12 @@ import rateLimit from 'express-rate-limit';
  */
 export const standardLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 100, // Limit each IP to 100 requests per windowMs
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-  message: {
-    error: 'Too many requests, please try again later.'
+  message: { 
+    error: 'Too many requests', 
+    message: 'Please try again later' 
   }
 });
 
@@ -20,11 +21,12 @@ export const standardLimiter = rateLimit({
  */
 export const authLimiter = rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 20, // limit each IP to 20 requests per windowMs
+  max: 20, // Limit each IP to 20 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    error: 'Too many authentication attempts, please try again later.'
+  message: { 
+    error: 'Too many authentication attempts', 
+    message: 'Please try again later' 
   }
 });
 
@@ -34,11 +36,12 @@ export const authLimiter = rateLimit({
  */
 export const miningLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 5, // limit each IP to 5 mining operations per windowMs
+  max: 5, // Limit each IP to 5 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    error: 'Mining rate limit exceeded, please wait before making more mining requests.'
+  message: { 
+    error: 'Mining rate limit exceeded', 
+    message: 'Please slow down mining operations' 
   }
 });
 
@@ -48,11 +51,12 @@ export const miningLimiter = rateLimit({
  */
 export const transactionLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 30, // limit each IP to 30 transactions per windowMs
+  max: 30, // Limit each IP to 30 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    error: 'Transaction rate limit exceeded, please wait before sending more transactions.'
+  message: { 
+    error: 'Transaction rate limit exceeded', 
+    message: 'Please wait before submitting more transactions' 
   }
 });
 
@@ -62,10 +66,56 @@ export const transactionLimiter = rateLimit({
  */
 export const stakingLimiter = rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
-  max: 10, // limit each IP to 10 staking operations per windowMs
+  max: 10, // Limit each IP to 10 requests per windowMs
   standardHeaders: true,
   legacyHeaders: false,
-  message: {
-    error: 'Staking rate limit exceeded, please wait before making more staking requests.'
+  message: { 
+    error: 'Staking rate limit exceeded', 
+    message: 'Please wait before making more staking operations' 
+  }
+});
+
+/**
+ * Wallet creation rate limiter
+ * 3 wallet creations per hour per IP
+ */
+export const walletCreationLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 3, // Limit each IP to 3 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { 
+    error: 'Wallet creation rate limit exceeded', 
+    message: 'You can only create 3 wallets per hour' 
+  }
+});
+
+/**
+ * Learning module completion rate limiter
+ * 15 learning module operations per hour per IP
+ */
+export const learningLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 15, // Limit each IP to 15 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { 
+    error: 'Learning module rate limit exceeded', 
+    message: 'Please slow down and take time to learn the material' 
+  }
+});
+
+/**
+ * Thringlet interaction rate limiter
+ * 20 thringlet interactions per 5 minutes per IP
+ */
+export const thringletLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 20, // Limit each IP to 20 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { 
+    error: 'Thringlet interaction rate limit exceeded', 
+    message: 'Please wait before interacting with your Thringlet again' 
   }
 });

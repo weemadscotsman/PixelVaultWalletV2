@@ -15,8 +15,8 @@ export interface Block {
 export interface Transaction {
   hash: string;
   type: string; // Using string instead of enum to avoid usage issues
-  from: string;
-  to: string;
+  fromAddress: string; // Changed from 'from' to be more explicit
+  toAddress: string;   // Changed from 'to' to be more explicit
   amount: number;
   timestamp: number;
   nonce: number;
@@ -26,6 +26,10 @@ export interface Transaction {
   fee?: number;
   metadata?: any;
   note?: string;
+  
+  // Keeping these for backwards compatibility
+  from?: string;
+  to?: string;
 }
 
 export interface Wallet {
@@ -33,7 +37,8 @@ export interface Wallet {
   publicKey: string;
   balance: string;
   createdAt: Date;
-  lastSynced: Date;
+  lastUpdated: Date; // Changed from lastSynced to match database schema
+  nonce?: number; // Added to track transaction nonces for security
   passphraseSalt?: string;
   passphraseHash?: string;
 }
@@ -191,6 +196,12 @@ export interface BlockchainStatus {
   lastBlockTime: number;
   connected?: boolean;
   latestBlock?: Block;
+  
+  // Additional properties used in routes
+  height?: number; // Alias for latestBlockHeight
+  activeMiners?: number;
+  pendingTransactions?: number;
+  totalTransactions?: number;
 }
 
 export interface BlockchainMetrics {
