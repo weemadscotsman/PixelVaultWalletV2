@@ -131,9 +131,15 @@ export const getWallet = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     
-    // Use DAO to fetch wallet from database
-    const wallet = await walletDao.getWalletByAddress(address);
+    // Try to get the wallet from DB first
+    let wallet = await walletDao.getWalletByAddress(address);
     
+    // If not found in DB, try memory storage
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(address);
+    }
+    
+    // If still not found, return 404
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
@@ -314,9 +320,15 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
     const limit = Number(req.query.limit) || 20;
     const offset = Number(req.query.offset) || 0;
     
-    // Use DAO to check if wallet exists
-    const wallet = await walletDao.getWalletByAddress(address);
+    // Try to get the wallet from DB first
+    let wallet = await walletDao.getWalletByAddress(address);
     
+    // If not found in DB, try memory storage
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(address);
+    }
+    
+    // If still not found, return 404
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
