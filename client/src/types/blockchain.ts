@@ -53,6 +53,15 @@ export interface MiningStats {
   };
 }
 
+export interface MiningReward {
+  blockHeight: number;
+  timestamp: number;
+  amount: number;
+  transactionHash: string;
+  miner: string;
+  difficulty?: number;
+}
+
 export interface StakeRecord {
   id: string;
   address: string;

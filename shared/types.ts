@@ -23,6 +23,13 @@ export interface Transaction {
   blockHeight?: number;
   fee?: number;
   metadata?: any;
+  // Alternative property names used in different parts of the codebase
+  id?: string; // Used in visualization components
+  fromAddress?: string; // Alternative to 'from'
+  toAddress?: string; // Alternative to 'to'
+  senderAddress?: string; // Alternative to 'from'
+  receiverAddress?: string; // Alternative to 'to'
+  note?: string; // Used in transaction displays
 }
 
 // Block related types
@@ -50,6 +57,9 @@ export interface MiningStats {
   hardware: 'CPU' | 'GPU' | 'ASIC';
   joinedAt: Date;
   currentHashRate: number;
+  isActive?: boolean;
+  totalBlocks?: number; // Alias for blocksMined used in some files
+  hashRate?: string; // String representation of currentHashRate
 }
 
 export interface BlockchainMetrics {
@@ -77,13 +87,17 @@ export interface BlockchainTrends {
 export type TransactionHash = string;
 
 export interface BlockchainStatus {
-  isRunning: boolean;
-  latestBlockHeight: number;
-  difficulty: number;
-  networkHashRate: number;
-  lastBlockTime: number;
+  isRunning?: boolean;
+  latestBlockHeight?: number;
+  difficulty?: number;
+  networkHashRate?: number;
+  lastBlockTime?: number;
   connected?: boolean;
+  synced?: boolean;
+  error?: string | null;
   latestBlock?: any;
+  peers?: number;  // Number of connected peers
+  hashRate?: string; // String representation of networkHashRate
 }
 
 // Wallet related types
@@ -206,16 +220,19 @@ export interface Thringlet {
   id: string;
   name: string;
   ownerAddress: string;
+  owner?: string; // Alternative name for ownerAddress
   emotionState: ThringletEmotionState;
   personalityTraits: any;
   blockchainAffinities: any;
   level: number;
   experience: number;
   backstory: string;
+  description?: string;
   abilities: any[];
   lastInteraction: number;
   interactionCount?: number;
-  stateHistory?: {state: ThringletEmotionState, timestamp: number}[];
+  metadata?: any; // For additional data storage
+  stateHistory?: {state: ThringletEmotionState, timestamp: number, trigger?: string}[];
   stats: {
     strength: number;
     intelligence: number;
