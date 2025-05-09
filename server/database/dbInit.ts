@@ -496,16 +496,19 @@ export async function initializeDatabase() {
         const wallets = Array.from(memBlockchainStorage.wallets.values());
         if (wallets.length > 0) {
           for (const wallet of wallets) {
-            // Match the actual database column names
+            // Match the actual database column names found in schema
             await db.execute(
-              `INSERT INTO wallets (address, balance, created_at, last_updated) 
-               VALUES ($1, $2, $3, $4)
+              `INSERT INTO wallets (address, public_key, balance, created_at, last_updated, passphrase_salt, passphrase_hash) 
+               VALUES ($1, $2, $3, $4, $5, $6, $7)
                ON CONFLICT (address) DO NOTHING`,
               [
                 wallet.address,
+                wallet.publicKey || 'default_public_key', // Provide default value if missing
                 wallet.balance,
                 wallet.createdAt,
-                wallet.lastSynced
+                wallet.lastSynced, // map lastSynced to last_updated
+                wallet.passphraseSalt || null,
+                wallet.passphraseHash || null
               ]
             );
           }
