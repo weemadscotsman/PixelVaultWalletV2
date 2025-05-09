@@ -12,7 +12,19 @@
       "reward": "0"
     }
   ],
-  "transactions": [],
+  "transactions": [
+    {
+      "hash": "267ace7fdc81969124f56e7d36d52ee61c4005c4c391b7783d4d7899cda85104",
+      "type": "STAKE_START",
+      "from": "PVX_1e1ee32c2770a6af3ca119759c539907",
+      "to": "STAKE_POOL_pool1",
+      "amount": "39275999900.000000",
+      "timestamp": 1746815566579,
+      "nonce": 11781,
+      "signature": "8dcb172da29be2fbe1100a7ecc37061fd38de9cb8c0135bfc6111074e2a04a12",
+      "status": "confirmed"
+    }
+  ],
   "wallets": [
     [
       "PVX_307b43cdf87f7f3b4d9c702febcd81d9",
@@ -75,7 +87,8 @@
         "createdAt": "2025-05-09T17:15:03.665Z",
         "lastUpdated": "2025-05-09T17:15:03.665Z",
         "passphraseSalt": "1a00a8880b1479d4d30aba7fa483fd68",
-        "passphraseHash": "a5a86dcdfa84040815d7a399ba1e2ec200cd5027fd4a82aca7fdbd5eba37c258"
+        "passphraseHash": "a5a86dcdfa84040815d7a399ba1e2ec200cd5027fd4a82aca7fdbd5eba37c258",
+        "lastSynced": "2025-05-09T17:15:03.665Z"
       }
     ],
     [
@@ -87,19 +100,47 @@
         "createdAt": "2025-05-09T17:15:04.247Z",
         "lastUpdated": "2025-05-09T17:15:04.247Z",
         "passphraseSalt": "24df03e997c766fd5043b058190b6654",
-        "passphraseHash": "9c386d81bdea6f063593498c335ee640f80908aaceca35718dec89445c26a48d"
+        "passphraseHash": "9c386d81bdea6f063593498c335ee640f80908aaceca35718dec89445c26a48d",
+        "lastSynced": "2025-05-09T17:15:04.247Z"
+      }
+    ],
+    [
+      "PVX_1e1ee32c2770a6af3ca119759c539907",
+      {
+        "address": "PVX_1e1ee32c2770a6af3ca119759c539907",
+        "publicKey": "814eb62f87583afb04aebb7abcdb8fb52a7150c8390111f4115ebbe389bcf24b",
+        "balance": "0",
+        "createdAt": "2025-05-07T15:49:53.480Z",
+        "lastUpdated": "2025-05-09T18:32:46.586Z",
+        "lastSynced": "2025-05-08T23:26:52.937Z",
+        "passphraseSalt": "430f2740756b69721379cd9d553e9b66",
+        "passphraseHash": "1e1ee32c2770a6af3ca119759c5399072ff483851fcd25a80f2329f6d4994026"
       }
     ]
   ],
   "minerStats": [],
-  "stakeRecords": [],
+  "stakeRecords": [
+    [
+      "5b118c07d237723841d8b18c921553c8",
+      {
+        "id": "5b118c07d237723841d8b18c921553c8",
+        "walletAddress": "PVX_1e1ee32c2770a6af3ca119759c539907",
+        "poolId": "pool1",
+        "amount": "39275999900.000000",
+        "startTime": 1746815566579,
+        "unlockTime": 0,
+        "lastRewardTime": 1746815566579,
+        "isActive": true
+      }
+    ]
+  ],
   "stakingPools": [
     {
       "id": "pool1",
       "name": "Genesis Pool",
       "description": "The original PVX staking pool with no lockup period",
       "apy": "8.5",
-      "totalStaked": "1500000000",
+      "totalStaked": "40775999900",
       "minStake": "10000",
       "lockupPeriod": 0,
       "active": true
