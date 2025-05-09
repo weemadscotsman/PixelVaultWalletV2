@@ -226,9 +226,29 @@ export class MemBlockchainStorage {
   
   // Wallet methods
   async createWallet(wallet: Wallet): Promise<Wallet> {
-    this.wallets.set(wallet.address, wallet);
+    console.log('MemBlockchainStorage.createWallet - Wallet data:', {
+      address: wallet.address,
+      hasPublicKey: Boolean(wallet.publicKey),
+      hasPassphraseSalt: Boolean(wallet.passphraseSalt),
+      hasPassphraseHash: Boolean(wallet.passphraseHash)
+    });
+    
+    // Make sure we're storing the complete wallet object with all fields
+    const completeWallet: Wallet = {
+      address: wallet.address,
+      publicKey: wallet.publicKey,
+      balance: wallet.balance,
+      createdAt: wallet.createdAt,
+      lastUpdated: wallet.lastUpdated || new Date(),
+      lastSynced: wallet.lastSynced,
+      // These are the critical auth fields that must be preserved
+      passphraseSalt: wallet.passphraseSalt,
+      passphraseHash: wallet.passphraseHash
+    };
+    
+    this.wallets.set(wallet.address, completeWallet);
     await this.saveToFile();
-    return wallet;
+    return completeWallet;
   }
   
   async getWalletByAddress(address: string): Promise<Wallet | undefined> {
@@ -236,9 +256,25 @@ export class MemBlockchainStorage {
   }
   
   async updateWallet(wallet: Wallet): Promise<Wallet> {
-    this.wallets.set(wallet.address, wallet);
+    // Get the existing wallet to preserve critical fields if they're missing
+    const existingWallet = this.wallets.get(wallet.address);
+    
+    // Create a complete wallet with all needed fields, preserving existing values if not provided
+    const updatedWallet: Wallet = {
+      address: wallet.address,
+      publicKey: wallet.publicKey || existingWallet?.publicKey || '',
+      balance: wallet.balance || existingWallet?.balance || '0',
+      createdAt: wallet.createdAt || existingWallet?.createdAt || new Date(),
+      lastUpdated: new Date(), // Always update this timestamp
+      lastSynced: wallet.lastSynced || new Date(), // For compatibility
+      // Critical auth fields - preserve from existing if not in update
+      passphraseSalt: wallet.passphraseSalt || existingWallet?.passphraseSalt || '',
+      passphraseHash: wallet.passphraseHash || existingWallet?.passphraseHash || ''
+    };
+    
+    this.wallets.set(wallet.address, updatedWallet);
     await this.saveToFile();
-    return wallet;
+    return updatedWallet;
   }
   
   // Miner stats methods

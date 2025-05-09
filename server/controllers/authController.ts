@@ -18,12 +18,33 @@ export const login = async (req: Request, res: Response) => {
     
     // Try to get the wallet from DB first, then memory storage
     let wallet = await walletDao.getWalletByAddress(address);
+    console.log('Wallet from DB:', wallet ? {
+      address: wallet.address,
+      hasPublicKey: Boolean(wallet.publicKey),
+      hasPassphraseSalt: Boolean(wallet.passphraseSalt),
+      hasPassphraseHash: Boolean(wallet.passphraseHash),
+      source: 'database'
+    } : 'Not found in database');
+    
     if (!wallet) {
       wallet = await memBlockchainStorage.getWalletByAddress(address);
+      console.log('Wallet from memory storage:', wallet ? {
+        address: wallet.address,
+        hasPublicKey: Boolean(wallet.publicKey),
+        hasPassphraseSalt: Boolean(wallet.passphraseSalt),
+        hasPassphraseHash: Boolean(wallet.passphraseHash),
+        source: 'memory'
+      } : 'Not found in memory storage');
     }
     
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    // Check if passphrase salt exists
+    if (!wallet.passphraseSalt) {
+      console.error(`Wallet ${address} is missing passphraseSalt - authentication cannot proceed`);
+      return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
     }
     
     // Verify passphrase

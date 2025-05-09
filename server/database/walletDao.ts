@@ -14,6 +14,13 @@ export class WalletDao {
    */
   async createWallet(wallet: Wallet): Promise<Wallet> {
     try {
+      console.log('WalletDAO.createWallet - Incoming wallet data:', {
+        address: wallet.address,
+        publicKey: wallet.publicKey ? 'exists' : 'missing',
+        passphraseSalt: wallet.passphraseSalt ? 'exists' : 'missing',
+        passphraseHash: wallet.passphraseHash ? 'exists' : 'missing'
+      });
+      
       // Convert wallet to database format with snake_case field names to match DB schema
       const dbWallet = {
         address: wallet.address,
@@ -25,8 +32,23 @@ export class WalletDao {
         passphrase_hash: wallet.passphraseHash,
       };
 
-      // Insert wallet
-      await db.insert(wallets).values(dbWallet);
+      console.log('WalletDAO.createWallet - Database wallet format:', {
+        address: dbWallet.address,
+        public_key: dbWallet.public_key ? 'exists' : 'missing',
+        passphrase_salt: dbWallet.passphrase_salt ? 'exists' : 'missing',
+        passphrase_hash: dbWallet.passphrase_hash ? 'exists' : 'missing'
+      });
+
+      // Insert wallet with all fields explicitly
+      await db.insert(wallets).values({
+        address: dbWallet.address,
+        public_key: dbWallet.public_key,
+        balance: dbWallet.balance,
+        created_at: dbWallet.created_at,
+        last_updated: dbWallet.last_updated,
+        passphrase_salt: dbWallet.passphrase_salt,
+        passphrase_hash: dbWallet.passphrase_hash
+      });
       
       // Return original wallet
       return wallet;
