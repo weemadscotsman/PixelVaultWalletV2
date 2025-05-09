@@ -63,8 +63,9 @@ export default function StakingPage() {
   };
   
   // Convert lockup periods to staking pools format required by CreateStakeDialog
+  // Use "poolX" format for IDs to match the backend expectation
   const stakingPools = stakingData.lockupPeriods.map(period => ({
-    id: period.id.toString(),
+    id: `pool${period.id}`, // Use 'pool1', 'pool2' format to match backend
     name: `${period.name} Staking Pool`,
     description: `Stake your PVX tokens for ${period.name} to earn ${period.apy}% APY`,
     minStake: "1000", // Minimum stake amount in μPVX
