@@ -105,12 +105,12 @@ export const startStaking = async (req: Request, res: Response) => {
     try {
       const { transactionDao } = await import('../database/transactionDao');
       
-      // Create DB transaction object (converting from memory format)
+      // Create DB transaction object matching the DAO format
       const dbTransaction = {
         hash: txHash,
         type: 'STAKE_START' as const,
-        from: address,
-        to: `STAKE_POOL_${poolId}`,
+        from: address,               // DAO will map this to fromAddress
+        to: `STAKE_POOL_${poolId}`,  // DAO will map this to toAddress
         amount: parseInt(amount),
         timestamp: now,
         nonce: Math.floor(Math.random() * 100000),
@@ -261,12 +261,12 @@ export const stopStaking = async (req: Request, res: Response) => {
     try {
       const { transactionDao } = await import('../database/transactionDao');
       
-      // Create DB transaction object (converting from memory format)
+      // Create DB transaction object matching DAO format
       const dbTransaction = {
         hash: txHash,
         type: 'STAKE_END' as const,
-        from: `STAKE_POOL_${stake.poolId}`,
-        to: address,
+        from: `STAKE_POOL_${stake.poolId}`,  // DAO will map this to fromAddress
+        to: address,                         // DAO will map this to toAddress
         amount: parseInt(stake.amount),
         timestamp: now,
         nonce: Math.floor(Math.random() * 100000),
