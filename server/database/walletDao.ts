@@ -59,7 +59,7 @@ export class WalletDao {
         publicKey: dbWallet.public_key,
         balance: dbWallet.balance,
         createdAt: dbWallet.created_at,
-        lastSynced: dbWallet.last_synced,
+        lastSynced: dbWallet.last_updated, // Map from last_updated to lastSynced
         passphraseSalt: dbWallet.passphrase_salt || undefined,
         passphraseHash: dbWallet.passphrase_hash || undefined,
       };
@@ -85,7 +85,7 @@ export class WalletDao {
       // Convert wallet to database format with snake_case field names
       const dbWallet = {
         balance: wallet.balance,
-        last_synced: wallet.lastSynced,
+        last_updated: wallet.lastSynced, // Use last_updated instead of last_synced
         passphrase_salt: wallet.passphraseSalt,
         passphrase_hash: wallet.passphraseHash,
       };
@@ -117,7 +117,7 @@ export class WalletDao {
         publicKey: dbWallet.public_key,
         balance: dbWallet.balance,
         createdAt: dbWallet.created_at,
-        lastSynced: dbWallet.last_synced,
+        lastSynced: dbWallet.last_updated, // Map from last_updated to lastSynced
         passphraseSalt: dbWallet.passphrase_salt || undefined,
         passphraseHash: dbWallet.passphrase_hash || undefined,
       }));
@@ -145,7 +145,7 @@ export class WalletDao {
       await db.update(wallets)
         .set({ 
           balance, 
-          last_synced: new Date() 
+          last_updated: new Date() // Use last_updated instead of last_synced
         })
         .where(eq(wallets.address, address));
       
