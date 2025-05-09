@@ -37,8 +37,8 @@ export const createWallet = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Wallet with this address already exists' });
     }
     
-    // Create wallet in database
-    const wallet = await walletDao.createWallet({
+    // Wallet data to insert
+    const walletData = {
       address,
       publicKey,
       balance: "1000000", // 1 PVX initial balance for testing
@@ -46,7 +46,13 @@ export const createWallet = async (req: Request, res: Response) => {
       lastUpdated: new Date(),
       passphraseSalt: salt,
       passphraseHash: hash
-    });
+    };
+    
+    // Create wallet in database
+    const wallet = await walletDao.createWallet(walletData);
+    
+    // Also create in memory storage for backup
+    await memBlockchainStorage.createWallet(walletData);
     
     console.log('Created new wallet:', address);
     
