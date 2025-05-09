@@ -76,16 +76,28 @@ export class WalletDao {
       
       // Convert database format to Wallet with snake_case to camelCase mapping
       const dbWallet = result[0];
-      return {
+      
+      console.log('WalletDao.getWalletByAddress - Raw DB result:', {
         address: dbWallet.address,
-        publicKey: dbWallet.public_key,
+        public_key: dbWallet.public_key ? 'exists' : 'missing',
+        balance: dbWallet.balance,
+        passphrase_salt: dbWallet.passphrase_salt ? 'exists' : 'missing',
+        passphrase_hash: dbWallet.passphrase_hash ? 'exists' : 'missing'
+      });
+      
+      // Make sure we explicitly extract all fields from the DB result
+      const wallet: Wallet = {
+        address: dbWallet.address,
+        publicKey: dbWallet.public_key || '',
         balance: dbWallet.balance,
         createdAt: dbWallet.created_at,
         lastUpdated: dbWallet.last_updated,
         lastSynced: dbWallet.last_updated, // Keep both for compatibility
-        passphraseSalt: dbWallet.passphrase_salt || undefined,
-        passphraseHash: dbWallet.passphrase_hash || undefined,
+        passphraseSalt: dbWallet.passphrase_salt,
+        passphraseHash: dbWallet.passphrase_hash
       };
+      
+      return wallet;
     } catch (error) {
       console.error('Error getting wallet by address:', error);
       throw new Error('Failed to get wallet');
