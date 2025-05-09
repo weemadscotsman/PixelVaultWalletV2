@@ -93,7 +93,8 @@ export interface Wallet {
   publicAddress?: string; // Alias for address used in some files
   balance: string;
   createdAt: Date;
-  lastSynced: Date;
+  lastUpdated?: Date;
+  lastSynced?: Date; // Supporting both field naming conventions
   passphraseSalt?: string;
   passphraseHash?: string;
   note?: string; // Used in some transaction displays
