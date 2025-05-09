@@ -20,7 +20,7 @@ export class WalletDao {
         public_key: wallet.publicKey,
         balance: wallet.balance,
         created_at: wallet.createdAt,
-        last_updated: wallet.lastSynced, // Map lastSynced to last_updated
+        last_updated: wallet.lastUpdated || wallet.lastSynced, // Support both naming conventions
         passphrase_salt: wallet.passphraseSalt,
         passphrase_hash: wallet.passphraseHash,
       };

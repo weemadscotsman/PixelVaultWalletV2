@@ -67,23 +67,37 @@ export function CreateWalletForm() {
   const onSubmit = async (values: FormValues) => {
     setLoading(true);
     try {
-      const res = await apiRequest('POST', '/api/wallet/create', {
-        passphrase: values.passphrase
+      const res = await fetch('/api/wallet/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          passphrase: values.passphrase
+        })
       });
+      
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || 'Failed to create wallet');
+      }
       
       const data = await res.json();
       setWalletCreated({
         address: data.address,
-        publicKey: data.publicKey
+        publicKey: data.pubkey
       });
       
       toast({
         title: "Wallet created successfully",
-        description: `Your new wallet address is: ${data.address}`,
+        description: `Your new wallet address is: ${data.address}. SAVE YOUR PASSPHRASE! You'll need it to login.`,
       });
       
-      // Reset form
-      form.reset();
+      // Keep the passphrase visible in the form for now
+      form.reset({
+        passphrase: values.passphrase,
+        confirmPassphrase: values.confirmPassphrase
+      });
       
     } catch (error) {
       console.error("Wallet creation error:", error);
