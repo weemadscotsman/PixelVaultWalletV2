@@ -1,45 +1,14 @@
-// Shared types for the PVX blockchain system
-
-export enum TransactionType {
-  TRANSFER = 'transfer',
-  STAKE = 'stake',
-  UNSTAKE = 'unstake',
-  MINE = 'mine',
-  REWARD = 'reward',
-  FEE = 'fee',
-  GOVERNANCE = 'governance',
-  AIRDROP = 'airdrop',
-  NFT_MINT = 'nft_mint',
-  BADGE_AWARD = 'badge_award'
-}
-
-// Basic blockchain types
-export interface BlockchainStatus {
-  isRunning: boolean;
-  lastBlockHeight: number;
-  lastBlockHash: string;
-  lastBlockTime: number;
-  currentDifficulty: number;
-  hashRate: number;
-  pendingTransactions: number;
-  confirmedTransactions: number;
-  activeMiners: number;
-  activeStakers: number;
-}
-
-export interface Block {
-  height: number;
-  hash: string;
-  previousHash: string;
-  timestamp: number;
-  nonce: number;
-  difficulty: number;
-  miner: string;
-  transactions: Transaction[];
-  totalTransactions: number;
-  size: number;
-  merkleRoot: string;
-}
+// Transaction types
+export type TransactionType = 
+  | 'TRANSFER' 
+  | 'MINING_REWARD' 
+  | 'STAKING_REWARD' 
+  | 'STAKE_START' 
+  | 'STAKE_END' 
+  | 'DROP_CLAIM'
+  | 'GOVERNANCE_PROPOSAL'
+  | 'GOVERNANCE_VOTE'
+  | 'LEARNING_REWARD';
 
 export interface Transaction {
   hash: string;
@@ -56,8 +25,22 @@ export interface Transaction {
   metadata?: any;
 }
 
-export type TransactionHash = string;
+// Block related types
+export interface Block {
+  height: number;
+  hash: string;
+  previousHash: string;
+  timestamp: number;
+  nonce: number;
+  difficulty: number;
+  miner: string;
+  merkleRoot: string;
+  totalTransactions: number;
+  size: number;
+  transactions?: Transaction[];
+}
 
+// Mining related types
 export interface MiningStats {
   address: string;
   blocksMined: number;
@@ -69,16 +52,66 @@ export interface MiningStats {
   currentHashRate: number;
 }
 
+export interface BlockchainMetrics {
+  totalBlocks: number;
+  totalTransactions: number;
+  totalMiners: number;
+  totalWallets: number;
+  totalStaked: string;
+  totalSupply: string;
+  circulatingSupply: string;
+  averageBlockTime: number;
+  difficulty: number;
+  networkHashRate: number;
+}
+
+export interface BlockchainTrends {
+  timestamp: number;
+  hashRate: number;
+  difficulty: number;
+  totalTransactions: number;
+  activeMiners: number;
+  blockTime: number;
+}
+
+export type TransactionHash = string;
+
+export interface BlockchainStatus {
+  isRunning: boolean;
+  latestBlockHeight: number;
+  difficulty: number;
+  networkHashRate: number;
+  lastBlockTime: number;
+  connected?: boolean;
+  latestBlock?: any;
+}
+
+// Wallet related types
+export interface Wallet {
+  address: string;
+  publicKey: string;
+  publicAddress?: string; // Alias for address used in some files
+  balance: string;
+  createdAt: Date;
+  lastSynced: Date;
+  passphraseSalt?: string;
+  passphraseHash?: string;
+  note?: string; // Used in some transaction displays
+}
+
+// Staking related types
 export interface StakeRecord {
   id: string;
   walletAddress: string;
   poolId: string;
   amount: string;
   startTime: number;
-  endTime: number | null;
+  endTime?: number;
+  unlockTime?: number; // Some code uses unlockTime instead of endTime
   isActive: boolean;
   rewards: string;
   lastRewardClaim: number;
+  lastRewardTime?: number; // Some code uses lastRewardTime instead of lastRewardClaim
   autoCompound: boolean;
 }
 
@@ -86,112 +119,190 @@ export interface StakingPool {
   id: string;
   name: string;
   description: string;
-  apr: number;
-  minStakeAmount: number;
+  apr?: number;
+  apy?: string; // Some code uses apy instead of apr
+  minStake?: string; // Used in mem-blockchain.ts
+  minStakeAmount?: number; // Used in other places
   lockupPeriod: number;
   totalStaked: string;
-  activeStakers: number;
+  activeStakers?: number;
+  active?: boolean;
 }
 
-export interface BlockchainTrends {
-  transactions: {
-    date: string;
-    count: number;
-  }[];
-  hashRate: {
-    date: string;
-    rate: number;
-  }[];
-  activeMinerCount: {
-    date: string;
-    count: number;
-  }[];
-  staking: {
-    date: string;
-    totalStaked: number;
-  }[];
-  difficulty: {
-    date: string;
-    level: number;
-  }[];
-}
-
-export enum BadgeType {
-  TRANSACTION = 'transaction',
-  MINING = 'mining',
-  STAKING = 'staking',
-  GOVERNANCE = 'governance',
-  THRINGLET = 'thringlet',
-  SPECIAL = 'special'
-}
-
-export enum BadgeRarity {
-  COMMON = 'common',
-  UNCOMMON = 'uncommon',
-  RARE = 'rare',
-  EPIC = 'epic',
-  LEGENDARY = 'legendary',
-  MYTHIC = 'mythic'
-}
+// Badge related types
+export type BadgeType = 
+  | 'transaction' 
+  | 'mining' 
+  | 'staking' 
+  | 'governance' 
+  | 'thringlet'
+  | 'special';
+  
+export type BadgeRarity = 
+  | 'common'
+  | 'uncommon'
+  | 'rare'
+  | 'epic'
+  | 'mythic';
 
 export interface Badge {
   id: string;
   name: string;
   description: string;
-  type: BadgeType;
-  rarity: BadgeRarity;
-  icon: string;
-  requirement: string;
+  imageUrl: string;
+  tier: string;
+  category: string;
+  requirements: any;
+  dateAdded: number;
+  type?: BadgeType;
+  rarity?: BadgeRarity;
+  icon?: string;
+  requirement?: string;
   secret?: boolean;
 }
 
 export interface UserBadge {
   userId: string;
   badgeId: string;
-  earnedAt: number; // timestamp when earned, 0 if not earned yet
-  progress?: number; // progress percentage 0-100
+  progress?: number;
+  earnedAt?: number;
 }
 
-// Thringlet emotion states
-export enum ThringletEmotionState {
-  HAPPY = 'happy',
-  NEUTRAL = 'neutral',
-  SAD = 'sad',
-  EXCITED = 'excited',
-  ANGRY = 'angry',
-  SCARED = 'scared',
-  SLEEPY = 'sleepy',
-  SICK = 'sick',
-  LOVE = 'love',
-  // Additional states needed for the system
-  TIRED = 'tired',
-  HUNGRY = 'hungry'
-}
+// Thringlet related types
+export type ThringletEmotionState = 
+  | 'happy'
+  | 'sad'
+  | 'excited'
+  | 'neutral'
+  | 'angry'
+  | 'curious';
 
-// Thringlet personality traits
 export enum ThringletPersonalityTrait {
-  ANALYTICAL = 'analytical',    // Loves data and blockchain statistics
-  ADVENTUROUS = 'adventurous',  // Eager to explore new chains and protocols
-  CAUTIOUS = 'cautious',        // Risk-averse, prefers proven systems
-  CREATIVE = 'creative',        // Thinks outside the box, innovative
-  SOCIAL = 'social',            // Connects well with other thringlets and users
-  CURIOUS = 'curious',          // Constantly asking questions, learning
-  PROTECTIVE = 'protective',    // Guards wallet and assets carefully
-  CHAOTIC = 'chaotic',          // Unpredictable, sometimes risky behavior
-  LOGICAL = 'logical',          // Makes decisions based on facts
-  EMOTIONAL = 'emotional'       // Reacts strongly to market changes
+  ANALYTICAL = 'analytical',
+  CURIOUS = 'curious',
+  CREATIVE = 'creative',
+  ADVENTUROUS = 'adventurous',
+  CAUTIOUS = 'cautious',
+  SOCIAL = 'social',
+  PROTECTIVE = 'protective',
+  CHAOTIC = 'chaotic',
+  LOGICAL = 'logical',
+  EMOTIONAL = 'emotional'
 }
 
-// Blockchain personality affinities - what aspects of blockchain they resonate with
 export enum BlockchainAffinity {
-  SECURITY = 'security',        // Values strong cryptography and secure systems
-  PRIVACY = 'privacy',          // Champions privacy features and zero-knowledge proofs
-  EFFICIENCY = 'efficiency',    // Focuses on transaction speed and low fees
-  GOVERNANCE = 'governance',    // Interested in voting and protocol decisions
-  DEFI = 'defi',                // Passionate about financial applications
-  MINING = 'mining',            // Enthusiastic about mining and block production
-  STAKING = 'staking',          // Prefers passive income through staking
-  INNOVATION = 'innovation',    // Drawn to cutting-edge technology
-  COMMUNITY = 'community',      // Values social aspects and network effects
-  UTILITY = 'utility'           // Appreciates practical blockchain applications
+  MINING = 'mining',
+  STAKING = 'staking',
+  PRIVACY = 'privacy',
+  GOVERNANCE = 'governance',
+  DEFI = 'defi',
+  INNOVATION = 'innovation',
+  SECURITY = 'security',
+  SCALING = 'scaling'
+}
+
+export interface Thringlet {
+  id: string;
+  name: string;
+  ownerAddress: string;
+  emotionState: ThringletEmotionState;
+  personalityTraits: any;
+  blockchainAffinities: any;
+  level: number;
+  experience: number;
+  backstory: string;
+  abilities: any[];
+  lastInteraction: number;
+  interactionCount?: number;
+  stateHistory?: {state: ThringletEmotionState, timestamp: number}[];
+  stats: {
+    strength: number;
+    intelligence: number;
+    agility: number;
+    charisma: number;
+  };
+}
+
+// Governance related types
+export interface GovernanceProposal {
+  id: string;
+  title: string;
+  description: string;
+  proposer: string;
+  createdAt: number;
+  endTime: number;
+  status: 'active' | 'passed' | 'rejected' | 'executed';
+  votesFor: number;
+  votesAgainst: number;
+  votesAbstain: number;
+  minimumVotingPower: number;
+  category: string;
+  parameterChanges?: any;
+  executionTransactionHash?: string;
+}
+
+export interface GovernanceVote {
+  proposalId: string;
+  voterAddress: string;
+  voteType: 'for' | 'against' | 'abstain';
+  votingPower: number;
+  timestamp: number;
+}
+
+// Drop related types
+export interface Drop {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  rarity: string;
+  imageUrl: string;
+  tokenAmount?: number;
+  createdAt: Date;
+  expiresAt: Date;
+  claimLimit: number;
+  minWalletAge: number;
+  minStakingAmount: number;
+  minMiningBlocks: number;
+  securityScore: number;
+}
+
+export interface DropClaim {
+  dropId: string;
+  walletAddress: string;
+  claimedAt: Date;
+  transactionHash?: string;
+}
+
+// Learning related types
+export interface LearningModule {
+  id: string;
+  title: string;
+  description: string;
+  difficulty: string;
+  type: string;
+  xpReward: number;
+  tokenReward: number;
+  badgeId?: string;
+  completionCriteria?: any;
+  questions?: LearningQuestion[];
+}
+
+export interface LearningQuestion {
+  id: string;
+  moduleId: string;
+  text: string;
+  options: string[];
+  correctOption: number;
+  explanation: string;
+}
+
+export interface UserLearningProgress {
+  userId: string;
+  moduleId: string;
+  completed: boolean;
+  score: number;
+  attemptsCount: number;
+  lastAttemptDate: number;
+  rewardsClaimed: boolean;
 }

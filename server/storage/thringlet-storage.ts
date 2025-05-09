@@ -1,6 +1,6 @@
 import { 
-  ThringletEmotionState, 
-  ThringletPersonalityTrait, 
+  ThringletEmotionState,
+  ThringletPersonalityTrait,
   BlockchainAffinity 
 } from '@shared/types';
 import * as fs from 'fs';
@@ -13,7 +13,7 @@ export interface Thringlet {
   owner: string;
   createdAt: number;
   lastInteraction: number;
-  emotionalState: ThringletEmotionState;
+  emotionState: ThringletEmotionState;
   level: number;
   experience: number;
   abilities: string[];
@@ -134,7 +134,7 @@ export class ThringletStorage {
       
       if (!thringlet.stateHistory) {
         thringlet.stateHistory = [{
-          state: thringlet.emotionalState,
+          state: thringlet.emotionState,
           timestamp: Date.now(),
           trigger: 'system_initialization'
         }];
@@ -162,7 +162,7 @@ export class ThringletStorage {
         owner: "PVX_1e1ee32c2770a6af3ca119759c539907",
         createdAt: Date.now(),
         lastInteraction: Date.now(),
-        emotionalState: ThringletEmotionState.HAPPY,
+        emotionState: 'happy' as ThringletEmotionState,
         level: 3,
         experience: 250,
         abilities: ['basic_movement', 'teleport'],
@@ -203,11 +203,11 @@ export class ThringletStorage {
           specialFeatures: ['glowing_eyes', 'crystal_growths']
         },
         stateHistory: [{
-          state: ThringletEmotionState.NEUTRAL,
+          state: 'neutral' as ThringletEmotionState,
           timestamp: Date.now() - 86400000,
           trigger: 'creation'
         }, {
-          state: ThringletEmotionState.HAPPY,
+          state: 'happy' as ThringletEmotionState,
           timestamp: Date.now(),
           trigger: 'user interaction'
         }]
@@ -219,7 +219,7 @@ export class ThringletStorage {
         owner: "PVX_f5ba480b7db6010eecb453eca8e67ff0",
         createdAt: Date.now() - 172800000,
         lastInteraction: Date.now() - 36000000,
-        emotionalState: ThringletEmotionState.EXCITED,
+        emotionState: 'excited' as ThringletEmotionState,
         level: 5,
         experience: 490,
         abilities: ['basic_movement', 'invisibility', 'energy_burst'],
@@ -260,11 +260,11 @@ export class ThringletStorage {
           specialFeatures: ['smoke', 'wings']
         },
         stateHistory: [{
-          state: ThringletEmotionState.NEUTRAL,
+          state: 'neutral' as ThringletEmotionState,
           timestamp: Date.now() - 172800000,
           trigger: 'creation'
         }, {
-          state: ThringletEmotionState.EXCITED,
+          state: 'excited' as ThringletEmotionState,
           timestamp: Date.now() - 36000000,
           trigger: 'level up'
         }]
@@ -382,7 +382,7 @@ export class ThringletStorage {
     
     if (!thringlet.stateHistory) {
       thringlet.stateHistory = [{
-        state: thringlet.emotionalState,
+        state: thringlet.emotionState,
         timestamp: Date.now(),
         trigger: 'creation'
       }];

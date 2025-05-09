@@ -388,24 +388,24 @@ export class PersonalityService {
     // Some trait combinations lead to specific emotions
     const traitShiftMap: Record<string, ThringletEmotionState> = {
       // ANALYTICAL → X
-      [ThringletPersonalityTrait.ANALYTICAL + "-" + ThringletPersonalityTrait.EMOTIONAL]: ThringletEmotionState.EXCITED,
-      [ThringletPersonalityTrait.ANALYTICAL + "-" + ThringletPersonalityTrait.CHAOTIC]: ThringletEmotionState.SCARED,
+      [ThringletPersonalityTrait.ANALYTICAL + "-" + ThringletPersonalityTrait.EMOTIONAL]: 'excited',
+      [ThringletPersonalityTrait.ANALYTICAL + "-" + ThringletPersonalityTrait.CHAOTIC]: 'angry',
       
       // CAUTIOUS → X
-      [ThringletPersonalityTrait.CAUTIOUS + "-" + ThringletPersonalityTrait.ADVENTUROUS]: ThringletEmotionState.EXCITED,
-      [ThringletPersonalityTrait.CAUTIOUS + "-" + ThringletPersonalityTrait.CHAOTIC]: ThringletEmotionState.SCARED,
+      [ThringletPersonalityTrait.CAUTIOUS + "-" + ThringletPersonalityTrait.ADVENTUROUS]: 'excited',
+      [ThringletPersonalityTrait.CAUTIOUS + "-" + ThringletPersonalityTrait.CHAOTIC]: 'angry',
       
       // EMOTIONAL → X
-      [ThringletPersonalityTrait.EMOTIONAL + "-" + ThringletPersonalityTrait.LOGICAL]: ThringletEmotionState.SAD,
-      [ThringletPersonalityTrait.EMOTIONAL + "-" + ThringletPersonalityTrait.ANALYTICAL]: ThringletEmotionState.NEUTRAL,
+      [ThringletPersonalityTrait.EMOTIONAL + "-" + ThringletPersonalityTrait.LOGICAL]: 'sad',
+      [ThringletPersonalityTrait.EMOTIONAL + "-" + ThringletPersonalityTrait.ANALYTICAL]: 'neutral',
       
       // PROTECTIVE → X
-      [ThringletPersonalityTrait.PROTECTIVE + "-" + ThringletPersonalityTrait.ADVENTUROUS]: ThringletEmotionState.EXCITED,
-      [ThringletPersonalityTrait.PROTECTIVE + "-" + ThringletPersonalityTrait.CHAOTIC]: ThringletEmotionState.ANGRY,
+      [ThringletPersonalityTrait.PROTECTIVE + "-" + ThringletPersonalityTrait.ADVENTUROUS]: 'excited',
+      [ThringletPersonalityTrait.PROTECTIVE + "-" + ThringletPersonalityTrait.CHAOTIC]: 'angry',
       
       // CHAOTIC → X
-      [ThringletPersonalityTrait.CHAOTIC + "-" + ThringletPersonalityTrait.LOGICAL]: ThringletEmotionState.SAD,
-      [ThringletPersonalityTrait.CHAOTIC + "-" + ThringletPersonalityTrait.CAUTIOUS]: ThringletEmotionState.SLEEPY
+      [ThringletPersonalityTrait.CHAOTIC + "-" + ThringletPersonalityTrait.LOGICAL]: 'sad',
+      [ThringletPersonalityTrait.CHAOTIC + "-" + ThringletPersonalityTrait.CAUTIOUS]: 'neutral'
     };
     
     const key = oldTrait + "-" + newTrait;
@@ -425,11 +425,11 @@ export class PersonalityService {
     ];
     
     if (positiveTraits.includes(newTrait)) {
-      return ThringletEmotionState.HAPPY;
+      return 'happy';
     } else if (negativeTraits.includes(newTrait)) {
-      return ThringletEmotionState.NEUTRAL;
+      return 'neutral';
     } else {
-      return ThringletEmotionState.EXCITED;
+      return 'excited';
     }
   }
 }

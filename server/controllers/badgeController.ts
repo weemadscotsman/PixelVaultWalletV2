@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { badgeStorage } from '../storage/badge-storage';
-import { BadgeType, TransactionType } from '@shared/types';
+import { BadgeType, TransactionType } from '../types';
 
 // Get all badges (visible ones only)
 export const getAllBadges = async (req: Request, res: Response) => {

@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
-import { TransactionType, StakeRecord } from '@shared/types';
+import { StakeRecord } from '../types';
 import { checkStakingBadges } from '../controllers/badgeController';
 import { broadcastTransaction } from '../utils/websocket';
 
@@ -47,9 +47,10 @@ export const startStaking = async (req: Request, res: Response) => {
     }
     
     // Check minimum stake
-    if (BigInt(amount) < BigInt(pool.minStake)) {
+    const minRequiredStake = pool.minStake || '10000'; // Default minimum if not specified
+    if (BigInt(amount) < BigInt(minRequiredStake)) {
       return res.status(400).json({ 
-        error: `Minimum stake for this pool is ${pool.minStake} μPVX` 
+        error: `Minimum stake for this pool is ${minRequiredStake} μPVX` 
       });
     }
     
@@ -87,7 +88,7 @@ export const startStaking = async (req: Request, res: Response) => {
     
     const transaction = {
       hash: txHash,
-      type: TransactionType.STAKE,
+      type: 'STAKE_START',
       from: address,
       to: `STAKE_POOL_${poolId}`,
       amount,
@@ -211,7 +212,7 @@ export const stopStaking = async (req: Request, res: Response) => {
     
     const transaction = {
       hash: txHash,
-      type: TransactionType.UNSTAKE,
+      type: 'STAKE_END',
       from: `STAKE_POOL_${stake.poolId}`,
       to: address,
       amount: stake.amount,
@@ -234,7 +235,7 @@ export const stopStaking = async (req: Request, res: Response) => {
       
       const rewardTransaction = {
         hash: rewardTxHash,
-        type: TransactionType.REWARD,
+        type: 'STAKING_REWARD',
         from: `STAKE_POOL_${stake.poolId}`,
         to: address,
         amount: reward.toString(),
@@ -341,7 +342,7 @@ export const claimRewards = async (req: Request, res: Response) => {
     
     const transaction = {
       hash: txHash,
-      type: TransactionType.REWARD,
+      type: 'STAKING_REWARD',
       from: `STAKE_POOL_${stake.poolId}`,
       to: address,
       amount: reward.toString(),

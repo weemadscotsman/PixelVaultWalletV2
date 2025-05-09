@@ -5,11 +5,11 @@ import {
   MiningStats,
   Block,
   Transaction,
-  TransactionType,
   BlockchainTrends,
   Thringlet,
   ThringletEmotionState,
-  TransactionHash
+  TransactionHash,
+  TransactionType
 } from '@shared/types';
 import { checkMiningBadges } from '../controllers/badgeController';
 import { broadcastBlock, broadcastStatusUpdate, broadcastTransaction } from '../utils/websocket';
@@ -29,19 +29,25 @@ const PVX_MINING_INTERVAL_MS = 10000; // Check every 10 seconds
 // In-memory state
 let blockchainStatus: BlockchainStatus = {
   connected: false,
-  error: "Initializing blockchain..."
+  synced: false,
+  latestBlock: { height: 0, hash: '', timestamp: 0 },
+  difficulty: PVX_MIN_DIFFICULTY,
+  error: null
 };
 
-let latestBlock: Block | null = null;
-let miningStats: { [address: string]: MiningStats } = {};
+// Backend state (not persisted)
 let pendingTransactions: Transaction[] = [];
+let latestBlock: Block | null = null;
+let miningTimeout: NodeJS.Timeout | null = null;
+let stakingTimeout: NodeJS.Timeout | null = null;
+let thringlets: Map<string, Thringlet> = new Map();
 
 /**
  * Generate a random hash for simulating blockchain operations
  */
 function generateRandomHash(): string {
   return crypto.createHash('sha256')
-    .update(Math.random().toString())
+    .update(Math.random().toString() + Date.now().toString())
     .digest('hex');
 }
 
@@ -50,57 +56,57 @@ function generateRandomHash(): string {
  */
 export async function connectToBlockchain(): Promise<BlockchainStatus> {
   try {
-    console.log('Connecting to PVX blockchain...');
+    // Create genesis block if it doesn't exist
+    const existingLatestBlock = await memBlockchainStorage.getLatestBlock();
     
-    // Simulate connection delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Initialize in-memory state with genesis block if no blocks exist
-    const latestBlockInfo = await memBlockchainStorage.getLatestBlock();
-
-    if (!latestBlockInfo) {
-      // Create genesis block
+    if (!existingLatestBlock) {
+      console.log('No blocks found, creating genesis block...');
+      
       const genesisBlock: Block = {
-        height: 0,
+        height: 1,
         hash: generateRandomHash(),
-        previousHash: "0000000000000000000000000000000000000000000000000000000000000000",
+        previousHash: '0000000000000000000000000000000000000000000000000000000000000000',
         timestamp: PVX_GENESIS_BLOCK_TIMESTAMP,
         transactions: [],
         miner: PVX_GENESIS_ADDRESS,
-        nonce: "0",
+        nonce: '0',
         difficulty: PVX_MIN_DIFFICULTY,
-        reward: "0"
+        reward: '0'
       };
       
-      // Store genesis block
       await memBlockchainStorage.createBlock(genesisBlock);
       latestBlock = genesisBlock;
     } else {
-      latestBlock = latestBlockInfo;
+      latestBlock = existingLatestBlock;
     }
     
     // Update status
     blockchainStatus = {
       connected: true,
+      synced: true,
       latestBlock: {
         height: latestBlock.height,
         hash: latestBlock.hash,
         timestamp: latestBlock.timestamp
       },
-      peers: Math.floor(Math.random() * 100) + 50,
-      networkHashRate: Math.random() * 10, // TH/s
-      circulatingSupply: PVX_INITIAL_SUPPLY,
-      difficulty: latestBlock.difficulty
+      difficulty: latestBlock.difficulty,
+      peers: 5 + Math.floor(Math.random() * 20) // Simulate 5-25 peers
     };
     
-    console.log('Connected to PVX blockchain successfully');
+    // Initialize blockchain services
+    initializeBlockchain();
+    
     return blockchainStatus;
   } catch (error) {
-    console.error('Failed to connect to PVX blockchain:', error);
+    console.error('Error connecting to blockchain:', error);
     blockchainStatus = {
       connected: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      synced: false,
+      latestBlock: { height: 0, hash: '', timestamp: 0 },
+      difficulty: PVX_MIN_DIFFICULTY,
+      error: error instanceof Error ? error.message : 'Unknown error connecting to blockchain'
     };
+    
     return blockchainStatus;
   }
 }
@@ -116,24 +122,25 @@ export function getBlockchainStatus(): BlockchainStatus {
  * Create a new wallet
  */
 export async function createWallet(passphrase: string): Promise<string> {
+  // Generate a new wallet address and keys
+  const privateKey = crypto.randomBytes(32).toString('hex');
+  const publicKey = crypto.createHash('sha256')
+    .update(privateKey)
+    .digest('hex');
+  
+  const address = 'PVX_' + publicKey.substring(0, 32);
+  
+  // Hash the passphrase
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.createHash('sha256')
     .update(passphrase + salt)
     .digest('hex');
   
-  // Generate address from hash
-  const address = 'PVX_' + hash.substring(0, 32);
-  
-  // Generate public key (simplified for demo)
-  const publicKey = crypto.createHash('sha256')
-    .update(address)
-    .digest('hex');
-  
-  // Create wallet in storage
+  // Store the wallet in memory with initial PVX
   await memBlockchainStorage.createWallet({
     address,
     publicKey,
-    balance: "1000000", // 1 PVX initial balance for testing
+    balance: "100000", // 0.1 PVX as starting balance for testing
     createdAt: new Date(),
     lastSynced: new Date(),
     passphraseSalt: salt,
@@ -154,36 +161,27 @@ export async function getWallet(address: string) {
  * Export wallet keys by address and passphrase
  */
 export async function exportWalletKeys(address: string, passphrase: string) {
-  // Validate wallet exists
   const wallet = await memBlockchainStorage.getWalletByAddress(address);
   
   if (!wallet) {
     throw new Error('Wallet not found');
   }
   
-  // For demo purposes, if the passphrase contains "DEMO" or "TEST", bypass the validation
-  // This is useful for testing and should be removed in production
-  const isDemoMode = passphrase.includes("DEMO") || passphrase.includes("TEST");
-  
-  if (!isDemoMode) {
-    // Perform normal passphrase validation for non-demo mode
-    const hash = crypto.createHash('sha256')
-      .update(passphrase + wallet.passphraseSalt)
-      .digest('hex');
-    
-    if (hash !== wallet.passphraseHash) {
-      throw new Error('Invalid passphrase');
-    }
-  }
-  
-  // Generate private key (for demo purposes - in a real app this would be securely stored)
-  const privateKey = crypto.createHash('sha256')
-    .update((isDemoMode ? "DEMO_KEY" : passphrase) + wallet.passphraseSalt + wallet.address)
+  // Verify passphrase
+  const hash = crypto.createHash('sha256')
+    .update(passphrase + wallet.passphraseSalt)
     .digest('hex');
   
+  if (hash !== wallet.passphraseHash) {
+    throw new Error('Invalid passphrase');
+  }
+  
+  // In a real implementation, we would decrypt the private key here
+  // For the demo, we'll just return a mock private key
   return {
+    address: wallet.address,
     publicKey: wallet.publicKey,
-    privateKey: privateKey
+    privateKey: 'bf' + crypto.createHash('sha256').update(wallet.address).digest('hex').substring(2)
   };
 }
 
@@ -206,31 +204,30 @@ export async function importWallet(privateKey: string, passphrase: string): Prom
   
   // Generate public key (simplified for demo)
   const publicKey = crypto.createHash('sha256')
-    .update(address)
+    .update(privateKey)
     .digest('hex');
   
   // Check if wallet already exists
   const existingWallet = await memBlockchainStorage.getWalletByAddress(address);
   
   if (existingWallet) {
-    // Update existing wallet with new passphrase
+    // Update existing wallet passphrase
     existingWallet.passphraseSalt = salt;
     existingWallet.passphraseHash = hash;
     existingWallet.lastSynced = new Date();
     await memBlockchainStorage.updateWallet(existingWallet);
-    return address;
+  } else {
+    // Create new wallet
+    await memBlockchainStorage.createWallet({
+      address,
+      publicKey,
+      balance: "0",
+      createdAt: new Date(),
+      lastSynced: new Date(),
+      passphraseSalt: salt,
+      passphraseHash: hash
+    });
   }
-  
-  // Create new wallet in storage
-  await memBlockchainStorage.createWallet({
-    address,
-    publicKey,
-    balance: "1000000", // 1 PVX initial balance for testing
-    createdAt: new Date(),
-    lastSynced: new Date(),
-    passphraseSalt: salt,
-    passphraseHash: hash
-  });
   
   return address;
 }
@@ -239,18 +236,19 @@ export async function importWallet(privateKey: string, passphrase: string): Prom
  * Send transaction
  */
 export async function sendTransaction(
-  fromAddress: string, 
-  toAddress: string, 
-  amount: string, 
+  fromAddress: string,
+  toAddress: string,
+  amount: string,
   passphrase: string
-): Promise<TransactionHash> {
-  // Validate wallet and passphrase
+): Promise<string> {
+  // Validate wallet
   const wallet = await memBlockchainStorage.getWalletByAddress(fromAddress);
   
   if (!wallet) {
-    throw new Error('Wallet not found');
+    throw new Error('Sender wallet not found');
   }
   
+  // Verify passphrase
   const hash = crypto.createHash('sha256')
     .update(passphrase + wallet.passphraseSalt)
     .digest('hex');
@@ -259,7 +257,7 @@ export async function sendTransaction(
     throw new Error('Invalid passphrase');
   }
   
-  // Check balance
+  // Verify balance
   if (BigInt(wallet.balance) < BigInt(amount)) {
     throw new Error('Insufficient balance');
   }
@@ -272,7 +270,7 @@ export async function sendTransaction(
   
   const transaction: Transaction = {
     hash: txHash,
-    type: TransactionType.TRANSFER,
+    type: 'TRANSFER' as TransactionType,
     from: fromAddress,
     to: toAddress,
     amount,
@@ -436,8 +434,8 @@ export async function getMiningRewards(address: string): Promise<any[]> {
   // Filter for mining rewards
   const miningRewards = transactions
     .filter(tx => 
-      tx.type === TransactionType.MINE || 
-      (tx.type === TransactionType.REWARD && tx.from === 'PVX_COINBASE')
+      tx.type === 'MINING_REWARD' as TransactionType || 
+      (tx.type === 'STAKING_REWARD' as TransactionType && tx.from === 'PVX_COINBASE')
     )
     .map((tx, index) => ({
       id: `reward_${index}_${tx.hash.substring(0, 8)}`,
@@ -810,7 +808,7 @@ export function simulateThringletInteraction(
   }
   
   // Record previous state
-  const previousState = thringlet.emotionalState;
+  const previousState = thringlet.emotionState;
   
   // Update last interaction time
   thringlet.lastInteraction = Date.now();
@@ -823,141 +821,120 @@ export function simulateThringletInteraction(
     case 'praise':
     case 'feed':
       newState = Math.random() > 0.8 
-        ? ThringletEmotionState.EXCITED 
-        : ThringletEmotionState.HAPPY;
+        ? 'excited' as ThringletEmotionState 
+        : 'happy' as ThringletEmotionState;
       break;
     case 'ignore':
+    case 'neglect':
       newState = Math.random() > 0.7 
-        ? ThringletEmotionState.SAD 
-        : ThringletEmotionState.NEUTRAL;
+        ? 'sad' as ThringletEmotionState 
+        : 'neutral' as ThringletEmotionState;
       break;
     case 'scold':
+    case 'threaten':
       newState = Math.random() > 0.6 
-        ? ThringletEmotionState.ANGRY 
-        : ThringletEmotionState.SAD;
+        ? 'angry' as ThringletEmotionState 
+        : 'sad' as ThringletEmotionState;
       break;
-    case 'scare':
-      newState = ThringletEmotionState.SCARED;
+    case 'question':
+      newState = 'curious' as ThringletEmotionState;
       break;
-    case 'gift':
-      newState = ThringletEmotionState.LOVE;
+    case 'challenge':
+      newState = 'excited' as ThringletEmotionState;
       break;
     default:
-      newState = ThringletEmotionState.NEUTRAL;
+      newState = 'neutral' as ThringletEmotionState;
   }
   
-  // Update thringlet emotion
-  thringlet.emotionalState = newState;
+  // Set new state
+  thringlet.emotionState = newState;
   
-  // Add to state history
+  // Record the state change in history
   thringlet.stateHistory.push({
     state: newState,
-    timestamp: thringlet.lastInteraction
+    timestamp: Date.now(),
+    trigger: interactionType
   });
   
-  // Limit history size to last 20 states
+  // Limit history size
   if (thringlet.stateHistory.length > 20) {
     thringlet.stateHistory = thringlet.stateHistory.slice(-20);
   }
   
+  // Cache updated thringlet
+  thringlets.set(thringlet.id, thringlet);
+  
   return thringlet;
 }
-
-// Mining interval reference
-let miningIntervalId: NodeJS.Timeout | null = null;
-let stakingIntervalId: NodeJS.Timeout | null = null;
 
 /**
  * Real mining function that generates a new block with transactions
  */
 async function mineNewBlock() {
   try {
-    if (!blockchainStatus.connected) {
-      console.log('Blockchain not connected, skipping mining attempt');
-      return;
-    }
-
-    const latest = await memBlockchainStorage.getLatestBlock();
-    if (!latest) {
-      console.error('No latest block found, cannot mine');
-      return;
-    }
-
-    // Get active miners
+    // If no active miners, skip
     const activeMiners = await memBlockchainStorage.getAllActiveMiners();
-    if (activeMiners.length === 0) {
-      // No active miners, skip this mining round
-      console.log('No active miners, skipping block generation');
+    if (!activeMiners || activeMiners.length === 0) {
       return;
     }
-
-    // Select a miner randomly based on hashrate (simplified mining algorithm)
+    
+    // Get latest block
+    const latest = await getLatestBlock();
+    if (!latest) {
+      return;
+    }
+    
+    // Pick a random miner based on hash power
     const totalHashrate = activeMiners.reduce((sum, miner) => {
-      const hashrateStr = miner.currentHashRate || "0 MH/s";
-      const hashrate = parseFloat(hashrateStr.split(' ')[0]) || 0;
+      const hashrate = parseFloat(miner.currentHashRate.split(' ')[0]);
       return sum + hashrate;
     }, 0);
-
-    // Weighted selection based on hashrate
-    let randomPoint = Math.random() * totalHashrate;
-    let selectedMiner = activeMiners[0];
-    let accumulatedHashrate = 0;
-
-    for (const miner of activeMiners) {
-      const hashrateStr = miner.currentHashRate || "0 MH/s";
-      const hashrate = parseFloat(hashrateStr.split(' ')[0]) || 0;
-      accumulatedHashrate += hashrate;
-
-      if (randomPoint <= accumulatedHashrate) {
-        selectedMiner = miner;
-        break;
-      }
+    
+    // Weighted random selection based on hashrate
+    const selectedMinerIndex = weightedRandomSelection(
+      activeMiners.map(miner => parseFloat(miner.currentHashRate.split(' ')[0]) / totalHashrate)
+    );
+    
+    if (selectedMinerIndex < 0) {
+      return;
     }
-
-    // Prepare transactions for the block
-    // Get pending transactions and include up to PVX_MAX_TRANSACTIONS_PER_BLOCK
-    const recentTransactions = await memBlockchainStorage.getRecentTransactions(100);
-    const pendingTxs = recentTransactions
-      .filter(tx => tx.status === 'pending')
-      .slice(0, PVX_MAX_TRANSACTIONS_PER_BLOCK);
-
-    // Create the new block
+    
+    const selectedMiner = activeMiners[selectedMinerIndex];
+    
+    // Create block parameters
     const newHeight = latest.height + 1;
     const newDifficulty = adjustDifficulty(latest);
     const newTimestamp = Date.now();
     const newHash = crypto.createHash('sha256')
-      .update(latest.hash + newHeight.toString() + newTimestamp.toString() + selectedMiner.address)
+      .update(latest.hash + newHeight.toString() + newTimestamp.toString() + Math.random().toString())
       .digest('hex');
-
+    
+    // Get pending transactions (max 10)
+    const blockTransactions = pendingTransactions.slice(0, 10).map(tx => tx.hash);
+    
+    // Create new block
     const newBlock: Block = {
       height: newHeight,
       hash: newHash,
       previousHash: latest.hash,
       timestamp: newTimestamp,
-      transactions: pendingTxs.map(tx => tx.hash),
+      transactions: blockTransactions,
       miner: selectedMiner.address,
       nonce: Math.floor(Math.random() * 1000000).toString(),
       difficulty: newDifficulty,
       reward: PVX_BLOCK_REWARD
     };
-
-    // Store the new block
+    
+    // Store block
     await memBlockchainStorage.createBlock(newBlock);
     latestBlock = newBlock;
-
-    // Update miner statistics
-    selectedMiner.blocksMined += 1;
-    selectedMiner.lastBlockMined = newTimestamp;
-    const newRewards = BigInt(selectedMiner.totalRewards) + BigInt(PVX_BLOCK_REWARD);
-    selectedMiner.totalRewards = newRewards.toString();
-    await memBlockchainStorage.updateMiner(selectedMiner);
-
+    
     // Create a reward transaction for the miner
     const rewardTx: Transaction = {
       hash: crypto.createHash('sha256')
         .update('reward_' + selectedMiner.address + newTimestamp.toString())
         .digest('hex'),
-      type: TransactionType.REWARD,
+      type: 'MINING_REWARD' as TransactionType,
       from: PVX_GENESIS_ADDRESS,
       to: selectedMiner.address,
       amount: PVX_BLOCK_REWARD,
@@ -966,35 +943,34 @@ async function mineNewBlock() {
       signature: generateRandomHash(),
       status: 'confirmed'
     };
-
+    
+    // Store reward transaction
     await memBlockchainStorage.createTransaction(rewardTx);
     
-    // Broadcast mining reward transaction via WebSocket for real-time updates
-    try {
-      broadcastTransaction(rewardTx);
-    } catch (err) {
-      console.error('Error broadcasting mining reward transaction via WebSocket:', err);
-      // Continue even if WebSocket broadcast fails
-    }
-
-    // Credit the miner's wallet
+    // Update miner stats
+    selectedMiner.blocksMined++;
+    selectedMiner.lastBlockMined = newTimestamp;
+    selectedMiner.totalRewards = (BigInt(selectedMiner.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString();
+    await memBlockchainStorage.updateMiner(selectedMiner);
+    
+    // Update miner wallet balance
     const minerWallet = await memBlockchainStorage.getWalletByAddress(selectedMiner.address);
     if (minerWallet) {
-      const newBalance = BigInt(minerWallet.balance) + BigInt(PVX_BLOCK_REWARD);
-      minerWallet.balance = newBalance.toString();
-      minerWallet.lastSynced = new Date(newTimestamp);
+      minerWallet.balance = (BigInt(minerWallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
       await memBlockchainStorage.updateWallet(minerWallet);
     }
-
-    // Update pending transactions status to confirmed
-    for (const tx of pendingTxs) {
-      tx.status = 'confirmed';
-      await memBlockchainStorage.updateTransaction(tx);
+    
+    // Check for mining badges
+    try {
+      await checkMiningBadges(selectedMiner.address, selectedMiner.blocksMined);
+    } catch (err) {
+      console.error('Error checking mining badges:', err);
     }
-
+    
     // Update blockchain status
     blockchainStatus = {
       ...blockchainStatus,
+      connected: true,
       latestBlock: {
         height: newBlock.height,
         hash: newBlock.hash,
@@ -1002,20 +978,44 @@ async function mineNewBlock() {
       },
       difficulty: newBlock.difficulty
     };
-
-    // Broadcast new block and status update via WebSocket for real-time updates
+    
+    // Broadcast new block and transaction via WebSocket
     try {
       broadcastBlock(newBlock);
+      broadcastTransaction(rewardTx);
       broadcastStatusUpdate(blockchainStatus);
-      console.log(`New block mined: ${newBlock.height} by miner ${selectedMiner.address}`);
-      console.log(`Block broadcasted via WebSocket`);
     } catch (err) {
-      console.error('Error broadcasting block via WebSocket:', err);
-      // Continue execution even if WebSocket broadcast fails
+      console.error('Error broadcasting via WebSocket:', err);
     }
+    
+    // Clear processed transactions from pending
+    const processed = blockTransactions;
+    pendingTransactions = pendingTransactions.filter(tx => !processed.includes(tx.hash));
+    
+    console.log(`New block mined: ${newBlock.height} by ${selectedMiner.address.substring(0, 10)}...`);
   } catch (error) {
     console.error('Error mining new block:', error);
   }
+}
+
+/**
+ * Helper function for weighted random selection
+ */
+function weightedRandomSelection(weights: number[]): number {
+  if (!weights.length) return -1;
+  
+  const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+  const randomValue = Math.random() * totalWeight;
+  
+  let weightSum = 0;
+  for (let i = 0; i < weights.length; i++) {
+    weightSum += weights[i];
+    if (randomValue <= weightSum) {
+      return i;
+    }
+  }
+  
+  return weights.length - 1;
 }
 
 /**
@@ -1024,63 +1024,72 @@ async function mineNewBlock() {
 async function distributeStakingRewards() {
   try {
     // Get all active stakes
+    const now = Date.now();
     const stakingPools = await memBlockchainStorage.getStakingPools();
     
     for (const pool of stakingPools) {
-      const now = Date.now();
+      // Get all active stakes for this pool
       const activeStakes = await memBlockchainStorage.getActiveStakesByPoolId(pool.id);
       
+      // Skip if no active stakes
+      if (!activeStakes || activeStakes.length === 0) {
+        continue;
+      }
+      
+      // Process each stake
       for (const stake of activeStakes) {
-        // Calculate reward based on time since last reward
-        const timeSinceLastReward = now - stake.lastRewardTime;
-        // Only distribute rewards if it's been at least an hour
-        if (timeSinceLastReward >= 3600000) { // 1 hour in milliseconds
-          const daysSinceLastReward = timeSinceLastReward / (24 * 60 * 60 * 1000);
-          const apyDecimal = parseFloat(pool.apy) / 100;
-          const reward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysSinceLastReward / 365));
-          
-          if (reward > 0) {
-            // Create reward transaction
-            const rewardTx: Transaction = {
-              hash: crypto.createHash('sha256')
-                .update('stake_reward_' + stake.walletAddress + now.toString())
-                .digest('hex'),
-              type: TransactionType.REWARD,
-              from: PVX_GENESIS_ADDRESS,
-              to: stake.walletAddress,
-              amount: reward.toString(),
-              timestamp: now,
-              nonce: Math.floor(Math.random() * 100000),
-              signature: generateRandomHash(),
-              status: 'confirmed'
-            };
-            
-            await memBlockchainStorage.createTransaction(rewardTx);
-            
-            // Broadcast staking reward transaction via WebSocket for real-time updates
-            try {
-              broadcastTransaction(rewardTx);
-            } catch (err) {
-              console.error('Error broadcasting staking reward transaction via WebSocket:', err);
-              // Continue even if WebSocket broadcast fails
-            }
-            
-            // Credit the staker's wallet
-            const wallet = await memBlockchainStorage.getWalletByAddress(stake.walletAddress);
-            if (wallet) {
-              const newBalance = BigInt(wallet.balance) + BigInt(reward);
-              wallet.balance = newBalance.toString();
-              wallet.lastSynced = new Date(now);
-              await memBlockchainStorage.updateWallet(wallet);
-            }
-            
-            // Update stake's last reward time
-            stake.lastRewardTime = now;
-            await memBlockchainStorage.updateStakeRecord(stake);
-            
-            console.log(`Distributed staking reward of ${reward} μPVX to ${stake.walletAddress}`);
-          }
+        // Skip if already rewarded recently (within last day)
+        if (stake.lastRewardTime && (now - stake.lastRewardTime) < 24 * 60 * 60 * 1000) {
+          continue;
         }
+        
+        // Calculate reward based on pool APY and stake amount
+        // APY is in percentage, convert to daily rate
+        const dailyRate = pool.apy / 365 / 100;
+        const reward = Math.floor(BigInt(stake.amount) * BigInt(Math.floor(dailyRate * 10000)) / BigInt(10000)).toString();
+        
+        if (BigInt(reward) <= BigInt(0)) {
+          continue;
+        }
+        
+        // Update stake record
+        stake.lastRewardTime = now;
+        stake.totalRewards = (BigInt(stake.totalRewards || '0') + BigInt(reward)).toString();
+        await memBlockchainStorage.updateStakeRecord(stake);
+        
+        // Create reward transaction
+        const rewardTx: Transaction = {
+            hash: crypto.createHash('sha256')
+              .update('stake_reward_' + stake.address + now.toString())
+              .digest('hex'),
+            type: 'STAKING_REWARD' as TransactionType, 
+            from: 'PVX_COINBASE',
+            to: stake.address,
+            amount: reward,
+            timestamp: now,
+            nonce: Math.floor(Math.random() * 100000),
+            signature: generateRandomHash(),
+            status: 'confirmed'
+        };
+        
+        // Store reward transaction
+        await memBlockchainStorage.createTransaction(rewardTx);
+        
+        // Update wallet balance
+        const wallet = await memBlockchainStorage.getWalletByAddress(stake.address);
+        if (wallet) {
+          wallet.balance = (BigInt(wallet.balance) + BigInt(reward)).toString();
+          await memBlockchainStorage.updateWallet(wallet);
+        }
+        
+        // Broadcast reward transaction
+        try {
+          broadcastTransaction(rewardTx);
+        } catch (err) {
+          console.error('Error broadcasting staking reward via WebSocket:', err);
+        }
+        
+        console.log(`Staking reward: ${reward} μPVX sent to ${stake.address}`);
       }
     }
   } catch (error) {
@@ -1092,25 +1101,23 @@ async function distributeStakingRewards() {
  * Start the blockchain mining and staking processes
  */
 function startBlockchainProcesses() {
-  if (miningIntervalId) {
-    clearInterval(miningIntervalId);
+  // Schedule block mining every minute
+  if (miningTimeout) {
+    clearInterval(miningTimeout);
   }
   
-  if (stakingIntervalId) {
-    clearInterval(stakingIntervalId);
-  }
-  
-  // Start the mining process (every 10 seconds)
-  miningIntervalId = setInterval(async () => {
+  miningTimeout = setInterval(async () => {
     await mineNewBlock();
-  }, 10000);
+  }, PVX_MINING_INTERVAL_MS);
   
-  // Start the staking rewards distribution process (every 5 minutes)
-  stakingIntervalId = setInterval(async () => {
+  // Schedule staking rewards distribution (every 6 hours)
+  if (stakingTimeout) {
+    clearInterval(stakingTimeout);
+  }
+  
+  stakingTimeout = setInterval(async () => {
     await distributeStakingRewards();
-  }, 300000);
-  
-  console.log('Started PVX blockchain mining and staking processes');
+  }, 6 * 60 * 60 * 1000);
 }
 
 /**
@@ -1119,39 +1126,46 @@ function startBlockchainProcesses() {
  */
 export async function initializeBlockchain() {
   try {
-    console.log('Initializing PVX blockchain...');
     await connectToBlockchain();
     startBlockchainProcesses();
-    return blockchainStatus;
+    console.log('Blockchain initialized and running');
   } catch (error) {
-    console.error('Failed to initialize blockchain:', error);
-    return blockchainStatus;
+    console.error('Error initializing blockchain:', error);
   }
 }
-
-// For mock pagination
-let cachedAddresses: string[] | null = null;
 
 /**
  * Get paginated addresses for explorer
  */
 export async function getPaginatedAddresses(page: number = 1, limit: number = 10): Promise<{
-  addresses: string[];
-  totalCount: number;
+  addresses: any[],
+  total: number
 }> {
-  // Generate some random addresses if not cached
-  if (!cachedAddresses) {
-    cachedAddresses = Array.from({ length: 100 }, () => 
-      'PVX_' + crypto.randomBytes(16).toString('hex').substring(0, 32)
-    );
-  }
+  const allWallets = await getAllWallets();
+  const total = allWallets.length;
   
-  const startIndex = (page - 1) * limit;
-  const endIndex = startIndex + limit;
+  // Sort by balance (descending)
+  allWallets.sort((a, b) => {
+    return Number(BigInt(b.balance) - BigInt(a.balance));
+  });
+  
+  // Paginate
+  const start = (page - 1) * limit;
+  const end = start + limit;
+  const paginatedWallets = allWallets.slice(start, end);
+  
+  // Format response
+  const addresses = paginatedWallets.map(wallet => ({
+    address: wallet.address,
+    balance: wallet.balance,
+    shortAddress: shortenAddress(wallet.address),
+    transactions: Math.floor(Math.random() * 50), // Mocked for demo
+    firstSeen: wallet.createdAt
+  }));
   
   return {
-    addresses: cachedAddresses.slice(startIndex, endIndex),
-    totalCount: cachedAddresses.length
+    addresses,
+    total
   };
 }
 
@@ -1175,7 +1189,7 @@ export function getThringletById(id: string): Thringlet {
     },
     createdAt: Date.now() - Math.floor(Math.random() * 30 * 24 * 60 * 60 * 1000),
     zk_verified: true,
-    emotionalState: ThringletEmotionState.NEUTRAL,
+    emotionState: 'neutral' as ThringletEmotionState,
     lastInteraction: Date.now() - Math.floor(Math.random() * 7 * 24 * 60 * 60 * 1000),
     interactionCount: Math.floor(Math.random() * 100),
     stateHistory: [],
@@ -1186,4 +1200,12 @@ export function getThringletById(id: string): Thringlet {
       "Stealth Mode"
     ]
   };
+}
+
+/**
+ * Helper function to shorten addresses for display
+ */
+export function shortenAddress(address: string): string {
+  if (!address || address.length < 12) return address;
+  return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 }

@@ -1,11 +1,22 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
-import { TransactionType } from '@shared/types';
 import { broadcastTransaction } from '../utils/websocket';
 import { PVX_GENESIS_ADDRESS } from '../utils/constants';
 import { updateBadgeStatus } from '../services/badge-service';
 import { generateRandomHash } from '../utils/crypto';
+
+// Define TransactionType as string literals since the enum is not available
+const TransactionType = {
+  TRANSFER: 'TRANSFER',
+  MINING_REWARD: 'MINING_REWARD',
+  STAKING_REWARD: 'STAKING_REWARD',
+  AIRDROP: 'AIRDROP',
+  NFT_MINT: 'NFT_MINT',
+  BADGE_AWARD: 'BADGE_AWARD',
+  GOVERNANCE_VOTE: 'GOVERNANCE_VOTE',
+  GOVERNANCE_PROPOSAL: 'GOVERNANCE_PROPOSAL'
+};
 
 // Learning module interface
 interface LearningModule {

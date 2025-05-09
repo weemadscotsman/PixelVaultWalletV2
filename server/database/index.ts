@@ -1,66 +1,48 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
-import { migrate } from 'drizzle-orm/postgres-js/migrator';
 import postgres from 'postgres';
-import * as schema from './schema';
+import * as schema from '@shared/schema';
+import { WebSocket } from 'ws';
 
-// Check for DATABASE_URL environment variable
+// Configure neon to use websockets for serverless mode
+import { neonConfig, Pool } from '@neondatabase/serverless';
+neonConfig.webSocketConstructor = WebSocket;
+
 if (!process.env.DATABASE_URL) {
-  console.warn('DATABASE_URL environment variable not set. Using in-memory storage as fallback.');
+  throw new Error('DATABASE_URL environment variable not set');
 }
 
-// Create client instance
-const connectionString = process.env.DATABASE_URL ?? 'postgresql://postgres:postgres@localhost:5432/pvx';
-const client = postgres(connectionString, { max: 10 });
+// Create postgres client
+const queryClient = postgres(process.env.DATABASE_URL);
 
-// Create drizzle instance with the client
-export const db = drizzle(client, { schema });
+// Create drizzle ORM instance
+export const db = drizzle(queryClient, { schema });
 
-/**
- * Initialize database with required tables and migrations
- */
-export async function initDatabase(): Promise<void> {
-  try {
-    // Create tables if they don't exist (development only)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Running database migrations...');
-      // This approach is for development only - production should use proper migrations
-      await migrate(db, { migrationsFolder: './drizzle' });
-      console.log('Database migrations completed successfully');
-    }
-    
-    console.log('Database initialized successfully');
-  } catch (error) {
-    console.error('Error initializing database:', error);
-    throw new Error('Failed to initialize database');
-  }
-}
+// Export pool for connection management
+export const pool = new Pool({ 
+  connectionString: process.env.DATABASE_URL
+});
 
-/**
- * Check if database is accessible
- * @returns True if database is accessible, false otherwise
- */
+// Export direct query client for raw SQL
+export { queryClient };
+
+// Function to check database connection
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
-    // Simple query to check if database is accessible
-    const result = await client`SELECT 1 as connected`;
-    return result[0]?.connected === 1;
+    await pool.query('SELECT 1');
+    return true;
   } catch (error) {
     console.error('Database connection check failed:', error);
     return false;
   }
 }
 
-/**
- * Close database connection
- */
+// Function to close database connections
 export async function closeDatabase(): Promise<void> {
   try {
-    await client.end();
-    console.log('Database connection closed');
+    await pool.end();
+    await queryClient.end();
+    console.log('Database connections closed');
   } catch (error) {
-    console.error('Error closing database connection:', error);
+    console.error('Error closing database connections:', error);
   }
 }
-
-// Export client for direct use when needed
-export { client };

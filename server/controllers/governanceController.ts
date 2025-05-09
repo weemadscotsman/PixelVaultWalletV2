@@ -1,10 +1,21 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
-import { TransactionType } from '@shared/types';
 import { broadcastTransaction } from '../utils/websocket';
 import { PVX_GOVERNANCE_ADDRESS } from '../utils/constants';
 import { generateRandomHash } from '../utils/crypto';
+
+// Define TransactionType as string literals since the enum is not available
+const TransactionType = {
+  TRANSFER: 'TRANSFER',
+  MINING_REWARD: 'MINING_REWARD',
+  STAKING_REWARD: 'STAKING_REWARD',
+  AIRDROP: 'AIRDROP',
+  NFT_MINT: 'NFT_MINT',
+  BADGE_AWARD: 'BADGE_AWARD',
+  GOVERNANCE_VOTE: 'GOVERNANCE_VOTE',
+  GOVERNANCE_PROPOSAL: 'GOVERNANCE_PROPOSAL'
+};
 
 // Proposal status enum
 enum ProposalStatus {
@@ -249,7 +260,7 @@ export const createProposal = async (req: Request, res: Response): Promise<void>
     
     const transaction = {
       hash: txHash,
-      type: TransactionType.GOVERNANCE,
+      type: TransactionType.GOVERNANCE_PROPOSAL,
       from: proposerAddress,
       to: PVX_GOVERNANCE_ADDRESS,
       amount: 0, // No tokens transferred for proposal creation
@@ -379,7 +390,7 @@ export const voteOnProposal = async (req: Request, res: Response): Promise<void>
     
     const transaction = {
       hash: txHash,
-      type: TransactionType.GOVERNANCE,
+      type: TransactionType.GOVERNANCE_VOTE,
       from: voterAddress,
       to: PVX_GOVERNANCE_ADDRESS,
       amount: 0, // No tokens transferred for voting

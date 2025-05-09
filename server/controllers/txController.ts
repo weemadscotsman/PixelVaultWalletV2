@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
-import { TransactionType, Transaction } from '@shared/types';
+import { TransactionType, Transaction } from '../types';
 import { checkTransactionBadges } from './badgeController';
 import { broadcastTransaction } from '../utils/websocket';
 
@@ -48,7 +48,7 @@ export const sendTransaction = async (req: Request, res: Response) => {
     
     const transaction: Transaction = {
       hash: txHash,
-      type: TransactionType.TRANSFER,
+      type: 'TRANSFER',
       from,
       to,
       amount,

@@ -1,8 +1,22 @@
 import { Router, Request, Response } from 'express';
 import { storage } from '../storage';
-import { insertUTRSchema } from '@shared/schema';
-import { ZodError } from 'zod';
+import { ZodError, z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
+
+// Define UTR schema inline since it's not available in shared schema
+const insertUTRSchema = z.object({
+  txId: z.string(),
+  type: z.string(),
+  timestamp: z.number().or(z.date()),
+  senderAddress: z.string(),
+  receiverAddress: z.string().optional(),
+  amount: z.number().optional(),
+  status: z.string(),
+  assetType: z.string().optional(),
+  assetId: z.string().optional(),
+  metadata: z.any().optional(),
+  verified: z.boolean().default(false)
+});
 
 const router = Router();
 

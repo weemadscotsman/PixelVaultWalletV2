@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { 
-  ThringletEmotionState, 
+  type ThringletEmotionState, 
   ThringletPersonalityTrait, 
   BlockchainAffinity 
 } from '@shared/types';
@@ -33,25 +33,25 @@ export const processInput = async (req: Request, res: Response) => {
     }
     
     // Process input (simplified emotion engine logic)
-    let newState = thringlet.emotionalState;
+    let newState = thringlet.emotionState;
     const inputLower = input.toLowerCase();
     
     if (inputLower.includes('happy') || inputLower.includes('joy') || inputLower.includes('excited')) {
-      newState = ThringletEmotionState.HAPPY;
+      newState = 'happy' as ThringletEmotionState;
     } else if (inputLower.includes('sad') || inputLower.includes('unhappy') || inputLower.includes('depressed')) {
-      newState = ThringletEmotionState.SAD;
+      newState = 'sad' as ThringletEmotionState;
     } else if (inputLower.includes('angry') || inputLower.includes('mad') || inputLower.includes('furious')) {
-      newState = ThringletEmotionState.ANGRY;
+      newState = 'angry' as ThringletEmotionState;
     } else if (inputLower.includes('tired') || inputLower.includes('sleepy') || inputLower.includes('exhausted')) {
-      newState = ThringletEmotionState.TIRED;
+      newState = 'neutral' as ThringletEmotionState; // No 'tired' in our type, using neutral instead
     } else if (inputLower.includes('hungry') || inputLower.includes('food') || inputLower.includes('eat')) {
-      newState = ThringletEmotionState.HUNGRY;
+      newState = 'neutral' as ThringletEmotionState; // No 'hungry' in our type, using neutral instead
     } else if (inputLower.includes('excited') || inputLower.includes('thrilled')) {
-      newState = ThringletEmotionState.EXCITED;
+      newState = 'excited' as ThringletEmotionState;
     } else {
       // Random state change with low probability
       if (Math.random() < 0.2) {
-        const states = Object.values(ThringletEmotionState);
+        const states: ThringletEmotionState[] = ['happy', 'sad', 'excited', 'neutral', 'angry', 'curious'];
         newState = states[Math.floor(Math.random() * states.length)];
       }
     }
@@ -59,7 +59,7 @@ export const processInput = async (req: Request, res: Response) => {
     // Update thringlet state
     const updatedThringlet = {
       ...thringlet,
-      emotionalState: newState,
+      emotionState: newState,
       lastInteraction: Date.now(),
       experience: thringlet.experience + 10,
     };
@@ -126,7 +126,7 @@ export const processInput = async (req: Request, res: Response) => {
     
     res.json({
       id: thringletId,
-      emotionalState: updatedThringlet.emotionalState,
+      emotionState: updatedThringlet.emotionState,
       level: updatedThringlet.level,
       experience: updatedThringlet.experience,
       lastInteraction: updatedThringlet.lastInteraction
@@ -159,22 +159,22 @@ export const getStatus = async (req: Request, res: Response) => {
     const hoursSinceLastInteraction = timeSinceLastInteraction / (60 * 60 * 1000);
     
     // Thringlet gets hungry or tired if not interacted with for a while
-    let currentState = thringlet.emotionalState;
+    let currentState = thringlet.emotionState;
     if (hoursSinceLastInteraction > 24) {
       if (Math.random() < 0.5) {
-        currentState = ThringletEmotionState.HUNGRY;
+        currentState = 'neutral' as ThringletEmotionState; // Using neutral instead of hungry
       } else {
-        currentState = ThringletEmotionState.TIRED;
+        currentState = 'sad' as ThringletEmotionState; // Using sad instead of tired
       }
       
       // Update thringlet state
-      await thringletStorage.updateThringlet(id, { ...thringlet, emotionalState: currentState });
+      await thringletStorage.updateThringlet(id, { ...thringlet, emotionState: currentState });
     }
     
     res.json({
       id: thringlet.id,
       name: thringlet.name,
-      emotionalState: currentState,
+      emotionState: currentState,
       level: thringlet.level,
       experience: thringlet.experience,
       abilities: thringlet.abilities,
@@ -272,7 +272,7 @@ export const createThringlet = async (req: Request, res: Response) => {
       owner: ownerAddress,
       createdAt: Date.now(),
       lastInteraction: Date.now(),
-      emotionalState: ThringletEmotionState.NEUTRAL,
+      emotionState: 'neutral' as ThringletEmotionState,
       level: 1,
       experience: 0,
       abilities: ['basic_movement'],
@@ -295,7 +295,7 @@ export const createThringlet = async (req: Request, res: Response) => {
         specialFeatures
       },
       stateHistory: [{
-        state: ThringletEmotionState.NEUTRAL,
+        state: 'neutral' as ThringletEmotionState,
         timestamp: Date.now(),
         trigger: 'creation'
       }]
@@ -318,7 +318,7 @@ export const createThringlet = async (req: Request, res: Response) => {
       id,
       name,
       owner: ownerAddress,
-      emotionalState: ThringletEmotionState.NEUTRAL,
+      emotionState: 'neutral' as ThringletEmotionState,
       visual: thringlet.visual
     });
   } catch (error) {
@@ -349,7 +349,7 @@ export const getAllThringlets = async (req: Request, res: Response) => {
       id: thringlet.id,
       name: thringlet.name,
       owner: thringlet.owner,
-      emotionalState: thringlet.emotionalState,
+      emotionState: thringlet.emotionState,
       level: thringlet.level,
       experience: thringlet.experience,
       lastInteraction: thringlet.lastInteraction,
@@ -438,7 +438,7 @@ export const updatePersonalityFromActivity = async (req: Request, res: Response)
       updated: true,
       changes: {
         dominantTrait: updates.dominantTrait !== thringlet.dominantTrait,
-        emotionalState: updates.emotionalState !== thringlet.emotionalState,
+        emotionState: updates.emotionState !== thringlet.emotionState,
         experience: updates.experience !== thringlet.experience
       }
     });

@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import * as cryptoUtils from '../utils/crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
-import { TransactionType } from '@shared/types';
 
 /**
  * Create a new wallet
@@ -178,7 +177,7 @@ export const getBalance = async (req: Request, res: Response) => {
     // Get reward transactions
     const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
     const rewardTxs = transactions.filter(tx => 
-      tx.type === TransactionType.REWARD && tx.to === address
+      tx.type === 'STAKING_REWARD' && tx.to === address
     );
     
     // Calculate claimed rewards
@@ -360,18 +359,19 @@ export const sendTransaction = async (req: Request, res: Response) => {
     }
     
     // Create transaction
-    const tx = {
+    const tx: any = {
       hash: crypto.randomBytes(32).toString('hex'),
       from,
       to,
-      amount,
-      fee: "0",
+      amount: Number(amount),
+      fee: 0,
       timestamp: Date.now(),
-      type: TransactionType.TRANSFER,
+      type: 'TRANSFER',
       status: 'pending',
-      note: note || '',
       blockHeight: 0,
-      confirmations: 0
+      nonce: 0,
+      signature: '',
+      metadata: { note: note || '' }
     };
     
     await memBlockchainStorage.createTransaction(tx);
@@ -385,7 +385,11 @@ export const sendTransaction = async (req: Request, res: Response) => {
     
     // Update transaction status to confirmed
     tx.status = 'confirmed';
-    tx.confirmations = 1;
+    if (tx.metadata) {
+      tx.metadata.confirmations = 1;
+    } else {
+      tx.metadata = { confirmations: 1 };
+    }
     await memBlockchainStorage.updateTransaction(tx);
     
     res.status(201).json({
@@ -451,7 +455,7 @@ export const getStakingInfo = async (req: Request, res: Response) => {
     // Get reward transactions
     const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
     const stakesTxs = transactions.filter(tx => 
-      [TransactionType.STAKE, TransactionType.UNSTAKE, TransactionType.REWARD].includes(tx.type) && 
+      ['STAKE', 'UNSTAKE', 'STAKING_REWARD'].includes(tx.type) && 
       (tx.to === address || tx.from === address)
     );
     
