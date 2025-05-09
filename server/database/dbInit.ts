@@ -443,10 +443,10 @@ export async function initializeDatabase() {
           title: 'Blockchain Basics',
           description: 'Learn the fundamental concepts of blockchain technology.',
           difficulty: 'beginner',
-          type: 'quiz',
-          xpReward: 100,
-          tokenReward: 50,
-          completionCriteria: { minScore: 70 }
+          rewardAmount: '100', // Using reward_amount column from schema.fixed.ts
+          content: 'Learn about the fundamental concepts of blockchain technology, including distributed ledgers, consensus mechanisms, and cryptographic principles.',
+          order: 1,
+          isActive: true
         }
       ]);
       
@@ -455,26 +455,32 @@ export async function initializeDatabase() {
         {
           id: createId(),
           moduleId: moduleId,
-          text: 'What is a blockchain?',
+          question: 'What is a blockchain?', // Using 'question' instead of 'text'
           options: ['A type of cryptocurrency', 'A distributed ledger technology', 'A programming language', 'A cloud storage solution'],
           correctOption: 1,
-          explanation: 'A blockchain is a distributed ledger technology that maintains a continuously growing list of records called blocks that are linked and secured using cryptography.'
+          explanation: 'A blockchain is a distributed ledger technology that maintains a continuously growing list of records called blocks that are linked and secured using cryptography.',
+          points: 10, // Added required field
+          order: 1    // Added required field
         },
         {
           id: createId(),
           moduleId: moduleId,
-          text: 'What is the purpose of mining in a blockchain?',
+          question: 'What is the purpose of mining in a blockchain?', // Using 'question' instead of 'text'
           options: ['To create new cryptocurrencies', 'To validate and add transactions to the blockchain', 'To hack into user accounts', 'To encrypt messages'],
           correctOption: 1,
-          explanation: 'Mining is the process by which new transactions are verified and added to the blockchain. Miners solve complex puzzles to validate transactions and secure the network.'
+          explanation: 'Mining is the process by which new transactions are verified and added to the blockchain. Miners solve complex puzzles to validate transactions and secure the network.',
+          points: 15, // Added required field
+          order: 2    // Added required field
         },
         {
           id: createId(),
           moduleId: moduleId,
-          text: 'What is a private key in blockchain?',
+          question: 'What is a private key in blockchain?', // Using 'question' instead of 'text'
           options: ['A password to access your email', 'A secret code used to sign transactions and prove ownership', 'A public identifier shared with others', 'The blockchain network ID'],
           correctOption: 1,
-          explanation: 'A private key is a secret, alphanumeric password that allows users to sign transactions and access their cryptocurrency. It should never be shared with others.'
+          explanation: 'A private key is a secret, alphanumeric password that allows users to sign transactions and access their cryptocurrency. It should never be shared with others.',
+          points: 20, // Added required field
+          order: 3    // Added required field
         }
       ]);
       
@@ -496,21 +502,20 @@ export async function initializeDatabase() {
         const wallets = Array.from(memBlockchainStorage.wallets.values());
         if (wallets.length > 0) {
           for (const wallet of wallets) {
-            // Match the actual database column names found in schema
-            await db.execute(
-              `INSERT INTO wallets (address, public_key, balance, created_at, last_updated, passphrase_salt, passphrase_hash) 
-               VALUES ($1, $2, $3, $4, $5, $6, $7)
-               ON CONFLICT (address) DO NOTHING`,
-              [
-                wallet.address,
-                wallet.publicKey || 'default_public_key', // Provide default value if missing
-                wallet.balance,
-                wallet.createdAt,
-                wallet.lastSynced, // map lastSynced to last_updated
-                wallet.passphraseSalt || null,
-                wallet.passphraseHash || null
-              ]
-            );
+            // Use drizzle's insert method instead of raw SQL to avoid parameter issues
+            try {
+              await db.insert(schema.wallets).values({
+                address: wallet.address,
+                publicKey: wallet.publicKey || 'default_public_key',
+                balance: wallet.balance,
+                createdAt: wallet.createdAt,
+                lastUpdated: wallet.lastUpdated || new Date(), // Use lastUpdated instead of lastSynced
+                passphraseSalt: wallet.passphraseSalt,
+                passphraseHash: wallet.passphraseHash
+              }).onConflictDoNothing();
+            } catch (error) {
+              console.error(`Error migrating wallet ${wallet.address}:`, error);
+            }
           }
           console.log(`Migrated ${wallets.length} wallets`);
         }
@@ -519,16 +524,29 @@ export async function initializeDatabase() {
         const minerStats = await memBlockchainStorage.getAllActiveMiners();
         if (minerStats.length > 0) {
           for (const stats of minerStats) {
-            await db.insert(schema.minerStats).values({
-              address: stats.address,
-              blocksMined: stats.blocksMined,
-              totalRewards: stats.totalRewards,
-              lastBlockMined: stats.lastBlockMined,
-              isCurrentlyMining: stats.isCurrentlyMining,
-              hardware: stats.hardware,
-              joinedAt: stats.joinedAt,
-              currentHashRate: stats.currentHashRate
-            });
+            try {
+              // Convert formatted hash rate string to integer if needed
+              let hashRate = stats.currentHashRate;
+              if (typeof hashRate === 'string' && hashRate.includes('MH/s')) {
+                // Parse the string to get the numeric value
+                hashRate = parseInt(parseFloat(hashRate.replace('MH/s', '').trim()) * 1000000);
+              } else if (typeof hashRate === 'string' && hashRate.includes('H/s')) {
+                hashRate = parseInt(hashRate.replace('H/s', '').trim());
+              }
+              
+              await db.insert(schema.minerStats).values({
+                address: stats.address,
+                blocksMined: stats.blocksMined,
+                totalRewards: stats.totalRewards,
+                lastBlockMined: stats.lastBlockMined,
+                isCurrentlyMining: stats.isCurrentlyMining,
+                hardware: stats.hardware,
+                joinedAt: stats.joinedAt,
+                currentHashRate: typeof hashRate === 'number' ? hashRate : 0 // Ensure it's a number
+              });
+            } catch (error) {
+              console.error(`Error migrating miner stats for ${stats.address}:`, error);
+            }
           }
           console.log(`Migrated ${minerStats.length} miner stats`);
         }
