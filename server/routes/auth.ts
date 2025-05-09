@@ -22,4 +22,10 @@ router.post('/logout', authController.logout);
  */
 router.post('/refresh', authenticateJWT, authController.refreshToken);
 
+/**
+ * Get current user info based on JWT token
+ * GET /api/auth/me
+ */
+router.get('/me', authenticateJWT, authController.getCurrentUser);
+
 export default router;

@@ -126,3 +126,43 @@ export const refreshToken = (req: Request, res: Response) => {
     });
   }
 };
+
+/**
+ * Get current authenticated user
+ * GET /api/auth/me
+ */
+export const getCurrentUser = async (req: Request, res: Response) => {
+  try {
+    // The authenticateJWT middleware would have already validated the token
+    // and attached the user data to the request object
+    const walletAddress = (req as any).user?.walletAddress;
+    
+    if (!walletAddress) {
+      return res.status(401).json({ error: 'Not authenticated' });
+    }
+    
+    // Try to get the wallet from DB first, then memory storage
+    let wallet = await walletDao.getWalletByAddress(walletAddress);
+    if (!wallet) {
+      wallet = await memBlockchainStorage.getWalletByAddress(walletAddress);
+    }
+    
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    // Return the user data
+    res.json({
+      address: wallet.address,
+      balance: wallet.balance,
+      publicKey: wallet.publicKey,
+      createdAt: wallet.createdAt,
+      lastUpdated: wallet.lastUpdated
+    });
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get current user'
+    });
+  }
+};
