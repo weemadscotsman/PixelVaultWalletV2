@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { MatrixBackground } from "@/components/ui/MatrixBackground";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
+import AuthPage from "@/pages/auth-page";
 import LearningPage from "@/pages/learning-page";
 import WalletPage from "@/pages/WalletPage";
 import BlockchainPage from "@/pages/BlockchainPage";
@@ -39,6 +40,7 @@ function Router() {
       <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
         <Switch key={location}>
           <Route path="/" component={HomePage} />
+          <Route path="/auth" component={AuthPage} />
           <Route path="/learning" component={LearningPage} />
           <Route path="/wallet" component={WalletPage} />
           <Route path="/wallet/overview" component={WalletPage} />

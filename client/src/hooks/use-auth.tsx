@@ -1,7 +1,13 @@
-import { createContext, ReactNode, useContext, useState, useEffect } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import {
+  useQuery,
+  useMutation,
+  UseQueryResult,
+  UseMutationResult,
+} from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { queryClient } from "@/lib/queryClient";
 
 interface WalletUser {
   address: string;
@@ -11,137 +17,127 @@ interface WalletUser {
   lastUpdated?: string;
 }
 
+interface LoginCredentials {
+  address: string;
+  passphrase: string;
+}
+
+interface AuthResponse {
+  token: string;
+  user: WalletUser;
+}
+
 interface AuthContextType {
   user: WalletUser | null;
   isLoading: boolean;
   error: Error | null;
   token: string | null;
-  login: (credentials: { address: string; passphrase: string }) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
-// Create a context for global access to auth state
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [token, setToken] = useState<string | null>(null);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('pvx_token'));
   
-  // Load token from localStorage on initial mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem('pvx_token');
-    if (storedToken) {
-      setToken(storedToken);
-    }
-  }, []);
-
-  // Fetch current user data when token changes
+  // Query for the current user based on the token
   const {
     data: user,
+    error,
     isLoading,
-    error
-  } = useQuery<WalletUser | null, Error>({
-    queryKey: ["/api/auth/user", token],
+    refetch
+  } = useQuery({
+    queryKey: ['/api/auth/me'],
     queryFn: async () => {
       if (!token) return null;
       
-      try {
-        const res = await fetch("/api/auth/user", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        
-        if (res.ok) {
-          return res.json();
+      const res = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
         }
-        
-        // If unauthorized, clear token
+      });
+      
+      if (!res.ok) {
         if (res.status === 401) {
-          setToken(null);
+          // Token is invalid or expired
           localStorage.removeItem('pvx_token');
+          setToken(null);
           return null;
         }
-        
-        throw new Error(`Status ${res.status}: ${res.statusText}`);
-      } catch (e) {
-        console.error("Error fetching user:", e);
-        return null;
+        throw new Error('Failed to fetch user data');
       }
+      
+      return await res.json() as WalletUser;
     },
-    enabled: !!token, // Only run query if token exists
+    enabled: !!token,
+    retry: false,
   });
 
-  const login = async (credentials: { address: string; passphrase: string }) => {
-    try {
-      const res = await apiRequest('POST', '/api/auth/login', credentials);
-      const data = await res.json();
-      
-      if (data.token) {
-        // Store token in state and localStorage
-        setToken(data.token);
-        localStorage.setItem('pvx_token', data.token);
-        
-        // Update query cache
-        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-        
-        toast({
-          title: "Login successful",
-          description: `Wallet ${credentials.address} authenticated`,
-        });
-      } else {
-        throw new Error("No token received from server");
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
-        variant: "destructive",
-      });
-      throw error;
-    }
-  };
-
-  const logout = async () => {
-    try {
-      if (token) {
-        await apiRequest('POST', '/api/auth/logout', {}, {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-      }
-      
-      // Clear token and user data
-      setToken(null);
+  // Effect to sync token with localStorage
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem('pvx_token', token);
+    } else {
       localStorage.removeItem('pvx_token');
+    }
+  }, [token]);
+
+  // Login mutation
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: LoginCredentials) => {
+      const res = await apiRequest('POST', '/api/auth/login', credentials);
+      return await res.json() as AuthResponse;
+    },
+    onSuccess: (data) => {
+      setToken(data.token);
+      queryClient.setQueryData(['/api/auth/me'], data.user);
       
-      // Clear user data from cache
-      queryClient.setQueryData(["/api/auth/user"], null);
-      
-      // Invalidate all queries to force refetch on next render
+      // Invalidate any queries that may now return different results with auth
       queryClient.invalidateQueries();
       
       toast({
-        title: "Logout successful",
-        description: "You have been logged out.",
+        title: "Login successful",
+        description: `Welcome back, ${data.user.address}`,
       });
-    } catch (error) {
-      console.error("Logout error:", error);
-      
-      // Even if the server request fails, clear local token and data
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Login failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Logout function
+  const logout = async () => {
+    try {
+      const res = await apiRequest('POST', '/api/auth/logout', {});
+      // Clear token regardless of response
       setToken(null);
-      localStorage.removeItem('pvx_token');
-      queryClient.setQueryData(["/api/auth/user"], null);
+      queryClient.setQueryData(['/api/auth/me'], null);
+      
+      // Invalidate any queries that may now return different results without auth
+      queryClient.invalidateQueries();
       
       toast({
         title: "Logged out",
-        description: "You have been logged out.",
+        description: "You have been successfully logged out",
       });
+    } catch (error) {
+      console.error("Logout error:", error);
+      // Still clear token on error
+      setToken(null);
+      queryClient.setQueryData(['/api/auth/me'], null);
     }
+  };
+
+  // Login function
+  const login = async (credentials: LoginCredentials) => {
+    return loginMutation.mutateAsync(credentials);
   };
 
   return (
@@ -153,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         token,
         login,
         logout,
-        isAuthenticated: !!token && !!user,
+        isAuthenticated: !!user,
       }}
     >
       {children}
