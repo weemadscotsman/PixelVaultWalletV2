@@ -92,6 +92,9 @@ export class WalletDao {
       
       console.log('WalletDao.getWalletByAddress - Complete DB result:', JSON.stringify(dbWallet, null, 2));
       
+      // Raw database object with direct properties
+      const rawDbObj = JSON.parse(JSON.stringify(dbWallet));
+      
       console.log('WalletDao.getWalletByAddress - Raw DB result:', {
         address: dbWallet.address,
         public_key: dbWallet.public_key ? 'exists' : 'missing',
@@ -99,7 +102,9 @@ export class WalletDao {
         passphrase_salt: dbWallet.passphrase_salt ? 'exists' : 'missing',
         passphrase_hash: dbWallet.passphrase_hash ? 'exists' : 'missing',
         salt_value: dbWallet.passphrase_salt,
-        hash_value: dbWallet.passphrase_hash
+        hash_value: dbWallet.passphrase_hash,
+        raw_salt: rawDbObj.passphrase_salt,
+        raw_hash: rawDbObj.passphrase_hash
       });
       
       // Make sure we explicitly extract all fields from the DB result
@@ -110,8 +115,8 @@ export class WalletDao {
         createdAt: dbWallet.created_at,
         lastUpdated: dbWallet.last_updated,
         lastSynced: dbWallet.last_updated, // Keep both for compatibility
-        passphraseSalt: dbWallet.passphrase_salt,
-        passphraseHash: dbWallet.passphrase_hash
+        passphraseSalt: rawDbObj.passphrase_salt, // Use raw object property
+        passphraseHash: rawDbObj.passphrase_hash  // Use raw object property
       };
       
       console.log('Mapped Wallet object:', {
@@ -172,16 +177,21 @@ export class WalletDao {
       const result = await db.select().from(wallets);
       
       // Convert database format to Wallet[] with snake_case to camelCase mapping
-      return result.map(dbWallet => ({
-        address: dbWallet.address,
-        publicKey: dbWallet.public_key,
-        balance: dbWallet.balance,
-        createdAt: dbWallet.created_at,
-        lastUpdated: dbWallet.last_updated,
-        lastSynced: dbWallet.last_updated, // Keep both for compatibility
-        passphraseSalt: dbWallet.passphrase_salt || undefined,
-        passphraseHash: dbWallet.passphrase_hash || undefined,
-      }));
+      return result.map(dbWallet => {
+        // Convert DB result to raw object with proper property access
+        const rawDbObj = JSON.parse(JSON.stringify(dbWallet));
+        
+        return {
+          address: dbWallet.address,
+          publicKey: dbWallet.public_key,
+          balance: dbWallet.balance,
+          createdAt: dbWallet.created_at,
+          lastUpdated: dbWallet.last_updated,
+          lastSynced: dbWallet.last_updated, // Keep both for compatibility
+          passphraseSalt: rawDbObj.passphrase_salt || undefined,
+          passphraseHash: rawDbObj.passphrase_hash || undefined,
+        };
+      });
     } catch (error) {
       console.error('Error getting all wallets:', error);
       throw new Error('Failed to get wallets');
