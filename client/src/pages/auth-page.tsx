@@ -1,13 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
-import { Shield, User, Key, Lock } from "lucide-react";
+import { Shield, User, Key, Lock, Wallet } from "lucide-react";
 import { WalletLoginForm } from "@/components/wallet/WalletLoginForm";
+import { CreateWalletForm } from "@/components/wallet/CreateWalletForm";
 import { useAuth } from "@/hooks/use-auth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function AuthPage() {
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const [activeTab, setActiveTab] = useState<string>("login");
 
   // Redirect to home if already authenticated
   useEffect(() => {
@@ -36,9 +39,34 @@ export default function AuthPage() {
 
       <main className="flex-1 container mx-auto py-12 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center max-w-6xl mx-auto">
-          {/* Login Form */}
+          {/* Authentication Forms */}
           <div className="order-2 md:order-1">
-            <WalletLoginForm />
+            <Tabs defaultValue="login" className="w-full" onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-black/40 border border-blue-900/30">
+                <TabsTrigger 
+                  value="login" 
+                  className="data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300"
+                >
+                  <Key className="h-4 w-4 mr-2" />
+                  Login
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="create"
+                  className="data-[state=active]:bg-blue-900/30 data-[state=active]:text-blue-300"
+                >
+                  <Wallet className="h-4 w-4 mr-2" />
+                  Create Wallet
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="login">
+                <WalletLoginForm />
+              </TabsContent>
+              
+              <TabsContent value="create">
+                <CreateWalletForm />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Hero Section */}
