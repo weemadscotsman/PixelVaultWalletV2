@@ -29,6 +29,7 @@ import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
 import { AnimatePresence } from "framer-motion";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 
 // Router component
 function Router() {
@@ -39,32 +40,35 @@ function Router() {
     <AnimatePresence mode="sync" initial={false}>
       <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
         <Switch key={location}>
-          <Route path="/" component={HomePage} />
+          {/* Public routes */}
           <Route path="/auth" component={AuthPage} />
           <Route path="/learning" component={LearningPage} />
-          <Route path="/wallet" component={WalletPage} />
-          <Route path="/wallet/overview" component={WalletPage} />
-          <Route path="/wallet/send" component={WalletPage} />
-          <Route path="/wallet/receive" component={WalletPage} />
-          <Route path="/wallet/transactions" component={WalletPage} />
-          <Route path="/wallet/staking" component={WalletPage} />
-          <Route path="/wallet/security" component={WalletPage} />
-          <Route path="/blockchain" component={BlockchainPage} />
-          <Route path="/blockchain/blocks" component={AllBlocksPage} />
-          <Route path="/staking" component={StakingPage} />
-          <Route path="/governance" component={GovernancePage} />
-          <Route path="/thringlets" component={ThringletsPage} />
-          <Route path="/drops" component={DropsPage} />
-          <Route path="/badges" component={BadgesPage} />
-          <Route path="/utr" component={UTRDashboardPage} />
-          <Route path="/dex" component={DEXPage} />
-          <Route path="/terminal" component={TerminalPage} />
-          <Route path="/profile" component={ProfilePage} />
-          <Route path="/settings" component={SettingsPage} />
-          <Route path="/nfts" component={NFTsPage} />
-          <Route path="/transactions" component={TransactionsPage} />
-          <Route path="/actions" component={ActionsPage} />
-          <Route path="/visualizer" component={TransactionVisualizerPage} />
+          
+          {/* Protected routes */}
+          <ProtectedRoute path="/" component={HomePage} />
+          <ProtectedRoute path="/wallet" component={WalletPage} />
+          <ProtectedRoute path="/wallet/overview" component={WalletPage} />
+          <ProtectedRoute path="/wallet/send" component={WalletPage} />
+          <ProtectedRoute path="/wallet/receive" component={WalletPage} />
+          <ProtectedRoute path="/wallet/transactions" component={WalletPage} />
+          <ProtectedRoute path="/wallet/staking" component={WalletPage} />
+          <ProtectedRoute path="/wallet/security" component={WalletPage} />
+          <ProtectedRoute path="/blockchain" component={BlockchainPage} />
+          <ProtectedRoute path="/blockchain/blocks" component={AllBlocksPage} />
+          <ProtectedRoute path="/staking" component={StakingPage} />
+          <ProtectedRoute path="/governance" component={GovernancePage} />
+          <ProtectedRoute path="/thringlets" component={ThringletsPage} />
+          <ProtectedRoute path="/drops" component={DropsPage} />
+          <ProtectedRoute path="/badges" component={BadgesPage} />
+          <ProtectedRoute path="/utr" component={UTRDashboardPage} />
+          <ProtectedRoute path="/dex" component={DEXPage} />
+          <ProtectedRoute path="/terminal" component={TerminalPage} />
+          <ProtectedRoute path="/profile" component={ProfilePage} />
+          <ProtectedRoute path="/settings" component={SettingsPage} />
+          <ProtectedRoute path="/nfts" component={NFTsPage} />
+          <ProtectedRoute path="/transactions" component={TransactionsPage} />
+          <ProtectedRoute path="/actions" component={ActionsPage} />
+          <ProtectedRoute path="/visualizer" component={TransactionVisualizerPage} />
           <Route component={NotFound} />
         </Switch>
       </div>
