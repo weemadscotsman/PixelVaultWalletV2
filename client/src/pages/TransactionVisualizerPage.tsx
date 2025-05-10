@@ -1,5 +1,5 @@
 import React from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { TransactionFlowVisualizer } from '@/components/visualization/TransactionFlowVisualizer';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ActivityIcon, RefreshCw, Zap } from 'lucide-react';

@@ -170,6 +170,6 @@ export default function AllBlocksPage() {
           </CardFooter>
         </Card>
       </div>
-    </DashboardLayout>
+    </PageLayout>
   );
 }

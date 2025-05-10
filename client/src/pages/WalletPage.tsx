@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { 
   Wallet, 
   Plus, 
@@ -52,7 +52,7 @@ export default function WalletPage() {
   }, [location, activeWallet]);
 
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <div className="space-y-6">
         {/* Header section with wallet info/status */}
         <div className="bg-black/70 border border-blue-900/50 p-4 rounded-lg">
@@ -410,6 +410,6 @@ export default function WalletPage() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </PageLayout>
   );
 }
