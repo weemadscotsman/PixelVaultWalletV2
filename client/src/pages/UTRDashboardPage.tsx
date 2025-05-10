@@ -15,7 +15,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { UTRList, UTRStatsCard } from '@/components/utr';
 import { DatabaseBackup, FileSearch, PieChart, Search, BarChart4 } from 'lucide-react';
 
@@ -43,7 +43,7 @@ export function UTRDashboardPage() {
   }, []);
 
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       {/* Fixed header with consistent padding and styling */}
       <div className="px-8 py-6 border-b border-gray-800 bg-black/60 backdrop-blur-sm mb-6">
         <div className="max-w-7xl mx-auto">
@@ -234,7 +234,7 @@ export function UTRDashboardPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </PageLayout>
   );
 };
 
