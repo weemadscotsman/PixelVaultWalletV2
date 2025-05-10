@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { 
   Blocks, 
   Zap, 
@@ -93,7 +93,7 @@ export default function BlockchainPage() {
   };
   
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon">
@@ -348,6 +348,6 @@ export default function BlockchainPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </PageLayout>
   );
 }

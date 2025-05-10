@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { HashlordGame } from '@/components/learning/HashlordGame';
 import { GasEscapeGame } from '@/components/learning/GasEscapeGame';
 import { GraduationCap, Zap, Fuel, Wallet } from 'lucide-react';
@@ -10,7 +10,7 @@ export default function LearningPage() {
   const [activeTab, setActiveTab] = useState('hashlord');
   
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-blue-300 text-shadow-neon">Learning Lab</h1>
@@ -68,6 +68,6 @@ export default function LearningPage() {
           </Tabs>
         </Card>
       </div>
-    </DashboardLayout>
+    </PageLayout>
   );
 }
