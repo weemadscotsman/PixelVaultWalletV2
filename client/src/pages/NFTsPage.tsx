@@ -1,6 +1,5 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Sidebar } from '@/components/ui/sidebar';
 import { useNFT } from '@/hooks/use-nft';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
@@ -9,26 +8,23 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { timeAgo } from '@/lib/formatters';
+import { PageLayout } from '@/components/layout/PageLayout';
 
 export default function NFTsPage() {
   const { nfts, isLoading } = useNFT();
 
   return (
-    <>
+    <PageLayout isConnected={true}>
       <Helmet>
         <title>NFT Collection | PixelVault</title>
         <meta name="description" content="View and manage your NFT collection on the PVX blockchain" />
       </Helmet>
 
-      <div className="flex min-h-screen bg-background">
-        <Sidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <motion.div
+      <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="container mx-auto"
           >
             <div className="flex items-center justify-between mb-6">
               <div>
