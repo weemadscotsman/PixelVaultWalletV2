@@ -266,7 +266,7 @@ export default function ThringletsPage() {
             </CardFooter>
           </Card>
         </div>
-      </DashboardLayout>
+      </PageLayout>
     );
   }
   
