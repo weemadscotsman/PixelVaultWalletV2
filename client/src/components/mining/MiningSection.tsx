@@ -7,6 +7,7 @@ import { ConnectWalletButton } from "@/components/wallet/ConnectWalletButton";
 
 export function MiningSection() {
   const { blockReward, miningStats, isMining, startMining, stopMining } = useMining();
+  const { activeWallet } = useWallet();
   const sectionRef = useRef<HTMLElement>(null);
   const [miningOutput, setMiningOutput] = useState<string>("Awaiting command...");
   const [hashRate, setHashRate] = useState<string>("0 MH/s");
@@ -109,18 +110,30 @@ export function MiningSection() {
         <div className="bg-white dark:bg-dark-card rounded-lg shadow p-4 lg:col-span-2 transition-colors duration-200">
           <h3 className="text-gray-700 dark:text-gray-200 font-medium mb-4">Mining Controls</h3>
           <div className="mb-6">
-            <button 
-              className={`power-button ${isMining ? 'active' : ''}`} 
-              onClick={runMiningCLI}
-            >
-              <i className={`icon fa ${isMining ? 'fa-stop' : 'fa-play'}`}></i>
-            </button>
-            <div className="mt-4 mb-2 flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${isMining ? 'bg-green-500 pulse-shadow' : 'bg-red-500'}`}></div>
-              <span className={`text-sm ${isMining ? 'text-green-500' : 'text-red-500'}`}>
-                {isMining ? 'MINING ACTIVE' : 'MINING OFFLINE'}
-              </span>
-            </div>
+            {!activeWallet ? (
+              <div className="flex flex-col items-center justify-center py-6">
+                <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Connect your wallet to start mining</p>
+                <ConnectWalletButton 
+                  className="bg-blue-700 hover:bg-blue-600 text-white"
+                  fullWidth
+                />
+              </div>
+            ) : (
+              <>
+                <button 
+                  className={`power-button ${isMining ? 'active' : ''}`} 
+                  onClick={runMiningCLI}
+                >
+                  <i className={`icon fa ${isMining ? 'fa-stop' : 'fa-play'}`}></i>
+                </button>
+                <div className="mt-4 mb-2 flex items-center gap-2">
+                  <div className={`h-2 w-2 rounded-full ${isMining ? 'bg-green-500 pulse-shadow' : 'bg-red-500'}`}></div>
+                  <span className={`text-sm ${isMining ? 'text-green-500' : 'text-red-500'}`}>
+                    {isMining ? 'MINING ACTIVE' : 'MINING OFFLINE'}
+                  </span>
+                </div>
+              </>
+            )}
             
             <div className="mt-4 h-[200px] overflow-auto">
               <div className="terminal">

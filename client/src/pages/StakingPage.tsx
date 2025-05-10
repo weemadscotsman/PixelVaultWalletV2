@@ -7,7 +7,8 @@ import {
   Clock,
   LineChart,
   Calendar,
-  Gift
+  Gift,
+  Wallet
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,8 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CreateStakeDialog } from '@/components/wallet/CreateStakeDialog';
 import { ClaimRewardDialog } from '@/components/wallet/ClaimRewardDialog';
+import { useWallet } from '@/hooks/use-wallet';
+import { ConnectWalletButton } from '@/components/wallet/ConnectWalletButton';
 
 // Example staking data
 const stakingData = {
@@ -40,6 +43,7 @@ export default function StakingPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isClaimDialogOpen, setIsClaimDialogOpen] = useState(false);
   const [selectedStake, setSelectedStake] = useState<{id: number, rewards: number} | null>(null);
+  const { activeWallet, wallet, isLoadingWallet } = useWallet();
   
   const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -76,7 +80,7 @@ export default function StakingPage() {
   }));
 
   return (
-    <PageLayout isConnected={true}>
+    <PageLayout isConnected={!!activeWallet}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon">
@@ -85,28 +89,46 @@ export default function StakingPage() {
           </h2>
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2">
-            <Card className="bg-black/70 border-blue-900/50 h-full">
-              <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
-                <CardTitle className="text-blue-300">Your Active Stakes</CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <div className="space-y-4">
-                  {stakingData.activeStakesList.map((stake) => (
-                    <div key={stake.id} className="bg-gray-900/30 p-4 rounded border border-blue-900/20">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <p className="text-lg font-bold text-blue-300">{formatCurrency(stake.amount)}</p>
-                          <div className="flex items-center mt-1 text-xs text-gray-400">
-                            <Clock className="h-3 w-3 mr-1" />
-                            <span>{getDaysRemaining(stake.endDate)} days remaining</span>
+        {!activeWallet ? (
+          // Show connect wallet content when no wallet is connected
+          <div className="bg-black/70 border border-blue-900/50 rounded-lg p-8 my-12">
+            <div className="text-center space-y-6 max-w-md mx-auto">
+              <Wallet className="h-16 w-16 text-blue-300 mx-auto" />
+              <h3 className="text-xl font-semibold text-white">Connect Your Wallet to Stake</h3>
+              <p className="text-gray-400">
+                Connect your PVX wallet to view your staking positions, create new stakes, 
+                and earn PVX rewards through our staking pools.
+              </p>
+              <ConnectWalletButton 
+                className="bg-blue-700 hover:bg-blue-600 text-white w-full"
+                fullWidth
+              />
+            </div>
+          </div>
+        ) : (
+          // Show staking content when wallet is connected
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+              <Card className="bg-black/70 border-blue-900/50 h-full">
+                <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
+                  <CardTitle className="text-blue-300">Your Active Stakes</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-4">
+                  <div className="space-y-4">
+                    {stakingData.activeStakesList.map((stake) => (
+                      <div key={stake.id} className="bg-gray-900/30 p-4 rounded border border-blue-900/20">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <p className="text-lg font-bold text-blue-300">{formatCurrency(stake.amount)}</p>
+                            <div className="flex items-center mt-1 text-xs text-gray-400">
+                              <Clock className="h-3 w-3 mr-1" />
+                              <span>{getDaysRemaining(stake.endDate)} days remaining</span>
+                            </div>
+                          </div>
+                          <div className="bg-green-900/30 px-3 py-1 rounded text-green-400 text-sm font-bold">
+                            {stake.apy}% APY
                           </div>
                         </div>
-                        <div className="bg-green-900/30 px-3 py-1 rounded text-green-400 text-sm font-bold">
-                          {stake.apy}% APY
-                        </div>
-                      </div>
                       
                       <div className="grid grid-cols-2 gap-4 mb-3">
                         <div className="bg-gray-900/40 p-2 rounded">
