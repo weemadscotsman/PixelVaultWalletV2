@@ -93,7 +93,10 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-foreground transition-colors duration-200">
-      {/* Remove the canvas for matrix since we're using the standalone MatrixBackground component now */}
+      <canvas 
+        ref={matrixCanvasRef}
+        className="fixed top-0 left-0 w-full h-full opacity-35 pointer-events-none z-0"
+      />
       <Header isConnected={isConnected} />
       
       <div className="flex flex-1 overflow-hidden">
