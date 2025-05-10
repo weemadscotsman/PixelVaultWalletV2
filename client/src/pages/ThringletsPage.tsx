@@ -644,6 +644,6 @@ export default function ThringletsPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </PageLayout>
   );
 }
