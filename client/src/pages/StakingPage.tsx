@@ -245,7 +245,7 @@ export default function StakingPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
+        )}
       </div>
       
       {/* Create Stake Dialog */}
