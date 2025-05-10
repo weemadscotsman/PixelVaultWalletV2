@@ -1,6 +1,5 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { Sidebar } from '@/components/ui/sidebar';
 import { useWallet } from '@/hooks/use-wallet';
 import { motion } from 'framer-motion';
 import { Link } from 'wouter';
@@ -9,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { timeAgo } from '@/lib/formatters';
+import { PageLayout } from '@/components/layout/PageLayout';
 
 export default function TransactionsPage() {
   const { 
@@ -31,57 +31,53 @@ export default function TransactionsPage() {
   );
 
   return (
-    <>
+    <PageLayout isConnected={true}>
       <Helmet>
         <title>Transactions | PixelVault</title>
         <meta name="description" content="View your transaction history on the PVX blockchain" />
       </Helmet>
 
-      <div className="flex min-h-screen bg-background">
-        <Sidebar />
-        <main className="flex-1 p-6 overflow-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="container mx-auto"
-          >
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-white">Transaction History</h1>
-                <p className="text-muted-foreground">Track all your PVX transactions</p>
-              </div>
-              <Link href="/dashboard">
-                <Button variant="outline" size="sm">
-                  <i className="ri-arrow-left-line mr-2"></i>
-                  Back to Dashboard
-                </Button>
-              </Link>
-            </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ duration: 0.2 }}
+      >
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-white">Transaction History</h1>
+            <p className="text-muted-foreground">Track all your PVX transactions</p>
+          </div>
+          <Link href="/dashboard">
+            <Button variant="outline" size="sm">
+              <i className="ri-arrow-left-line mr-2"></i>
+              Back to Dashboard
+            </Button>
+          </Link>
+        </div>
 
-            {isLoading ? (
-              <div className="flex justify-center items-center h-96">
-                <div className="flex flex-col items-center">
-                  <i className="ri-loader-4-line animate-spin text-primary text-4xl mb-4"></i>
-                  <p className="text-muted-foreground">Loading transactions...</p>
-                </div>
-              </div>
-            ) : transactions.length === 0 ? (
-              <Card className="bg-card border-gray-800">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <i className="ri-exchange-funds-line text-6xl text-muted-foreground mb-4"></i>
-                  <h3 className="text-xl font-medium text-white mb-2">No Transactions Found</h3>
-                  <p className="text-muted-foreground text-center max-w-md mb-6">
-                    You haven't made any transactions yet. Send or receive PVX to start building your transaction history.
-                  </p>
-                  <Button variant="secondary">
-                    <i className="ri-send-plane-line mr-2"></i>
-                    Send PVX
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
+        {isLoading ? (
+          <div className="flex justify-center items-center h-96">
+            <div className="flex flex-col items-center">
+              <i className="ri-loader-4-line animate-spin text-primary text-4xl mb-4"></i>
+              <p className="text-muted-foreground">Loading transactions...</p>
+            </div>
+          </div>
+        ) : transactions.length === 0 ? (
+          <Card className="bg-card border-gray-800">
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <i className="ri-exchange-funds-line text-6xl text-muted-foreground mb-4"></i>
+              <h3 className="text-xl font-medium text-white mb-2">No Transactions Found</h3>
+              <p className="text-muted-foreground text-center max-w-md mb-6">
+                You haven't made any transactions yet. Send or receive PVX to start building your transaction history.
+              </p>
+              <Button variant="secondary">
+                <i className="ri-send-plane-line mr-2"></i>
+                Send PVX
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
               <Tabs defaultValue="all" className="w-full">
                 <TabsList className="grid grid-cols-4 w-full mb-6">
                   <TabsTrigger value="all">All ({transactions.length})</TabsTrigger>
