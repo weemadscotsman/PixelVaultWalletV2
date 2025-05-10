@@ -65,8 +65,16 @@ body {
 
 body {
   background-color: #050505;
-  color: #eaeaea;
+  color: #22d3ee;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  text-shadow: 0 0 3px rgba(34, 211, 238, 0.3);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: #22d3ee;
+  text-shadow: 0 0 5px rgba(34, 211, 238, 0.5), 0 0 10px rgba(34, 211, 238, 0.3);
 }
 
 /* Matrix Rain Effect */
@@ -669,23 +677,24 @@ body {
 }
 
 .pvx-button {
-  @apply bg-cyan-800 hover:bg-cyan-700 text-cyan-100 px-4 py-2 rounded-md transition-colors border border-cyan-600;
-  box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
-  text-shadow: 0 0 5px rgba(34, 211, 238, 0.5);
+  @apply bg-cyan-800 hover:bg-cyan-700 text-cyan-100 px-4 py-2 rounded-md transition-colors border border-cyan-500;
+  box-shadow: 0 0 10px rgba(34, 211, 238, 0.5), 0 0 15px rgba(34, 211, 238, 0.3);
+  text-shadow: 0 0 5px rgba(34, 211, 238, 0.8), 0 0 10px rgba(34, 211, 238, 0.4);
 }
 
 .pvx-button:hover {
-  box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
+  box-shadow: 0 0 15px rgba(34, 211, 238, 0.7), 0 0 25px rgba(34, 211, 238, 0.4);
 }
 
 .pvx-input {
-  @apply bg-gray-900 border border-cyan-600 rounded text-cyan-400 px-3 py-2;
-  box-shadow: inset 0 0 5px rgba(34, 211, 238, 0.1);
+  @apply bg-gray-900 border border-cyan-600 rounded text-cyan-300 px-3 py-2;
+  box-shadow: inset 0 0 5px rgba(34, 211, 238, 0.2);
+  text-shadow: 0 0 2px rgba(34, 211, 238, 0.4);
 }
 
 .pvx-input:focus {
   @apply outline-none border-cyan-400;
-  box-shadow: inset 0 0 5px rgba(34, 211, 238, 0.3), 0 0 5px rgba(34, 211, 238, 0.2);
+  box-shadow: inset 0 0 5px rgba(34, 211, 238, 0.3), 0 0 7px rgba(34, 211, 238, 0.4);
 }
 
 /* Keyframes */
