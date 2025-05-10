@@ -65,16 +65,15 @@ body {
 
 body {
   background-color: #050505;
-  color: #22d3ee;
+  color: #eaeaea;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  text-shadow: 0 0 3px rgba(34, 211, 238, 0.3);
 }
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   letter-spacing: -0.025em;
-  color: #22d3ee;
-  text-shadow: 0 0 5px rgba(34, 211, 238, 0.5), 0 0 10px rgba(34, 211, 238, 0.3);
+  color: #00ff00;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.5), 0 0 10px rgba(0, 255, 0, 0.3);
 }
 
 /* Matrix Rain Effect */
@@ -135,11 +134,11 @@ h1, h2, h3, h4, h5, h6 {
   display: inline-block;
   width: 8px;
   height: 16px;
-  background-color: #22d3ee;
+  background-color: #00ff00;
   animation: terminal-blink 1s step-end infinite;
   margin-left: 2px;
   vertical-align: middle;
-  box-shadow: 0 0 8px rgba(34, 211, 238, 0.8);
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
 }
 
 @keyframes terminal-blink {
@@ -585,8 +584,8 @@ h1, h2, h3, h4, h5, h6 {
   
   /* Pixel/Microchip Grid */
   .pixel-grid {
-    background-image: linear-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(34, 211, 238, 0.05) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(0, 255, 0, 0.05) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0, 255, 0, 0.05) 1px, transparent 1px);
     background-size: 20px 20px;
     @apply bg-black bg-opacity-90 rounded-md;
   }
@@ -658,7 +657,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Neon Glow */
 .neon {
-  text-shadow: 0 0 5px #22d3ee, 0 0 10px #22d3ee, 0 0 20px #22d3ee, 0 0 40px #22d3ee;
+  text-shadow: 0 0 5px #00FF00, 0 0 10px #00FF00, 0 0 20px #00FF00, 0 0 40px #00FF00;
   letter-spacing: 0.5px;
 }
 

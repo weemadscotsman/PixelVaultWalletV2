@@ -94,18 +94,18 @@ export function MatrixBackground() {
         
         // Special highlight for the first character in each column
         if (drops[i] > 0 && drops[i] < 1) {
-          // Bright neon cyan for the leading character
-          ctx.fillStyle = 'rgba(34, 211, 238, 1)';
-          ctx.shadowColor = 'rgba(34, 211, 238, 0.9)';
+          // Bright neon green for the leading character
+          ctx.fillStyle = 'rgba(0, 255, 70, 1)';
+          ctx.shadowColor = 'rgba(0, 255, 120, 0.9)';
           ctx.shadowBlur = 15;
         } else {
           // Randomize brightness for more realistic effect
-          const brightness = Math.random() * 50 + 160; // 160-210
+          const brightness = Math.random() * 50 + 100; // 100-150%
           
-          // Default to a consistent neon cyan color with higher minimum opacity
+          // Default to a consistent neon green color with higher minimum opacity
           const alpha = Math.max(0.75, (intensity / 100)) * 0.95; // Higher minimum opacity
-          ctx.fillStyle = `rgba(34, ${brightness}, 238, ${alpha})`;
-          ctx.shadowColor = 'rgba(34, 211, 238, 0.3)';
+          ctx.fillStyle = `rgba(0, ${brightness + 180}, 50, ${alpha})`;
+          ctx.shadowColor = 'rgba(0, 255, 50, 0.3)';
           ctx.shadowBlur = 4;
         }
         
