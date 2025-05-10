@@ -32,8 +32,8 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Matrix characters - using a mix of katakana characters and matrix-like symbols
-    const matrixChars = "ｦｧｨｩｪｫｬｭｮｯｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ01234567890:・.\"=*+-<>¦｜╌";
+    // Authentic Matrix characters - real Kanji and Katakana characters as seen in the film
+    const matrixChars = "日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍｦｲｸｺｿﾁﾄﾉﾌﾔﾖﾙﾚﾛﾝ九七二十四午三八六五円下北千百万子東南西北今明後前上下田円町村花見山川市入出本天空雨夜明月星火水木金土曜日年中半時分秒週春夏秋冬男女人家語文字右左解計";
     
     const fontSize = 14;
     const columns = Math.floor(canvas.width / fontSize);
@@ -46,39 +46,42 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
       drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * -1;
     }
     
-    // The matrix animation function
+    // The matrix animation function - enhanced authentic version
     const matrix = () => {
       // Semi-transparent black to create trail effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.04)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';  // Slightly more opacity for better trail
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < drops.length; i++) {
-        // Random character from matrixChars
-        const charIndex = Math.floor(Math.random() * matrixChars.length);
-        const text = matrixChars[charIndex];
-        
-        // Varying green shades for more depth
-        const greenIntensity = Math.random() * 50 + 150; // 150-200 range
-        
-        // First character in each column is brightest (white-green)
-        if (drops[i] * fontSize < fontSize) {
-          ctx.fillStyle = `rgba(180, 255, 180, 1)`;
-        } else {
-          // The rest gradually fade as they fall
-          const opacity = Math.max(0.2, 1 - (drops[i] * fontSize) / (canvas.height * 0.6));
-          ctx.fillStyle = `rgba(0, ${greenIntensity}, 0, ${opacity})`;
+        // Only draw every other frame for some columns to create variance
+        if (Math.random() > 0.02) {
+          // Random character from matrixChars
+          const charIndex = Math.floor(Math.random() * matrixChars.length);
+          const text = matrixChars[charIndex];
+          
+          // Varying bright green shades for authentic Matrix look
+          const greenIntensity = Math.random() * 55 + 200; // 200-255 range, brighter
+          
+          // First character in each column is brightest (white-green)
+          if (drops[i] * fontSize < fontSize) {
+            ctx.fillStyle = `rgba(220, 255, 220, 1)`;  // Almost white with green tint
+          } else {
+            // The rest gradually fade as they fall but stay bright enough to see
+            const opacity = Math.max(0.4, 1 - (drops[i] * fontSize) / (canvas.height * 0.8));
+            ctx.fillStyle = `rgba(30, ${greenIntensity}, 30, ${opacity})`;
+          }
+          
+          ctx.font = `${fontSize}px monospace`;
+          ctx.fillText(text, i * fontSize, drops[i] * fontSize);
         }
         
-        ctx.font = `${fontSize}px monospace`;
-        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-        
-        // Reset when off screen with random chance 
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.98) {
+        // Reset when off screen with random chance - more frequent resets
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.97) {
           drops[i] = 0;
         }
         
-        // Move character down
-        drops[i]++;
+        // Move character down at slightly varying speeds
+        drops[i] += Math.random() > 0.98 ? 2 : 1;
       }
     };
     
@@ -130,18 +133,19 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
       {/* Matrix rain effect with lowered opacity that covers the entire viewport */}
       <canvas 
         ref={matrixCanvasRef}
-        className="fixed top-0 left-0 w-full h-full opacity-20 pointer-events-none z-10"
+        className="fixed top-0 left-0 w-full h-full opacity-40 pointer-events-none"
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
-          width: '100vw',
-          height: '100vh'
+          width: '100vw', 
+          height: '100vh',
+          zIndex: 5
         }}
       />
       
       {/* Main content with z-index to appear above the matrix effect */}
-      <div className="flex flex-col min-h-screen relative z-20">
+      <div className="flex flex-col min-h-screen relative" style={{ zIndex: 10 }}>
         <Header isConnected={isConnected} />
         
         <div className="flex flex-1 overflow-hidden">
