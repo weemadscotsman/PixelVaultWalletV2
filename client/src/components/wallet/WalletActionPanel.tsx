@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { ArrowUpRight, Coins, Scale, Power, Server } from 'lucide-react';
 
 interface WalletActionPanelProps {
@@ -12,7 +12,7 @@ interface WalletActionPanelProps {
 
 export function WalletActionPanel({ address, balance }: WalletActionPanelProps) {
   const [currentTab, setCurrentTab] = useState('quick-actions');
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
 
   const quickActions = [
     {
@@ -20,28 +20,28 @@ export function WalletActionPanel({ address, balance }: WalletActionPanelProps) 
       title: 'Stake PVX',
       description: 'Earn rewards by staking your tokens in a pool',
       icon: <Coins className="h-8 w-8 text-cyan-400" />,
-      action: () => navigate('/staking'),
+      action: () => setLocation('/staking'),
     },
     {
       id: 'mine',
       title: 'Mine PVX',
       description: 'Start mining to earn new PVX tokens',
       icon: <Server className="h-8 w-8 text-cyan-400" />,
-      action: () => navigate('/mining'),
+      action: () => setLocation('/mining'),
     },
     {
       id: 'governance',
       title: 'Governance',
       description: 'Participate in blockchain governance',
       icon: <Scale className="h-8 w-8 text-cyan-400" />,
-      action: () => navigate('/governance'),
+      action: () => setLocation('/governance'),
     },
     {
       id: 'power',
       title: 'Thringlets',
       description: 'Interact with your digital thringlet companions',
       icon: <Power className="h-8 w-8 text-cyan-400" />,
-      action: () => navigate('/thringlets'),
+      action: () => setLocation('/thringlets'),
     }
   ];
 
@@ -93,7 +93,7 @@ export function WalletActionPanel({ address, balance }: WalletActionPanelProps) 
                   apy="6.5%" 
                   minStake="1,000 μPVX"
                   lockPeriod="30 days"
-                  navigate={navigate}
+                  setLocation={setLocation}
                 />
                 <StakingPoolPreview 
                   id="hodl" 
@@ -101,7 +101,7 @@ export function WalletActionPanel({ address, balance }: WalletActionPanelProps) 
                   apy="12.8%" 
                   minStake="10,000 μPVX"
                   lockPeriod="90 days"
-                  navigate={navigate}
+                  setLocation={setLocation}
                 />
                 <StakingPoolPreview 
                   id="validator" 
@@ -109,7 +109,7 @@ export function WalletActionPanel({ address, balance }: WalletActionPanelProps) 
                   apy="18.4%" 
                   minStake="50,000 μPVX"
                   lockPeriod="180 days"
-                  navigate={navigate}
+                  setLocation={setLocation}
                 />
                 <StakingPoolPreview 
                   id="whales" 
@@ -117,7 +117,7 @@ export function WalletActionPanel({ address, balance }: WalletActionPanelProps) 
                   apy="24.0%" 
                   minStake="100,000 μPVX"
                   lockPeriod="365 days"
-                  navigate={navigate}
+                  setLocation={setLocation}
                 />
               </div>
             </div>
@@ -134,10 +134,10 @@ interface StakingPoolPreviewProps {
   apy: string;
   minStake: string;
   lockPeriod: string;
-  navigate: (path: string) => void;
+  setLocation: (path: string) => void;
 }
 
-function StakingPoolPreview({ id, name, apy, minStake, lockPeriod, navigate }: StakingPoolPreviewProps) {
+function StakingPoolPreview({ id, name, apy, minStake, lockPeriod, setLocation }: StakingPoolPreviewProps) {
   return (
     <div className="bg-gray-900 p-4 rounded-lg border border-primary-dark hover:border-primary transition-all">
       <div className="flex items-center justify-between">
@@ -161,7 +161,7 @@ function StakingPoolPreview({ id, name, apy, minStake, lockPeriod, navigate }: S
         <Button 
           variant="outline" 
           size="sm"
-          onClick={() => navigate(`/staking?pool=${id}`)}
+          onClick={() => setLocation(`/staking?pool=${id}`)}
         >
           Stake Now
         </Button>

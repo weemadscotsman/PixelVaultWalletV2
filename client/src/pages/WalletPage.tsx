@@ -29,6 +29,7 @@ import { SendTransactionForm } from '@/components/wallet/SendTransactionForm';
 import { ReceiveAddressCard } from '@/components/wallet/ReceiveAddressCard';
 import { ExportWalletKeys } from '@/components/wallet/ExportWalletKeys';
 import { StakingCard } from '@/components/wallet/StakingCard';
+import { WalletActionPanel } from '@/components/wallet/WalletActionPanel';
 import { formatCryptoAmount } from '@/lib/utils';
 import { useLocation, Link } from 'wouter';
 
