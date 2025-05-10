@@ -46,42 +46,44 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
       drops[i] = Math.floor(Math.random() * canvas.height / fontSize) * -1;
     }
     
-    // The matrix animation function - enhanced authentic version
+    // The matrix animation function - highly visible authentic Matrix style
     const matrix = () => {
       // Semi-transparent black to create trail effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';  // Slightly more opacity for better trail
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';  // More opacity for better visibility of trail
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < drops.length; i++) {
-        // Only draw every other frame for some columns to create variance
-        if (Math.random() > 0.02) {
+        // Ensure more characters are drawn
+        if (Math.random() > 0.01) {
           // Random character from matrixChars
           const charIndex = Math.floor(Math.random() * matrixChars.length);
           const text = matrixChars[charIndex];
           
-          // Varying bright green shades for authentic Matrix look
-          const greenIntensity = Math.random() * 55 + 200; // 200-255 range, brighter
+          // Strong neon green for authentic Matrix look - very bright
+          const greenIntensity = Math.floor(Math.random() * 55) + 200; // 200-255 range
           
-          // First character in each column is brightest (white-green)
+          // Leading characters - extremely bright neon
           if (drops[i] * fontSize < fontSize) {
-            ctx.fillStyle = `rgba(220, 255, 220, 1)`;  // Almost white with green tint
+            ctx.fillStyle = `rgba(180, 255, 180, 1.0)`;  // White-green glow
           } else {
-            // The rest gradually fade as they fall but stay bright enough to see
-            const opacity = Math.max(0.4, 1 - (drops[i] * fontSize) / (canvas.height * 0.8));
-            ctx.fillStyle = `rgba(30, ${greenIntensity}, 30, ${opacity})`;
+            // Trailing characters with strong visibility
+            const opacity = Math.max(0.7, 1 - (drops[i] * fontSize) / (canvas.height * 0.9));
+            // Pure Matrix green with slight variation
+            ctx.fillStyle = `rgba(0, ${greenIntensity}, 0, ${opacity})`;
           }
           
-          ctx.font = `${fontSize}px monospace`;
+          // Larger font for better visibility
+          ctx.font = `bold ${fontSize}px monospace`;
           ctx.fillText(text, i * fontSize, drops[i] * fontSize);
         }
         
-        // Reset when off screen with random chance - more frequent resets
-        if (drops[i] * fontSize > canvas.height && Math.random() > 0.97) {
+        // Reset when off screen with random chance
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.98) {
           drops[i] = 0;
         }
         
-        // Move character down at slightly varying speeds
-        drops[i] += Math.random() > 0.98 ? 2 : 1;
+        // Move characters at consistent speed for better effect
+        drops[i]++;
       }
     };
     
@@ -130,17 +132,18 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-foreground transition-colors duration-200 relative">
-      {/* Matrix rain effect with lowered opacity that covers the entire viewport */}
+      {/* Matrix rain effect with proper visibility but not overwhelming */}
       <canvas 
         ref={matrixCanvasRef}
-        className="fixed top-0 left-0 w-full h-full opacity-40 pointer-events-none"
+        className="fixed top-0 left-0 w-full h-full pointer-events-none"
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
           width: '100vw', 
           height: '100vh',
-          zIndex: 5
+          zIndex: 5,
+          opacity: 0.35
         }}
       />
       
