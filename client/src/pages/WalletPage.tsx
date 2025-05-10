@@ -30,6 +30,7 @@ import { ReceiveAddressCard } from '@/components/wallet/ReceiveAddressCard';
 import { ExportWalletKeys } from '@/components/wallet/ExportWalletKeys';
 import { StakingCard } from '@/components/wallet/StakingCard';
 import { WalletActionPanel } from '@/components/wallet/WalletActionPanel';
+import { ConnectWalletButton } from '@/components/wallet/ConnectWalletButton';
 import { formatCryptoAmount } from '@/lib/utils';
 import { useLocation, Link } from 'wouter';
 
@@ -106,13 +107,9 @@ export default function WalletPage() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Button
-                  className="bg-blue-700 hover:bg-blue-600 text-white"
-                  onClick={() => setActiveTab('create')}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Wallet
-                </Button>
+                <ConnectWalletButton 
+                  className="bg-blue-700 hover:bg-blue-600 text-white" 
+                />
                 <Button
                   variant="outline"
                   className="border-blue-900/50 text-blue-300"

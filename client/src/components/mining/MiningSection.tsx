@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { MiningControls } from "./MiningControls";
 import { RewardStatistics } from "./RewardStatistics";
 import { useMining } from "@/hooks/use-mining";
+import { useWallet } from "@/hooks/use-wallet";
+import { ConnectWalletButton } from "@/components/wallet/ConnectWalletButton";
 
 export function MiningSection() {
   const { blockReward, miningStats, isMining, startMining, stopMining } = useMining();
