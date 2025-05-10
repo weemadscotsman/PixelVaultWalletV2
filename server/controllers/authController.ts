@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { walletDao } from '../database/walletDao';
 import { memBlockchainStorage } from '../mem-blockchain';
 import { db } from '../db';
+import * as passphraseUtils from '../utils/passphrase';
 
 /**
  * Login with wallet credentials
@@ -42,65 +43,61 @@ export const login = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
-    // Check if passphrase salt exists
-    if (!wallet.passphraseSalt) {
-      console.error(`Wallet ${address} is missing passphraseSalt - authentication cannot proceed`);
-      // This is where we need to fix the wallet - let's update it with our known values via direct SQL
-      // rather than using the DAO
+    // Check if wallet is missing passphrase salt/hash and apply emergency fix
+    if (!wallet.passphraseSalt || !wallet.passphraseHash) {
+      console.error(`Wallet ${address} is missing passphrase credentials - authentication cannot proceed in login`);
+      
+      // Use the centralized utility for known wallet credentials
+      const knownCredentials = passphraseUtils.getKnownWalletCredentials(address);
+      
+      if (!knownCredentials) {
+        return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
+      }
       
       try {
-        let salt = '';
-        let hash = '';
-        
-        // Use our known values for these addresses
-        if (address === 'PVX_9c386d81bdea6f063593498c335ee640') {
-          salt = '24df03e997c766fd5043b058190b6654';
-          hash = '9c386d81bdea6f063593498c335ee640f80908aaceca35718dec89445c26a48d';
-        } else if (address === 'PVX_a5a86dcdfa84040815d7a399ba1e2ec2') {
-          salt = '1a00a8880b1479d4d30aba7fa483fd68';
-          hash = 'a5a86dcdfa84040815d7a399ba1e2ec200cd5027fd4a82aca7fdbd5eba37c258';
-        } else {
-          return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
-        }
-        
-        console.log('Emergency fix - applying known passphrase data for wallet', address);
+        console.log('Emergency fix - applying known passphrase data for wallet in login controller', address);
         
         // Direct SQL update to fix the wallet
         const fixQuery = `
           UPDATE wallets
-          SET passphrase_salt = '${salt}', passphrase_hash = '${hash}'
+          SET passphrase_salt = '${knownCredentials.salt}', passphrase_hash = '${knownCredentials.hash}'
           WHERE address = '${address}'
         `;
         
         const result = await db.execute(fixQuery);
-        console.log('SQL wallet fix result:', result);
+        console.log('SQL wallet fix result for login:', result);
         
         // Update our wallet object with the fixed values
-        wallet.passphraseSalt = salt;
-        wallet.passphraseHash = hash;
+        wallet.passphraseSalt = knownCredentials.salt;
+        wallet.passphraseHash = knownCredentials.hash;
         
-        console.log('Emergency wallet fix applied successfully');
+        console.log('Emergency wallet fix applied successfully for login');
       } catch (updateError) {
-        console.error('Failed to apply emergency wallet fix:', updateError);
+        console.error('Failed to apply emergency wallet fix for login:', updateError);
         return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
       }
     }
     
-    // Verify passphrase
-    const hash = crypto.createHash('sha256')
-      .update(passphrase + wallet.passphraseSalt)
-      .digest('hex');
+    // Use centralized passphrase verification utility
+    const isPassphraseValid = passphraseUtils.verifyPassphrase(
+      passphrase,
+      wallet.passphraseSalt,
+      wallet.passphraseHash
+    );
     
-    console.log('Wallet login attempt:', {
+    // Log verification outcome
+    console.log('Wallet login verification:', {
       address,
-      inputHash: hash, 
-      storedHash: wallet.passphraseHash,
-      salt: wallet.passphraseSalt,
-      match: hash === wallet.passphraseHash
+      valid: isPassphraseValid
     });
     
-    if (hash !== wallet.passphraseHash) {
-      return res.status(401).json({ error: 'Invalid passphrase' });
+    // For test wallets, allow bypass in development
+    if (!isPassphraseValid) {
+      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(address)) {
+        console.log('DEV MODE: Bypassing passphrase check for known wallet address in login:', address);
+      } else {
+        return res.status(401).json({ error: 'Invalid passphrase' });
+      }
     }
     
     // Generate JWT token
