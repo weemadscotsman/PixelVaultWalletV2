@@ -1,11 +1,11 @@
 import React from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 
 export default function HomePage() {
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <Dashboard />
-    </DashboardLayout>
+    </PageLayout>
   );
 }
