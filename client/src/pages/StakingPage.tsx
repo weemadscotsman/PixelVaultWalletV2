@@ -76,7 +76,7 @@ export default function StakingPage() {
   }));
 
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon">
@@ -240,6 +240,6 @@ export default function StakingPage() {
         stakeId={selectedStake?.id?.toString() || ""}
         rewardAmount={selectedStake?.rewards?.toString() || "0"}
       />
-    </DashboardLayout>
+    </PageLayout>
   );
 }
