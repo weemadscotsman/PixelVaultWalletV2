@@ -78,63 +78,61 @@ export default function TransactionsPage() {
             </CardContent>
           </Card>
         ) : (
-              <Tabs defaultValue="all" className="w-full">
-                <TabsList className="grid grid-cols-4 w-full mb-6">
-                  <TabsTrigger value="all">All ({transactions.length})</TabsTrigger>
-                  <TabsTrigger value="incoming">Received ({incomingTransactions.length})</TabsTrigger>
-                  <TabsTrigger value="outgoing">Sent ({outgoingTransactions.length})</TabsTrigger>
-                  <TabsTrigger value="pending">Pending ({pendingTransactions.length})</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="all">
-                  <div className="space-y-4">
-                    {transactions.map(transaction => (
-                      <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
-                    ))}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="incoming">
-                  <div className="space-y-4">
-                    {incomingTransactions.length > 0 ? (
-                      incomingTransactions.map(transaction => (
-                        <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
-                      ))
-                    ) : (
-                      <EmptyState message="No incoming transactions found" />
-                    )}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="outgoing">
-                  <div className="space-y-4">
-                    {outgoingTransactions.length > 0 ? (
-                      outgoingTransactions.map(transaction => (
-                        <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
-                      ))
-                    ) : (
-                      <EmptyState message="No outgoing transactions found" />
-                    )}
-                  </div>
-                </TabsContent>
-                
-                <TabsContent value="pending">
-                  <div className="space-y-4">
-                    {pendingTransactions.length > 0 ? (
-                      pendingTransactions.map(transaction => (
-                        <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
-                      ))
-                    ) : (
-                      <EmptyState message="No pending transactions" />
-                    )}
-                  </div>
-                </TabsContent>
-              </Tabs>
-            )}
-          </motion.div>
-        </main>
-      </div>
-    </>
+          <Tabs defaultValue="all" className="w-full">
+            <TabsList className="grid grid-cols-4 w-full mb-6">
+              <TabsTrigger value="all">All ({transactions.length})</TabsTrigger>
+              <TabsTrigger value="incoming">Received ({incomingTransactions.length})</TabsTrigger>
+              <TabsTrigger value="outgoing">Sent ({outgoingTransactions.length})</TabsTrigger>
+              <TabsTrigger value="pending">Pending ({pendingTransactions.length})</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="all">
+              <div className="space-y-4">
+                {transactions.map(transaction => (
+                  <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
+                ))}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="incoming">
+              <div className="space-y-4">
+                {incomingTransactions.length > 0 ? (
+                  incomingTransactions.map(transaction => (
+                    <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
+                  ))
+                ) : (
+                  <EmptyState message="No incoming transactions found" />
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="outgoing">
+              <div className="space-y-4">
+                {outgoingTransactions.length > 0 ? (
+                  outgoingTransactions.map(transaction => (
+                    <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
+                  ))
+                ) : (
+                  <EmptyState message="No outgoing transactions found" />
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="pending">
+              <div className="space-y-4">
+                {pendingTransactions.length > 0 ? (
+                  pendingTransactions.map(transaction => (
+                    <TransactionItem key={transaction.hash} transaction={transaction} walletAddress={wallet?.address} />
+                  ))
+                ) : (
+                  <EmptyState message="No pending transactions" />
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
+      </motion.div>
+    </PageLayout>
   );
 }
 
