@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { 
   Blocks, 
   ArrowLeft,
@@ -42,7 +42,7 @@ export default function AllBlocksPage() {
   };
 
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <div className="container mx-auto py-8 space-y-6">
         <div className="flex justify-between items-center">
           <div className="flex items-center space-x-4">

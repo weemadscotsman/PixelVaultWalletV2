@@ -142,7 +142,7 @@ export default function DropsPage() {
   };
   
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon">
@@ -469,6 +469,6 @@ export default function DropsPage() {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </PageLayout>
   );
 }
