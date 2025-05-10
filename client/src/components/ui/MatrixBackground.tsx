@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 export function MatrixBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [intensity, setIntensity] = useState(40); // Default intensity
+  const [intensity, setIntensity] = useState(80); // Higher default intensity
   
   // Get matrix intensity from CSS variable or localStorage
   useEffect(() => {
@@ -20,8 +20,8 @@ export function MatrixBackground() {
         }
       }
       
-      // Fallback to default
-      return 40;
+      // Fallback to a higher default
+      return 80;
     };
     
     setIntensity(getMatrixIntensity());
@@ -67,8 +67,8 @@ export function MatrixBackground() {
     // Drawing function
     const draw = () => {
       // Semi-transparent black to create fade effect
-      // Adjust fade effect based on intensity but ensure it's not too transparent
-      const fadeOpacity = 0.03 + ((100 - intensity) / 1200); // More transparent at lower intensity
+      // Reduce the fade effect to make characters stay visible longer
+      const fadeOpacity = 0.02 + ((100 - intensity) / 1400); // Lower values = slower fade = more visible
       ctx.fillStyle = `rgba(0, 0, 0, ${fadeOpacity})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
@@ -99,14 +99,14 @@ export function MatrixBackground() {
           ctx.shadowColor = 'rgba(0, 255, 120, 0.9)';
           ctx.shadowBlur = 15;
         } else {
-          // Randomize brightness for more realistic effect
-          const brightness = Math.random() * 50 + 100; // 100-150%
+          // Increase brightness for more visibility
+          const brightness = Math.random() * 50 + 150; // 150-200 range, much brighter
           
-          // Default to a consistent neon green color with higher minimum opacity
-          const alpha = Math.max(0.75, (intensity / 100)) * 0.95; // Higher minimum opacity
+          // Significantly higher minimum opacity for better visibility
+          const alpha = Math.max(0.90, (intensity / 100)); // Very high minimum opacity
           ctx.fillStyle = `rgba(0, ${brightness + 180}, 50, ${alpha})`;
-          ctx.shadowColor = 'rgba(0, 255, 50, 0.3)';
-          ctx.shadowBlur = 4;
+          ctx.shadowColor = 'rgba(0, 255, 50, 0.5)';
+          ctx.shadowBlur = 8; // Increased blur for more glow
         }
         
         ctx.font = `${fontSize}px monospace`;
@@ -162,10 +162,10 @@ export function MatrixBackground() {
       ref={canvasRef} 
       className="fixed top-0 left-0 w-full h-full z-[-1] pointer-events-none" 
       style={{ 
-        opacity: Math.max(0.6, intensity / 100), // Ensure minimum visibility
-        mixBlendMode: "luminosity",
-        backdropFilter: 'blur(2px)',
-        WebkitBackdropFilter: 'blur(2px)',
+        opacity: Math.max(0.9, intensity / 100), // Much higher opacity
+        mixBlendMode: "screen", // Better blend mode for neon green
+        backdropFilter: 'none', // Remove blur for clearer text
+        WebkitBackdropFilter: 'none',
       }} 
     />
   );
