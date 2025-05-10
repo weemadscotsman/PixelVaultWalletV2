@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
+import { PageLayout } from '@/components/layout/PageLayout';
 import { 
   Heart, 
   Sparkles,
@@ -180,7 +180,7 @@ export default function ThringletsPage() {
   
   if (thringlets.length === 0) {
     return (
-      <DashboardLayout>
+      <PageLayout isConnected={true}>
         <div className="flex items-center justify-center h-full">
           <Card className="w-96 bg-black/70 border-blue-900/50">
             <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
@@ -271,7 +271,7 @@ export default function ThringletsPage() {
   }
   
   return (
-    <DashboardLayout>
+    <PageLayout isConnected={true}>
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon">
