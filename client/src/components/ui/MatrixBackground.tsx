@@ -67,12 +67,23 @@ export function MatrixBackground() {
     // Drawing function
     const draw = () => {
       // Semi-transparent black to create fade effect
-      // Adjust fade effect based on intensity
-      const fadeOpacity = 0.04 + ((100 - intensity) / 1000); // More transparent at lower intensity
+      // Adjust fade effect based on intensity but ensure it's not too transparent
+      const fadeOpacity = 0.03 + ((100 - intensity) / 1200); // More transparent at lower intensity
       ctx.fillStyle = `rgba(0, 0, 0, ${fadeOpacity})`;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      for (let i = 0; i < drops.length; i++) {
+      // Make sure drops appear across all panels
+      const maxColumns = Math.min(columns, 300); // Limit max columns to prevent performance issues
+      const columnsToUse = Math.max(drops.length, maxColumns);
+      
+      for (let i = 0; i < columnsToUse; i++) {
+        // Add missing drops if needed
+        if (drops[i] === undefined) {
+          drops[i] = Math.random() * -100;
+          charIndices[i] = Math.floor(Math.random() * chars.length);
+          speeds[i] = 0.5 + Math.random() * 1.5;
+        }
+        
         // Determine if we should change the character (occasionally)
         if (Math.random() > 0.965) {
           charIndices[i] = Math.floor(Math.random() * chars.length);
@@ -83,15 +94,19 @@ export function MatrixBackground() {
         
         // Special highlight for the first character in each column
         if (drops[i] > 0 && drops[i] < 1) {
-          // Bright neon blue for the leading character
-          ctx.fillStyle = 'rgba(0, 200, 255, 1)';
+          // Bright neon green for the leading character
+          ctx.fillStyle = 'rgba(0, 255, 70, 1)';
+          ctx.shadowColor = 'rgba(0, 255, 120, 0.9)';
+          ctx.shadowBlur = 15;
         } else {
           // Randomize brightness for more realistic effect
-          const brightness = Math.random() * 50 + 50; // 50-100%
+          const brightness = Math.random() * 50 + 100; // 100-150%
           
-          // Default to a consistent neon blue color
-          const alpha = (intensity / 100) * 0.9; // Adjust opacity based on intensity
-          ctx.fillStyle = `rgba(0, ${brightness + 120}, 220, ${alpha})`;
+          // Default to a consistent neon green color with higher minimum opacity
+          const alpha = Math.max(0.75, (intensity / 100)) * 0.95; // Higher minimum opacity
+          ctx.fillStyle = `rgba(0, ${brightness + 180}, 50, ${alpha})`;
+          ctx.shadowColor = 'rgba(0, 255, 50, 0.3)';
+          ctx.shadowBlur = 4;
         }
         
         ctx.font = `${fontSize}px monospace`;
@@ -145,11 +160,12 @@ export function MatrixBackground() {
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed top-0 left-0 w-full h-full z-[-999] pointer-events-none" 
+      className="fixed top-0 left-0 w-full h-full z-[-1] pointer-events-none" 
       style={{ 
-        opacity: intensity / 100, 
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        opacity: Math.max(0.6, intensity / 100), // Ensure minimum visibility
+        mixBlendMode: "luminosity",
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)',
       }} 
     />
   );

@@ -29,26 +29,13 @@ export const startStaking = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
-    // Use centralized passphrase verification utility
-    const isPassphraseValid = passphraseUtils.verifyPassphrase(
-      passphrase,
-      wallet.passphraseSalt,
-      wallet.passphraseHash
-    );
+    // Verify passphrase
+    const hash = crypto.createHash('sha256')
+      .update(passphrase + wallet.passphraseSalt)
+      .digest('hex');
     
-    // Log verification outcome
-    console.log('Stake start passphrase verification:', {
-      address,
-      valid: isPassphraseValid
-    });
-    
-    // For test wallets, allow bypass in development
-    if (!isPassphraseValid) {
-      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(address)) {
-        console.log('DEV MODE: Bypassing passphrase check for known wallet address in staking:', address);
-      } else {
-        return res.status(401).json({ error: 'Invalid passphrase' });
-      }
+    if (hash !== wallet.passphraseHash) {
+      return res.status(401).json({ error: 'Invalid passphrase' });
     }
     
     // Check balance
@@ -198,26 +185,13 @@ export const stopStaking = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
-    // Use centralized passphrase verification utility
-    const isPassphraseValid = passphraseUtils.verifyPassphrase(
-      passphrase,
-      wallet.passphraseSalt,
-      wallet.passphraseHash
-    );
+    // Verify passphrase
+    const hash = crypto.createHash('sha256')
+      .update(passphrase + wallet.passphraseSalt)
+      .digest('hex');
     
-    // Log verification outcome
-    console.log('Stake stop passphrase verification:', {
-      address,
-      valid: isPassphraseValid
-    });
-    
-    // For test wallets, allow bypass in development
-    if (!isPassphraseValid) {
-      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(address)) {
-        console.log('DEV MODE: Bypassing passphrase check for known wallet address in stop staking:', address);
-      } else {
-        return res.status(401).json({ error: 'Invalid passphrase' });
-      }
+    if (hash !== wallet.passphraseHash) {
+      return res.status(401).json({ error: 'Invalid passphrase' });
     }
     
     // Get stake record
@@ -410,26 +384,13 @@ export const claimRewards = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
-    // Use centralized passphrase verification utility
-    const isPassphraseValid = passphraseUtils.verifyPassphrase(
-      passphrase,
-      wallet.passphraseSalt,
-      wallet.passphraseHash
-    );
+    // Verify passphrase
+    const hash = crypto.createHash('sha256')
+      .update(passphrase + wallet.passphraseSalt)
+      .digest('hex');
     
-    // Log verification outcome
-    console.log('Claim rewards passphrase verification:', {
-      address,
-      valid: isPassphraseValid
-    });
-    
-    // For test wallets, allow bypass in development
-    if (!isPassphraseValid) {
-      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(address)) {
-        console.log('DEV MODE: Bypassing passphrase check for known wallet address in claim rewards:', address);
-      } else {
-        return res.status(401).json({ error: 'Invalid passphrase' });
-      }
+    if (hash !== wallet.passphraseHash) {
+      return res.status(401).json({ error: 'Invalid passphrase' });
     }
     
     // Get stake record
@@ -499,22 +460,22 @@ export const claimRewards = async (req: Request, res: Response) => {
       // Import transactionDao from our database layer
       const { transactionDao } = await import('../database/transactionDao');
       
-      // Create DB transaction object (converting from memory format)
+      // Create DB transaction object matching the DAO format
       const dbTransaction = {
         hash: txHash,
         type: 'STAKING_REWARD' as const,
-        from: `STAKE_POOL_${stake.poolId}`,
-        to: address,
-        amount: parseInt(reward.toString()),
+        from: `STAKE_POOL_${stake.poolId}`,  // DAO will map this to fromAddress
+        to: address,                         // DAO will map this to toAddress
+        amount: reward,  // Number format for DB
         timestamp: now,
         nonce: Math.floor(Math.random() * 100000),
         signature: cryptoUtils.generateRandomHash(),
         status: 'confirmed' as const,
         metadata: { 
-          stakeId,
+          stakeId: stakeId,
           poolId: stake.poolId,
           apyAtTime: pool.apy,
-          rewardPeriod: timeSinceLastReward
+          rewardCalculation: `${stake.amount} * ${apyDecimal} * (${daysSinceLastReward}/365)` 
         }
       };
       
@@ -522,21 +483,78 @@ export const claimRewards = async (req: Request, res: Response) => {
       await transactionDao.createTransaction(dbTransaction);
       console.log(`STAKING_REWARD transaction [${txHash}] saved to database for ${address}`);
     } catch (dbError) {
-      console.error('Failed to persist staking reward transaction to database:', dbError);
+      console.error('Failed to persist staking reward to database:', dbError);
       // Don't fail the entire transaction if DB persistence fails
+      // We already updated the in-memory state, which is the source of truth for the UI
     }
     
-    // Broadcast the reward transaction to all connected clients
+    // Broadcast the transaction to all connected clients
     broadcastTransaction(memTransaction);
     
     res.status(200).json({
       tx_hash: txHash,
-      reward: reward.toString()
+      reward: reward.toString(),
+      next_claim_available: new Date(now + 24 * 60 * 60 * 1000).toISOString() // 24 hours later
     });
   } catch (error) {
     console.error('Error claiming rewards:', error);
     res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to claim staking rewards'
+      error: error instanceof Error ? error.message : 'Failed to claim rewards'
+    });
+  }
+};
+
+/**
+ * Get staking status for a wallet
+ * GET /api/stake/:address
+ */
+export const getStakingStatus = async (req: Request, res: Response) => {
+  try {
+    const { address } = req.params;
+    
+    // Get all active stakes for the address from blockchain storage
+    const walletStakes = await memBlockchainStorage.getActiveStakesByAddress(address);
+    
+    if (walletStakes.length === 0) {
+      return res.json({ 
+        active_stakes: 0,
+        total_staked: "0",
+        stakes: []
+      });
+    }
+    
+    // Calculate total staked
+    const totalStaked = walletStakes.reduce((total, stake) => {
+      return total + BigInt(stake.amount);
+    }, BigInt(0));
+    
+    // Get all staking pools for lookup
+    const pools = await memBlockchainStorage.getStakingPools();
+    
+    // Format stakes for response
+    const formattedStakes = await Promise.all(walletStakes.map(async (stake) => {
+      const pool = pools.find(p => p.id === stake.poolId);
+      
+      return {
+        stake_id: stake.id,
+        pool_id: stake.poolId,
+        pool_name: pool ? pool.name : 'Unknown Pool',
+        amount: stake.amount,
+        apy: pool ? pool.apy : '0',
+        start_time: new Date(stake.startTime).toISOString(),
+        unlock_time: stake.unlockTime > 0 ? new Date(stake.unlockTime).toISOString() : 'No lockup'
+      };
+    }));
+    
+    res.json({
+      active_stakes: walletStakes.length,
+      total_staked: totalStaked.toString(),
+      stakes: formattedStakes
+    });
+  } catch (error) {
+    console.error('Error getting staking status:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to get staking status'
     });
   }
 };
@@ -545,115 +563,15 @@ export const claimRewards = async (req: Request, res: Response) => {
  * Get available staking pools
  * GET /api/stake/pools
  */
-export const getStakingPools = async (_req: Request, res: Response) => {
+export const getStakingPools = async (req: Request, res: Response) => {
   try {
+    // Get all staking pools from blockchain storage
     const pools = await memBlockchainStorage.getStakingPools();
-    
-    // Format for response
-    const formattedPools = pools.map(pool => ({
-      id: pool.id,
-      name: pool.name,
-      apy: pool.apy,
-      total_staked: pool.totalStaked,
-      min_stake: pool.minStake,
-      lockup_period: pool.lockupPeriod,
-      description: pool.description || '',
-      stats: {
-        stakers_count: pool.stakersCount || 0,
-        avg_stake_period: pool.avgStakePeriod || 0
-      }
-    }));
-    
-    res.json(formattedPools);
+    res.json(pools);
   } catch (error) {
     console.error('Error getting staking pools:', error);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to get staking pools'
-    });
-  }
-};
-
-/**
- * Get staking status for a wallet
- * GET /api/stake/status/:address
- */
-export const getStakingStatus = async (req: Request, res: Response) => {
-  try {
-    const { address } = req.params;
-    
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(address);
-    if (!wallet) {
-      return res.status(404).json({ error: 'Wallet not found' });
-    }
-    
-    // Get all active stakes for wallet
-    const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(address);
-    
-    // Get pool data for each stake to calculate current rewards
-    const now = Date.now();
-    const stakingData = await Promise.all(activeStakes.map(async (stake) => {
-      const pool = await memBlockchainStorage.getStakingPoolById(stake.poolId);
-      if (!pool) {
-        return null; // Skip if pool not found
-      }
-      
-      // Calculate pending rewards
-      const timeSinceLastReward = now - stake.lastRewardTime;
-      const daysSinceLastReward = timeSinceLastReward / (24 * 60 * 60 * 1000);
-      const apyDecimal = parseFloat(pool.apy) / 100;
-      const pendingReward = Math.floor(parseInt(stake.amount) * apyDecimal * (daysSinceLastReward / 365));
-      
-      // Calculate time until unlock if locked
-      let timeToUnlock = 0;
-      let isLocked = false;
-      
-      if (stake.unlockTime > 0 && now < stake.unlockTime) {
-        timeToUnlock = stake.unlockTime - now;
-        isLocked = true;
-      }
-      
-      return {
-        stake_id: stake.id,
-        pool_id: stake.poolId,
-        pool_name: pool.name,
-        amount: stake.amount,
-        start_time: new Date(stake.startTime).toISOString(),
-        is_locked: isLocked,
-        unlock_time: stake.unlockTime > 0 ? new Date(stake.unlockTime).toISOString() : null,
-        time_to_unlock: isLocked ? timeToUnlock : 0,
-        apy: pool.apy,
-        pending_reward: pendingReward.toString()
-      };
-    }));
-    
-    // Filter out null values (from skipped pools)
-    const validStakingData = stakingData.filter(data => data !== null);
-    
-    // Calculate total staked amount
-    const totalStaked = activeStakes.reduce((sum, stake) => {
-      return sum + BigInt(stake.amount);
-    }, BigInt(0));
-    
-    // Calculate total pending rewards
-    const totalPendingRewards = validStakingData.reduce((sum, data) => {
-      if (data && data.pending_reward) {
-        return sum + BigInt(data.pending_reward);
-      }
-      return sum;
-    }, BigInt(0));
-    
-    res.json({
-      address,
-      total_staked: totalStaked.toString(),
-      total_pending_rewards: totalPendingRewards.toString(),
-      active_stakes: validStakingData,
-      stake_count: validStakingData.length
-    });
-  } catch (error) {
-    console.error('Error getting staking status:', error);
-    res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to get staking status'
     });
   }
 };

@@ -43,24 +43,24 @@ body {
 /* Base Theme Overrides */
 :root {
   --background: 240 10% 3.9%;
-  --foreground: 0 0% 98%;
+  --foreground: 195 100% 65%;
   --card: 240 10% 3.9%;
-  --card-foreground: 0 0% 98%;
+  --card-foreground: 195 100% 65%;
   --popover: 240 10% 3.9%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 217.2 91.2% 59.8%;
+  --popover-foreground: 195 100% 65%;
+  --primary: 195 100% 50%;
   --primary-foreground: 222.2 47.4% 11.2%;
   --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
+  --secondary-foreground: 195 100% 65%;
   --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
+  --muted-foreground: 195 80% 65%;
+  --accent: 195 100% 50%;
+  --accent-foreground: 240 10% 3.9%;
   --destructive: 0 62.8% 30.6%;
   --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
+  --border: 195 100% 30%;
   --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 48%;
+  --ring: 195 100% 50%;
 }
 
 body {
@@ -98,13 +98,13 @@ body {
 
 /* Neon text effect */
 .text-shadow-neon {
-  color: #5bbaf9;
-  text-shadow: 0 0 5px rgba(91, 186, 249, 0.7), 0 0 10px rgba(91, 186, 249, 0.5);
+  color: #22d3ee;
+  text-shadow: 0 0 5px rgba(34, 211, 238, 0.7), 0 0 10px rgba(34, 211, 238, 0.5);
 }
 
 .text-shadow-neon-green {
-  color: #5bf970;
-  text-shadow: 0 0 5px rgba(91, 249, 112, 0.7), 0 0 10px rgba(91, 249, 112, 0.5);
+  color: #4ade80;
+  text-shadow: 0 0 5px rgba(74, 222, 128, 0.7), 0 0 10px rgba(74, 222, 128, 0.5);
 }
 
 .text-shadow-neon-red {
