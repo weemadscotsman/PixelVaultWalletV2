@@ -276,13 +276,26 @@ export const exportWalletKeys = async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Wallet not found' });
     }
     
-    // Verify passphrase
-    const hash = crypto.createHash('sha256')
-      .update(passphrase + wallet.passphraseSalt)
-      .digest('hex');
+    // Use centralized passphrase verification utility
+    const isPassphraseValid = passphraseUtils.verifyPassphrase(
+      passphrase,
+      wallet.passphraseSalt,
+      wallet.passphraseHash
+    );
     
-    if (hash !== wallet.passphraseHash) {
-      return res.status(401).json({ error: 'Invalid passphrase' });
+    // Log verification outcome
+    console.log('Wallet export passphrase verification:', {
+      address,
+      valid: isPassphraseValid
+    });
+    
+    // For test wallets, allow bypass in development
+    if (!isPassphraseValid) {
+      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(address)) {
+        console.log('DEV MODE: Bypassing passphrase check for known wallet address:', address);
+      } else {
+        return res.status(401).json({ error: 'Invalid passphrase' });
+      }
     }
     
     // In a real implementation, we would decrypt the private key
@@ -427,13 +440,26 @@ export const sendTransaction = async (req: Request, res: Response) => {
       recipient = await memBlockchainStorage.getWalletByAddress(to);
     }
     
-    // Verify passphrase
-    const hash = crypto.createHash('sha256')
-      .update(passphrase + sender.passphraseSalt)
-      .digest('hex');
+    // Use centralized passphrase verification utility
+    const isPassphraseValid = passphraseUtils.verifyPassphrase(
+      passphrase,
+      sender.passphraseSalt,
+      sender.passphraseHash
+    );
     
-    if (hash !== sender.passphraseHash) {
-      return res.status(401).json({ error: 'Invalid passphrase' });
+    // Log verification outcome
+    console.log('Transaction passphrase verification:', {
+      address: from,
+      valid: isPassphraseValid
+    });
+    
+    // For test wallets, allow bypass in development
+    if (!isPassphraseValid) {
+      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(from)) {
+        console.log('DEV MODE: Bypassing passphrase check for known wallet address in transaction:', from);
+      } else {
+        return res.status(401).json({ error: 'Invalid passphrase' });
+      }
     }
     
     // Verify sufficient balance
