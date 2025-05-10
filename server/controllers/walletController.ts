@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
 import * as cryptoUtils from '../utils/crypto';
+import * as passphraseUtils from '../utils/passphrase';
 import { memBlockchainStorage } from '../mem-blockchain';
 import { walletDao } from '../database/walletDao';
 import { transactionDao } from '../database/transactionDao';
@@ -17,17 +18,15 @@ export const createWallet = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Passphrase is required' });
     }
     
-    // Generate wallet using cryptoUtils
-    const salt = crypto.randomBytes(16).toString('hex');
-    const hash = crypto.createHash('sha256')
-      .update(passphrase + salt)
-      .digest('hex');
+    // Generate wallet using centralized passphrase utilities
+    const salt = passphraseUtils.generateSalt();
+    const hash = passphraseUtils.hashPassphrase(passphrase, salt);
     
-    console.log('Wallet creation hash data:', {
-      passphrase,
+    console.log('Wallet creation using centralized passphrase utilities:', {
       salt,
       hash,
-      hashMethod: 'sha256(passphrase + salt)'
+      // Don't log actual passphrase in production
+      hashMethod: 'Using centralized passphraseUtils.hashPassphrase'
     });
     
     // Generate address from hash

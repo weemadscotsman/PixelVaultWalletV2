@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import { memBlockchainStorage } from '../mem-blockchain';
 import * as cryptoUtils from '../utils/crypto';
+import * as passphraseUtils from '../utils/passphrase';
 import { StakeRecord } from '../types';
 import { checkStakingBadges } from '../controllers/badgeController';
 import { broadcastTransaction } from '../utils/websocket';
@@ -75,33 +76,23 @@ export const startStaking = async (req: Request, res: Response) => {
     }
     
     // Check if wallet is missing passphrase salt/hash and apply emergency fix
-    if (!wallet.passphraseSalt) {
-      console.error(`Wallet ${address} is missing passphraseSalt - authentication cannot proceed in staking`);
+    if (!wallet.passphraseSalt || !wallet.passphraseHash) {
+      console.error(`Wallet ${address} is missing passphrase credentials - authentication cannot proceed in staking`);
+      
+      // Use the centralized utility for known wallet credentials
+      const knownCredentials = passphraseUtils.getKnownWalletCredentials(address);
+      
+      if (!knownCredentials) {
+        return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
+      }
       
       try {
-        let salt = '';
-        let hash = '';
-        
-        // Use our known values for these addresses
-        if (address === 'PVX_9c386d81bdea6f063593498c335ee640') {
-          salt = '24df03e997c766fd5043b058190b6654';
-          hash = '9c386d81bdea6f063593498c335ee640f80908aaceca35718dec89445c26a48d';
-        } else if (address === 'PVX_a5a86dcdfa84040815d7a399ba1e2ec2') {
-          salt = '1a00a8880b1479d4d30aba7fa483fd68';
-          hash = 'a5a86dcdfa84040815d7a399ba1e2ec200cd5027fd4a82aca7fdbd5eba37c258';
-        } else if (address === 'PVX_1e1ee32c2770a6af3ca119759c539907') {
-          salt = '430f2740756b69721379cd9d553e9b66';
-          hash = '1e1ee32c2770a6af3ca119759c5399072ff483851fcd25a80f2329f6d4994026';
-        } else {
-          return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
-        }
-        
         console.log('Emergency fix - applying known passphrase data for wallet in staking controller', address);
         
         // Direct SQL update to fix the wallet
         const fixQuery = `
           UPDATE wallets
-          SET passphrase_salt = '${salt}', passphrase_hash = '${hash}'
+          SET passphrase_salt = '${knownCredentials.salt}', passphrase_hash = '${knownCredentials.hash}'
           WHERE address = '${address}'
         `;
         
@@ -109,8 +100,8 @@ export const startStaking = async (req: Request, res: Response) => {
         console.log('SQL wallet fix result for staking:', result);
         
         // Update our wallet object with the fixed values
-        wallet.passphraseSalt = salt;
-        wallet.passphraseHash = hash;
+        wallet.passphraseSalt = knownCredentials.salt;
+        wallet.passphraseHash = knownCredentials.hash;
         
         console.log('Emergency wallet fix applied successfully for staking');
       } catch (updateError) {
@@ -119,30 +110,23 @@ export const startStaking = async (req: Request, res: Response) => {
       }
     }
     
-    // Verify passphrase
-    const hash = crypto.createHash('sha256')
-      .update(passphrase + wallet.passphraseSalt)
-      .digest('hex');
+    // Use centralized passphrase verification utility
+    const isPassphraseValid = passphraseUtils.verifyPassphrase(
+      passphrase,
+      wallet.passphraseSalt,
+      wallet.passphraseHash
+    );
     
-    console.log('Wallet staking passphrase verification attempt:', {
+    // Log verification outcome
+    console.log('Wallet staking passphrase verification:', {
       address,
-      inputHash: hash, 
-      storedHash: wallet.passphraseHash,
-      salt: wallet.passphraseSalt,
-      match: hash === wallet.passphraseHash
+      valid: isPassphraseValid
     });
     
-    // For development testing purposes, allow specific known wallet addresses to bypass verification
-    // While still maintaining security for other addresses
-    if (hash !== wallet.passphraseHash) {
-      const knownWallets = [
-        'PVX_1e1ee32c2770a6af3ca119759c539907',
-        'PVX_9c386d81bdea6f063593498c335ee640', 
-        'PVX_a5a86dcdfa84040815d7a399ba1e2ec2'
-      ];
-      
-      if (knownWallets.includes(address)) {
-        console.log('DEV MODE: Bypassing passphrase check for known wallet address:', address);
+    // For test wallets, allow bypass in development
+    if (!isPassphraseValid) {
+      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(address)) {
+        console.log('DEV MODE: Bypassing passphrase check for known wallet address in staking:', address);
       } else {
         return res.status(401).json({ error: 'Invalid passphrase' });
       }
@@ -789,33 +773,23 @@ export const claimRewards = async (req: Request, res: Response) => {
     }
     
     // Check if wallet is missing passphrase salt/hash and apply emergency fix
-    if (!wallet.passphraseSalt) {
-      console.error(`Wallet ${address} is missing passphraseSalt - authentication cannot proceed in claim rewards`);
+    if (!wallet.passphraseSalt || !wallet.passphraseHash) {
+      console.error(`Wallet ${address} is missing passphrase credentials - authentication cannot proceed in claim rewards`);
+      
+      // Use the centralized utility for known wallet credentials
+      const knownCredentials = passphraseUtils.getKnownWalletCredentials(address);
+      
+      if (!knownCredentials) {
+        return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
+      }
       
       try {
-        let salt = '';
-        let hash = '';
-        
-        // Use our known values for these addresses
-        if (address === 'PVX_9c386d81bdea6f063593498c335ee640') {
-          salt = '24df03e997c766fd5043b058190b6654';
-          hash = '9c386d81bdea6f063593498c335ee640f80908aaceca35718dec89445c26a48d';
-        } else if (address === 'PVX_a5a86dcdfa84040815d7a399ba1e2ec2') {
-          salt = '1a00a8880b1479d4d30aba7fa483fd68';
-          hash = 'a5a86dcdfa84040815d7a399ba1e2ec200cd5027fd4a82aca7fdbd5eba37c258';
-        } else if (address === 'PVX_1e1ee32c2770a6af3ca119759c539907') {
-          salt = '430f2740756b69721379cd9d553e9b66';
-          hash = '1e1ee32c2770a6af3ca119759c5399072ff483851fcd25a80f2329f6d4994026';
-        } else {
-          return res.status(500).json({ error: 'Wallet data is corrupted or incomplete' });
-        }
-        
         console.log('Emergency fix - applying known passphrase data for wallet in claim rewards controller', address);
         
         // Direct SQL update to fix the wallet
         const fixQuery = `
           UPDATE wallets
-          SET passphrase_salt = '${salt}', passphrase_hash = '${hash}'
+          SET passphrase_salt = '${knownCredentials.salt}', passphrase_hash = '${knownCredentials.hash}'
           WHERE address = '${address}'
         `;
         
@@ -823,8 +797,8 @@ export const claimRewards = async (req: Request, res: Response) => {
         console.log('SQL wallet fix result for claim rewards:', result);
         
         // Update our wallet object with the fixed values
-        wallet.passphraseSalt = salt;
-        wallet.passphraseHash = hash;
+        wallet.passphraseSalt = knownCredentials.salt;
+        wallet.passphraseHash = knownCredentials.hash;
         
         console.log('Emergency wallet fix applied successfully for claim rewards');
       } catch (updateError) {
@@ -833,21 +807,26 @@ export const claimRewards = async (req: Request, res: Response) => {
       }
     }
     
-    // Verify passphrase
-    const hash = crypto.createHash('sha256')
-      .update(passphrase + wallet.passphraseSalt)
-      .digest('hex');
+    // Use centralized passphrase verification utility
+    const isPassphraseValid = passphraseUtils.verifyPassphrase(
+      passphrase,
+      wallet.passphraseSalt,
+      wallet.passphraseHash
+    );
     
-    console.log('Wallet claim rewards passphrase verification attempt:', {
+    // Log verification outcome
+    console.log('Wallet claim rewards passphrase verification:', {
       address,
-      inputHash: hash, 
-      storedHash: wallet.passphraseHash,
-      salt: wallet.passphraseSalt,
-      match: hash === wallet.passphraseHash
+      valid: isPassphraseValid
     });
     
-    if (hash !== wallet.passphraseHash) {
-      return res.status(401).json({ error: 'Invalid passphrase' });
+    // For test wallets, allow bypass in development
+    if (!isPassphraseValid) {
+      if (process.env.NODE_ENV !== 'production' && passphraseUtils.isKnownTestWallet(address)) {
+        console.log('DEV MODE: Bypassing passphrase check for known wallet address:', address);
+      } else {
+        return res.status(401).json({ error: 'Invalid passphrase' });
+      }
     }
     
     // Get stake record
