@@ -126,7 +126,20 @@
         "createdAt": "2025-05-10T13:11:34.476Z",
         "lastUpdated": "2025-05-10T13:11:34.476Z",
         "passphraseSalt": "504083344049caf789e6827e1abcd93f",
-        "passphraseHash": "ab2ad75630924107a9030383da8bd5b174278ddecf413133fb08fc89b16e253b"
+        "passphraseHash": "ab2ad75630924107a9030383da8bd5b174278ddecf413133fb08fc89b16e253b",
+        "lastSynced": "2025-05-10T13:11:34.476Z"
+      }
+    ],
+    [
+      "PVX_3463a81a474002a6cf65eacae2b9a410",
+      {
+        "address": "PVX_3463a81a474002a6cf65eacae2b9a410",
+        "publicKey": "290540165505de895a84dd41d41a60d73693725eae0f71c64a50703e6678e46b",
+        "balance": "1000000",
+        "createdAt": "2025-05-10T13:58:37.836Z",
+        "lastUpdated": "2025-05-10T13:58:37.836Z",
+        "passphraseSalt": "d3658a315ce4f70f964439fc2fa8d5e5",
+        "passphraseHash": "3463a81a474002a6cf65eacae2b9a41072d9cc7e587b327f25d1a509d7f85ad9"
       }
     ]
   ],
