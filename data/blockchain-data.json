@@ -112,9 +112,21 @@
         "balance": "0",
         "createdAt": "2025-05-07T15:49:53.480Z",
         "lastUpdated": "2025-05-09T18:32:46.586Z",
-        "lastSynced": "2025-05-08T23:26:52.937Z",
+        "lastSynced": "2025-05-09T18:32:46.586Z",
         "passphraseSalt": "430f2740756b69721379cd9d553e9b66",
         "passphraseHash": "1e1ee32c2770a6af3ca119759c5399072ff483851fcd25a80f2329f6d4994026"
+      }
+    ],
+    [
+      "PVX_ab2ad75630924107a9030383da8bd5b1",
+      {
+        "address": "PVX_ab2ad75630924107a9030383da8bd5b1",
+        "publicKey": "980946267d5f78249901c2e80a080544db36672749dea9e5da925646321770de",
+        "balance": "1000000",
+        "createdAt": "2025-05-10T13:11:34.476Z",
+        "lastUpdated": "2025-05-10T13:11:34.476Z",
+        "passphraseSalt": "504083344049caf789e6827e1abcd93f",
+        "passphraseHash": "ab2ad75630924107a9030383da8bd5b174278ddecf413133fb08fc89b16e253b"
       }
     ]
   ],
