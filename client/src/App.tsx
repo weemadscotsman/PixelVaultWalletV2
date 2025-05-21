@@ -29,8 +29,10 @@ import TransactionVisualizerPage from "@/pages/TransactionVisualizerPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
+import React from "react";
 import { AnimatePresence } from "framer-motion";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { useApiConnectionStatus } from "@/components/ui/api-status-toast";
 
 // Router component
 function Router() {
@@ -79,6 +81,32 @@ function Router() {
 }
 
 function App() {
+  // Use global connection status monitoring to show toasts for API errors
+  const apiStatus = useApiConnectionStatus();
+  
+  // Handle connection error monitoring in network requests
+  // This will show appropriate toasts when 502 errors occur
+  React.useEffect(() => {
+    // Listen for fetch errors that might indicate API connectivity issues
+    const handleFetchErrors = (event: any) => {
+      if (event.reason && (
+        event.reason.message?.includes('502') || 
+        event.reason.message?.includes('503') ||
+        event.reason.message?.includes('network error')
+      )) {
+        apiStatus.reportConnectionIssue(event.reason.message);
+      }
+    };
+    
+    // Set up global error handler for unhandled promise rejections
+    window.addEventListener('unhandledrejection', handleFetchErrors);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('unhandledrejection', handleFetchErrors);
+    };
+  }, [apiStatus]);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
