@@ -3,7 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { UnifiedMatrixRain } from "@/components/ui/UnifiedMatrixRain";
+import { MatrixRain } from "@/components/effects/MatrixRain";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -88,8 +88,8 @@ function App() {
       >
         <AuthProvider>
           <TooltipProvider>
-            {/* Global Matrix Rain - completely unified effect across all pages */}
-            <UnifiedMatrixRain opacity={0.7} density={2.5} speed={0.8} zIndex={-1} />
+            {/* Global Matrix Rain - simple, efficient, unified effect */}
+            <MatrixRain opacity={0.7} density={2.5} speed={0.8} zIndex={-1} />
             <Toaster />
             <FeedbackButton />
             <Router />

@@ -4,7 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { MobileNavigation } from "./MobileNavigation";
 import { Footer } from "./Footer";
 import { getNetworkStats } from "@/lib/blockchain";
-import { MatrixRain } from "@/components/ui/MatrixRain";
+// Matrix rain is now applied globally
 
 export interface PageLayoutProps {
   children: ReactNode;
