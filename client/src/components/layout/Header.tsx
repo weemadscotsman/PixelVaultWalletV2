@@ -29,12 +29,17 @@ export function Header({ isConnected }: HeaderProps) {
   }, []);
 
   const handleConnect = () => {
-    navigate('/wallet');
+    // Navigate to the wallet page
+    window.location.href = '/wallet';
   };
 
   const handleDisconnect = () => {
-    setActiveWalletAddress(null); // Disconnect by clearing active wallet
-    localStorage.removeItem('activeWalletAddress'); // Clear from storage
+    // Disconnect by clearing active wallet
+    setActiveWalletAddress(null);
+    // Clear from storage - make sure we're using the correct key
+    localStorage.removeItem('activeWallet');
+    // Force page refresh to clear any cached wallet data
+    window.location.href = '/';
   };
 
   return (
