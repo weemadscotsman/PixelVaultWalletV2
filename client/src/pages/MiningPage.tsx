@@ -28,7 +28,7 @@ interface MiningStats {
 export default function MiningPage() {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [, navigate] = useLocation();
+  const [, setLocation] = useLocation();
   const [hardwareType, setHardwareType] = useState<'cpu' | 'gpu' | 'asic'>('cpu');
   const [threads, setThreads] = useState(4);
   const [miningOutput, setMiningOutput] = useState("");
@@ -164,7 +164,7 @@ export default function MiningPage() {
 
   if (isLoadingWallet) {
     return (
-      <PageLayout title="Mining Operations" description="Mine PVX tokens using your computing power">
+      <PageLayout isConnected={!!wallet?.address}>
         <div className="flex justify-center items-center min-h-[60vh]">
           <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
@@ -174,34 +174,43 @@ export default function MiningPage() {
 
   if (!wallet?.address) {
     return (
-      <PageLayout title="Mining Operations" description="Mine PVX tokens using your computing power">
-        <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
-          <Card className="w-full max-w-md bg-card/90 border-red-500/20">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-red-500">
-                <AlertTriangle className="h-6 w-6" />
-                Wallet Required
-              </CardTitle>
-              <CardDescription>
-                You need to connect a wallet before you can start mining PVX tokens.
-              </CardDescription>
-            </CardHeader>
-            <CardFooter>
-              <Button 
-                className="w-full bg-blue-600 hover:bg-blue-500"
-                onClick={() => navigate('/wallet')}
-              >
-                Connect Wallet
-              </Button>
-            </CardFooter>
-          </Card>
+      <PageLayout isConnected={false}>
+        <div className="space-y-4">
+          <h1 className="text-2xl font-bold text-blue-400">Mining Operations</h1>
+          <p className="text-gray-400">Mine PVX tokens using your computing power</p>
+          
+          <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+            <Card className="w-full max-w-md bg-card/90 border-red-500/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-red-500">
+                  <AlertTriangle className="h-6 w-6" />
+                  Wallet Required
+                </CardTitle>
+                <CardDescription>
+                  You need to connect a wallet before you can start mining PVX tokens.
+                </CardDescription>
+              </CardHeader>
+              <CardFooter>
+                <Button 
+                  className="w-full bg-blue-600 hover:bg-blue-500"
+                  onClick={() => setLocation('/wallet')}
+                >
+                  Connect Wallet
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
         </div>
       </PageLayout>
     );
   }
 
   return (
-    <PageLayout title="Mining Operations" description="Mine PVX tokens using your computing power">
+    <PageLayout isConnected={!!wallet?.address}>
+      <div className="space-y-4 mb-6">
+        <h1 className="text-2xl font-bold text-blue-400">Mining Operations</h1>
+        <p className="text-gray-400">Mine PVX tokens using your computing power</p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Mining Control Panel */}
         <div className="md:col-span-2 space-y-6">
@@ -413,7 +422,7 @@ export default function MiningPage() {
               <Button 
                 variant="outline" 
                 className="w-full border-blue-900/50 text-blue-400"
-                onClick={() => navigate('/blockchain')}
+                onClick={() => setLocation('/blockchain')}
               >
                 <Activity className="h-4 w-4 mr-2" />
                 View Blockchain Stats
