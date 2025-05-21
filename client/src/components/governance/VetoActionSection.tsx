@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { Shield, AlertTriangle } from 'lucide-react';
 import { useVetoGuardianByAddress } from '@/hooks/use-veto-guardian-by-address';
-import { Spinner } from '@/components/ui/spinner';
+import Spinner from '@/components/ui/spinner';
 
 interface VetoActionSectionProps {
   walletAddress: string;

@@ -12,7 +12,7 @@ import Spinner from '@/components/ui/spinner';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 
-export function VetoGuardianSection() {
+const VetoGuardianSection = () => {
   const { data: vetoGuardians, isLoading, error } = useVetoGuardians();
   const createMutation = useCreateVetoGuardian();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
@@ -290,4 +290,7 @@ export function VetoGuardianSection() {
       </CardFooter>
     </Card>
   );
-}
+};
+
+export { VetoGuardianSection };
+export default VetoGuardianSection;
