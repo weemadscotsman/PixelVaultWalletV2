@@ -16,7 +16,7 @@ interface VetoActionSectionProps {
 }
 
 export function VetoActionSection({ walletAddress, proposalId }: VetoActionSectionProps) {
-  const { data: vetoGuardian, isLoading } = useVetoGuardianByAddress(walletAddress);
+  const { data: vetoGuardian, isLoading } = useVetoGuardianByAddress(walletAddress || '');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [reason, setReason] = useState('');
   const { toast } = useToast();
@@ -87,7 +87,7 @@ export function VetoActionSection({ walletAddress, proposalId }: VetoActionSecti
       </CardHeader>
       <CardContent className="pt-0">
         <div className="text-xs text-orange-200/90">
-          <p>You are acting as: <span className="font-medium">{vetoGuardian.name}</span></p>
+          <p>You are acting as: <span className="font-medium">{vetoGuardian?.name || 'Guardian'}</span></p>
           {proposalId ? (
             <p className="mt-1">Current proposal: {proposalId.substring(0, 8)}...</p>
           ) : (

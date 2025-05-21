@@ -37,8 +37,9 @@ export const createVetoAction = async (req: Request, res: Response): Promise<voi
     
     // Create veto action
     try {
-      // Match the schema fields correctly
+            // Insert using the correct schema field order to match column definitions
       const [vetoAction] = await db.insert(vetoActions).values({
+        id: undefined, // Let the database auto-generate this
         guardianId: guardianId,
         proposalId: proposalId,
         reason: reason,
