@@ -8,10 +8,10 @@ interface MatrixRainProps {
 }
 
 export function MatrixRain({
-  opacity = 0.7,
+  opacity = 0.8,
   speed = 1,
-  density = 1.5,
-  zIndex = -10
+  density = 2.5,
+  zIndex = -1
 }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -52,8 +52,9 @@ export function MatrixRain({
 
     // Draw function for animation
     const draw = () => {
-      // Semi-transparent black to create fade effect
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      // Almost completely transparent black for very subtle fade effect
+      // This makes the characters stay visible much longer
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < columns; i++) {
@@ -64,16 +65,17 @@ export function MatrixRain({
         const x = i * fontSize;
         const y = drops[i] * fontSize;
         
-        // Vary character appearance
-        if (Math.random() > 0.98) { // Occasionally create very bright characters
-          ctx.fillStyle = `rgba(180, 255, 180, ${opacity})`;
-          ctx.shadowColor = 'rgba(0, 255, 100, 0.8)';
-          ctx.shadowBlur = 10;
-        } else if (drops[i] < 5 && drops[i] > 0) { // Leading characters are brighter
-          ctx.fillStyle = `rgba(100, 255, 100, ${opacity})`;
-          ctx.shadowBlur = 0;
-        } else { // Normal characters
-          ctx.fillStyle = `rgba(0, 255, 70, ${opacity * brightness[i]})`;
+        // ULTRA-BRIGHT character appearance
+        if (Math.random() > 0.90) { // Many more bright characters
+          ctx.fillStyle = `rgba(220, 255, 220, 1.0)`; // Super bright white-green
+          ctx.shadowColor = 'rgba(0, 255, 100, 1.0)';
+          ctx.shadowBlur = 15; // Stronger glow
+        } else if (drops[i] < 5 && drops[i] > 0) { // Leading characters are MUCH brighter
+          ctx.fillStyle = `rgba(150, 255, 150, 1.0)`; // Bright green
+          ctx.shadowColor = 'rgba(0, 255, 100, 0.7)';
+          ctx.shadowBlur = 8; // Some glow
+        } else { // Even "normal" characters are brighter
+          ctx.fillStyle = `rgba(0, 255, 100, 0.9)`; // Higher base opacity
           ctx.shadowBlur = 0;
         }
         
@@ -108,8 +110,12 @@ export function MatrixRain({
       ref={canvasRef}
       className="fixed top-0 left-0 w-full h-full pointer-events-none"
       style={{ 
-        zIndex,
-        mixBlendMode: 'screen'
+        zIndex: 10, // MUCH HIGHER Z-INDEX TO ENSURE VISIBILITY
+        mixBlendMode: 'lighten', // Better blending mode for visibility
+        opacity: 1, // Maximum opacity
+        position: 'fixed', // Ensure it's fixed relative to viewport
+        width: '100vw',
+        height: '100vh'
       }}
     />
   );
