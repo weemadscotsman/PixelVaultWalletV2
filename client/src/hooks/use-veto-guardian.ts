@@ -71,7 +71,6 @@ export function useCreateVetoGuardian() {
       toast({
         title: 'Veto Guardian Created',
         description: 'The veto guardian has been successfully created.',
-        variant: 'success',
       });
     },
     onError: (error: Error) => {
@@ -113,7 +112,6 @@ export function useUpdateVetoGuardian(id: number | string) {
       toast({
         title: 'Veto Guardian Updated',
         description: 'The veto guardian has been successfully updated.',
-        variant: 'success',
       });
     },
     onError: (error: Error) => {

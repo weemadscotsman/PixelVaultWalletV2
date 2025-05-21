@@ -17,6 +17,12 @@ import {
   updateVetoGuardian
 } from '../controllers/vetoGuardianController';
 
+import {
+  createVetoAction,
+  getVetoActionsByProposal,
+  getVetoActionsByGuardian
+} from '../controllers/vetoActionController';
+
 const router = express.Router();
 
 // PROPOSAL ROUTES
@@ -56,5 +62,15 @@ router.post('/veto-guardian/create', createVetoGuardian);
 
 // Update veto guardian (activate/deactivate or modify)
 router.patch('/veto-guardian/:id', updateVetoGuardian);
+
+// VETO ACTION ROUTES
+// Create a new veto action
+router.post('/veto-action', createVetoAction);
+
+// Get veto actions by proposal ID
+router.get('/veto-actions/proposal/:proposalId', getVetoActionsByProposal);
+
+// Get veto actions by guardian ID
+router.get('/veto-actions/guardian/:guardianId', getVetoActionsByGuardian);
 
 export default router;
