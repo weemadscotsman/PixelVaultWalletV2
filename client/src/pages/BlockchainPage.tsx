@@ -50,10 +50,10 @@ export default function BlockchainPage() {
   // Check if wallet is currently mining
   const isMining = miningStats?.isCurrentlyMining || false;
   
-  // Mock data for parts not yet implemented in real API
-  const networkVersion = 'v0.1.42';
-  const consensusHealth = 95;
-  const activeMiners = miningStats ? 1 : 0;
+  // Get real data from blockchain status
+  const activeMiners = blockchainStatus?.activeMiners || 0;
+  const consensusHealth = blockchainStatus?.consensusHealth || 0;
+  const networkVersion = blockchainStatus?.version || 'Loading...';
   
   // Start mining with active wallet
   const handleStartMining = () => {

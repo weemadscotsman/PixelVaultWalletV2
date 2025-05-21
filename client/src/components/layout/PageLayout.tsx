@@ -4,7 +4,7 @@ import { Sidebar } from "./Sidebar";
 import { MobileNavigation } from "./MobileNavigation";
 import { Footer } from "./Footer";
 import { getNetworkStats } from "@/lib/blockchain";
-import { MatrixRainCSS } from "../effects/MatrixRainCSS";
+import { MatrixRain } from "@/components/ui/MatrixRain";
 
 export interface PageLayoutProps {
   children: ReactNode;
@@ -21,8 +21,6 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
   });
   
   const [isLoadingStats, setIsLoadingStats] = useState(true);
-  
-  // Matrix canvas elements are removed in favor of CSS implementation
 
   useEffect(() => {
     // Fetch real network stats when API is available
@@ -30,7 +28,6 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
       setIsLoadingStats(true);
       try {
         const stats = await getNetworkStats();
-        console.log("Fetched network stats:", stats);
         
         // Only update if we have real data
         if (stats.blockHeight > 0 || stats.peers > 0) {
@@ -54,8 +51,8 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-foreground transition-colors duration-200 relative">
-      {/* CSS-based Matrix rain effect */}
-      <MatrixRainCSS />
+      {/* Canvas-based Matrix rain effect with adjustable opacity */}
+      <MatrixRain opacity={0.15} density={1.2} speed={0.7} kanji={true} zIndex={-1} />
       
       {/* Main content with z-index to appear above the matrix effect */}
       <div className="flex flex-col min-h-screen relative" style={{ zIndex: 10 }}>

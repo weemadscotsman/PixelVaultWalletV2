@@ -4,81 +4,115 @@ import { Transaction, Block, NetworkStats } from "@/types/blockchain";
 const API_BASE_URL = "/api";
 
 export async function getNetworkStats(): Promise<NetworkStats> {
-  try {
-    // First try to use the blockchain/status endpoint which has the real blockchain data
-    const response = await fetch(`${API_BASE_URL}/blockchain/status`, {
-      // Add cache-busting to ensure we always get fresh data
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    });
-    
-    if (!response.ok) {
-      // Try the alternative endpoint if the primary one fails
-      const altResponse = await fetch(`${API_BASE_URL}/blockchain/info`, {
+  const endpoints = [
+    '/blockchain/status', 
+    '/blockchain/metrics', 
+    '/blockchain/info',
+    '/blockchain/data',  
+    '/mem-blockchain/stats'
+  ];
+  
+  // Try all endpoints with retry logic
+  for (let i = 0; i < endpoints.length; i++) {
+    try {
+      console.log(`Attempting to fetch blockchain data from ${endpoints[i]}`);
+      
+      // Using fetch with timeout to prevent long-hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
+      const response = await fetch(`${API_BASE_URL}${endpoints[i]}`, {
+        signal: controller.signal,
         headers: {
           'Cache-Control': 'no-cache',
           'Pragma': 'no-cache'
         }
       });
       
-      if (!altResponse.ok) {
-        throw new Error(`Failed to fetch network stats: ${response.statusText}`);
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        console.warn(`Endpoint ${endpoints[i]} failed with status: ${response.status}`);
+        continue; // Try the next endpoint
       }
       
-      const altData = await altResponse.json();
-      console.log("Using alternative blockchain data source:", altData);
+      const data = await response.json();
+      console.log(`Successfully fetched data from ${endpoints[i]}:`, data);
+      
+      // Attempt to get values from any valid field name in the response
+      const blockHeight = 
+        data.latestBlockHeight ?? 
+        data.height ?? 
+        data.currentHeight ?? 
+        (data.latestBlock?.height) ?? 
+        (data.blocks?.[0]?.height) ?? 
+        0;
+        
+      const blockTime = 
+        data.blockTime ?? 
+        data.averageBlockTime ?? 
+        (typeof data.lastBlockTime === 'number' ? 
+          `~${Math.round((Date.now() - data.lastBlockTime) / 1000)} sec` : 
+          "N/A");
+          
+      const peers = 
+        data.peerCount ?? 
+        data.connectedPeers ?? 
+        data.peers ?? 
+        data.activePeers ?? 
+        0;
+        
+      const hashRate = data.networkHashRate ? 
+        `${parseFloat(data.networkHashRate).toFixed(2)} MH/s` : 
+        (data.hashRate ? data.hashRate : "N/A");
       
       return {
-        blockHeight: altData.currentHeight || altData.height || 0,
-        blockTime: altData.averageBlockTime || altData.blockTime || "N/A",
-        peers: altData.connectedPeers || altData.peers || 0,
-        hashRate: altData.networkHashRate ? `${altData.networkHashRate.toFixed(2)} MH/s` : "N/A"
+        blockHeight,
+        blockTime,
+        peers,
+        hashRate
       };
+    } catch (error) {
+      console.error(`Error fetching from ${endpoints[i]}:`, error);
+      // Continue to next endpoint
     }
+  }
+  
+  console.error("All blockchain data endpoints failed");
+  
+  // Directly try to get the latest data from the mem-blockchain
+  try {
+    // Try to get block height directly from the backend memory
+    const response = await fetch(`${API_BASE_URL}/blockchain/latest`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
     
-    const data = await response.json();
-    console.log("Using primary blockchain data source:", data);
-    
-    // Transform the data to match NetworkStats interface - no fallbacks to mock data
-    return {
-      blockHeight: data.latestBlockHeight || data.height || (data.latestBlock ? data.latestBlock.height : 0),
-      blockTime: data.blockTime || data.averageBlockTime || "N/A",
-      peers: data.peerCount || data.connectedPeers || data.peers || 0,
-      hashRate: data.networkHashRate ? 
-                `${data.networkHashRate.toFixed(2)} MH/s` : 
-                (data.hashRate ? data.hashRate : "N/A")
-    };
-  } catch (err) {
-    console.error("Error fetching network stats:", err);
-    
-    // Try a last resort direct attempt on the raw blockchain endpoint
-    try {
-      const lastResortResponse = await fetch(`${API_BASE_URL}/blockchain/raw-stats`);
-      if (lastResortResponse.ok) {
-        const rawData = await lastResortResponse.json();
-        console.log("Using raw blockchain stats data:", rawData);
-        
+    if (response.ok) {
+      const data = await response.json();
+      
+      if (data && typeof data.height === 'number') {
         return {
-          blockHeight: rawData.height || 0,
-          blockTime: rawData.blockTime || "N/A",
-          peers: rawData.peers || 0,
-          hashRate: rawData.hashRate || "N/A"
+          blockHeight: data.height,
+          blockTime: data.timeElapsed ? `~${Math.round(data.timeElapsed / 1000)} sec` : "N/A",
+          peers: data.connections || 0,
+          hashRate: data.hashRate || "N/A"
         };
       }
-    } catch (lastResortErr) {
-      console.error("Last resort blockchain stats fetch also failed:", lastResortErr);
     }
-    
-    // If all attempts fail, return zeroed data - no mock values
-    return {
-      blockHeight: 0,
-      blockTime: "N/A",
-      peers: 0,
-      hashRate: "N/A"
-    };
+  } catch (err) {
+    console.error("Final fallback attempt failed:", err);
   }
+  
+  // Return zeroed state - NOT MOCK DATA
+  return {
+    blockHeight: 0,
+    blockTime: "Syncing...",
+    peers: 0,
+    hashRate: "Syncing..."
+  };
 }
 
 export async function getCurrentBlockHeight(): Promise<number> {
