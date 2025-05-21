@@ -58,11 +58,14 @@ export function Header({ isConnected }: HeaderProps) {
     localStorage.removeItem('activeWallet');
     localStorage.removeItem('wallet');
     localStorage.removeItem('currentWallet');
+    localStorage.removeItem('walletAuth');
+    localStorage.removeItem('token');
     sessionStorage.removeItem('wallet');
     sessionStorage.removeItem('activeWallet');
+    sessionStorage.removeItem('auth');
     
-    // Hard reload the page to completely reset the application state
-    window.location.href = '/';
+    // Redirect directly to the auth page
+    window.location.href = '/auth';
   };
 
   return (
