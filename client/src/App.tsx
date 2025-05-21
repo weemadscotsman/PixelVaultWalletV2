@@ -88,8 +88,8 @@ function App() {
       >
         <AuthProvider>
           <TooltipProvider>
-            {/* Matrix Rain - enhanced matrix effect with glow */}
-            <MatrixRain opacity={0.35} density={1.5} speed={0.8} kanji={true} zIndex={-1} />
+            {/* Matrix Rain - enhanced matrix effect with glow (applied globally) */}
+            <MatrixRain opacity={0.5} density={2} speed={0.7} kanji={true} zIndex={-1} />
             <Toaster />
             <FeedbackButton />
             <Router />
