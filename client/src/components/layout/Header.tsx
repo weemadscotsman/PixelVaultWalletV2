@@ -54,11 +54,15 @@ export function Header({ isConnected }: HeaderProps) {
     // Disconnect by clearing active wallet
     setActiveWalletAddress(null);
     
-    // Clear from storage
+    // Clear ALL wallet data from storage
     localStorage.removeItem('activeWallet');
+    localStorage.removeItem('wallet');
+    localStorage.removeItem('currentWallet');
+    sessionStorage.removeItem('wallet');
+    sessionStorage.removeItem('activeWallet');
     
-    // Navigate to home page
-    setLocation('/');
+    // Hard reload the page to completely reset the application state
+    window.location.href = '/';
   };
 
   return (
