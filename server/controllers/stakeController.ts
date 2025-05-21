@@ -5,7 +5,12 @@ import * as cryptoUtils from '../utils/crypto';
 import * as passphraseUtils from '../utils/passphrase';
 import { StakeRecord } from '../types';
 import { checkStakingBadges } from '../controllers/badgeController';
-import { broadcastTransaction } from '../utils/websocket';
+import { 
+  broadcastTransaction, 
+  broadcastStakingUpdate, 
+  broadcastWalletUpdate, 
+  broadcastStatusUpdate 
+} from '../utils/websocket';
 import { walletDao } from '../database/walletDao';
 import { db } from '../db';
 
@@ -143,6 +148,33 @@ export const startStaking = async (req: Request, res: Response) => {
       // Persist to database
       await transactionDao.createTransaction(dbTransaction);
       console.log(`STAKE_START transaction [${txHash}] saved to database for ${address}`);
+      
+      // Broadcast all events for real-time dashboard updates
+      broadcastTransaction(transaction);
+      
+      // Broadcast staking update to update staking panels
+      broadcastStakingUpdate({ 
+        walletAddress: address,
+        poolId,
+        action: 'start',
+        amount,
+        timestamp: now
+      });
+      
+      // Broadcast wallet update to reflect new balance
+      broadcastWalletUpdate({ 
+        address,
+        balance: wallet.balance,
+        action: 'stake_funds',
+        amount
+      });
+      
+      // Broadcast status update for dashboard metrics
+      broadcastStatusUpdate({
+        totalStaked: pool.totalStaked,
+        poolId,
+        activePools: true
+      });
     } catch (dbError) {
       console.error('Failed to persist stake start transaction to database:', dbError);
       // Don't fail the entire transaction if DB persistence fails
