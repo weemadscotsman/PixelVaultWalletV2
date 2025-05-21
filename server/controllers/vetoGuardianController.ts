@@ -194,17 +194,19 @@ export const createVetoGuardian = async (req: Request, res: Response): Promise<v
     
     try {
       // Try to insert into database
-      const result = await db.insert(vetoGuardians).values({
+      const dbInsert = {
         id: nextId,
         address: address,
         name: name,
-        description: description || null,
+        description: description || "",
         isActive: true,
         appointedAt: new Date(),
-        activeUntil: activeUntil ? new Date(activeUntil) : null,
+        activeUntil: activeUntil ? new Date(activeUntil) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
         createdAt: new Date(),
         updatedAt: new Date()
-      }).returning();
+      };
+      
+      const result = await db.insert(vetoGuardians).values(dbInsert).returning();
       
       // Return created guardian from DB
       res.status(201).json(result[0]);

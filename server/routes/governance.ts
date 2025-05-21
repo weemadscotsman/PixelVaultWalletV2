@@ -9,8 +9,17 @@ import {
   getUserVotingPower
 } from '../controllers/governanceController';
 
+import {
+  getAllVetoGuardians,
+  getVetoGuardianById,
+  getVetoGuardianByAddress,
+  createVetoGuardian,
+  updateVetoGuardian
+} from '../controllers/vetoGuardianController';
+
 const router = express.Router();
 
+// PROPOSAL ROUTES
 // Get all proposals
 router.get('/proposals', getAllProposals);
 
@@ -31,5 +40,21 @@ router.get('/stats', getGovernanceStats);
 
 // Get user voting power
 router.get('/voting-power/:walletAddress', getUserVotingPower);
+
+// VETO GUARDIAN ROUTES
+// Get all veto guardians
+router.get('/veto-guardians', getAllVetoGuardians);
+
+// Get veto guardian by ID
+router.get('/veto-guardian/:id', getVetoGuardianById);
+
+// Get veto guardian by wallet address
+router.get('/veto-guardian/address/:address', getVetoGuardianByAddress);
+
+// Create new veto guardian
+router.post('/veto-guardian/create', createVetoGuardian);
+
+// Update veto guardian (activate/deactivate or modify)
+router.patch('/veto-guardian/:id', updateVetoGuardian);
 
 export default router;

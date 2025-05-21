@@ -1,116 +1,126 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { VetoGuardian, VetoAction } from "@shared/schema";
-import { queryClient, apiRequest } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useToast } from './use-toast';
 
-export interface CreateVetoGuardianData {
+export type VetoGuardian = {
+  id: number;
+  address: string;
+  name: string;
+  description: string | null;
+  isActive: boolean;
+  appointedAt: string;
+  activeUntil: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CreateVetoGuardianRequest = {
   address: string;
   name: string;
   description?: string;
-  active_until?: Date;
-}
-
-export interface VetoProposalData {
-  guardianId: number;
-  reason: string;
-}
+  activeUntil?: string;
+};
 
 export function useVetoGuardians() {
-  return useQuery<VetoGuardian[]>({
+  return useQuery({
     queryKey: ['/api/governance/veto-guardians'],
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useVetoGuardian(id?: number) {
-  return useQuery<VetoGuardian>({
+export function useVetoGuardianById(id: number | string) {
+  return useQuery({
     queryKey: ['/api/governance/veto-guardian', id],
     enabled: !!id,
+    refetchOnWindowFocus: false,
   });
 }
 
-export function useVetoGuardianByAddress(address?: string) {
-  return useQuery<VetoGuardian>({
+export function useVetoGuardianByAddress(address: string) {
+  return useQuery({
     queryKey: ['/api/governance/veto-guardian/address', address],
     enabled: !!address,
+    refetchOnWindowFocus: false,
   });
 }
 
 export function useCreateVetoGuardian() {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
-  
+
   return useMutation({
-    mutationFn: async (data: CreateVetoGuardianData) => {
-      const res = await apiRequest('POST', '/api/governance/veto-guardian/create', data);
-      return await res.json();
+    mutationFn: async (data: CreateVetoGuardianRequest) => {
+      const response = await fetch('/api/governance/veto-guardian/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create veto guardian');
+      }
+
+      return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Veto Guardian Created",
-        description: "New veto guardian has been successfully created.",
-        variant: "default",
-      });
+      // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['/api/governance/veto-guardians'] });
-    },
-    onError: (error) => {
+      
       toast({
-        title: "Failed to Create Veto Guardian",
-        description: error.message || "An error occurred while creating the veto guardian.",
-        variant: "destructive",
+        title: 'Veto Guardian Created',
+        description: 'The veto guardian has been successfully created.',
+        variant: 'success',
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to Create Veto Guardian',
+        description: error.message,
+        variant: 'destructive',
       });
     },
   });
 }
 
-export function useUpdateVetoGuardian() {
+export function useUpdateVetoGuardian(id: number | string) {
+  const queryClient = useQueryClient();
   const { toast } = useToast();
-  
-  return useMutation({
-    mutationFn: async ({ id, isActive }: { id: number; isActive: boolean }) => {
-      const res = await apiRequest('PATCH', `/api/governance/veto-guardian/${id}`, { is_active: isActive });
-      return await res.json();
-    },
-    onSuccess: (data) => {
-      const status = data.is_active ? "activated" : "deactivated";
-      toast({
-        title: `Guardian ${status}`,
-        description: `The veto guardian has been successfully ${status}.`,
-        variant: "default",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/governance/veto-guardians'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/governance/veto-guardian'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Failed to Update Veto Guardian",
-        description: error.message || "An error occurred while updating the veto guardian.",
-        variant: "destructive",
-      });
-    },
-  });
-}
 
-export function useVetoProposal() {
-  const { toast } = useToast();
-  
   return useMutation({
-    mutationFn: async ({ proposalId, data }: { proposalId: number; data: VetoProposalData }) => {
-      const res = await apiRequest('POST', `/api/governance/proposal/${proposalId}/veto`, data);
-      return await res.json();
+    mutationFn: async (data: Partial<VetoGuardian>) => {
+      const response = await fetch(`/api/governance/veto-guardian/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update veto guardian');
+      }
+
+      return response.json();
     },
     onSuccess: () => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['/api/governance/veto-guardians'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/governance/veto-guardian', id] });
+      
       toast({
-        title: "Proposal Vetoed",
-        description: "The proposal has been successfully vetoed.",
-        variant: "default",
+        title: 'Veto Guardian Updated',
+        description: 'The veto guardian has been successfully updated.',
+        variant: 'success',
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/governance/proposals'] });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
-        title: "Failed to Veto Proposal",
-        description: error.message || "An error occurred while vetoing the proposal.",
-        variant: "destructive",
+        title: 'Failed to Update Veto Guardian',
+        description: error.message,
+        variant: 'destructive',
       });
     },
   });
