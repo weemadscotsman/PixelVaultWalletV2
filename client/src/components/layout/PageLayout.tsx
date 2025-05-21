@@ -51,8 +51,8 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-black text-foreground transition-colors duration-200 relative">
-      {/* Canvas-based Matrix rain effect with adjustable opacity */}
-      <MatrixRain opacity={0.15} density={1.2} speed={0.7} kanji={true} zIndex={-1} />
+      {/* Canvas-based Matrix rain effect with higher visibility */}
+      <MatrixRain opacity={0.35} density={1.5} speed={0.8} kanji={true} zIndex={-1} />
       
       {/* Main content with z-index to appear above the matrix effect */}
       <div className="flex flex-col min-h-screen relative" style={{ zIndex: 10 }}>

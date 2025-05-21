@@ -54,7 +54,7 @@ export function MatrixRain({
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       // Set text color and style
-      ctx.fillStyle = `rgba(0, 230, 130, ${opacity})`; // Matrix green with configurable opacity
+      ctx.fillStyle = `rgba(0, 255, 70, ${opacity + 0.2})`; // Brighter Matrix green with increased opacity
       ctx.font = '16px monospace';
 
       // Draw characters
@@ -65,7 +65,16 @@ export function MatrixRain({
         // Draw the character
         const x = i * 20;
         const y = drops[i];
-        ctx.fillText(text, x, y);
+        
+        // Create a subtle glow effect for some characters
+        if (Math.random() > 0.8) {
+          ctx.shadowColor = "rgba(0, 255, 70, 0.8)";
+          ctx.shadowBlur = 10;
+          ctx.fillText(text, x, y);
+          ctx.shadowBlur = 0;
+        } else {
+          ctx.fillText(text, x, y);
+        }
 
         // Reset drop to top if it reaches the bottom or randomly
         if (y > canvas.height || Math.random() > 0.99) {
