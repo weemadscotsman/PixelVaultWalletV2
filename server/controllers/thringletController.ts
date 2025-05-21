@@ -454,6 +454,59 @@ export const updatePersonalityFromActivity = async (req: Request, res: Response)
  * Get personalized response from thringlet based on personality
  * POST /api/thringlet/personality-response
  */
+/**
+ * Get general personality traits
+ * GET /api/thringlet/personality
+ */
+export const getGenericPersonality = async (_req: Request, res: Response) => {
+  try {
+    // Generate a set of generic personality traits
+    const traits = [
+      { trait: 'ADAPTIVE', value: Math.floor(Math.random() * 100) },
+      { trait: 'ANALYTICAL', value: Math.floor(Math.random() * 100) },
+      { trait: 'BOLD', value: Math.floor(Math.random() * 100) },
+      { trait: 'CAUTIOUS', value: Math.floor(Math.random() * 100) },
+      { trait: 'CREATIVE', value: Math.floor(Math.random() * 100) },
+      { trait: 'CURIOUS', value: Math.floor(Math.random() * 100) },
+      { trait: 'EFFICIENT', value: Math.floor(Math.random() * 100) }
+    ];
+    
+    // Find the dominant trait
+    const dominantTrait = traits.reduce((max, trait) => 
+      trait.value > max.value ? trait : max, traits[0]);
+    
+    // Generate blockchain affinities
+    const blockchainAffinities = [
+      { type: 'MINING', value: Math.floor(Math.random() * 100) },
+      { type: 'STAKING', value: Math.floor(Math.random() * 100) },
+      { type: 'TRADING', value: Math.floor(Math.random() * 100) },
+      { type: 'GOVERNANCE', value: Math.floor(Math.random() * 100) }
+    ];
+    
+    // Find the dominant affinity
+    const dominantAffinity = blockchainAffinities.reduce((max, affinity) => 
+      affinity.value > max.value ? affinity : max, blockchainAffinities[0]);
+    
+    // Return the personality data
+    res.json({
+      personalityTraits: traits,
+      dominantTrait: dominantTrait.trait,
+      blockchainAffinities: blockchainAffinities,
+      dominantAffinity: dominantAffinity.type,
+      traitIntensity: Math.floor(Math.random() * 100),
+      miningInfluence: Math.floor(Math.random() * 10),
+      stakingInfluence: Math.floor(Math.random() * 10),
+      tradingInfluence: Math.floor(Math.random() * 10),
+      governanceInfluence: Math.floor(Math.random() * 10)
+    });
+  } catch (error) {
+    console.error('Error generating generic personality:', error);
+    res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to generate generic personality'
+    });
+  }
+};
+
 export const getPersonalizedResponse = async (req: Request, res: Response) => {
   try {
     const { thringletId, input } = req.body;

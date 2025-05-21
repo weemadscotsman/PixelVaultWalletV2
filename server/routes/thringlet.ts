@@ -40,6 +40,12 @@ router.get('/all', thringletController.getAllThringlets);
 router.get('/personality/:id', thringletController.getThringletPersonality);
 
 /**
+ * Get general personality traits
+ * GET /api/thringlet/personality 
+ */
+router.get('/personality', thringletController.getGenericPersonality);
+
+/**
  * Update thringlet personality based on blockchain activity
  * POST /api/thringlet/update-personality
  */

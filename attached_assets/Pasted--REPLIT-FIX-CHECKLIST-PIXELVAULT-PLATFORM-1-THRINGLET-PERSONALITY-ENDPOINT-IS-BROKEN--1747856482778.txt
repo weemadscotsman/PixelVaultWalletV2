@@ -1,0 +1,64 @@
+=== REPLIT FIX CHECKLIST – PIXELVAULT PLATFORM ===
+
+1. THRINGLET PERSONALITY ENDPOINT IS BROKEN
+→ Fix: Implement /api/thringlet/personality properly in Express backend
+→ Validate: Should return JSON of Thringlet traits when called
+
+2. DEAD BUTTONS ON FRONTEND
+→ Audit: Every button across WalletPage, MiningSection, StakingPage, GovernancePage
+→ Link: Make sure they trigger actual API calls AND reflect backend state
+→ Example: Click STAKE should POST to /api/stake/start with wallet auth
+
+3. WALLET SESSION ISN’T PROPAGATING
+→ Fix ConnectWalletButton.tsx:
+   ✓ Must pass wallet address + passphrase securely to backend
+   ✓ On success, store token or hash, not raw passphrase
+→ Fix API handlers to expect and validate the wallet’s session/token
+
+4. MINING PAGE IS DISCONNECTED
+→ Bug: Wallet connected but mining controls are hidden or disabled
+→ Fix: On wallet connect, MiningSection should show mine controls
+→ Action: Button must POST to /api/blockchain/mining/start
+
+5. STAKING LOGIC IS HALF-CONNECTED
+→ Issue: Stake action sometimes posts to wrong controller
+→ Fix: Replace `stakeController.fixed.ts` with main controller in routes
+→ Ensure the /api/stake/start route actually processes wallet-linked stake
+
+6. GAPS IN GOVERNANCE/VETO HOOKS
+→ Fix: All use-veto-guardian hooks must tie to real wallet session
+→ Verify: Veto action routes must resolve to the wallet's session context
+
+7. CONNECT/DISCONNECT BUTTONS MISSING IN HEADER
+→ Add ConnectWalletButton and Disconnect logic globally (Header.tsx)
+→ Ensure Disconnect:
+   ✓ Clears memory
+   ✓ Clears localStorage
+   ✓ Redirects to login page cleanly
+
+8. MISSING LIVE UPDATES
+→ WebSocket endpoint must send:
+   ✓ mining event
+   ✓ staking event
+   ✓ veto/governance event
+→ All dashboard panels should live-sync when data changes
+
+9. BACKEND ROUTE SANITY CHECK
+→ Check for:
+   ✓ Route collisions
+   ✓ Double mounts
+   ✓ "fixed.ts" usage – REMOVE this in production
+→ Example: stakeController.fixed.ts should be deleted or merged
+
+10. DEBUGGING LOGIC POLISH
+→ Remove console.log(JSON.stringify({error: e})) dumps
+→ Add real error handlers with HTTP status and message response
+
+MANDATE: EVERY CLICKABLE ACTION IN THE UI **MUST** RESULT IN A LIVE, TRACKABLE BACKEND RESPONSE.
+
+NO DEAD INTERACTIONS. NO FAKE STATES. NO PLACEHOLDERS.
+
+---
+
+SIGNED: TED / PIXELVAULT
+DREAMFORGE PROTOCOL ENFORCEMENT MODE
