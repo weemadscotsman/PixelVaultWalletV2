@@ -8,10 +8,10 @@ interface MatrixRainProps {
 }
 
 export function MatrixRain({
-  opacity = 0.3,  // Subtle opacity
+  opacity = 0.95,  // MAXIMUM opacity
   speed = 1,
-  density = 1.0,  // Very light density
-  zIndex = -10    // Far behind content
+  density = 2.0,  // High density
+  zIndex = 0      // At same level as content
 }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -57,8 +57,8 @@ export function MatrixRain({
 
     // Draw function for animation
     const draw = () => {
-      // Normal fade rate for better visibility
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      // Very light fade rate for extreme character persistence
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.03)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < columns; i++) {
@@ -71,22 +71,22 @@ export function MatrixRain({
         const x = i * fontSize;
         const y = drops[i] * fontSize;
         
-        // Very subtle matrix effects
-        if (Math.random() > 0.98) { // Very rare bright characters
-          ctx.shadowColor = 'rgba(0, 255, 100, 0.3)';
-          ctx.shadowBlur = 2;
-          ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
-          ctx.font = `${fontSize}px monospace`;
-        } else if (drops[i] % 20 < 1) { // Minimal leading characters
-          ctx.shadowColor = 'rgba(50, 255, 150, 0.2)';
-          ctx.shadowBlur = 1;
-          ctx.fillStyle = 'rgba(0, 200, 0, 0.3)';
-          ctx.font = `${fontSize}px monospace`;
-        } else { // Normal characters extremely dim
-          ctx.shadowColor = 'transparent';
-          ctx.shadowBlur = 0;
-          ctx.fillStyle = `rgba(0, 128, 0, 0.3)`;
-          ctx.font = `${fontSize}px monospace`;
+        // SUPER BOLD MATRIX EFFECTS
+        if (Math.random() > 0.85) { // Many bright characters
+          ctx.shadowColor = 'rgba(0, 255, 70, 1.0)';
+          ctx.shadowBlur = 15;
+          ctx.fillStyle = 'rgba(180, 255, 180, 1.0)'; // Full brightness
+          ctx.font = `bold ${fontSize + 2}px monospace`; // Bold and larger
+        } else if (drops[i] % 3 === 0) { // Many leading characters
+          ctx.shadowColor = 'rgba(0, 255, 70, 0.9)';
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = 'rgba(100, 255, 100, 0.9)';
+          ctx.font = `bold ${fontSize + 1}px monospace`;
+        } else { // Normal characters very visible
+          ctx.shadowColor = 'rgba(0, 200, 0, 0.7)';
+          ctx.shadowBlur = 5;
+          ctx.fillStyle = `rgba(0, 255, 0, 0.8)`;
+          ctx.font = `bold ${fontSize}px monospace`; // Bold everything
         }
         
         // Draw the character with exceptional brightness
