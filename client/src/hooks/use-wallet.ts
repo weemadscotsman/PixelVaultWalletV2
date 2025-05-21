@@ -162,15 +162,28 @@ export function useWallet() {
     return useQuery({
       queryKey: ['/api/wallet', walletAddress],
       queryFn: async () => {
-        const res = await apiRequest('GET', `/api/wallet/${walletAddress}`);
-        if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || `Failed to fetch wallet with address ${walletAddress}`);
+        try {
+          const res = await apiRequest('GET', `/api/wallet/${walletAddress}`, undefined, {
+            retryCount: 5 // Increase retries for critical wallet data
+          });
+          return await res.json() as Wallet;
+        } catch (error) {
+          console.error(`Error fetching wallet ${walletAddress}:`, error);
+          
+          // Check if we have cached wallet data we can use temporarily
+          const cachedData = queryClient.getQueryData(['/api/wallet', walletAddress]) as Wallet;
+          if (cachedData) {
+            console.log("Using cached wallet data while connection is restored");
+            return cachedData;
+          }
+          
+          throw error;
         }
-        return await res.json() as Wallet;
       },
       enabled: !!walletAddress, // Only run query if address is provided
       refetchInterval: 5000, // Refetch every 5 seconds
+      retry: 3, // Retry failed requests 3 times
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 10000), // Exponential backoff with a max of 10 seconds
     });
   };
 
@@ -257,28 +270,61 @@ export function useWallet() {
       
       console.log(`Fetching wallet data for ${activeWallet}`);
       try {
-        const res = await apiRequest('GET', `/api/wallet/${activeWallet}`);
-        if (!res.ok) {
-          const errorStatus = res.status;
-          console.error(`Error fetching wallet: ${errorStatus}`);
-          
-          // If we get a 404, the wallet doesn't exist, so clear it from localStorage
-          if (errorStatus === 404) {
-            console.log('Wallet not found in backend, clearing from localStorage');
-            localStorage.removeItem('activeWallet');
-            setActiveWallet(null);
-          }
+        // Use our enhanced apiRequest with exponential backoff and retries
+        const res = await apiRequest('GET', `/api/wallet/${activeWallet}`, undefined, {
+          retryCount: 5 // Higher number of retries for wallet data which is critical
+        });
+        
+        return await res.json() as Wallet;
+      } catch (error: any) {
+        console.error("Error fetching wallet data:", error);
+        
+        // Special handling for specific error codes
+        if (error.message && error.message.includes('404')) {
+          console.log('Wallet not found in backend, clearing from localStorage');
+          localStorage.removeItem('activeWallet');
+          setActiveWallet(null);
           return null;
         }
         
-        return await res.json() as Wallet;
-      } catch (error) {
-        console.error("Error fetching wallet data:", error);
-        return null;
+        // Check if we have a cached version to use in case of temporary server issues
+        const cachedData = queryClient.getQueryData(['/api/wallet', activeWallet]) as Wallet;
+        if (cachedData) {
+          console.log("Using cached wallet data due to connection error");
+          // Mark data as stale so it will be refreshed as soon as connection is restored
+          queryClient.invalidateQueries({ queryKey: ['/api/wallet', activeWallet] });
+          return {
+            ...cachedData,
+            _fromCache: true
+          };
+        }
+        
+        // If the request still fails after retries but it's just a temporary connection issue
+        // return a minimal wallet object to prevent UI crashes
+        if (error.message && (
+          error.message.includes('502') || 
+          error.message.includes('503') || 
+          error.message.includes('Failed to fetch')
+        )) {
+          console.log("Using minimal wallet object during server connection issues");
+          return {
+            address: activeWallet,
+            publicKey: '',
+            balance: '0',
+            createdAt: new Date().toISOString(),
+            lastSynced: new Date().toISOString(),
+            _connectionError: true
+          } as Wallet;
+        }
+        
+        // For other errors, rethrow
+        throw error;
       }
     },
     enabled: !!activeWallet,
-    refetchInterval: 5000
+    refetchInterval: 5000,
+    retry: 3, // Retry failed requests 3 times
+    retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with a max of 30 seconds
   });
 
   // Function to refresh the wallet balance

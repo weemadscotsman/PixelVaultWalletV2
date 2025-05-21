@@ -1,20 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocation } from 'wouter';
-import { ArrowUpRight, Coins, Scale, Power, Server, FileDown, Key } from 'lucide-react';
+import { ArrowUpRight, Coins, Scale, Power, Server, RefreshCw, Shield, AlertTriangle } from 'lucide-react';
 import { ExportWalletKeys } from './ExportWalletKeys';
+import { useWallet } from '@/hooks/use-wallet';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface WalletActionPanelProps {
   address: string;
   balance: string;
+  connectionError?: boolean;
 }
 
-export function WalletActionPanel({ address, balance }: WalletActionPanelProps) {
+export function WalletActionPanel({ address, balance, connectionError = false }: WalletActionPanelProps) {
   const [currentTab, setCurrentTab] = useState('quick-actions');
   const [, setLocation] = useLocation();
+  const { refreshWalletBalance } = useWallet();
+  const { toast } = useToast();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [networkStatus, setNetworkStatus] = useState<'connected' | 'unstable' | 'disconnected'>('connected');
 
+  // Check network status periodically
+  useEffect(() => {
+    // Initial check
+    checkNetworkStatus();
+    
+    // Set up periodic checks
+    const intervalId = setInterval(checkNetworkStatus, 15000);
+    
+    return () => clearInterval(intervalId);
+  }, []);
+  
+  // Check network connection to server
+  const checkNetworkStatus = async () => {
+    try {
+      const result = await apiRequest('GET', '/api/health', undefined, { 
+        retryCount: 1 // Only try once, we don't want too many retries
+      });
+      if (result.ok) {
+        setNetworkStatus('connected');
+      } else {
+        setNetworkStatus('unstable');
+      }
+    } catch (error) {
+      setNetworkStatus('unstable');
+    }
+  };
+  
+  // Manual refresh of wallet data
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshWalletBalance();
+      await checkNetworkStatus();
+      toast({
+        title: "Data refreshed",
+        description: "Wallet data has been updated",
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh failed",
+        description: "Could not refresh wallet data. Will retry automatically.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+  
   const quickActions = [
     {
       id: 'stake',
@@ -47,12 +103,54 @@ export function WalletActionPanel({ address, balance }: WalletActionPanelProps) 
   ];
 
   return (
-    <Card className="bg-card shadow-lg border-border">
+    <Card className={`bg-card shadow-lg ${connectionError || networkStatus === 'unstable' ? 'border-amber-600/50' : 'border-border'}`}>
       <CardHeader>
         <CardTitle className="text-xl font-bold flex items-center justify-between">
-          <span className="text-primary text-shadow-neon">Blockchain Actions</span>
-          <ExportWalletKeys walletAddress={address} />
+          <div className="flex items-center gap-2">
+            <span className="text-primary text-shadow-neon">Blockchain Actions</span>
+            
+            {/* Network status indicator */}
+            {connectionError || networkStatus === 'unstable' ? (
+              <div className="flex items-center gap-1 text-xs bg-amber-900/30 text-amber-400 px-2 py-1 rounded-full">
+                <AlertTriangle size={12} />
+                <span>Unstable Connection</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-xs bg-green-900/30 text-green-400 px-2 py-1 rounded-full">
+                <Shield size={12} />
+                <span>Connected</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className={`rounded-full ${isRefreshing ? 'animate-spin' : ''}`}
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <RefreshCw size={16} className="text-primary" />
+            </Button>
+            <ExportWalletKeys walletAddress={address} />
+          </div>
         </CardTitle>
+        
+        {/* Connection error warning banner */}
+        {connectionError && (
+          <div className="bg-amber-950/30 border border-amber-700/30 text-amber-400 p-3 rounded-md text-sm mt-2">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium">Connection issues detected</p>
+                <p className="text-amber-300/70 text-xs mt-1">
+                  Some wallet data may not be current. Data will be automatically synchronized when the connection improves.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4">
