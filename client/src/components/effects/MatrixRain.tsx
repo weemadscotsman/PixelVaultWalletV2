@@ -8,10 +8,10 @@ interface MatrixRainProps {
 }
 
 export function MatrixRain({
-  opacity = 0.7,  // Higher opacity for visibility
+  opacity = 0.95,  // MUCH higher opacity for visibility
   speed = 1,
-  density = 2.0,  // Medium density
-  zIndex = -1     // Behind all content
+  density = 3.0,  // Higher density
+  zIndex = 10     // Above much content but below important UI
 }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -57,8 +57,8 @@ export function MatrixRain({
 
     // Draw function for animation
     const draw = () => {
-      // Slightly stronger fade for better balance and visibility
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      // Much more limited fade for EXTREME persistence of characters
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < columns; i++) {
@@ -71,31 +71,32 @@ export function MatrixRain({
         const x = i * fontSize;
         const y = drops[i] * fontSize;
         
-        // Balanced brightness with visible glow
-        if (Math.random() > 0.90) { // Some bright highlight characters
-          // Bright glow with less opacity
-          ctx.shadowColor = 'rgba(0, 255, 100, 0.8)';
-          ctx.shadowBlur = 12;
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'; // Slightly less blinding
-          ctx.font = `bold ${fontSize + 1}px monospace`;
-        } else if (drops[i] % 10 < 2) { // Leading characters have medium glow
-          ctx.shadowColor = 'rgba(50, 255, 150, 0.5)';
-          ctx.shadowBlur = 8;
-          ctx.fillStyle = 'rgba(150, 255, 150, 0.9)';
-          ctx.font = `${fontSize}px monospace`;
-        } else { // Normal characters with still noticeable color
-          ctx.shadowColor = 'rgba(0, 200, 50, 0.3)';
-          ctx.shadowBlur = 3;
-          ctx.fillStyle = `rgba(0, 255, 100, ${Math.min(0.85, brightness[i])})`;
-          ctx.font = `${fontSize}px monospace`;
+        // ULTRA-VIVID BRIGHT MATRIX EFFECTS
+        if (Math.random() > 0.80) { // Many more bright characters
+          // Extreme bright glow
+          ctx.shadowColor = 'rgba(0, 255, 100, 1.0)';
+          ctx.shadowBlur = 20;
+          ctx.fillStyle = 'rgba(255, 255, 255, 1.0)'; // Absolutely blinding white
+          ctx.font = `bold ${fontSize + 2}px monospace`; // Larger
+        } else if (drops[i] % 5 < 2) { // Many more leading characters
+          ctx.shadowColor = 'rgba(50, 255, 150, 0.95)';
+          ctx.shadowBlur = 15;
+          ctx.fillStyle = 'rgba(180, 255, 180, 1.0)'; // Full brightness
+          ctx.font = `bold ${fontSize + 1}px monospace`; // Bold and large
+        } else { // Even normal characters are very bright
+          ctx.shadowColor = 'rgba(0, 200, 50, 0.8)';
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = `rgba(0, 255, 100, 1.0)`; // Full opacity
+          ctx.font = `bold ${fontSize}px monospace`; // Bold everything
         }
         
         // Draw the character with exceptional brightness
         ctx.fillText(chars2Use[i], x, y);
         
-        // Double-draw important characters for extreme visibility
-        if (Math.random() > 0.96) {
-          ctx.fillText(chars2Use[i], x, y); // Draw twice for emphasis
+        // TRIPLE-draw important characters for ULTRA-EXTREME visibility
+        if (Math.random() > 0.85) {
+          ctx.fillText(chars2Use[i], x, y); // Draw 2nd time
+          ctx.fillText(chars2Use[i], x, y); // Draw 3rd time for emphasis
         }
         
         // Update position
