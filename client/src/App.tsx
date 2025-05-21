@@ -11,6 +11,7 @@ import LearningPage from "@/pages/learning-page";
 import WalletPage from "@/pages/WalletPage";
 import BlockchainPage from "@/pages/BlockchainPage";
 import AllBlocksPage from "@/pages/AllBlocksPage";
+import MiningPage from "@/pages/MiningPage";
 import StakingPage from "@/pages/StakingPage";
 import GovernancePage from "@/pages/GovernancePage";
 import ThringletsPage from "@/pages/ThringletsPage";
@@ -55,6 +56,7 @@ function Router() {
           <ProtectedRoute path="/wallet/security" component={WalletPage} />
           <ProtectedRoute path="/blockchain" component={BlockchainPage} />
           <ProtectedRoute path="/blockchain/blocks" component={AllBlocksPage} />
+          <ProtectedRoute path="/mining" component={MiningPage} />
           <ProtectedRoute path="/staking" component={StakingPage} />
           <ProtectedRoute path="/governance" component={GovernancePage} />
           <ProtectedRoute path="/thringlets" component={ThringletsPage} />
