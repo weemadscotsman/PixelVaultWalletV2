@@ -45641,7 +45641,33 @@
         "createdAt": "2025-05-14T15:07:53.131Z",
         "lastUpdated": "2025-05-14T15:07:53.131Z",
         "passphraseSalt": "6ac6dba8ac4c9f9ad52874f2e7afdd5b",
-        "passphraseHash": "efe9a52a72c05a83d6a193402c9ae33bf27f2f11d8951e4bd68c5b50e1be4cdf"
+        "passphraseHash": "efe9a52a72c05a83d6a193402c9ae33bf27f2f11d8951e4bd68c5b50e1be4cdf",
+        "lastSynced": "2025-05-14T15:07:53.131Z"
+      }
+    ],
+    [
+      "PVX_8b1b0c3cd589c324206d7e5b8a657038",
+      {
+        "address": "PVX_8b1b0c3cd589c324206d7e5b8a657038",
+        "publicKey": "c069e8cce5799ea6ec332e6457fab6e01fefd3f21ab90264e8a3744175509f2a",
+        "balance": "1000000",
+        "createdAt": "2025-05-14T23:24:38.415Z",
+        "lastUpdated": "2025-05-14T23:24:38.415Z",
+        "passphraseSalt": "fcca40980a69fd66bfe19e100c40a720",
+        "passphraseHash": "8b1b0c3cd589c324206d7e5b8a657038ee9795b89a3ffd88895b87ebfbe8b88c",
+        "lastSynced": "2025-05-14T23:24:38.415Z"
+      }
+    ],
+    [
+      "PVX_1a67d964d829976d4eaedc8da1a63ed1",
+      {
+        "address": "PVX_1a67d964d829976d4eaedc8da1a63ed1",
+        "publicKey": "1f6edb111d3f2c5e50b91399ec45db78cb2ce9b78d9755f3f20c5d0b8f539b29",
+        "balance": "1000000",
+        "createdAt": "2025-05-21T12:40:31.098Z",
+        "lastUpdated": "2025-05-21T12:40:31.098Z",
+        "passphraseSalt": "ec000a35860232c1fdda2395e6db4d2d",
+        "passphraseHash": "1a67d964d829976d4eaedc8da1a63ed1600439663f4a6d9a1503269904b5c70d"
       }
     ]
   ],

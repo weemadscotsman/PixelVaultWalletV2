@@ -90,7 +90,7 @@ h1, h2, h3, h4, h5, h6 {
   width: 100%;
   height: 100%;
   z-index: -1;
-  opacity: 0.8; /* Boosted visibility */
+  opacity: 1.8; /* Boosted visibility */
   pointer-events: none;
 }
 
@@ -158,7 +158,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Cyberpunk Terminal Panel */
 .terminal-panel {
-  background-color: rgba(0, 0, 0, 0.85); /* 85% opacity for panels */
+  background-color: rgba(0, 0, 0, 0.75); /* 75% opacity for panels */
   border: 1px solid rgba(0, 162, 255, 0.6);
   border-radius: 4px;
   box-shadow: 0 0 15px rgba(0, 162, 255, 0.3);
@@ -168,7 +168,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Sidebar panel */
 .sidebar-panel {
-  background-color: rgba(0, 0, 0, 0.95); /* 95% opacity for sidebar */
+  background-color: rgba(0, 0, 0, 0.75); /* 75% opacity for sidebar */
   border-right: 1px solid rgba(0, 162, 255, 0.6);
   box-shadow: 0 0 15px rgba(0, 162, 255, 0.3);
   color: #00a2ff;
