@@ -114,7 +114,18 @@ export function CreateStakeDialog({
       amount: string;
       passphrase: string;
     }) => {
-      const res = await apiRequest('POST', '/api/stake/start', data);
+      // Make sure amount is an integer - backend expects whole μPVX units
+      const parsedAmount = parseInt(data.amount.replace(/\D/g, ''), 10);
+      
+      // Send the formatted data to match backend expectations
+      const formattedData = {
+        ...data,
+        amount: parsedAmount.toString() // Whole number as string
+      };
+      
+      console.log("Staking with amount:", parsedAmount);
+      
+      const res = await apiRequest('POST', '/api/stake/start', formattedData);
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to create stake');
