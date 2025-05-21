@@ -15,7 +15,7 @@ export function MatrixRainNew() {
     canvas.style.height = '100vh';
     canvas.style.zIndex = '10'; // Higher z-index to show above content
     canvas.style.pointerEvents = 'none'; // Don't capture clicks
-    canvas.style.opacity = '0.75';
+    canvas.style.opacity = '0.8'; // Increased opacity for more visibility
     canvas.style.mixBlendMode = 'overlay';
     canvas.className = 'matrix-rain-forced'; // Add class for additional styling options
     
@@ -33,7 +33,7 @@ export function MatrixRainNew() {
     const characters = 'アカサタナハマヤラワイキシチニヒミリウクスツヌフムユルエケセテネヘメレオコソトノホモヨロヲンPVX0123456789';
     
     const fontSize = 14;
-    const columns = Math.ceil(canvas.width / fontSize * 2); // Higher density
+    const columns = Math.ceil(canvas.width / fontSize * 1.5); // Reduced density for better visibility
     
     // Initialize drops
     const drops: number[] = [];
@@ -68,7 +68,7 @@ export function MatrixRainNew() {
         if (y > canvas.height && Math.random() > 0.98) {
           drops[i] = 0;
         } else {
-          drops[i] += 0.75; // Slower speed
+          drops[i] += 0.5; // Even slower speed for better visibility
         }
       }
       
