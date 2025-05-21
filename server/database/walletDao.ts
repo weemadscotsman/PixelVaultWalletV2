@@ -39,16 +39,43 @@ export class WalletDao {
         passphrase_hash: dbWallet.passphrase_hash ? 'exists' : 'missing'
       });
 
-      // Insert wallet with all fields explicitly
-      await db.insert(wallets).values({
-        address: dbWallet.address,
-        public_key: dbWallet.public_key,
-        balance: dbWallet.balance,
-        created_at: dbWallet.created_at,
-        last_updated: dbWallet.last_updated,
-        passphrase_salt: dbWallet.passphrase_salt,
-        passphrase_hash: dbWallet.passphrase_hash
-      });
+      // Insert wallet using raw SQL query to ensure proper field mapping
+      const { pool } = await import('../db');
+      const insertQuery = {
+        text: `
+          INSERT INTO wallets (
+            address, public_key, balance, created_at, last_updated, 
+            passphrase_salt, passphrase_hash
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `,
+        values: [
+          dbWallet.address,
+          dbWallet.public_key || '',
+          dbWallet.balance || '0',
+          dbWallet.created_at || new Date(),
+          dbWallet.last_updated || new Date(),
+          dbWallet.passphrase_salt, // Critical for authentication
+          dbWallet.passphrase_hash  // Critical for authentication
+        ]
+      };
+      
+      try {
+        // Execute the direct insert query
+        await pool.query(insertQuery);
+        console.log('Direct SQL wallet creation successful with credentials for:', dbWallet.address);
+      } catch (sqlError) {
+        console.error('Direct SQL error on wallet creation:', sqlError);
+        // Fall back to Drizzle ORM insert as backup
+        await db.insert(wallets).values({
+          address: dbWallet.address,
+          public_key: dbWallet.public_key || '',
+          balance: dbWallet.balance || '0',
+          created_at: dbWallet.created_at || new Date(),
+          last_updated: dbWallet.last_updated || new Date(),
+          passphrase_salt: dbWallet.passphrase_salt || null,
+          passphrase_hash: dbWallet.passphrase_hash || null
+        });
+      }
       
       // Return original wallet
       return wallet;
