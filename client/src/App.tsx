@@ -3,7 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { MatrixRain } from "@/components/effects/MatrixRain";
+import { MatrixRainNew } from "@/components/effects/MatrixRainNew";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -89,7 +89,7 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             {/* Global Matrix Rain with maximum visibility settings */}
-            <MatrixRain opacity={1} density={2.5} speed={1.2} zIndex={5} />
+            <MatrixRainNew />
             <Toaster />
             <FeedbackButton />
             <Router />
