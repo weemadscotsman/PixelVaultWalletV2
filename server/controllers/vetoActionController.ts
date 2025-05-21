@@ -37,12 +37,12 @@ export const createVetoAction = async (req: Request, res: Response): Promise<voi
     
     // Create veto action
     try {
+      // Match the schema fields correctly
       const [vetoAction] = await db.insert(vetoActions).values({
-        guardianId,
-        proposalId,
-        reason,
-        actionDate: new Date(),
-        createdAt: new Date()
+        guardianId: guardianId,
+        proposalId: proposalId,
+        reason: reason,
+        actionDate: new Date()
       }).returning();
       
       res.status(201).json(vetoAction);
