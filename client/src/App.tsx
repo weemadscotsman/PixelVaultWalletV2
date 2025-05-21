@@ -3,7 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { MatrixBackground } from "@/components/ui/MatrixBackground";
+import { MatrixRain } from "@/components/ui/MatrixRain";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";
@@ -88,8 +88,8 @@ function App() {
       >
         <AuthProvider>
           <TooltipProvider>
-            {/* Matrix Background - this adds the kanji matrix rain effect */}
-            <MatrixBackground />
+            {/* Matrix Rain - enhanced matrix effect with glow */}
+            <MatrixRain opacity={0.35} density={1.5} speed={0.8} kanji={true} zIndex={-1} />
             <Toaster />
             <FeedbackButton />
             <Router />
