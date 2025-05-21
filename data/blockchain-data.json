@@ -45732,7 +45732,20 @@
         "createdAt": "2025-05-21T13:12:18.456Z",
         "lastUpdated": "2025-05-21T13:12:18.456Z",
         "passphraseSalt": "a2311c137e1bf76d85eee0b847a378f5",
-        "passphraseHash": "8e12ab691f1cf4f39037948a7b7ff52db8ed0d63502bd2be3f7a203297e93f03"
+        "passphraseHash": "8e12ab691f1cf4f39037948a7b7ff52db8ed0d63502bd2be3f7a203297e93f03",
+        "lastSynced": "2025-05-21T13:12:18.456Z"
+      }
+    ],
+    [
+      "PVX_ba6a714f22a14e08a0fa2007f805b9ff",
+      {
+        "address": "PVX_ba6a714f22a14e08a0fa2007f805b9ff",
+        "publicKey": "493c1ad1b3fc9acaa1f37c6a43425becd2e9ba7f5340c74dd4882f43b3c581e1",
+        "balance": "1000000",
+        "createdAt": "2025-05-21T13:16:45.791Z",
+        "lastUpdated": "2025-05-21T13:16:45.791Z",
+        "passphraseSalt": "8f3632c82d04fd39ea5a50c6fdb34d55",
+        "passphraseHash": "ba6a714f22a14e08a0fa2007f805b9ff5383fa6aa89cdb086382718a1fd963c7"
       }
     ]
   ],
