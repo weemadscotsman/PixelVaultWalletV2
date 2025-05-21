@@ -196,27 +196,49 @@ export function Sidebar({ networkStats }: SidebarProps) {
           </ul>
 
           <div className="mt-8 px-4 relative z-10">
-            <h3 className="text-xs uppercase text-blue-400 font-semibold mb-3 pl-2 text-shadow-neon">
-              Network Status
-            </h3>
+            <div className="flex items-center justify-between mb-3 pl-2">
+              <h3 className="text-xs uppercase text-blue-400 font-semibold text-shadow-neon">
+                Network Status
+              </h3>
+              {networkStats.blockHeight === 0 && networkStats.blockTime === "Loading..." && (
+                <div className="text-xs text-blue-300 flex items-center">
+                  <span className="h-2 w-2 bg-blue-400 rounded-full animate-pulse mr-1"></span>
+                  Syncing...
+                </div>
+              )}
+            </div>
             <div className="bg-black bg-opacity-78 border border-blue-800 p-4 rounded-md text-sm space-y-3 text-blue-400 shadow-md shadow-blue-900/30">
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Block Height:</span>
                 <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">
-                  {networkStats.blockHeight.toLocaleString()}
+                  {networkStats.blockHeight ? networkStats.blockHeight.toLocaleString() : (
+                    <span className="animate-pulse">Syncing...</span>
+                  )}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Block Time:</span>
-                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">{networkStats.blockTime}</span>
+                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">
+                  {networkStats.blockTime === "Loading..." ? (
+                    <span className="animate-pulse">Syncing...</span>
+                  ) : networkStats.blockTime}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Peers:</span>
-                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">{networkStats.peers}</span>
+                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">
+                  {networkStats.peers || (
+                    <span className="animate-pulse">Syncing...</span>
+                  )}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-blue-300">Hash Rate:</span>
-                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">{networkStats.hashRate}</span>
+                <span className="font-mono font-medium text-shadow-neon bg-black bg-opacity-78 px-2 py-1 rounded border border-blue-900/50">
+                  {networkStats.hashRate === "Loading..." ? (
+                    <span className="animate-pulse">Syncing...</span>
+                  ) : networkStats.hashRate}
+                </span>
               </div>
             </div>
           </div>

@@ -12,28 +12,42 @@ export interface PageLayoutProps {
 }
 
 export function PageLayout({ children, isConnected }: PageLayoutProps) {
+  // Initialize with loading state rather than mock values
   const [networkStats, setNetworkStats] = useState({
-    blockHeight: 3421869,
-    blockTime: "~15 sec",
-    peers: 24,
-    hashRate: "12.4 TH/s"
+    blockHeight: 0,
+    blockTime: "Loading...",
+    peers: 0,
+    hashRate: "Loading..."
   });
+  
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
   
   // Matrix canvas elements are removed in favor of CSS implementation
 
   useEffect(() => {
     // Fetch real network stats when API is available
     const fetchNetworkStats = async () => {
+      setIsLoadingStats(true);
       try {
         const stats = await getNetworkStats();
-        setNetworkStats(stats);
+        console.log("Fetched network stats:", stats);
+        
+        // Only update if we have real data
+        if (stats.blockHeight > 0 || stats.peers > 0) {
+          setNetworkStats(stats);
+        }
       } catch (error) {
         console.error("Error fetching network stats:", error);
+      } finally {
+        setIsLoadingStats(false);
       }
     };
 
+    // Immediate initial fetch
     fetchNetworkStats();
-    const interval = setInterval(fetchNetworkStats, 60000); // Update every minute
+    
+    // More frequent updates (every 10 seconds) for real-time data
+    const interval = setInterval(fetchNetworkStats, 10000);
     
     return () => clearInterval(interval);
   }, []);
