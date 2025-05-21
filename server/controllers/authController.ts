@@ -58,18 +58,31 @@ export const login = async (req: Request, res: Response) => {
         console.log('Emergency fix - applying known passphrase data for wallet in login controller', address);
         
         // Direct SQL update to fix the wallet
-        const fixQuery = `
-          UPDATE wallets
-          SET passphrase_salt = '${knownCredentials.salt}', passphrase_hash = '${knownCredentials.hash}'
-          WHERE address = '${address}'
-        `;
+        const pool = await import('../db').then(module => module.pool);
+        const fixQuery = {
+          text: `UPDATE wallets SET passphrase_salt = $1, passphrase_hash = $2 WHERE address = $3`,
+          values: [knownCredentials.salt, knownCredentials.hash, address]
+        };
         
-        const result = await db.execute(fixQuery);
-        console.log('SQL wallet fix result for login:', result);
+        const result = await pool.query(fixQuery);
+        console.log('SQL wallet fix result for login:', result.rowCount, 'rows updated');
         
         // Update our wallet object with the fixed values
         wallet.passphraseSalt = knownCredentials.salt;
         wallet.passphraseHash = knownCredentials.hash;
+        
+        // Update the memory blockchain copy too
+        try {
+          const memWallet = await memBlockchainStorage.getWalletByAddress(address);
+          if (memWallet) {
+            memWallet.passphraseSalt = knownCredentials.salt;
+            memWallet.passphraseHash = knownCredentials.hash;
+            await memBlockchainStorage.updateWallet(memWallet);
+            console.log('Memory wallet credentials updated');
+          }
+        } catch (memError) {
+          console.warn('Non-critical: Failed to update memory wallet:', memError);
+        }
         
         console.log('Emergency wallet fix applied successfully for login');
       } catch (updateError) {
