@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 interface HeaderProps {
   isConnected: boolean;
@@ -13,6 +14,7 @@ export function Header({ isConnected }: HeaderProps) {
   const { wallet, setActiveWalletAddress, activeWallet } = useWallet();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { logout } = useAuth();
 
   // Add shadow when scrolled
   useEffect(() => {
@@ -44,28 +46,39 @@ export function Header({ isConnected }: HeaderProps) {
     setLocation('/wallet');
   };
 
-  const handleDisconnect = () => {
-    // Show toast for feedback
-    toast({
-      title: "Wallet disconnected",
-      description: "Successfully disconnected from wallet",
-    });
-    
-    // Disconnect by clearing active wallet
-    setActiveWalletAddress(null);
-    
-    // Clear ALL wallet data from storage
-    localStorage.removeItem('activeWallet');
-    localStorage.removeItem('wallet');
-    localStorage.removeItem('currentWallet');
-    localStorage.removeItem('walletAuth');
-    localStorage.removeItem('token');
-    sessionStorage.removeItem('wallet');
-    sessionStorage.removeItem('activeWallet');
-    sessionStorage.removeItem('auth');
-    
-    // Redirect directly to the auth page
-    window.location.href = '/auth';
+  const handleDisconnect = async () => {
+    try {
+      // Show toast for feedback
+      toast({
+        title: "Disconnecting wallet",
+        description: "Logging you out...",
+      });
+      
+      // First use the auth system's logout function
+      await logout();
+      
+      // Then clear wallet data
+      setActiveWalletAddress(null);
+      
+      // Clear ALL wallet data from storage
+      localStorage.removeItem('activeWallet');
+      localStorage.removeItem('wallet');
+      localStorage.removeItem('currentWallet');
+      localStorage.removeItem('walletAuth');
+      localStorage.removeItem('pvx_token');
+      sessionStorage.removeItem('wallet');
+      sessionStorage.removeItem('activeWallet');
+      sessionStorage.removeItem('auth');
+      
+      // Hard redirect to auth page and force a full page refresh
+      setTimeout(() => {
+        window.location.replace('/auth');
+      }, 300);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Force redirect to auth page as a fallback
+      window.location.replace('/auth');
+    }
   };
 
   return (
