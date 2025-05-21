@@ -2,7 +2,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Loader2, Shield, Key, PlusCircle } from "lucide-react";
+import { Loader2, Shield, Key, PlusCircle, Download, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -51,7 +51,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function CreateWalletForm() {
   const [showPassphrase, setShowPassphrase] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [walletCreated, setWalletCreated] = useState<{address: string, publicKey: string} | null>(null);
+  const [walletCreated, setWalletCreated] = useState<{address: string, publicKey: string, passphrase: string} | null>(null);
   const { toast } = useToast();
 
   // Create form
@@ -85,7 +85,8 @@ export function CreateWalletForm() {
       const data = await res.json();
       setWalletCreated({
         address: data.address,
-        publicKey: data.pubkey
+        publicKey: data.pubkey,
+        passphrase: values.passphrase
       });
       
       toast({
@@ -109,6 +110,53 @@ export function CreateWalletForm() {
     } finally {
       setLoading(false);
     }
+  };
+  
+  // Function to export wallet information to a file
+  const exportWalletToFile = () => {
+    if (!walletCreated) return;
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `pvx-paper-wallet-${walletCreated.address.substring(4, 12)}-${timestamp}.txt`;
+    
+    const walletInfo = `
+======== PVX PAPER WALLET ========
+IMPORTANT: Store this file securely offline!
+Created: ${new Date().toLocaleString()}
+
+WALLET ADDRESS:
+${walletCreated.address}
+
+PUBLIC KEY:
+${walletCreated.publicKey}
+
+PRIVATE PASSPHRASE (KEEP SECRET!):
+${walletCreated.passphrase}
+
+INSTRUCTIONS:
+1. Print this document or store it on a secure offline device
+2. Keep your passphrase completely private
+3. Never share your passphrase with anyone
+4. To access your wallet, you'll need both the address and passphrase
+
+======== PVX BLOCKCHAIN ========
+    `;
+    
+    const blob = new Blob([walletInfo], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    toast({
+      title: "Paper Wallet Downloaded",
+      description: "Store this file in a secure location. Anyone with access to this file can access your wallet!",
+      variant: "default",
+    });
   };
 
   return (
@@ -143,13 +191,23 @@ export function CreateWalletForm() {
                 </div>
               </div>
             </div>
-            <Button 
-              className="w-full bg-blue-600 hover:bg-blue-500"
-              onClick={() => setWalletCreated(null)}
-            >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Create Another Wallet
-            </Button>
+            <div className="space-y-4">
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-500"
+                onClick={exportWalletToFile}
+              >
+                <FileDown className="mr-2 h-4 w-4" />
+                Export Paper Wallet
+              </Button>
+              
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-500"
+                onClick={() => setWalletCreated(null)}
+              >
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create Another Wallet
+              </Button>
+            </div>
           </div>
         ) : (
           <Form {...form}>
