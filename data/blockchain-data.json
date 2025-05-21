@@ -45761,6 +45761,18 @@
         "passphraseHash": "2a2afd40e63346a23f954997a736c545a0888d10d00b965cf0f383325427bb52",
         "lastSynced": "2025-05-21T13:20:27.709Z"
       }
+    ],
+    [
+      "PVX_1295b5490224b2eb64e9724dc091795a",
+      {
+        "address": "PVX_1295b5490224b2eb64e9724dc091795a",
+        "publicKey": "87c3cea0b6d54429a75c2a9c5e0a26c3e0572ec26f0853ea63e23e1153d7cb0c",
+        "balance": "1000000",
+        "createdAt": "2025-05-21T14:52:26.133Z",
+        "lastUpdated": "2025-05-21T14:52:26.133Z",
+        "passphraseSalt": "cd52cace18b6c0ebf39a4d93f955f473",
+        "passphraseHash": "1295b5490224b2eb64e9724dc091795a500dc99ca43c64b0bb17d1f8e34130aa"
+      }
     ]
   ],
   "minerStats": [

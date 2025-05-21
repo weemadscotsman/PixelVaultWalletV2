@@ -230,3 +230,26 @@ export const userLearningProgress = pgTable('user_learning_progress', {
 }, table => ({
   pk: primaryKey({ columns: [table.userId, table.moduleId] }),
 }));
+
+// Veto guardians table for governance
+export const vetoGuardians = pgTable('veto_guardians', {
+  id: integer('id').primaryKey(),
+  address: varchar('address', { length: 100 }).notNull().unique(),
+  name: varchar('name', { length: 255 }).notNull(),
+  description: text('description'),
+  isActive: boolean('is_active').notNull().default(true),
+  appointedAt: timestamp('appointed_at').defaultNow().notNull(),
+  activeUntil: timestamp('active_until'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Veto actions table
+export const vetoActions = pgTable('veto_actions', {
+  id: integer('id').primaryKey(),
+  guardianId: integer('guardian_id').notNull(),
+  proposalId: varchar('proposal_id', { length: 100 }).notNull(),
+  reason: text('reason').notNull(),
+  actionDate: timestamp('action_date').defaultNow().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
