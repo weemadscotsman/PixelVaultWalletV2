@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
 
 interface HeaderProps {
   isConnected: boolean;
@@ -9,8 +10,9 @@ interface HeaderProps {
 
 export function Header({ isConnected }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { wallet, setActiveWalletAddress } = useWallet();
+  const { wallet, setActiveWalletAddress, activeWallet } = useWallet();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
   // Add shadow when scrolled
   useEffect(() => {
@@ -28,18 +30,35 @@ export function Header({ isConnected }: HeaderProps) {
     };
   }, []);
 
+  // Track active wallet status in local storage
+  useEffect(() => {
+    // Check local storage when component mounts
+    const storedWallet = localStorage.getItem('activeWallet');
+    if (storedWallet && !activeWallet) {
+      setActiveWalletAddress(storedWallet);
+    }
+  }, [activeWallet, setActiveWalletAddress]);
+
   const handleConnect = () => {
     // Navigate to the wallet page
-    window.location.href = '/wallet';
+    setLocation('/wallet');
   };
 
   const handleDisconnect = () => {
+    // Show toast for feedback
+    toast({
+      title: "Wallet disconnected",
+      description: "Successfully disconnected from wallet",
+    });
+    
     // Disconnect by clearing active wallet
     setActiveWalletAddress(null);
-    // Clear from storage - make sure we're using the correct key
+    
+    // Clear from storage
     localStorage.removeItem('activeWallet');
-    // Force page refresh to clear any cached wallet data
-    window.location.href = '/';
+    
+    // Navigate to home page
+    setLocation('/');
   };
 
   return (
