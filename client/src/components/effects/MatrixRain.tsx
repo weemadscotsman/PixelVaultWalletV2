@@ -8,10 +8,10 @@ interface MatrixRainProps {
 }
 
 export function MatrixRain({
-  opacity = 1.0,  // Full opacity
+  opacity = 0.25,  // Subtle background opacity
   speed = 1,
-  density = 3.0,  // Higher density
-  zIndex = 100    // Extremely high z-index to ensure visibility everywhere
+  density = 1.5,  // Lower density
+  zIndex = -1     // Behind all content
 }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -125,9 +125,9 @@ export function MatrixRain({
       ref={canvasRef}
       className="fixed top-0 left-0 w-full h-screen pointer-events-none"
       style={{ 
-        zIndex: zIndex, // EXTREME z-index to force on top of everything
-        mixBlendMode: 'lighten', // Best blending mode for visibility
-        opacity: 1, // Always full opacity
+        zIndex: zIndex, // Behind content
+        mixBlendMode: 'overlay', // As specified in the guidelines
+        opacity: opacity, // Use the passed opacity
         position: 'fixed', // Fixed position to be visible everywhere
         width: '100vw',
         height: '100vh',
