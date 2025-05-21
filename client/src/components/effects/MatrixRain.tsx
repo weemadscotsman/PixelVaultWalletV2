@@ -8,9 +8,9 @@ interface MatrixRainProps {
 }
 
 export function MatrixRain({
-  opacity = 0.25,  // Subtle background opacity
+  opacity = 0.7,  // Higher opacity for visibility
   speed = 1,
-  density = 1.5,  // Lower density
+  density = 2.0,  // Medium density
   zIndex = -1     // Behind all content
 }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -57,8 +57,8 @@ export function MatrixRain({
 
     // Draw function for animation
     const draw = () => {
-      // Almost no fade for maximum character visibility
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.005)';
+      // Slightly stronger fade for better balance and visibility
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < columns; i++) {
@@ -71,22 +71,22 @@ export function MatrixRain({
         const x = i * fontSize;
         const y = drops[i] * fontSize;
         
-        // SUPER-ULTRA-BRIGHT character appearance
-        if (Math.random() > 0.85) { // Even more bright characters
-          // Add a bright outer glow
-          ctx.shadowColor = 'rgba(0, 255, 100, 1.0)';
-          ctx.shadowBlur = 20;
-          ctx.fillStyle = 'rgba(255, 255, 255, 1.0)'; // White-hot center
-          ctx.font = `bold ${fontSize + 2}px monospace`; // Slightly larger
-        } else if (drops[i] % 10 < 2) { // Leading characters are eye-catching
-          ctx.shadowColor = 'rgba(50, 255, 150, 0.9)';
-          ctx.shadowBlur = 15;
-          ctx.fillStyle = 'rgba(180, 255, 180, 1.0)';
+        // Balanced brightness with visible glow
+        if (Math.random() > 0.90) { // Some bright highlight characters
+          // Bright glow with less opacity
+          ctx.shadowColor = 'rgba(0, 255, 100, 0.8)';
+          ctx.shadowBlur = 12;
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)'; // Slightly less blinding
           ctx.font = `bold ${fontSize + 1}px monospace`;
-        } else { // Even "normal" characters are extremely bright
-          ctx.shadowColor = 'rgba(0, 200, 50, 0.7)';
+        } else if (drops[i] % 10 < 2) { // Leading characters have medium glow
+          ctx.shadowColor = 'rgba(50, 255, 150, 0.5)';
           ctx.shadowBlur = 8;
-          ctx.fillStyle = `rgba(0, 255, 100, ${Math.min(1.0, brightness[i] + 0.2)})`;
+          ctx.fillStyle = 'rgba(150, 255, 150, 0.9)';
+          ctx.font = `${fontSize}px monospace`;
+        } else { // Normal characters with still noticeable color
+          ctx.shadowColor = 'rgba(0, 200, 50, 0.3)';
+          ctx.shadowBlur = 3;
+          ctx.fillStyle = `rgba(0, 255, 100, ${Math.min(0.85, brightness[i])})`;
           ctx.font = `${fontSize}px monospace`;
         }
         
