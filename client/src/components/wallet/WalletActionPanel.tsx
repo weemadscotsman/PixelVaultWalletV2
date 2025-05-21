@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocation } from 'wouter';
-import { ArrowUpRight, Coins, Scale, Power, Server } from 'lucide-react';
+import { ArrowUpRight, Coins, Scale, Power, Server, FileDown, Key } from 'lucide-react';
+import { ExportWalletKeys } from './ExportWalletKeys';
 
 interface WalletActionPanelProps {
   address: string;
@@ -48,8 +49,9 @@ export function WalletActionPanel({ address, balance }: WalletActionPanelProps) 
   return (
     <Card className="bg-card shadow-lg border-border">
       <CardHeader>
-        <CardTitle className="text-xl font-bold flex items-center">
+        <CardTitle className="text-xl font-bold flex items-center justify-between">
           <span className="text-primary text-shadow-neon">Blockchain Actions</span>
+          <ExportWalletKeys walletAddress={address} />
         </CardTitle>
       </CardHeader>
       <CardContent>

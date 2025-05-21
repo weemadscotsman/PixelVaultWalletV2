@@ -1,0 +1,27 @@
+
+DOMException {}
+
+API Error: 401 for POST /api/wallet/PVX_9a9d2aae316d07766be936cef8e1af13/export {"error":"Invalid passphrase"}
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+API Exception for POST /api/wallet/PVX_9a9d2aae316d07766be936cef8e1af13/export: 
+Error {}
+
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+API Error: 401 for POST /api/wallet/PVX_9a9d2aae316d07766be936cef8e1af13/export {"error":"Invalid passphrase"}
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+API Exception for POST /api/wallet/PVX_9a9d2aae316d07766be936cef8e1af13/export: 
+Error {}
+
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
