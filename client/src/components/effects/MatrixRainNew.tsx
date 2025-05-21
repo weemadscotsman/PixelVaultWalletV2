@@ -47,8 +47,10 @@ export function MatrixRainNew() {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      // Green matrix style text
-      ctx.fillStyle = '#0fa';
+      // Neon green matrix style text with glow effect
+      ctx.shadowColor = '#00ff00';
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = '#00ff00';
       ctx.font = `${fontSize}px monospace`;
       
       for (let i = 0; i < drops.length; i++) {
@@ -66,7 +68,7 @@ export function MatrixRainNew() {
         if (y > canvas.height && Math.random() > 0.98) {
           drops[i] = 0;
         } else {
-          drops[i] += 1.25; // Faster speed
+          drops[i] += 0.75; // Slower speed
         }
       }
       
