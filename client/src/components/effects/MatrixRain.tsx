@@ -8,10 +8,10 @@ interface MatrixRainProps {
 }
 
 export function MatrixRain({
-  opacity = 0.8,
+  opacity = 1.0,  // Full opacity
   speed = 1,
-  density = 2.5,
-  zIndex = -1
+  density = 3.0,  // Higher density
+  zIndex = 100    // Extremely high z-index to ensure visibility everywhere
 }: MatrixRainProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -22,6 +22,9 @@ export function MatrixRain({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Force canvas to be above everything
+    canvas.style.zIndex = zIndex.toString();
+    
     // Set canvas dimensions to match viewport
     const setCanvasDimensions = () => {
       canvas.width = window.innerWidth;
@@ -35,87 +38,100 @@ export function MatrixRain({
     const chars = '01PVX私ドラゴンビットコイン仮想通貨マイニング暗号化技術サトシ';
     
     // Calculate number of columns based on density
-    const fontSize = 14;
+    const fontSize = 16; // Larger font for better visibility
     const columns = Math.floor(canvas.width / fontSize * density);
     
     // Arrays to track positions, speeds, and brightness
     const drops: number[] = [];
     const speeds: number[] = [];
     const brightness: number[] = [];
+    const chars2Use: string[] = [];
     
-    // Initialize arrays
+    // Initialize arrays - spread drops more evenly across the screen
     for (let i = 0; i < columns; i++) {
-      drops[i] = Math.floor(Math.random() * -100); // Start above viewport
-      speeds[i] = (Math.random() * 0.5 + 0.5) * speed; // Vary speed
-      brightness[i] = Math.random() * 0.4 + 0.6; // Vary brightness
+      drops[i] = Math.random() * canvas.height / fontSize; // Distribute across screen
+      speeds[i] = (Math.random() * 0.4 + 0.6) * speed; // Slightly more consistent speeds
+      brightness[i] = Math.random() * 0.2 + 0.8; // Higher baseline brightness
+      chars2Use[i] = chars[Math.floor(Math.random() * chars.length)];
     }
 
     // Draw function for animation
     const draw = () => {
-      // Almost completely transparent black for very subtle fade effect
-      // This makes the characters stay visible much longer
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.01)';
+      // Almost no fade for maximum character visibility
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.005)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       for (let i = 0; i < columns; i++) {
-        // Get random character
-        const char = chars[Math.floor(Math.random() * chars.length)];
+        // Update character occasionally
+        if (Math.random() > 0.92) {
+          chars2Use[i] = chars[Math.floor(Math.random() * chars.length)];
+        }
         
         // Calculate position
         const x = i * fontSize;
         const y = drops[i] * fontSize;
         
-        // ULTRA-BRIGHT character appearance
-        if (Math.random() > 0.90) { // Many more bright characters
-          ctx.fillStyle = `rgba(220, 255, 220, 1.0)`; // Super bright white-green
+        // SUPER-ULTRA-BRIGHT character appearance
+        if (Math.random() > 0.85) { // Even more bright characters
+          // Add a bright outer glow
           ctx.shadowColor = 'rgba(0, 255, 100, 1.0)';
-          ctx.shadowBlur = 15; // Stronger glow
-        } else if (drops[i] < 5 && drops[i] > 0) { // Leading characters are MUCH brighter
-          ctx.fillStyle = `rgba(150, 255, 150, 1.0)`; // Bright green
-          ctx.shadowColor = 'rgba(0, 255, 100, 0.7)';
-          ctx.shadowBlur = 8; // Some glow
-        } else { // Even "normal" characters are brighter
-          ctx.fillStyle = `rgba(0, 255, 100, 0.9)`; // Higher base opacity
-          ctx.shadowBlur = 0;
+          ctx.shadowBlur = 20;
+          ctx.fillStyle = 'rgba(255, 255, 255, 1.0)'; // White-hot center
+          ctx.font = `bold ${fontSize + 2}px monospace`; // Slightly larger
+        } else if (drops[i] % 10 < 2) { // Leading characters are eye-catching
+          ctx.shadowColor = 'rgba(50, 255, 150, 0.9)';
+          ctx.shadowBlur = 15;
+          ctx.fillStyle = 'rgba(180, 255, 180, 1.0)';
+          ctx.font = `bold ${fontSize + 1}px monospace`;
+        } else { // Even "normal" characters are extremely bright
+          ctx.shadowColor = 'rgba(0, 200, 50, 0.7)';
+          ctx.shadowBlur = 8;
+          ctx.fillStyle = `rgba(0, 255, 100, ${Math.min(1.0, brightness[i] + 0.2)})`;
+          ctx.font = `${fontSize}px monospace`;
         }
         
-        // Draw the character
-        ctx.font = `${fontSize}px monospace`;
-        ctx.fillText(char, x, y);
+        // Draw the character with exceptional brightness
+        ctx.fillText(chars2Use[i], x, y);
+        
+        // Double-draw important characters for extreme visibility
+        if (Math.random() > 0.96) {
+          ctx.fillText(chars2Use[i], x, y); // Draw twice for emphasis
+        }
         
         // Update position
         drops[i] += speeds[i];
         
-        // Reset when reaching bottom or randomly
-        if (y > canvas.height || Math.random() > 0.995) {
+        // Reset when reaching bottom
+        if (y > canvas.height) {
           drops[i] = 0;
-          speeds[i] = (Math.random() * 0.5 + 0.5) * speed;
-          brightness[i] = Math.random() * 0.4 + 0.6;
+          speeds[i] = (Math.random() * 0.4 + 0.6) * speed;
+          brightness[i] = Math.random() * 0.2 + 0.8;
         }
       }
     };
 
-    // Animation loop
-    const interval = setInterval(draw, 40);
+    // Animation loop with faster refresh rate
+    const interval = setInterval(draw, 33); // 30fps for smoother animation
     
     // Cleanup
     return () => {
       clearInterval(interval);
       window.removeEventListener('resize', setCanvasDimensions);
     };
-  }, [opacity, speed, density]);
+  }, [opacity, speed, density, zIndex]);
 
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full pointer-events-none"
+      className="fixed top-0 left-0 w-full h-screen pointer-events-none"
       style={{ 
-        zIndex: 10, // MUCH HIGHER Z-INDEX TO ENSURE VISIBILITY
-        mixBlendMode: 'lighten', // Better blending mode for visibility
-        opacity: 1, // Maximum opacity
-        position: 'fixed', // Ensure it's fixed relative to viewport
+        zIndex: zIndex, // EXTREME z-index to force on top of everything
+        mixBlendMode: 'lighten', // Best blending mode for visibility
+        opacity: 1, // Always full opacity
+        position: 'fixed', // Fixed position to be visible everywhere
         width: '100vw',
-        height: '100vh'
+        height: '100vh',
+        pointerEvents: 'none' // Ensure clicks pass through
       }}
     />
   );
