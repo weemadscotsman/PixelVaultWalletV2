@@ -1,8 +1,9 @@
 import React from 'react';
 import { PageLayout } from '@/components/layout/PageLayout';
+import { TransactionVisualizer } from '@/components/visualization/TransactionVisualizer';
 import { TransactionFlowVisualizer } from '@/components/visualization/TransactionFlowVisualizer';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ActivityIcon, RefreshCw, Zap } from 'lucide-react';
+import { ActivityIcon, RefreshCw, Zap, LineChart, Blocks, Landmark } from 'lucide-react';
 
 export default function TransactionVisualizerPage() {
   return (
@@ -21,7 +22,7 @@ export default function TransactionVisualizerPage() {
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2">
             <Card className="bg-black/70 border-blue-900/50 h-[500px]">
               <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
                 <CardTitle className="text-blue-300 flex items-center">
@@ -38,10 +39,48 @@ export default function TransactionVisualizerPage() {
               </CardContent>
             </Card>
           </div>
+          
+          <div className="lg:col-span-1 h-[500px]">
+            <TransactionVisualizer limit={12} />
+          </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Transaction statistics cards could be added here in the future */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-black/70 border-blue-900/50">
+            <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
+              <CardTitle className="text-blue-300 text-sm flex items-center">
+                <LineChart className="h-4 w-4 mr-2" />
+                Transaction Volume
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 h-[120px] flex items-center justify-center">
+              <div className="text-blue-500/40 text-sm">Transaction metrics coming soon</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-black/70 border-blue-900/50">
+            <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
+              <CardTitle className="text-blue-300 text-sm flex items-center">
+                <Blocks className="h-4 w-4 mr-2" />
+                Block Production
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 h-[120px] flex items-center justify-center">
+              <div className="text-blue-500/40 text-sm">Block metrics coming soon</div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-black/70 border-blue-900/50">
+            <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">
+              <CardTitle className="text-blue-300 text-sm flex items-center">
+                <Landmark className="h-4 w-4 mr-2" />
+                Network Economics
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 h-[120px] flex items-center justify-center">
+              <div className="text-blue-500/40 text-sm">Economic metrics coming soon</div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </PageLayout>
