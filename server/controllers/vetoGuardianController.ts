@@ -187,7 +187,7 @@ export const createVetoGuardian = async (req: Request, res: Response): Promise<v
       description: description || '',
       isActive: true,
       appointedAt: new Date(),
-      activeUntil: activeUntil ? new Date(activeUntil) : null,
+      activeUntil: activeUntil ? new Date(activeUntil) : new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Default 1 year
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -213,7 +213,12 @@ export const createVetoGuardian = async (req: Request, res: Response): Promise<v
     } catch (dbError) {
       console.warn('Database error creating guardian, using mock data:', dbError);
       // Add to mock data if database insertion fails
-      mockVetoGuardians.push(newGuardian);
+      // Make sure activeUntil is not null before adding to mock data
+      const safeGuardian = {
+        ...newGuardian,
+        activeUntil: newGuardian.activeUntil || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+      };
+      mockVetoGuardians.push(safeGuardian);
       res.status(201).json(newGuardian);
     }
   } catch (error) {
