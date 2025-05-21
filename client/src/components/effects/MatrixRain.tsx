@@ -123,15 +123,10 @@ export function MatrixRain({
   return (
     <canvas
       ref={canvasRef}
+      className="matrix-rain-canvas"
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: zIndex, // Use the provided zIndex
-        opacity: opacity,
-        pointerEvents: 'none',
+        opacity: opacity, // Keep opacity configurable
+        zIndex: zIndex, // Keep zIndex configurable
       }}
     />
   );
