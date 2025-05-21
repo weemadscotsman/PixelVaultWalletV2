@@ -89,7 +89,7 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             {/* Global Matrix Rain with maximum visibility settings */}
-            <MatrixRain opacity={1} density={3} speed={0.9} />
+            <MatrixRain opacity={0.65} density={1.5} speed={0.9} zIndex={-1} />
             <Toaster />
             <FeedbackButton />
             <Router />

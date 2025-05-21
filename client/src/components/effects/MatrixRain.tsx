@@ -1,6 +1,18 @@
 import { useEffect, useRef } from 'react';
 
-export function MatrixRain() {
+interface MatrixRainProps {
+  opacity?: number;
+  density?: number;
+  speed?: number;
+  zIndex?: number;
+}
+
+export function MatrixRain({
+  opacity = 0.6,
+  density = 1.5,
+  speed = 1,
+  zIndex = 0
+}: MatrixRainProps = {}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -13,6 +25,16 @@ export function MatrixRain() {
     // Set initial dimensions
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Force-set critical styles directly to ensure they're always applied
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.opacity = opacity.toString();
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = zIndex.toString();
 
     // Matrix character set - mix of katakana, latin and binary
     const katakana = 'アカサタナハマヤラワイキシチニヒミリウクスツヌフムユルエケセテネヘメレオコソトノホモヨロヲン';
@@ -21,7 +43,7 @@ export function MatrixRain() {
     const alphabet = katakana + pvx;
     
     const fontSize = 14;
-    const columns = Math.ceil(canvas.width / fontSize);
+    const columns = Math.ceil(canvas.width / fontSize * density);
     
     // Initialize drops at various heights
     const drops: number[] = [];
@@ -66,8 +88,8 @@ export function MatrixRain() {
         if (y > canvas.height && Math.random() > 0.99) {
           drops[i] = 0;
         } else {
-          // Move drop down
-          drops[i]++;
+          // Move drop down with specified speed
+          drops[i] += speed;
         }
       }
     };
@@ -105,10 +127,10 @@ export function MatrixRain() {
         position: 'fixed',
         top: 0,
         left: 0,
-        zIndex: 0,
         width: '100vw',
         height: '100vh',
-        opacity: 0.6,
+        zIndex: zIndex, // Use the provided zIndex
+        opacity: opacity,
         pointerEvents: 'none',
       }}
     />
