@@ -454,10 +454,6 @@ export const updatePersonalityFromActivity = async (req: Request, res: Response)
  * Get personalized response from thringlet based on personality
  * POST /api/thringlet/personality-response
  */
-/**
- * Get general personality traits
- * GET /api/thringlet/personality
- */
 export const getGenericPersonality = async (_req: Request, res: Response) => {
   try {
     // Generate a set of generic personality traits

@@ -5,6 +5,72 @@ import * as passphraseUtils from '../utils/passphrase';
 import { memBlockchainStorage } from '../mem-blockchain';
 import { walletDao } from '../database/walletDao';
 import { transactionDao } from '../database/transactionDao';
+import jwt from 'jsonwebtoken';
+
+// Secret for JWT signing
+const JWT_SECRET = process.env.JWT_SECRET || 'pixelvault-wallet-session-secret';
+
+/**
+ * Authenticate wallet and establish session
+ * POST /api/wallet/:address/auth
+ */
+export const authenticateWallet = async (req: Request, res: Response) => {
+  try {
+    const { address } = req.params;
+    const { passphrase } = req.body;
+    
+    if (!passphrase) {
+      return res.status(400).json({ error: 'Passphrase is required' });
+    }
+    
+    // Verify wallet exists
+    const wallet = await walletDao.getWallet(address);
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    // Verify passphrase
+    if (!wallet.passphraseSalt || !wallet.passphraseHash) {
+      return res.status(400).json({ error: 'Wallet has no authentication data' });
+    }
+    
+    const hash = passphraseUtils.hashPassphrase(passphrase, wallet.passphraseSalt);
+    
+    if (hash !== wallet.passphraseHash) {
+      return res.status(401).json({ error: 'Invalid passphrase' });
+    }
+    
+    // Create session token
+    const token = jwt.sign(
+      { 
+        walletAddress: address,
+        timestamp: Date.now()
+      }, 
+      JWT_SECRET,
+      { expiresIn: '12h' }
+    );
+    
+    // Set token in cookie and response
+    res.cookie('wallet_session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 12 * 60 * 60 * 1000, // 12 hours
+      sameSite: 'strict'
+    });
+    
+    res.json({ 
+      success: true,
+      address,
+      authenticated: true
+    });
+    
+  } catch (error) {
+    console.error('Error authenticating wallet:', error);
+    res.status(500).json({ 
+      error: error instanceof Error ? error.message : 'Failed to authenticate wallet'
+    });
+  }
+};
 
 /**
  * Create a new wallet

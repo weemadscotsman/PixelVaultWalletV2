@@ -70,13 +70,40 @@ export function ConnectWalletButton({
     }
   };
   
-  const handleSelectWallet = (address: string) => {
-    setActiveWalletAddress(address);
-    setIsConnectDialogOpen(false);
-    toast({
-      title: "Wallet connected",
-      description: "Your wallet has been connected successfully",
-    });
+  const handleSelectWallet = async (address: string) => {
+    // First authenticate with the backend before setting active wallet
+    try {
+      // Make a wallet authentication request to establish a session
+      const response = await fetch(`/api/wallet/${address}/auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ passphrase: passphrase }),
+        credentials: 'include' // Important: This ensures cookies are sent
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Authentication failed');
+      }
+      
+      // If authentication succeeded, set the active wallet
+      setActiveWalletAddress(address);
+      setIsConnectDialogOpen(false);
+      setPassphrase('');
+      
+      toast({
+        title: "Wallet connected",
+        description: "Your wallet has been connected successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Connection failed",
+        description: error.message || "Could not authenticate wallet session",
+        variant: "destructive",
+      });
+    }
   };
   
   return (

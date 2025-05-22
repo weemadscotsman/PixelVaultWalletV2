@@ -11,6 +11,12 @@ const router = express.Router();
  */
 router.post('/create', walletCreationLimiter, walletController.createWallet);
 
+/**
+ * Authenticate wallet and establish session
+ * POST /api/wallet/:address/auth
+ */
+router.post('/:address/auth', walletController.authenticateWallet);
+
 // Apply JWT authentication to all other wallet routes
 router.use(authenticateJWT);
 

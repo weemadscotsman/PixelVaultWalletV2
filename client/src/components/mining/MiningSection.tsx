@@ -20,39 +20,81 @@ export function MiningSection() {
     }
   }, []);
   
-  // Function to simulate mining CLI output
+  // Connect to the actual blockchain mining API
   const runMiningCLI = async () => {
+    if (!activeWallet) {
+      setMiningOutput("Error: No wallet connected. Please connect your wallet first.");
+      return;
+    }
+    
     if (isMining) {
       setMiningOutput("Stopping mining operations...");
-      await stopMining();
-      setTimeout(() => {
+      try {
+        // Make a real API call to stop mining
+        const response = await fetch('/api/blockchain/mining/stop', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ address: activeWallet }),
+          credentials: 'include' // Important for session cookies
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to stop mining');
+        }
+        
+        await stopMining(); // This is the local state update
         setMiningOutput("Mining operations stopped successfully.\nAwaiting command...");
-      }, 1000);
+      } catch (error: any) {
+        setMiningOutput(`Error stopping mining: ${error.message || 'Unknown error'}`);
+        console.error("Mining stop error:", error);
+      }
     } else {
       setMiningOutput("Initializing mining operations...\nConnecting to PVX network...");
       
-      setTimeout(() => {
+      try {
         setMiningOutput(prev => prev + "\nChecking hardware capabilities...");
-      }, 500);
-      
-      setTimeout(() => {
         setMiningOutput(prev => prev + "\nValidating blockchain state...");
-      }, 1000);
-      
-      setTimeout(() => {
         setMiningOutput(prev => prev + "\nSetting up zkSNARK verification module...");
-      }, 1500);
-      
-      setTimeout(() => {
-        setMiningOutput(prev => prev + "\nStarting mining threads...");
+        
+        // Make a real API call to start mining
+        const response = await fetch('/api/blockchain/mining/start', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            address: activeWallet,
+            hardware: 'cpu' // You can make this dynamic based on user selection
+          }),
+          credentials: 'include' // Important for session cookies
+        });
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to start mining');
+        }
+        
+        const miningData = await response.json();
+        
+        // Update local mining state
         startMining();
-      }, 2000);
-      
-      setTimeout(() => {
-        setMiningOutput(prev => prev + "\nMining operations started successfully.\n\nMining statistics will appear here...");
-        setHashRate(`${(Math.random() * 100 + 150).toFixed(1)} MH/s`);
-        setEarnings(`${(Math.random() * 0.001 + 0.0001).toFixed(6)} PVX`);
-      }, 2500);
+        setMiningOutput(prev => prev + "\nMining operations started successfully.\n\nConnected to node: " + miningData.nodeId + "\nCurrent difficulty: " + miningData.difficulty);
+        
+        // Get real values from the API response
+        if (miningData.hashRate) {
+          setHashRate(`${miningData.hashRate} MH/s`);
+        }
+        
+        if (miningData.estimatedRewards) {
+          setEarnings(`${miningData.estimatedRewards} PVX`);
+        }
+      } catch (error: any) {
+        setMiningOutput(`Error starting mining: ${error.message || 'Unknown error'}`);
+        console.error("Mining start error:", error);
+      }
     }
   };
 
