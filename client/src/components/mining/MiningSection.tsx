@@ -205,11 +205,11 @@ export function MiningSection() {
           <h3 className="text-gray-700 dark:text-gray-200 font-medium mb-4">Mining Stats</h3>
           <RewardStatistics />
           
-          {miningStats && miningStats.lastBlockMined && (
+          {miningStats && (
             <div className="mt-4 text-gray-700 dark:text-gray-300 text-sm">
-              <p className="mb-1">Last Block Mined: {new Date(miningStats.lastBlockMined).toLocaleString()}</p>
-              <p className="mb-1">Total Blocks Mined: {miningStats.blocksMined}</p>
-              <p>Total Rewards: {miningStats.totalRewards.toFixed(6)} PVX</p>
+              <p className="mb-1">Last Block Mined: {miningStats.lastBlock ? new Date(miningStats.lastBlock.timestamp).toLocaleString() : 'None yet'}</p>
+              <p className="mb-1">Total Blocks Mined: {miningStats.totalBlocks || 0}</p>
+              <p>Total Rewards: {(miningStats.totalRewards || 0).toFixed(6)} PVX</p>
             </div>
           )}
         </div>

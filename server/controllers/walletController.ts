@@ -24,7 +24,7 @@ export const authenticateWallet = async (req: Request, res: Response) => {
     }
     
     // Verify wallet exists
-    const wallet = await walletDao.getWallet(address);
+    const wallet = await memBlockchainStorage.getWalletByAddress(address);
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
