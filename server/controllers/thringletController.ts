@@ -113,10 +113,16 @@ export const processInput = async (req: Request, res: Response) => {
     if (ownerAddress) {
       try {
         // Award badges based on thringlet level, interaction count, and state changes
+        // Get all thringlets owned by this user to count them
+        const userThringlets = await thringletStorage.getThringletsByOwner(ownerAddress);
+        const thringletCount = userThringlets?.length || 1;
+        
+        // Use all 4 required parameters for the checkThringletBadges function
         await checkThringletBadges(
           ownerAddress, 
           updatedThringlet.level, 
-          updatedThringlet.stateHistory?.length || 0
+          updatedThringlet.evolution || 0,  // Evolution parameter (defaulting to 0 if not present)
+          thringletCount  // Count of thringlets owned
         );
       } catch (err) {
         console.error('Error checking thringlet badges:', err);
