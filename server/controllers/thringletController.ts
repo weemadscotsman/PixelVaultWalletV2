@@ -121,7 +121,7 @@ export const processInput = async (req: Request, res: Response) => {
         await checkThringletBadges(
           ownerAddress, 
           updatedThringlet.level, 
-          0,  // Evolution parameter (using 0 as default since it's not present in this schema)
+          0,  // Evolution parameter (using 0 as default)
           thringletCount  // Count of thringlets owned
         );
       } catch (err) {
