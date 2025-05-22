@@ -12,6 +12,7 @@ export function MiningSection() {
   const [miningOutput, setMiningOutput] = useState<string>("Awaiting command...");
   const [hashRate, setHashRate] = useState<string>("0 MH/s");
   const [earnings, setEarnings] = useState<string>("0.00000 PVX");
+  const [hardwareType, setHardwareType] = useState<string>("cpu");
   
   // Scroll to this section if the URL hash is #mining
   useEffect(() => {
@@ -59,7 +60,7 @@ export function MiningSection() {
         setMiningOutput(prev => prev + "\nValidating blockchain state...");
         setMiningOutput(prev => prev + "\nSetting up zkSNARK verification module...");
         
-        // Make a real API call to start mining
+        // Make a real API call to start mining with the selected hardware type
         const response = await fetch('/api/blockchain/mining/start', {
           method: 'POST',
           headers: {
@@ -67,13 +68,14 @@ export function MiningSection() {
           },
           body: JSON.stringify({ 
             address: activeWallet,
-            hardware: 'cpu' // You can make this dynamic based on user selection
+            hardwareType: hardwareType // Use the hardware type state variable
           }),
           credentials: 'include' // Important for session cookies
         });
         
         if (!response.ok) {
           const errorData = await response.json();
+          console.error("Mining start error:", errorData);
           throw new Error(errorData.error || 'Failed to start mining');
         }
         

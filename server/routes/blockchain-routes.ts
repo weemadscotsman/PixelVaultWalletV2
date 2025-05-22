@@ -307,7 +307,7 @@ router.post('/transaction', async (req, res) => {
  * Start mining
  * POST /api/blockchain/mining/start
  */
-router.post('/mining/start', authenticateJWT, validateWalletOwnership, miningLimiter, async (req, res) => {
+router.post('/mining/start', miningLimiter, async (req, res) => {
   try {
     const { address, hardwareType } = req.body;
     
@@ -318,9 +318,17 @@ router.post('/mining/start', authenticateJWT, validateWalletOwnership, miningLim
     // Default to CPU if hardware type not specified
     const hardware = hardwareType || 'cpu';
     
+    // Verify wallet exists before mining
+    const wallet = await blockchainService.getWallet(address);
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    console.log(`Mining start request for wallet: ${address} with hardware: ${hardware}`);
     const miningStats = await blockchainService.startMining(address, hardware);
     res.json(miningStats);
   } catch (error) {
+    console.error(`Mining start error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to start mining'
     });
@@ -331,7 +339,7 @@ router.post('/mining/start', authenticateJWT, validateWalletOwnership, miningLim
  * Stop mining
  * POST /api/blockchain/mining/stop
  */
-router.post('/mining/stop', async (req, res) => {
+router.post('/mining/stop', miningLimiter, async (req, res) => {
   try {
     const { address } = req.body;
     
@@ -339,9 +347,17 @@ router.post('/mining/stop', async (req, res) => {
       return res.status(400).json({ error: 'Wallet address is required' });
     }
     
+    // Verify wallet exists before stopping
+    const wallet = await blockchainService.getWallet(address);
+    if (!wallet) {
+      return res.status(404).json({ error: 'Wallet not found' });
+    }
+    
+    console.log(`Mining stop request for wallet: ${address}`);
     const miningStats = await blockchainService.stopMining(address);
     res.json(miningStats);
   } catch (error) {
+    console.error(`Mining stop error: ${error instanceof Error ? error.message : 'Unknown error'}`);
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to stop mining'
     });
