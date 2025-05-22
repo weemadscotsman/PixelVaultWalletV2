@@ -17,8 +17,8 @@ router.post('/create', walletCreationLimiter, walletController.createWallet);
  */
 router.post('/:address/auth', walletController.authenticateWallet);
 
-// Apply JWT authentication to all other wallet routes
-router.use(authenticateJWT);
+// Temporarily disable JWT authentication for development
+// router.use(authenticateJWT);
 
 /**
  * Get all wallets

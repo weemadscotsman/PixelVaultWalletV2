@@ -1,6 +1,6 @@
 import express from 'express';
-// Import the fixed version of stakeController to prevent wrong controller usage
-import * as stakeController from '../controllers/stakeController.fixed';
+// Import the main stakeController
+import * as stakeController from '../controllers/stakeController';
 import { authenticateJWT } from '../middleware/auth';
 
 const router = express.Router();
