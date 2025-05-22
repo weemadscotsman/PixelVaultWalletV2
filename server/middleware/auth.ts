@@ -10,6 +10,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'pixelvault-jwt-secret-key';
  * Verifies the JWT token and attaches user data to the request object
  */
 export const authenticateJWT = async (req: Request, res: Response, next: NextFunction) => {
+  // DEVELOPMENT MODE: Bypass authentication completely
+  if (process.env.NODE_ENV !== 'production') {
+    // Mock authentication with a default wallet
+    const wallet = await walletDao.getWalletByAddress('PVX_c1989203fab278dff8ef2cb0def8678d');
+    (req as any).user = {
+      walletAddress: 'PVX_c1989203fab278dff8ef2cb0def8678d',
+      wallet
+    };
+    return next();
+  }
+  
   // Get the token from the Authorization header
   const authHeader = req.headers.authorization;
   
