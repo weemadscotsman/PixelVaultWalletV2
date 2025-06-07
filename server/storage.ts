@@ -2,6 +2,26 @@ import { Pool } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import * as schema from '@shared/schema';
 import { and, desc, eq, or, sql, count, avg, max } from 'drizzle-orm';
+
+// Import only the tables that actually exist in schema
+const {
+  wallets,
+  transactions,
+  blocks,
+  minerStats,
+  stakingPools,
+  stakeRecords,
+  badges,
+  userBadges,
+  thringlets,
+  governanceProposals,
+  governanceVotes,
+  drops,
+  dropClaims,
+  learningModules,
+  learningQuestions,
+  userLearningProgress
+} = schema;
 import * as sha3 from 'js-sha3';
 
 // Type definitions to avoid errors since many of these aren't in schema.ts
@@ -772,21 +792,18 @@ export class DatabaseStorage implements IStorage {
   private badgeProgress: BadgeProgress[] = [];
   
   async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    // Users are identified by wallet addresses in this system
+    return undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    // Users are identified by wallet addresses in this system
+    return undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(insertUser)
-      .returning();
-    return user;
+    // Users are created through wallet creation in this system
+    throw new Error('Users are managed through wallet addresses');
   }
   
   async getWalletByAddress(address: string): Promise<any | undefined> {
