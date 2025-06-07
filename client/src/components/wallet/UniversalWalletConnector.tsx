@@ -45,7 +45,7 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
     }
 
     try {
-      await createWallet({ passphrase: createPassphrase });
+      await createWalletMutation.mutateAsync({ passphrase: createPassphrase });
       setCreatePassphrase('');
       setIsOpen(false);
     } catch (error) {
@@ -64,7 +64,7 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
     }
 
     try {
-      await importWallet({ 
+      await importWalletMutation.mutateAsync({ 
         privateKey: importPrivateKey, 
         passphrase: importPassphrase 
       });
@@ -181,10 +181,10 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
             
             <Button 
               onClick={handleCreateWallet}
-              disabled={isCreating || !createPassphrase.trim()}
+              disabled={createWalletMutation.isPending || !createPassphrase.trim()}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >
-              {isCreating ? (
+              {createWalletMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Creating...
@@ -244,10 +244,10 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
             
             <Button 
               onClick={handleImportWallet}
-              disabled={isImporting || !importPrivateKey.trim() || !importPassphrase.trim()}
+              disabled={importWalletMutation.isPending || !importPrivateKey.trim() || !importPassphrase.trim()}
               className="w-full bg-green-600 hover:bg-green-700"
             >
-              {isImporting ? (
+              {importWalletMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Importing...
