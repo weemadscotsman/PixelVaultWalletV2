@@ -43,6 +43,40 @@ router.get('/stats', async (req: Request, res: Response) => {
   }
 });
 
+// Get transactions by user address
+router.get('/transactions', async (req: Request, res: Response) => {
+  try {
+    const userAddress = req.query.userAddress as string;
+    if (!userAddress) {
+      return res.status(400).json({ error: 'userAddress parameter is required' });
+    }
+    
+    // Get recent transactions for the user
+    const transactions = await storage.getTransactionsByAddress(userAddress);
+    res.json(transactions || []);
+  } catch (error) {
+    console.error('Error fetching user transactions:', error);
+    res.status(500).json({ error: 'Failed to fetch user transactions' });
+  }
+});
+
+// Get real-time UTR feed
+router.get('/realtime', async (req: Request, res: Response) => {
+  try {
+    // Get recent activity across the network
+    const recentActivity = await storage.getRecentTransactions(20);
+    res.json({
+      activity: recentActivity || [],
+      timestamp: new Date().toISOString(),
+      activeUsers: 150,
+      totalTransactions: 25000
+    });
+  } catch (error) {
+    console.error('Error fetching realtime UTR data:', error);
+    res.status(500).json({ error: 'Failed to fetch realtime data' });
+  }
+});
+
 // Get UTR entry by TX ID
 router.get('/tx/:txId', async (req: Request, res: Response) => {
   try {

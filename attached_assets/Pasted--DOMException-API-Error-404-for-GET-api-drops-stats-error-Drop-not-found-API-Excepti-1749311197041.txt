@@ -1,0 +1,91 @@
+
+DOMException {}
+
+API Error: 404 for GET /api/drops/stats {"error":"Drop not found"}
+API Exception for GET /api/drops/stats: 
+Error {}
+
+API Error: 404 for GET /api/badges {"error":"Not Found","message":"API endpoint not found: /api/badges"}
+API Exception for GET /api/badges: 
+Error {}
+
+API Error: 404 for GET /api/badges/leaderboard {"error":"Not Found","message":"API endpoint not found: /api/badges/leaderboard"}
+API Exception for GET /api/badges/leaderboard: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/realtime {"error":"Not Found","message":"API endpoint not found: /api/utr/realtime"}
+API Exception for GET /api/utr/realtime: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
+API Error: 404 for GET /api/utr/transactions {"error":"Not Found","message":"API endpoint not found: /api/utr/transactions"}
+API Exception for GET /api/utr/transactions: 
+Error {}
+
