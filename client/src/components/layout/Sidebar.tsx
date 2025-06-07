@@ -96,6 +96,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
   }, []);
 
   const navItems = [
+    { path: "/", icon: "fa-home", label: "Dashboard" },
     { path: "/wallet", icon: "fa-wallet", label: "Wallet" },
     { path: "/blockchain", icon: "fa-hammer", label: "Blockchain" },
     { path: "/staking", icon: "fa-layer-group", label: "Staking" },
@@ -104,7 +105,6 @@ export function Sidebar({ networkStats }: SidebarProps) {
     { path: "/learning", icon: "fa-graduation-cap", label: "Learning" },
     { path: "/terminal", icon: "fa-terminal", label: "Terminal" },
     { path: "/drops", icon: "fa-gift", label: "Drops" },
-    { path: "/", icon: "fa-home", label: "Dashboard" },
   ];
 
   return (

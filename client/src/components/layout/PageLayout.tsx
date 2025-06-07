@@ -57,10 +57,12 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
       <div className="flex flex-col min-h-screen relative" style={{ zIndex: 10 }}>
         <Header isConnected={isConnected} />
         
-        <div className="flex flex-1 overflow-hidden">
-          <Sidebar networkStats={networkStats} />
+        <div className="flex flex-1 h-screen overflow-hidden">
+          <div className="fixed left-0 top-16 bottom-0 z-20">
+            <Sidebar networkStats={networkStats} />
+          </div>
           
-          <main className="flex-1 overflow-y-auto p-4 md:p-6 bg-black bg-opacity-80 fade-in">
+          <main className="flex-1 ml-64 overflow-y-auto p-4 md:p-6 bg-black bg-opacity-80 fade-in">
             <div className="container mx-auto space-y-6">
               {children}
             </div>

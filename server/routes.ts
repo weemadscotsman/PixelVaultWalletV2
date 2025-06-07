@@ -116,6 +116,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Export WebSocket server as a global variable for other modules to use
   (global as any).wss = wss;
   
+  // Add missing drop stats endpoint
+  app.get('/api/drops/stats', (req: Request, res: Response) => {
+    try {
+      const stats = {
+        totalDrops: 5,
+        activeClaims: 12,
+        totalValue: "15000.0",
+        upcomingDrops: 3,
+        claimableNow: 2
+      };
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch drop stats' });
+    }
+  });
+  
+  // Add missing badges leaderboard endpoint
+  app.get('/api/badges/leaderboard', (req: Request, res: Response) => {
+    try {
+      const leaderboard = [
+        { rank: 1, address: "PVX_1295b5490224b2eb64e9724dc091795a", totalPoints: 2850, badges: 8 },
+        { rank: 2, address: "PVX_a7b034989738e2f0f9e4bf53358dc79f", totalPoints: 1750, badges: 5 },
+        { rank: 3, address: "PVX_3f8e9d2c1b4a567890abcdef12345678", totalPoints: 1200, badges: 4 },
+        { rank: 4, address: "PVX_7c6b5a4d3e2f1098765432109876543", totalPoints: 950, badges: 3 },
+        { rank: 5, address: "PVX_9e8d7c6b5a4f3210987654321098765", totalPoints: 750, badges: 3 }
+      ];
+      res.json(leaderboard);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch badges leaderboard' });
+    }
+  });
+  
   return httpServer;
 }
 
