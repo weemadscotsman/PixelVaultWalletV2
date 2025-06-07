@@ -98,7 +98,7 @@ async function auditAllConnections() {
   if (sessionToken) {
     await testEndpoint('GET', '/api/stake/status', null, true);
     await testEndpoint('POST', '/api/stake/start', {
-      poolId: 'test-pool',
+      poolId: 'pool1',
       amount: '100'
     }, true);
   }

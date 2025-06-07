@@ -259,6 +259,30 @@
         "passphraseSalt": "b12d01500aeff3761512f28983b92ae5",
         "passphraseHash": "8c722580f279907fa4f5368caebc9e57c5a612c2050126f99a61d32e69bebfa8"
       }
+    ],
+    [
+      "PVX_d3fa84a4ef9289750c292342456f60ae",
+      {
+        "address": "PVX_d3fa84a4ef9289750c292342456f60ae",
+        "publicKey": "fc8fa944bdea770d61386ba2fdc716270e19459208c97694510adcbd10b774d8",
+        "balance": "1000.0",
+        "createdAt": "2025-06-07T20:26:26.034Z",
+        "lastUpdated": "2025-06-07T20:26:26.034Z",
+        "passphraseSalt": "4a288f0ec77b1faadb83e2ddf2179ed4",
+        "passphraseHash": "40172fd4ca14cfeed461ab7d1d979101a75ad1a65b5bc2207eda6c9fcc4594f4"
+      }
+    ],
+    [
+      "PVX_dbf5d46cd317f845a27ec990def6b865",
+      {
+        "address": "PVX_dbf5d46cd317f845a27ec990def6b865",
+        "publicKey": "b190f165feb3ef138a63298eb926b7640bb98189982dc3e3de1a680e36e26d90",
+        "balance": "1000.0",
+        "createdAt": "2025-06-07T20:27:09.045Z",
+        "lastUpdated": "2025-06-07T20:27:09.045Z",
+        "passphraseSalt": "b3ac81786bedc801e996c72f398717f2",
+        "passphraseHash": "8a56723980ddcde72a41e3dbf868dc4c8003b2ae6d62d27a047af5e722f917ae"
+      }
     ]
   ],
   "minerStats": [],
@@ -274,6 +298,10 @@
         "isActive": true,
         "rewards": "0.0"
       }
+    ],
+    [
+      null,
+      "pool1"
     ]
   ],
   "stakingPools": [
