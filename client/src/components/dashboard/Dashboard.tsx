@@ -26,6 +26,12 @@ import { useWallet } from '@/hooks/use-wallet';
 import { useStaking } from '@/hooks/use-staking';
 import { useBlockchainMetrics } from '@/hooks/use-blockchain-metrics';
 import { useTransactionHistory } from '@/hooks/use-transaction-history';
+import { useGovernance } from '@/hooks/use-governance';
+import { useDrops } from '@/hooks/use-drops';
+import { useBadges } from '@/hooks/use-badges';
+import { useUTR } from '@/hooks/use-utr';
+import { useLearning } from '@/hooks/use-learning';
+import { useWebSocket } from '@/hooks/use-websocket';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { Transaction } from '@/types/blockchain';
@@ -109,23 +115,32 @@ export function Dashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Use states for fallback data
-  const [walletData, setWalletData] = useState(defaultWalletData);
-  const [blockchainData, setBlockchainData] = useState(defaultBlockchainData);
-  const [stakingPanelData, setStakingPanelData] = useState(defaultStakingData);
-  const [governanceData, setGovernanceData] = useState(defaultGovernanceData);
-  const [thringletData, setThringletData] = useState(defaultThringletData);
-  const [dropsData, setDropsData] = useState(defaultDropsData);
-  const [learningData, setLearningData] = useState(defaultLearningData);
-  
-  // Get active wallet from wallet hook
+  // Get live wallet data
   const { activeWallet, wallet, getWallet } = useWallet();
   
-  // Get blockchain metrics hook
+  // Get live blockchain metrics
   const blockchainMetrics = useBlockchainMetrics();
   
-  // Get staking hook
+  // Get live staking data
   const stakingHook = useStaking();
+  
+  // Get live governance data
+  const { stats: governanceStats, proposals } = useGovernance(activeWallet);
+  
+  // Get live drops data
+  const { drops, getActiveDrops, stats: dropsStats } = useDrops(activeWallet);
+  
+  // Get live badges data
+  const { userBadges, getCompletedBadges, getTotalBadgeValue } = useBadges(activeWallet);
+  
+  // Get live UTR transaction data
+  const { transactions, stats: utrStats } = useUTR(undefined, activeWallet);
+  
+  // Get live learning data
+  const { stats: learningStats, getOverallProgress } = useLearning(activeWallet);
+  
+  // Initialize WebSocket for real-time updates
+  useWebSocket(activeWallet);
   
   // Query for active wallet data
   const { data: walletDataApi, isLoading: isLoadingWallet } = getWallet();
@@ -308,25 +323,25 @@ export function Dashboard() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-sm text-gray-400">Balance</p>
-                  <p className="text-2xl font-bold text-blue-300">{formatCurrency(walletData.balance)}</p>
+                  <p className="text-2xl font-bold text-blue-300">{wallet ? formatCurrency(parseFloat(wallet.balance)) : '0.000000'}</p>
                 </div>
                 <div className="text-xs text-gray-500 bg-blue-950/30 rounded px-2 py-1">
-                  PAGE 3
+                  LIVE
                 </div>
               </div>
               
               <div>
                 <p className="text-sm text-gray-400">Address</p>
                 <div className="text-xs font-mono text-gray-300 truncate bg-gray-900/50 rounded px-2 py-1">
-                  {walletData.publicAddress}
+                  {wallet?.address || 'No wallet connected'}
                 </div>
               </div>
               
               <div>
                 <p className="text-sm text-gray-400 mb-1">Recent Transactions</p>
                 <div className="space-y-2">
-                  {walletData.transactions && walletData.transactions.length > 0 ? (
-                    walletData.transactions.slice(0, 2).map(tx => (
+                  {transactions && transactions.length > 0 ? (
+                    transactions.slice(0, 2).map(tx => (
                       <div key={tx.id || Math.random().toString()} className="flex justify-between items-center bg-gray-900/30 p-2 rounded">
                         <div className="flex items-center">
                           {tx.type === 'receive' ? (
