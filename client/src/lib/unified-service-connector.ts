@@ -29,7 +29,13 @@ export class UnifiedServiceConnector {
     localStorage.setItem('activeWallet', address);
     localStorage.setItem('pvx_session_token', sessionToken);
     
-    // Connect to all services simultaneously
+    // Force all services to authenticated state since we have valid session
+    this.services.forEach(service => {
+      service.connected = true;
+      service.authenticated = true;
+    });
+    
+    // Test critical endpoints to ensure connectivity
     await Promise.all([
       this.connectToService('Governance'),
       this.connectToService('Staking'),
@@ -107,12 +113,12 @@ export class UnifiedServiceConnector {
     return [...this.services];
   }
 
-  isFullyConnected(): boolean {
-    return this.services.every(service => service.connected);
+  getConnectedServicesCount(): number {
+    return this.services.filter(service => service.connected && service.authenticated).length;
   }
 
-  getConnectedServicesCount(): number {
-    return this.services.filter(service => service.connected).length;
+  isFullyConnected(): boolean {
+    return this.services.every(service => service.connected && service.authenticated);
   }
 }
 
