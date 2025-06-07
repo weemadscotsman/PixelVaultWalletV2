@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendRadar } from '@/components/blockchain/TrendRadar';
+import HealthVitalsDashboard from '@/components/health/HealthVitalsDashboard';
 import { useBlockchain } from '@/hooks/use-blockchain';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWallet } from '@/hooks/use-wallet';
@@ -693,6 +694,11 @@ export default function BlockchainPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* Blockchain Health Vitals Dashboard */}
+      <div className="mt-8">
+        <HealthVitalsDashboard />
       </div>
 
       {/* Real-time Chain Monitor */}
