@@ -8,8 +8,17 @@ import {
   FileCode,
   RefreshCw,
   BarChart,
-  Loader2
+  Loader2,
+  Search,
+  Database,
+  Activity,
+  Shield,
+  AlertCircle,
+  CheckCircle,
+  Settings,
+  Wifi
 } from 'lucide-react';
+import { PVXSystemValidator, type SystemStatus } from '@/utils/system-validator';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +32,8 @@ import { Link } from 'wouter';
 
 export default function BlockchainPage() {
   const [selectedWallet, setSelectedWallet] = useState<string | null>(null);
+  const [systemStatus, setSystemStatus] = useState<SystemStatus | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   
   const queryClient = useQueryClient();
@@ -49,6 +60,31 @@ export default function BlockchainPage() {
   
   // Check if wallet is currently mining - assume mining if we have mining stats and blocks found
   const isMining = miningStats && miningStats.blocksFound > 0;
+
+  // System validation function
+  const runSystemValidation = async () => {
+    if (!activeWallet) {
+      console.log('No wallet connected for system validation');
+      return;
+    }
+
+    setIsValidating(true);
+    console.log('🔍 INITIATING PVX SYSTEM CROSS-CHECK PROTOCOL...');
+    
+    try {
+      const validator = new PVXSystemValidator(activeWallet, 'no-token-required');
+      const status = await validator.runFullSystemCheck();
+      setSystemStatus(status);
+      
+      // Also run wallet propagation test
+      await validator.validateWalletPropagation();
+      
+    } catch (error) {
+      console.error('System validation failed:', error);
+    } finally {
+      setIsValidating(false);
+    }
+  };
   
   // Get real data from blockchain status
   const activeMiners = blockchainStatus?.activeMiners || 0;
