@@ -15,6 +15,19 @@
   "transactions": [],
   "wallets": [
     [
+      "PVX_1295b5490224b2eb64e9724dc091795a",
+      {
+        "address": "PVX_1295b5490224b2eb64e9724dc091795a",
+        "publicKey": "genesis_key_1295b5490224b2eb64e9724dc091795a",
+        "balance": "1000.0",
+        "createdAt": "2025-06-07T17:00:00.000Z",
+        "lastUpdated": "2025-06-07T17:00:00.000Z",
+        "passphraseSalt": "genesis_salt_1295b5490224b2eb64e9724dc091795a",
+        "passphraseHash": "f0a500f76209a6795332b5eb388ff943ededa3fb47740d1cd485cbd6624fb11e",
+        "lastSynced": "2025-06-07T17:00:00.000Z"
+      }
+    ],
+    [
       "PVX_68e374e082a378040ab4f00623706a9d",
       {
         "address": "PVX_68e374e082a378040ab4f00623706a9d",
@@ -102,6 +115,30 @@
         "lastUpdated": "2025-06-07T19:41:45.271Z",
         "passphraseSalt": "4477fc34747442e5552dd312ef3081ef",
         "passphraseHash": "ce99b2c1fbda5ad2cb7f3c93f17217311b70d2c1b9c3965e5a10bc48a33d0a0a"
+      }
+    ],
+    [
+      "PVX_b07e97ceac128cd240935de52a4853cf",
+      {
+        "address": "PVX_b07e97ceac128cd240935de52a4853cf",
+        "publicKey": "17494ba3ae03835a8e95468fd84375002a299b2430368a8d95f52e180683b1ac",
+        "balance": "1000.0",
+        "createdAt": "2025-06-07T19:44:18.291Z",
+        "lastUpdated": "2025-06-07T19:44:18.291Z",
+        "passphraseSalt": "fab9bd870666bfd4b30dd5364a247d6a",
+        "passphraseHash": "f05990f8527b0d04da746eb9499f27c4a0849b5a2e00f172acfb46b9bf6bcee2"
+      }
+    ],
+    [
+      "PVX_5f6e1eccba8824cffd449fb53372f0b7",
+      {
+        "address": "PVX_5f6e1eccba8824cffd449fb53372f0b7",
+        "publicKey": "7b2ae1eb5226c3748eb896b8d06fa9e7476155a706b2ddbed5536bb9689c98de",
+        "balance": "1000.0",
+        "createdAt": "2025-06-07T19:44:58.216Z",
+        "lastUpdated": "2025-06-07T19:44:58.216Z",
+        "passphraseSalt": "628613df2795cab2b6aec354cd23fb5d",
+        "passphraseHash": "260da5d6d00f833f69c7291030415a6be3ed0ac120034a52d612d0c446140a0b"
       }
     ]
   ],
