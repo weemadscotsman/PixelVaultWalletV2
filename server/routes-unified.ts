@@ -6,6 +6,7 @@ import { WebSocketServer } from "ws";
 import crypto from "crypto";
 import { unifiedAuth } from "./unified-auth";
 import { personalityEngine } from "./personality-engine";
+import { nftService, nftStorage } from "./nft-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);

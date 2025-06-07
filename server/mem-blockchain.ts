@@ -7,6 +7,9 @@ import {
   StakeRecord,
   StakingPool
 } from '@shared/types';
+
+// Re-export Transaction for other modules
+export { Transaction };
 import * as fs from 'fs';
 import * as path from 'path';
 
