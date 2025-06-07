@@ -48,7 +48,7 @@ export default function BlockchainPage() {
   const { data: miningStats, isLoading: isMiningStatsLoading } = getMiningStats(activeWallet || '');
   
   // Check if wallet is currently mining
-  const isMining = miningStats?.isCurrentlyMining || false;
+  const isMining = miningStats?.isActiveMining || false;
   
   // Get real data from blockchain status
   const activeMiners = blockchainStatus?.activeMiners || 0;
@@ -211,7 +211,7 @@ export default function BlockchainPage() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-blue-400">{block.transactions.length} txns</p>
+                              <p className="text-xs text-blue-400">{(block as any).totalTransactions || block.transactions?.length || 0} txns</p>
                               <p className="text-xs text-gray-500">{formatTimeAgo(new Date(block.timestamp))}</p>
                             </div>
                           </div>
@@ -281,11 +281,11 @@ export default function BlockchainPage() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-400">Blocks Mined:</span>
-                            <span className="text-xs text-blue-300">{miningStats.blocksFound}</span>
+                            <span className="text-xs text-blue-300">{miningStats.blocksMined || 0}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-400">Total Rewards:</span>
-                            <span className="text-xs text-blue-300">{parseInt(miningStats.totalRewards).toLocaleString()} μPVX</span>
+                            <span className="text-xs text-blue-300">{Number(miningStats.totalRewards || 0).toLocaleString()} μPVX</span>
                           </div>
                         </div>
                       ) : (
