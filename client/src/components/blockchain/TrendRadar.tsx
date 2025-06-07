@@ -32,61 +32,20 @@ interface TrendRadarProps {
 }
 
 export function TrendRadar({ className }: TrendRadarProps) {
+  // Temporarily using a simplified version to prevent crashes
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   
   // Fetch real blockchain data from the API
-  const { isLoading, error, data: blockchainTrends, refetch } = useQuery({
+  const { isLoading, error, data: blockchainTrends } = useQuery({
     queryKey: ['/api/blockchain/trends'],
-    queryFn: async () => {
-      const res = await apiRequest('GET', '/api/blockchain/trends');
-      if (!res.ok) {
-        throw new Error('Failed to fetch blockchain trends');
-      }
-      return res.json() as Promise<BlockchainTrends>;
-    },
+    retry: false,
+    staleTime: 30000,
   });
 
-  // Process API data for the radar chart
-  const radarData = React.useMemo(() => {
-    if (!blockchainTrends) return [];
-    
-    // Create an array to hold all the metric data points for the radar
-    const processedData: Array<Record<string, any>> = [];
-    
-    // For each metric category (mining, network, etc.)
-    blockchainTrends.metrics.forEach(metric => {
-      // For each data point in this category (hashrate, difficulty, etc.)
-      Object.entries(metric.data).forEach(([dataKey, dataPoint]) => {
-        // Calculate percentage relative to max value (for radar chart, which works on 0-100 scale)
-        const value = dataPoint.value || 0;
-        const maxValue = dataPoint.maxValue || 1; // Prevent division by zero
-        const percentage = maxValue > 0 ? Math.round((value / maxValue) * 100) : 0;
-        
-        // Add this data point to our array
-        processedData.push({
-          metric: `${metric.label} (${dataKey})`, // e.g. "Mining Activity (hashrate)"
-          [metric.id]: String(percentage), // e.g. "mining": "60"
-          rawValue: value,
-          rawMax: maxValue,
-          unit: dataPoint.unit
-        });
-      });
-    });
-    
-    return processedData;
-  }, [blockchainTrends]);
-  
-  // Generate keys for the radar chart
-  const radarKeys = React.useMemo(() => {
-    if (!blockchainTrends) return [];
-    return blockchainTrends.metrics.map((metric: any) => metric.id);
-  }, [blockchainTrends]);
-  
-  // Generate colors for the radar chart
-  const radarColors = React.useMemo(() => {
-    if (!blockchainTrends) return [];
-    return blockchainTrends.metrics.map((metric: any) => metric.color);
-  }, [blockchainTrends]);
+  // Use placeholder data to prevent crashes while API is being fixed
+  const radarData = getPlaceholderData();
+  const radarKeys = ['mining', 'network', 'security', 'performance'];
+  const radarColors = ['#8B5CF6', '#06B6D4', '#10B981', '#F59E0B'];
 
   return (
     <Card className={`bg-black/70 border-blue-900/50 overflow-hidden ${className}`}>

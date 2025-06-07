@@ -72,7 +72,6 @@ function Router() {
           <ProtectedRoute path="/profile" component={ProfilePage} />
           <ProtectedRoute path="/settings" component={SettingsPage} />
           <ProtectedRoute path="/nfts" component={NFTsPage} />
-          <ProtectedRoute path="/marketplace" component={NFTMarketplace} />
           <ProtectedRoute path="/transactions" component={TransactionsPage} />
           <ProtectedRoute path="/actions" component={ActionsPage} />
           <ProtectedRoute path="/visualizer" component={TransactionVisualizerPage} />
