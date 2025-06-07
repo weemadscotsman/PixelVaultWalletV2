@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useWallet } from '@/hooks/use-wallet';
+import { useAuth } from '@/hooks/use-auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -24,7 +25,7 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
     setActiveWalletAddress
   } = useWallet();
   
-  const { login, user, isAuthenticated, token } = useAuth();
+  // const { login, user, isAuthenticated, token } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [showPrivateKey, setShowPrivateKey] = useState(false);
@@ -49,11 +50,81 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
     }
 
     try {
-      await createWalletMutation.mutateAsync({ passphrase: createPassphrase });
+      const result = await createWalletMutation.mutateAsync({ passphrase: createPassphrase });
+      
+      // Auto-connect the new wallet and enable all services
+      if (result?.address) {
+        setActiveWalletAddress(result.address);
+        
+        // Store session token for authenticated API calls
+        if (result.sessionToken) {
+          localStorage.setItem('pvx_session_token', result.sessionToken);
+        }
+        
+        toast({
+          title: "Wallet created and connected",
+          description: "All blockchain services are now active",
+        });
+      }
+      
       setCreatePassphrase('');
       setIsOpen(false);
     } catch (error) {
       // Error handled by mutation
+    }
+  };
+
+  const handleLogin = async () => {
+    if (!loginAddress.trim() || !loginPassphrase.trim()) {
+      toast({
+        title: "Credentials required",
+        description: "Please enter both wallet address and passphrase",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: loginAddress,
+          passphrase: loginPassphrase,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+
+      const result = await response.json();
+      
+      // Connect wallet and enable all services
+      setActiveWalletAddress(result.wallet.address);
+      
+      // Store session token for authenticated API calls
+      if (result.sessionToken) {
+        localStorage.setItem('pvx_session_token', result.sessionToken);
+      }
+      
+      toast({
+        title: "Login successful",
+        description: "All blockchain services are now connected",
+      });
+      
+      setLoginAddress('');
+      setLoginPassphrase('');
+      setIsOpen(false);
+    } catch (error: any) {
+      toast({
+        title: "Login failed",
+        description: error.message || "Invalid credentials",
+        variant: "destructive"
+      });
     }
   };
 
@@ -255,7 +326,7 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
             </div>
             
             <Button 
-              onClick={handleLoginWallet}
+              onClick={handleLogin}
               disabled={!loginAddress.trim() || !loginPassphrase.trim()}
               className="w-full bg-blue-600 hover:bg-blue-700"
             >

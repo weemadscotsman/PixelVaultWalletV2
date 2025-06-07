@@ -94,7 +94,7 @@ export const getQueryFn: <T>(options: {
     while (attempt < maxRetries) {
       try {
         // Check for auth token in localStorage
-        const token = localStorage.getItem('pvx_token');
+        const token = localStorage.getItem('pvx_session_token');
         const activeWallet = localStorage.getItem('activeWallet');
         
         // Prepare headers with auth token and wallet address if available
@@ -175,7 +175,7 @@ export async function fetchQueryData<T>(url: string): Promise<T> {
   while (attempt < maxRetries) {
     try {
       // Check for auth token in localStorage
-      const token = localStorage.getItem('pvx_token');
+      const token = localStorage.getItem('pvx_session_token');
       const activeWallet = localStorage.getItem('activeWallet');
       
       // Prepare headers with auth token and wallet address if available
