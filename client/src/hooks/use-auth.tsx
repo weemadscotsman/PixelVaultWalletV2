@@ -65,7 +65,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!res.ok) {
         if (res.status === 401) {
           // Token is invalid or expired
-          localStorage.removeItem('pvx_token');
+          localStorage.removeItem('pvx_session_token');
           setToken(null);
           return null;
         }
