@@ -11,6 +11,27 @@ export class UnifiedAuthSystem {
 
   private sessionTimeout = 24 * 60 * 60 * 1000; // 24 hours
 
+  // Initialize genesis wallet session automatically
+  async initializeGenesisSession() {
+    const genesisWallet = 'PVX_1295b5490224b2eb64e9724dc091795a';
+    try {
+      const wallet = await memBlockchainStorage.getWalletByAddress(genesisWallet);
+      if (wallet) {
+        const sessionToken = `pvx_genesis_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+        this.activeSessions.set(sessionToken, {
+          address: wallet.address,
+          timestamp: Date.now(),
+          wallet: wallet
+        });
+        console.log(`🔐 Genesis wallet session initialized: ${sessionToken}`);
+        return sessionToken;
+      }
+    } catch (error) {
+      console.error('Failed to initialize genesis session:', error);
+    }
+    return null;
+  }
+
   // Create session for authenticated wallet
   async createSession(address: string) {
     const wallet = await memBlockchainStorage.getWalletByAddress(address);

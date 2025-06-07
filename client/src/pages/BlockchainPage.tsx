@@ -56,6 +56,9 @@ export default function BlockchainPage() {
   // Get recent blocks
   const { data: recentBlocks, isLoading: isBlocksLoading } = getRecentBlocks(5);
   
+  // Get latest block
+  const { data: latestBlock, isLoading: isLatestBlockLoading } = latestBlockQuery;
+  
   // Get mining stats if active wallet exists
   const { data: miningStats, isLoading: isMiningStatsLoading } = getMiningStats(activeWallet || '');
   

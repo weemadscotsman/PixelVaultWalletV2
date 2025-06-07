@@ -58,12 +58,12 @@ export function PageLayout({ children, isConnected }: PageLayoutProps) {
         <Header isConnected={isConnected} />
         
         <div className="flex flex-1 h-screen overflow-hidden">
-          <div className="fixed left-0 top-16 bottom-0 z-20">
+          <div className="hidden lg:block fixed left-0 top-16 bottom-0 z-20 w-64">
             <Sidebar networkStats={networkStats} />
           </div>
           
-          <main className="flex-1 ml-64 overflow-y-auto p-4 md:p-6 bg-black bg-opacity-80 fade-in">
-            <div className="container mx-auto space-y-6">
+          <main className="flex-1 lg:ml-64 overflow-y-auto p-4 md:p-6 bg-black bg-opacity-80 fade-in">
+            <div className="container mx-auto max-w-7xl space-y-6">
               {children}
             </div>
           </main>
