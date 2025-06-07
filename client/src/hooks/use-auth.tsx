@@ -43,7 +43,20 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const [token, setToken] = useState<string | null>(localStorage.getItem('pvx_session_token'));
+  const [token, setToken] = useState<string | null>(() => {
+    // Clear any corrupted session data on initialization
+    const storedToken = localStorage.getItem('pvx_session_token');
+    const storedWallet = localStorage.getItem('activeWallet');
+    
+    // If we have a wallet but it's the old invalid one, clear everything
+    if (storedWallet === 'PVX_1295b5490224b2eb64e9724dc091795a') {
+      localStorage.removeItem('pvx_session_token');
+      localStorage.removeItem('activeWallet');
+      return null;
+    }
+    
+    return storedToken;
+  });
   
   // Query for the current user based on the token
   const {

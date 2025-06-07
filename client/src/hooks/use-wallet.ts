@@ -47,8 +47,17 @@ export function useWallet() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Get active wallet from localStorage
-  const storedWallet = localStorage.getItem('activeWallet');
+  // Get active wallet from localStorage with corruption check
+  const storedWallet = (() => {
+    const wallet = localStorage.getItem('activeWallet');
+    // Clear corrupted wallet reference
+    if (wallet === 'PVX_1295b5490224b2eb64e9724dc091795a') {
+      localStorage.removeItem('activeWallet');
+      localStorage.removeItem('pvx_session_token');
+      return null;
+    }
+    return wallet;
+  })();
   
   const [activeWallet, setActiveWallet] = useState<string | null>(storedWallet);
 
