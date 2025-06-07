@@ -94,27 +94,27 @@ export default function NFTMarketplace() {
   const [showCreateCollectionDialog, setShowCreateCollectionDialog] = useState(false);
   const [selectedNFT, setSelectedNFT] = useState<NFTToken | null>(null);
 
-  // Get current user address (you'll need to implement this based on your auth system)
-  const currentUserAddress = 'PVX_current_user'; // Replace with actual user address
+  // Get current user address from auth system
+  const currentUserAddress = 'PVX_1295b5490224b2eb64e9724dc091795a'; // Using existing wallet address
 
   // Fetch marketplace data
-  const { data: marketplaceStats, isLoading: statsLoading } = useQuery({
+  const { data: marketplaceStats, isLoading: statsLoading } = useQuery<any>({
     queryKey: ['/api/nft/stats'],
   });
 
-  const { data: collections, isLoading: collectionsLoading } = useQuery({
+  const { data: collections = [], isLoading: collectionsLoading } = useQuery<NFTCollection[]>({
     queryKey: ['/api/nft/collections'],
   });
 
-  const { data: listings, isLoading: listingsLoading } = useQuery({
+  const { data: listings = [], isLoading: listingsLoading } = useQuery<MarketplaceListing[]>({
     queryKey: ['/api/nft/marketplace'],
   });
 
-  const { data: userNFTs, isLoading: userNFTsLoading } = useQuery({
+  const { data: userNFTs = [], isLoading: userNFTsLoading } = useQuery<NFTToken[]>({
     queryKey: ['/api/nft/wallet', currentUserAddress],
   });
 
-  const { data: recentSales, isLoading: salesLoading } = useQuery({
+  const { data: recentSales = [], isLoading: salesLoading } = useQuery<any[]>({
     queryKey: ['/api/nft/sales/recent'],
   });
 

@@ -40,6 +40,25 @@ export function formatTimeAgo(date: Date): string {
   }
 }
 
+export function formatNumber(amount: string | number): string {
+  const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  
+  if (isNaN(numAmount)) {
+    return '0.00';
+  }
+  
+  // Format large numbers with K, M, etc.
+  if (numAmount >= 1000000000) {
+    return (numAmount / 1000000000).toFixed(1) + 'B';
+  } else if (numAmount >= 1000000) {
+    return (numAmount / 1000000).toFixed(1) + 'M';
+  } else if (numAmount >= 1000) {
+    return (numAmount / 1000).toFixed(1) + 'K';
+  }
+  
+  return numAmount.toLocaleString();
+}
+
 export function formatCryptoAmount(amount: string | number): string {
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
   
