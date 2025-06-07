@@ -114,7 +114,8 @@
         "createdAt": "2025-06-07T19:41:45.271Z",
         "lastUpdated": "2025-06-07T19:41:45.271Z",
         "passphraseSalt": "4477fc34747442e5552dd312ef3081ef",
-        "passphraseHash": "ce99b2c1fbda5ad2cb7f3c93f17217311b70d2c1b9c3965e5a10bc48a33d0a0a"
+        "passphraseHash": "ce99b2c1fbda5ad2cb7f3c93f17217311b70d2c1b9c3965e5a10bc48a33d0a0a",
+        "lastSynced": "2025-06-07T19:41:45.271Z"
       }
     ],
     [
@@ -126,7 +127,8 @@
         "createdAt": "2025-06-07T19:44:18.291Z",
         "lastUpdated": "2025-06-07T19:44:18.291Z",
         "passphraseSalt": "fab9bd870666bfd4b30dd5364a247d6a",
-        "passphraseHash": "f05990f8527b0d04da746eb9499f27c4a0849b5a2e00f172acfb46b9bf6bcee2"
+        "passphraseHash": "f05990f8527b0d04da746eb9499f27c4a0849b5a2e00f172acfb46b9bf6bcee2",
+        "lastSynced": "2025-06-07T19:44:18.291Z"
       }
     ],
     [
@@ -138,7 +140,20 @@
         "createdAt": "2025-06-07T19:44:58.216Z",
         "lastUpdated": "2025-06-07T19:44:58.216Z",
         "passphraseSalt": "628613df2795cab2b6aec354cd23fb5d",
-        "passphraseHash": "260da5d6d00f833f69c7291030415a6be3ed0ac120034a52d612d0c446140a0b"
+        "passphraseHash": "260da5d6d00f833f69c7291030415a6be3ed0ac120034a52d612d0c446140a0b",
+        "lastSynced": "2025-06-07T19:44:58.216Z"
+      }
+    ],
+    [
+      "PVX_9cb0fe129ea2a05e14a07b360999fbe8",
+      {
+        "address": "PVX_9cb0fe129ea2a05e14a07b360999fbe8",
+        "publicKey": "4419d095ba2b7a82c6f9cb2decd77894f78a13b117f97247379e63ba09e216c2",
+        "balance": "1000.0",
+        "createdAt": "2025-06-07T19:47:02.566Z",
+        "lastUpdated": "2025-06-07T19:47:02.566Z",
+        "passphraseSalt": "ed305980950bfac67de82ad7ff943a86",
+        "passphraseHash": "f0f94cb1d9d8e9810e94a9de50194f65a38a7ee891840b9ee4d9dfb440b195bb"
       }
     ]
   ],
