@@ -18,6 +18,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { TrendRadar } from '@/components/blockchain/TrendRadar';
+import { UniversalWalletConnector } from '@/components/wallet/UniversalWalletConnector';
+import { PanelConnectionValidator } from '@/components/dashboard/PanelConnectionValidator';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -290,16 +292,24 @@ export function Dashboard() {
     <div className="space-y-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-blue-300 text-shadow-neon">Unified Control Console</h2>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="border-blue-800 text-blue-400"
-          onClick={handleRefresh}
-          disabled={refreshing}
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-          {refreshing ? 'Refreshing...' : 'Refresh Data'}
-        </Button>
+        <div className="flex items-center gap-4">
+          <UniversalWalletConnector compact={true} />
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="border-blue-800 text-blue-400"
+            onClick={handleRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh Data'}
+          </Button>
+        </div>
+      </div>
+      
+      {/* Connection Status Panel */}
+      <div className="mb-6">
+        <PanelConnectionValidator />
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
