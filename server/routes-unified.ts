@@ -931,7 +931,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Mining stats for user
-  app.get('/api/blockchain/mining/stats/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+  app.get('/api/blockchain/mining/stats/:address', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
       const miner = await simplifiedStorage.getMinerByAddress(address);
