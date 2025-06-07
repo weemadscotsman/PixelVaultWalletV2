@@ -110,6 +110,11 @@ function App() {
     };
   }, [apiStatus]);
   
+  // Clear corrupted cache immediately
+  React.useEffect(() => {
+    CacheManager.initializeCleanState();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
