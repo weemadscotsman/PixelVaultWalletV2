@@ -22,7 +22,7 @@
         "balance": "1050.75",
         "createdAt": "2025-06-07T17:00:00.000Z",
         "lastUpdated": "2025-06-07T21:19:26.334Z",
-        "lastSynced": "2025-06-07T17:00:00.000Z",
+        "lastSynced": "2025-06-07T21:19:26.334Z",
         "passphraseSalt": "genesis_salt_1295b5490224b2eb64e9724dc091795a",
         "passphraseHash": "f0a500f76209a6795332b5eb388ff943ededa3fb47740d1cd485cbd6624fb11e"
       }
@@ -301,7 +301,20 @@
       }
     ]
   ],
-  "minerStats": [],
+  "minerStats": [
+    [
+      "PVX_1295b5490224b2eb64e9724dc091795a",
+      {
+        "address": "PVX_1295b5490224b2eb64e9724dc091795a",
+        "hashRate": "250.5",
+        "totalRewards": "0.0",
+        "blocksFound": 0,
+        "isCurrentlyMining": true,
+        "startTime": 1749332037378,
+        "lastBlockTime": null
+      }
+    ]
+  ],
   "stakeRecords": [
     [
       "5ead2b69-149c-45c8-b658-757a5fe006a2",
