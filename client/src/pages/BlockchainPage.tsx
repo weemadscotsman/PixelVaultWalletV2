@@ -53,7 +53,7 @@ export default function BlockchainPage() {
   // Get real data from blockchain status
   const activeMiners = blockchainStatus?.activeMiners || 0;
   const consensusHealth = blockchainStatus?.consensusHealth || 0;
-  const networkVersion = blockchainStatus?.version || 'Loading...';
+  const networkVersion = 'v1.51-PVX';
   
   // Start mining with active wallet
   const handleStartMining = () => {
