@@ -830,17 +830,18 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateWalletBalance(address: string, newBalance: number): Promise<boolean> {
-    const wallet = await this.getWalletByAddress(address);
-    if (!wallet) return false;
-    
-    await db
-      .update(wallets)
-      .set({ 
-        balance: newBalance.toString(),
-        last_updated: new Date()
-      })
-      .where(eq(wallets.address, address));
-    return true;
+    // Update balance directly using raw SQL to avoid schema conflicts
+    try {
+      await db.execute(sql`
+        UPDATE wallets 
+        SET balance = ${newBalance.toString()}, last_updated = ${new Date().toISOString()}
+        WHERE address = ${address}
+      `);
+      return true;
+    } catch (error) {
+      console.error('Failed to update wallet balance:', error);
+      return false;
+    }
   }
   
   async createTransaction(transaction: Omit<Transaction, 'id'>): Promise<Transaction> {

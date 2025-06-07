@@ -38,7 +38,7 @@ export const wallets = pgTable('wallets', {
   publicKey: text('public_key').notNull(),
   balance: varchar('balance', { length: 100 }).notNull(),
   createdAt: timestamp('created_at').notNull(),
-  lastSynced: timestamp('last_synced').notNull(),
+  lastUpdated: timestamp('last_updated').notNull(),
   passphraseSalt: varchar('passphrase_salt', { length: 100 }),
   passphraseHash: varchar('passphrase_hash', { length: 100 }),
 });
