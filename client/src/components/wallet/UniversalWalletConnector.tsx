@@ -20,9 +20,11 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
     wallet, 
     createWalletMutation, 
     importWalletMutation,
-    getWallet
+    getWallet,
+    setActiveWalletAddress
   } = useWallet();
   
+  const { login, user, isAuthenticated, token } = useAuth();
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
   const [showPrivateKey, setShowPrivateKey] = useState(false);
