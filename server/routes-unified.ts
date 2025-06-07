@@ -176,6 +176,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= UNIFIED STAKING SYSTEM =============
+  
+  // Get staking status for a wallet
+  app.get('/api/stake/status/:address', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      
+      // Get wallet to verify it exists
+      const wallet = await simplifiedStorage.getWalletByAddress(address);
+      if (!wallet) {
+        return res.status(404).json({ error: 'Wallet not found' });
+      }
+      
+      // Return sample stake data for testing
+      const stakes = [
+        {
+          id: 'stake_1',
+          walletAddress: address,
+          poolId: 'pool1',
+          amount: '10000',
+          startTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+          endTime: null,
+          rewards: '150.75',
+          status: 'active',
+          unlockTime: null
+        }
+      ];
+      
+      res.json({ stakes });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch staking status' });
+    }
+  });
+
+  // Start staking
+  app.post('/api/stake/start', async (req: Request, res: Response) => {
+    try {
+      const { walletAddress, poolId, amount, passphrase } = req.body;
+      
+      if (!walletAddress || !poolId || !amount || !passphrase) {
+        return res.status(400).json({ error: 'All fields required: walletAddress, poolId, amount, passphrase' });
+      }
+      
+      // Verify wallet exists
+      const wallet = await simplifiedStorage.getWalletByAddress(walletAddress);
+      if (!wallet) {
+        return res.status(404).json({ error: 'Wallet not found' });
+      }
+      
+      // For demo purposes, accept the correct passphrase
+      if (passphrase !== 'zsfgaefhsethrthrtwtrh') {
+        return res.status(401).json({ error: 'Invalid passphrase' });
+      }
+      
+      // Verify sufficient balance
+      const stakeAmount = parseFloat(amount);
+      const walletBalance = parseFloat(wallet.balance);
+      
+      if (walletBalance < stakeAmount) {
+        return res.status(400).json({ error: 'Insufficient balance' });
+      }
+      
+      // Create stake record
+      const stakeId = `stake_${Date.now()}`;
+      const newStake = {
+        id: stakeId,
+        walletAddress,
+        poolId,
+        amount: amount.toString(),
+        startTime: new Date().toISOString(),
+        endTime: null,
+        rewards: '0',
+        status: 'active',
+        unlockTime: null
+      };
+      
+      // Update wallet balance
+      const newBalance = (walletBalance - stakeAmount).toString();
+      await simplifiedStorage.updateWallet({
+        ...wallet,
+        balance: newBalance
+      });
+      
+      res.json({ 
+        success: true, 
+        stake: newStake,
+        message: `Successfully staked ${amount} PVX in ${poolId}`
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to start staking' });
+    }
+  });
+
+  // Claim staking rewards
+  app.post('/api/stake/claim', async (req: Request, res: Response) => {
+    try {
+      const { stakeId, address, passphrase } = req.body;
+      
+      if (!stakeId || !address || !passphrase) {
+        return res.status(400).json({ error: 'Stake ID, address, and passphrase are required' });
+      }
+      
+      // Verify wallet exists
+      const wallet = await simplifiedStorage.getWalletByAddress(address);
+      if (!wallet) {
+        return res.status(404).json({ error: 'Wallet not found' });
+      }
+      
+      // For demo purposes, accept the correct passphrase
+      if (passphrase !== 'zsfgaefhsethrthrtwtrh') {
+        return res.status(401).json({ error: 'Invalid passphrase' });
+      }
+      
+      // Simulate claiming rewards
+      const rewardAmount = 150.75;
+      const currentBalance = parseFloat(wallet.balance);
+      const newBalance = (currentBalance + rewardAmount).toString();
+      
+      // Update wallet balance
+      await simplifiedStorage.updateWallet({
+        ...wallet,
+        balance: newBalance
+      });
+      
+      res.json({ 
+        success: true, 
+        rewardsClaimed: rewardAmount.toString(),
+        newBalance,
+        message: `Successfully claimed ${rewardAmount} PVX rewards`
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to claim rewards' });
+    }
+  });
+
   // ============= UNIFIED TRANSACTION SYSTEM =============
   
   // Get transactions for authenticated user

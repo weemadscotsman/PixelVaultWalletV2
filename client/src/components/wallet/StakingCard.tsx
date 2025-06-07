@@ -126,7 +126,7 @@ export function StakingCard() {
     const reward = projectedAmount - stakeAmount;
     
     return sum + reward;
-  }, 0) || 0;
+  }, 0) : 0;
 
   if (!activeWallet) {
     return (
