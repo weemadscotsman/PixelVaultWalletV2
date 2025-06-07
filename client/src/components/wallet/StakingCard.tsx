@@ -104,12 +104,12 @@ export function StakingCard() {
   });
   
   // Calculate total staked amount
-  const totalStaked = activeStakes?.reduce((sum: number, stake: any) => {
+  const totalStaked = Array.isArray(activeStakes) ? activeStakes.reduce((sum: number, stake: any) => {
     return sum + parseFloat(stake.amount);
-  }, 0) || 0;
+  }, 0) : 0;
   
   // Calculate projected rewards (simplified calculation)
-  const projectedRewards = activeStakes?.reduce((sum: number, stake: any) => {
+  const projectedRewards = Array.isArray(activeStakes) ? activeStakes.reduce((sum: number, stake: any) => {
     const pool = stakingPools?.find(p => p.id === stake.poolId);
     if (!pool) return sum;
     
