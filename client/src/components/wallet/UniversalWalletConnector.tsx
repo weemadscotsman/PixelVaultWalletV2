@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Wallet, Plus, Import, Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { unifiedServiceConnector } from '@/lib/unified-service-connector';
 
 interface UniversalWalletConnectorProps {
   compact?: boolean;
@@ -53,15 +54,15 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
       const result = await createWalletMutation.mutateAsync({ passphrase: createPassphrase });
       
       // Auto-connect the new wallet and enable all services
-      if (result?.wallet?.address) {
+      if (result?.wallet?.address && result?.sessionToken) {
+        await unifiedServiceConnector.connectWallet(result.wallet.address, result.sessionToken);
         setActiveWalletAddress(result.wallet.address);
         
-        // Session token is automatically stored by the mutation
-        // All blockchain services are now authenticated and connected
+        const connectedCount = unifiedServiceConnector.getConnectedServicesCount();
         
         toast({
           title: "Wallet created and connected",
-          description: "All blockchain services are now active",
+          description: `Connected to ${connectedCount}/8 blockchain services`,
         });
       }
       
@@ -101,17 +102,15 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
 
       const result = await response.json();
       
-      // Connect wallet and enable all services
+      // Connect wallet and enable all services using unified connector
+      await unifiedServiceConnector.connectWallet(result.wallet.address, result.sessionToken);
       setActiveWalletAddress(result.wallet.address);
       
-      // Store session token for authenticated API calls
-      if (result.sessionToken) {
-        localStorage.setItem('pvx_session_token', result.sessionToken);
-      }
+      const connectedCount = unifiedServiceConnector.getConnectedServicesCount();
       
       toast({
         title: "Login successful",
-        description: "All blockchain services are now connected",
+        description: `Connected to ${connectedCount}/8 blockchain services`,
       });
       
       setLoginAddress('');
