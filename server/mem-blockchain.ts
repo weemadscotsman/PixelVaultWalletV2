@@ -434,6 +434,21 @@ export class MemBlockchainStorage {
     }
     return pool;
   }
+
+  async getBlockchainStatus(): Promise<any> {
+    const latestBlock = await this.getLatestBlock();
+    return {
+      connected: true,
+      synced: true,
+      difficulty: 5,
+      peers: 15,
+      latestBlock: latestBlock ? {
+        height: latestBlock.height,
+        hash: latestBlock.hash,
+        timestamp: latestBlock.timestamp
+      } : null
+    };
+  }
 }
 
 // Create and export singleton instance

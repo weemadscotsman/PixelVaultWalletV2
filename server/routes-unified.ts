@@ -1130,6 +1130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(vitals);
     } catch (error) {
+      console.error('Blockchain vitals error:', error);
       res.status(500).json({ error: 'Failed to fetch blockchain vitals' });
     }
   });

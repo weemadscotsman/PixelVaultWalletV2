@@ -59,6 +59,10 @@ export class SimplifiedStorage {
     return await memBlockchainStorage.getRecentBlocks(limit);
   }
 
+  async getBlockchainStatus() {
+    return await memBlockchainStorage.getBlockchainStatus();
+  }
+
   // Mining operations
   async createMiner(stats: any) {
     return await memBlockchainStorage.createMiner(stats);
