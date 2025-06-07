@@ -460,7 +460,7 @@ export async function getNetworkHashrate(): Promise<number> {
   }
   
   const totalHashrate = activeMiners.reduce((sum: number, miner: MiningStats) => {
-    const hashrate = parseFloat(miner.currentHashRate.split(' ')[0]);
+    const hashrate = parseFloat(miner.hashRate || '0');
     return sum + hashrate;
   }, 0);
   
