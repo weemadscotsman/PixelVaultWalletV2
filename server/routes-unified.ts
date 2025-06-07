@@ -141,6 +141,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Get all wallets (public endpoint for dashboard) - MUST BE BEFORE :address route
+  app.get('/api/wallet/all', async (req: Request, res: Response) => {
+    try {
+      const wallets = Array.from(memBlockchainStorage.wallets.values()).map(wallet => ({
+        address: wallet.address,
+        balance: wallet.balance,
+        lastUpdated: wallet.lastUpdated
+      }));
+      res.json(wallets);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch wallets' });
+    }
+  });
+
   // Get specific wallet by address (public endpoint)
   app.get('/api/wallet/:address', async (req: Request, res: Response) => {
     try {
@@ -159,20 +173,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch wallet' });
-    }
-  });
-
-  // Get all wallets (public endpoint for dashboard)
-  app.get('/api/wallet/all', async (req: Request, res: Response) => {
-    try {
-      const wallets = Array.from(memBlockchainStorage.wallets.values()).map(wallet => ({
-        address: wallet.address,
-        balance: wallet.balance,
-        lastUpdated: wallet.lastUpdated
-      }));
-      res.json(wallets);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch wallets' });
     }
   });
 
