@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Wallet, Plus, Import, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Wallet, Plus, Import, Eye, EyeOff, Loader2, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface UniversalWalletConnectorProps {
@@ -31,6 +31,8 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
   const [createPassphrase, setCreatePassphrase] = useState('');
   const [importPrivateKey, setImportPrivateKey] = useState('');
   const [importPassphrase, setImportPassphrase] = useState('');
+  const [loginAddress, setLoginAddress] = useState('');
+  const [loginPassphrase, setLoginPassphrase] = useState('');
 
   const { data: walletData, isLoading: isLoadingWallet } = getWallet();
 
@@ -73,6 +75,55 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
       setIsOpen(false);
     } catch (error) {
       // Error handled by mutation
+    }
+  };
+
+  const handleLoginWallet = async () => {
+    if (!loginAddress.trim() || !loginPassphrase.trim()) {
+      toast({
+        title: "Missing information",
+        description: "Please provide both wallet address and passphrase",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Use the login mutation from the wallet hook
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          address: loginAddress,
+          passphrase: loginPassphrase
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const result = await response.json();
+      
+      toast({
+        title: "Success",
+        description: "Wallet connected successfully",
+      });
+      
+      setLoginAddress('');
+      setLoginPassphrase('');
+      setIsOpen(false);
+      
+      // Trigger wallet data refresh
+      window.location.reload();
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "Invalid wallet address or passphrase",
+        variant: "destructive"
+      });
     }
   };
 
@@ -155,11 +206,54 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="create" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-gray-800">
+        <Tabs defaultValue="login" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-800">
+            <TabsTrigger value="login" className="text-gray-300">Connect</TabsTrigger>
             <TabsTrigger value="create" className="text-gray-300">Create New</TabsTrigger>
-            <TabsTrigger value="import" className="text-gray-300">Import Existing</TabsTrigger>
+            <TabsTrigger value="import" className="text-gray-300">Import</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="login" className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="login-address" className="text-gray-300">
+                Wallet Address
+              </Label>
+              <Input
+                id="login-address"
+                type="text"
+                placeholder="Enter your wallet address (e.g., PVX_...)"
+                value={loginAddress}
+                onChange={(e) => setLoginAddress(e.target.value)}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="login-passphrase" className="text-gray-300">
+                Passphrase
+              </Label>
+              <Input
+                id="login-passphrase"
+                type="password"
+                placeholder="Enter your wallet passphrase"
+                value={loginPassphrase}
+                onChange={(e) => setLoginPassphrase(e.target.value)}
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+              <p className="text-xs text-gray-400">
+                Enter the passphrase you used when creating this wallet
+              </p>
+            </div>
+            
+            <Button 
+              onClick={handleLoginWallet}
+              disabled={!loginAddress.trim() || !loginPassphrase.trim()}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              <LogIn className="h-4 w-4 mr-2" />
+              Connect Wallet
+            </Button>
+          </TabsContent>
 
           <TabsContent value="create" className="space-y-4">
             <div className="space-y-2">
