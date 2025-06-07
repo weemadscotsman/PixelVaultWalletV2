@@ -123,7 +123,7 @@ export default function BlockchainPage() {
                   <p className="text-xs text-gray-400">Current Block Height</p>
                   {isStatusLoading ? (
                     <p className="text-xl font-bold text-blue-300"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading...</p>
-                  ) : blockchainStatus?.latestBlock ? (
+                  ) : blockchainStatus?.latestBlock?.height ? (
                     <p className="text-xl font-bold text-blue-300">{blockchainStatus.latestBlock.height.toLocaleString()}</p>
                   ) : (
                     <p className="text-xl font-bold text-blue-300">-</p>
@@ -143,8 +143,8 @@ export default function BlockchainPage() {
                   <p className="text-xs text-gray-400">Network Hash Rate</p>
                   {isStatusLoading ? (
                     <p className="text-xl font-bold text-blue-300"><Loader2 className="h-4 w-4 animate-spin inline mr-2" /> Loading...</p>
-                  ) : blockchainStatus?.networkHashRate ? (
-                    <p className="text-xl font-bold text-blue-300">{blockchainStatus.networkHashRate.toFixed(2)} MH/s</p>
+                  ) : miningStats?.hashRate ? (
+                    <p className="text-xl font-bold text-blue-300">{parseFloat(miningStats.hashRate).toFixed(2)} MH/s</p>
                   ) : (
                     <p className="text-xl font-bold text-blue-300">-</p>
                   )}
@@ -277,11 +277,11 @@ export default function BlockchainPage() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-400">Hash Rate:</span>
-                            <span className="text-xs text-blue-300">{miningStats.currentHashRate}</span>
+                            <span className="text-xs text-blue-300">{miningStats.hashRate} MH/s</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-400">Blocks Mined:</span>
-                            <span className="text-xs text-blue-300">{miningStats.blocksMined}</span>
+                            <span className="text-xs text-blue-300">{miningStats.blocksFound}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-400">Total Rewards:</span>
