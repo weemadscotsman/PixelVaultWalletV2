@@ -8,10 +8,7 @@ export type TransactionType =
   | 'DROP_CLAIM'
   | 'GOVERNANCE_PROPOSAL'
   | 'GOVERNANCE_VOTE'
-  | 'LEARNING_REWARD'
-  | 'nft_mint'
-  | 'nft_sale'
-  | 'nft_transfer';
+  | 'LEARNING_REWARD';
 
 export interface Transaction {
   hash: string;

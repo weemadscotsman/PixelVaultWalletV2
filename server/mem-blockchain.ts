@@ -1,12 +1,12 @@
 import { 
   Block, 
+  Transaction, 
   MiningStats, 
   TransactionType,
   ThringletEmotionState,
   StakeRecord,
   StakingPool
 } from '@shared/types';
-import type { Transaction } from '@shared/types';
 import * as fs from 'fs';
 import * as path from 'path';
 
