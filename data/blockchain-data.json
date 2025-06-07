@@ -179,12 +179,26 @@
         "createdAt": "2025-06-07T19:50:06.927Z",
         "lastUpdated": "2025-06-07T19:50:06.927Z",
         "passphraseSalt": "44c0eb4c4551aed8f2771781cb6278c2",
-        "passphraseHash": "5327bd8ccb9bcbd86e352978518cde0b25f61e3dac8cc991ba129035b81c0bcd"
+        "passphraseHash": "5327bd8ccb9bcbd86e352978518cde0b25f61e3dac8cc991ba129035b81c0bcd",
+        "lastSynced": "2025-06-07T19:50:06.927Z"
       }
     ]
   ],
   "minerStats": [],
-  "stakeRecords": [],
+  "stakeRecords": [
+    [
+      "5ead2b69-149c-45c8-b658-757a5fe006a2",
+      {
+        "id": "5ead2b69-149c-45c8-b658-757a5fe006a2",
+        "walletAddress": "PVX_1295b5490224b2eb64e9724dc091795a",
+        "poolId": "pool1",
+        "amount": "10000",
+        "startTime": "2025-06-07T19:58:21.313Z",
+        "isActive": true,
+        "rewards": "0.0"
+      }
+    ]
+  ],
   "stakingPools": [
     {
       "id": "pool1",

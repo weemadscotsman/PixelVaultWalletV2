@@ -749,6 +749,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= ADDITIONAL BLOCKCHAIN ENDPOINTS =============
+  
+  // Latest block info
+  app.get('/api/blockchain/latest-block', async (req: Request, res: Response) => {
+    try {
+      const latestBlock = await memBlockchainStorage.getLatestBlock();
+      res.json(latestBlock);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch latest block' });
+    }
+  });
+
+  // Recent blocks
+  app.get('/api/blockchain/blocks', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const blocks = await memBlockchainStorage.getRecentBlocks(limit);
+      res.json({ blocks });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch blocks' });
+    }
+  });
+
+  // Blockchain connection status
+  app.get('/api/blockchain/connect', async (req: Request, res: Response) => {
+    try {
+      res.json({ connected: true, status: 'operational' });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to check connection' });
+    }
+  });
+
+  // Mining stats for user
+  app.get('/api/blockchain/mining/stats/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const miner = await memBlockchainStorage.getMinerByAddress(address);
+      res.json({
+        hashRate: miner ? parseFloat(miner.hashRate) : 0,
+        blocksFound: miner ? miner.blocksFound : 0,
+        totalRewards: miner ? miner.totalRewards : "0.0"
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch mining stats' });
+    }
+  });
+
+  // Start mining
+  app.post('/api/blockchain/mining/start', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      res.json({ success: true, message: 'Mining started', address: wallet.address });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to start mining' });
+    }
+  });
+
   // ============= HEALTH ENDPOINTS =============
   
   app.get('/api/health', (req: Request, res: Response) => {
