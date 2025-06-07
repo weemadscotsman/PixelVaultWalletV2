@@ -22,7 +22,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/thringlet', thringletRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/blockchain', blockchainRoutes);
-  app.use('/api/badge', badgeRoutes);
+  app.use('/api/badges', badgeRoutes);
   app.use('/api/utr', utrRoutes);
   app.use('/api/drops', dropsRoutes);
   app.use('/api/governance', governanceRoutes);
