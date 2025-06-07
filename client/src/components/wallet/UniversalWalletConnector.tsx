@@ -89,7 +89,6 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
     }
 
     try {
-      // Use the login mutation from the wallet hook
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -102,26 +101,34 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
       }
 
-      const result = await response.json();
+      const { sessionToken, wallet } = await response.json();
+      
+      // Store session token in localStorage
+      localStorage.setItem('pvx_session_token', sessionToken);
+      localStorage.setItem('pvx_wallet_address', wallet.address);
       
       toast({
         title: "Success",
-        description: "Wallet connected successfully",
+        description: `Connected to wallet ${wallet.address.slice(0, 8)}...`,
       });
       
       setLoginAddress('');
       setLoginPassphrase('');
       setIsOpen(false);
       
-      // Trigger wallet data refresh
-      window.location.reload();
+      // Trigger wallet data refresh without full page reload
+      window.dispatchEvent(new CustomEvent('wallet-connected', { 
+        detail: { sessionToken, wallet } 
+      }));
+      
     } catch (error) {
       toast({
         title: "Login failed",
-        description: "Invalid wallet address or passphrase",
+        description: error instanceof Error ? error.message : "Invalid wallet address or passphrase",
         variant: "destructive"
       });
     }

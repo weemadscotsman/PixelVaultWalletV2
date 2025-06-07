@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { json, urlencoded } from "express";
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes-unified";
 import * as blockchainService from "./services/blockchain-service";
 import { setupVite, serveStatic } from "./vite";
 import { dbInit } from "./database/dbInit";

@@ -25,15 +25,13 @@ export async function apiRequest(
   
   while (attempt < maxRetries) {
     try {
-      // Check for auth token in localStorage
-      const token = localStorage.getItem('pvx_token');
-      const activeWallet = localStorage.getItem('activeWallet');
+      // Check for session token in localStorage
+      const sessionToken = localStorage.getItem('pvx_session_token');
       
       // Prepare headers
       const headers: Record<string, string> = {
         ...(data ? { "Content-Type": "application/json" } : {}),
-        ...(token ? { "Authorization": `Bearer ${token}` } : {}),
-        ...(activeWallet ? { "X-Wallet-Address": activeWallet } : {}),
+        ...(sessionToken ? { "Authorization": `Bearer ${sessionToken}` } : {}),
         ...(options?.headers || {})
       };
       
