@@ -652,6 +652,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= USER-SPECIFIC API ENDPOINTS =============
+  
+  // Wallet transaction history
+  app.get('/api/wallet/history/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+      res.json({ transactions });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch wallet history' });
+    }
+  });
+
+  // Governance stats for user
+  app.get('/api/governance/stats', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      res.json({
+        votingPower: Math.floor(parseFloat(wallet.balance) * 8.5),
+        proposalsVoted: 12,
+        activeProposals: 2,
+        votesRemaining: 5
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch governance stats' });
+    }
+  });
+
+  // Drops eligibility for user
+  app.get('/api/drops/eligibility', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      res.json({ eligibleDrops: [], totalValue: "0.00" });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch drop eligibility' });
+    }
+  });
+
+  // Drops claims for user
+  app.get('/api/drops/claims', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      res.json({ claims: [] });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch drop claims' });
+    }
+  });
+
+  // User badges
+  app.get('/api/badges/user/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      res.json({ badges: [], totalBadges: 0 });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch user badges' });
+    }
+  });
+
+  // Badge progress for user
+  app.get('/api/badges/progress/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      res.json({ progress: [] });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch badge progress' });
+    }
+  });
+
+  // Learning stats for user
+  app.get('/api/learning/stats/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      res.json({ modulesCompleted: 0, totalPoints: 0, level: 1 });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch learning stats' });
+    }
+  });
+
+  // Learning progress for user
+  app.get('/api/learning/progress/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      res.json({ progress: [] });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch learning progress' });
+    }
+  });
+
+  // Staking status
+  app.get('/api/stake/status', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      const stakes = await memBlockchainStorage.getActiveStakesByAddress(wallet.address);
+      res.json({ 
+        activeStakes: stakes.length,
+        totalStaked: stakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0).toString(),
+        totalRewards: stakes.reduce((sum, stake) => sum + parseFloat(stake.rewards), 0).toString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch staking status' });
+    }
+  });
+
   // ============= HEALTH ENDPOINTS =============
   
   app.get('/api/health', (req: Request, res: Response) => {
