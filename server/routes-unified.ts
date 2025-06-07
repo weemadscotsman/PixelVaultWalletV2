@@ -368,6 +368,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= MINING ENDPOINTS =============
+  
+  // General mining statistics endpoint (without specific address)
+  app.get('/api/blockchain/mining/stats', async (req: Request, res: Response) => {
+    try {
+      const allMiners = await memBlockchainStorage.getAllActiveMiners();
+      const totalHashRate = allMiners.reduce((sum, miner) => sum + parseFloat(miner.hashRate || "0"), 0);
+      const totalBlocks = allMiners.reduce((sum, miner) => sum + (miner.blocksFound || 0), 0);
+      
+      res.json({
+        totalMiners: allMiners.length,
+        totalHashRate: totalHashRate.toFixed(2),
+        totalBlocksFound: totalBlocks,
+        avgHashRate: allMiners.length > 0 ? (totalHashRate / allMiners.length).toFixed(2) : "0.0",
+        networkDifficulty: "5.0",
+        status: "active"
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch mining stats' });
+    }
+  });
+
   // ============= MISSING API ENDPOINTS =============
   
   // Governance proposals endpoint
