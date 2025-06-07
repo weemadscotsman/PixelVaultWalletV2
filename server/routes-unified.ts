@@ -18,6 +18,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   (global as any).wss = wss;
 
+  // Initialize genesis wallet session for automatic authentication
+  setTimeout(async () => {
+    const genesisToken = await unifiedAuth.initializeGenesisSession();
+    if (genesisToken) {
+      (global as any).genesisSessionToken = genesisToken;
+    }
+  }, 1000);
+
   // ============= UNIFIED AUTHENTICATION SYSTEM =============
   
   // Login endpoint - creates session for wallet
