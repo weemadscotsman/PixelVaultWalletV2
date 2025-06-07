@@ -1,0 +1,13 @@
+service,frontend,backend
+Wallet System,"Wallet Creation, Import, Connect","/api/wallets, /api/auth"
+Staking Engine,"Stake PVX, View Rewards","/api/stake, /api/stake/rewards"
+NFT Marketplace,"Mint, List, Buy, View NFTs","/api/nfts/mint, /api/nfts/list, /api/nfts/buy, /api/nfts/all"
+Governance,"Create Proposal, Vote","/api/gov/proposals, /api/gov/vote"
+Transaction Viewer,"Live TX Feed, History","/api/tx/live, /api/tx/history"
+Drops/Airdrops,"Claim Drops, View History","/api/drops/stats, /api/drops/claim"
+Badge/XP System,"View Badges, Earn XP","/api/badges/leaderboard, /api/badges/earn"
+Thringlet Engine,"Interact, View Emotion","/api/thringlet/state, /api/thringlet/event"
+Learning Modules,"Start Lessons, View Progress","/api/learn/start, /api/learn/progress"
+Companion AI,Create/Interact with Companions,"/api/companions/create, /api/companions/update"
+Mining Dashboard,"View Hashrate, Start Mining","/api/mine/status, /api/mine/start"
+WebSocket Stream,"Live Updates for TXs, Emotions",wss://ws.pvx.local

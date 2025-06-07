@@ -10,6 +10,16 @@
       "nonce": "0",
       "difficulty": 0.5,
       "reward": "0"
+    },
+    {
+      "height": 2,
+      "hash": "block_lyksme84wmbmr94r7",
+      "previousHash": "bf946d2be8d2833ed77917c988d468260c80ca43ea4c7714d4a0daf0a4c3aa4c",
+      "timestamp": 1749332247379,
+      "transactions": [],
+      "nonce": 129101,
+      "difficulty": 5,
+      "minerAddress": "PVX_1295b5490224b2eb64e9724dc091795a"
     }
   ],
   "transactions": [],
@@ -19,9 +29,9 @@
       {
         "address": "PVX_1295b5490224b2eb64e9724dc091795a",
         "publicKey": "genesis_key_1295b5490224b2eb64e9724dc091795a",
-        "balance": "1050.75",
+        "balance": "1100.75",
         "createdAt": "2025-06-07T17:00:00.000Z",
-        "lastUpdated": "2025-06-07T21:19:26.334Z",
+        "lastUpdated": "2025-06-07T21:37:27.379Z",
         "lastSynced": "2025-06-07T21:19:26.334Z",
         "passphraseSalt": "genesis_salt_1295b5490224b2eb64e9724dc091795a",
         "passphraseHash": "f0a500f76209a6795332b5eb388ff943ededa3fb47740d1cd485cbd6624fb11e"
@@ -307,11 +317,11 @@
       {
         "address": "PVX_1295b5490224b2eb64e9724dc091795a",
         "hashRate": "250.5",
-        "totalRewards": "0.0",
-        "blocksFound": 0,
+        "totalRewards": "50",
+        "blocksFound": 1,
         "isCurrentlyMining": true,
         "startTime": 1749332037378,
-        "lastBlockTime": null
+        "lastBlockTime": 1749332247379
       }
     ]
   ],
