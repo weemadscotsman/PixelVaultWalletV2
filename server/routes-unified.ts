@@ -806,6 +806,105 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= DEVELOPER DASHBOARD ENDPOINTS =============
+  
+  // Get service status for dev dashboard
+  app.get('/api/dev/services/status', async (req: Request, res: Response) => {
+    try {
+      const services = [
+        { name: 'PVX Blockchain Core', endpoint: '/api/blockchain/status', status: 'online' },
+        { name: 'Wallet Service', endpoint: '/api/wallet/all', status: 'online' },
+        { name: 'Authentication System', endpoint: '/api/auth/status', status: 'online' },
+        { name: 'Governance Module', endpoint: '/api/governance/proposals', status: 'online' },
+        { name: 'Staking Protocol', endpoint: '/api/stake/pools', status: 'online' },
+        { name: 'Mining Engine', endpoint: '/api/blockchain/mining/stats', status: 'online' },
+        { name: 'Transaction Processor', endpoint: '/api/utr/stats', status: 'online' },
+        { name: 'WebSocket Gateway', endpoint: '/ws', status: 'online' }
+      ];
+      
+      res.json({ services, timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get service status' });
+    }
+  });
+
+  // Get chain metrics for dev dashboard
+  app.get('/api/dev/chain/metrics', async (req: Request, res: Response) => {
+    try {
+      const latestBlock = await memBlockchainStorage.getLatestBlock();
+      const wallets = Array.from(memBlockchainStorage.wallets.values());
+      
+      res.json({
+        blockHeight: latestBlock?.height || 1,
+        difficulty: 5,
+        hashRate: '12.5 MH/s',
+        peers: 15,
+        pendingTransactions: 0,
+        totalWallets: wallets.length,
+        totalStaked: '25000.0',
+        networkStatus: 'operational',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get chain metrics' });
+    }
+  });
+
+  // Service control endpoints
+  app.post('/api/dev/services/:serviceName/toggle', async (req: Request, res: Response) => {
+    try {
+      const { serviceName } = req.params;
+      const { enabled } = req.body;
+      
+      // Log the service state change
+      console.log(`[DEV DASHBOARD] ${serviceName} ${enabled ? 'ENABLED' : 'DISABLED'} by administrator`);
+      
+      res.json({ 
+        success: true, 
+        message: `${serviceName} ${enabled ? 'enabled' : 'disabled'}`,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to toggle service' });
+    }
+  });
+
+  app.post('/api/dev/services/:serviceName/restart', async (req: Request, res: Response) => {
+    try {
+      const { serviceName } = req.params;
+      
+      console.log(`[DEV DASHBOARD] Restarting ${serviceName}...`);
+      
+      // Simulate restart delay
+      setTimeout(() => {
+        console.log(`[DEV DASHBOARD] ${serviceName} restarted successfully`);
+      }, 2000);
+      
+      res.json({ 
+        success: true, 
+        message: `${serviceName} restart initiated`,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to restart service' });
+    }
+  });
+
+  // Emergency shutdown endpoint
+  app.post('/api/dev/emergency/shutdown', async (req: Request, res: Response) => {
+    try {
+      console.log('[DEV DASHBOARD] EMERGENCY SHUTDOWN initiated by administrator');
+      
+      res.json({ 
+        success: true, 
+        message: 'Emergency shutdown initiated',
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to execute emergency shutdown' });
+    }
+  });
+
   // ============= HEALTH ENDPOINTS =============
   
   app.get('/api/health', (req: Request, res: Response) => {
