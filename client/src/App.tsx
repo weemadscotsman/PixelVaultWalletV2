@@ -26,6 +26,7 @@ import NFTsPage from "@/pages/NFTsPage";
 import TransactionsPage from "@/pages/TransactionsPage";
 import ActionsPage from "@/pages/ActionsPage";
 import TransactionVisualizerPage from "@/pages/TransactionVisualizerPage";
+import CompanionsPage from "@/pages/CompanionsPage";
 import { ThemeProvider } from "next-themes";
 import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { AuthProvider } from "@/hooks/use-auth";
@@ -73,6 +74,7 @@ function Router() {
           <ProtectedRoute path="/transactions" component={TransactionsPage} />
           <ProtectedRoute path="/actions" component={ActionsPage} />
           <ProtectedRoute path="/visualizer" component={TransactionVisualizerPage} />
+          <ProtectedRoute path="/companions" component={CompanionsPage} />
           <Route component={NotFound} />
         </Switch>
       </div>
