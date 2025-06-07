@@ -885,13 +885,13 @@ async function mineNewBlock() {
     
     // Pick a random miner based on hash power
     const totalHashrate = activeMiners.reduce((sum, miner) => {
-      const hashrate = parseFloat(miner.currentHashRate.split(' ')[0]);
+      const hashrate = parseFloat(miner.hashRate || '0');
       return sum + hashrate;
     }, 0);
     
     // Weighted random selection based on hashrate
     const selectedMinerIndex = weightedRandomSelection(
-      activeMiners.map(miner => parseFloat(miner.currentHashRate.split(' ')[0]) / totalHashrate)
+      activeMiners.map(miner => parseFloat(miner.hashRate || '0') / totalHashrate)
     );
     
     if (selectedMinerIndex < 0) {
