@@ -17,7 +17,7 @@ import {
   ArrowRight,
   Loader2
 } from 'lucide-react';
-import { TrendRadar } from '@/components/blockchain/TrendRadar';
+import { TrendRadar } from '@/components/blockchain/TrendRadarSimple';
 import { UniversalWalletConnector } from '@/components/wallet/UniversalWalletConnector';
 import { PanelConnectionValidator } from '@/components/dashboard/PanelConnectionValidator';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';

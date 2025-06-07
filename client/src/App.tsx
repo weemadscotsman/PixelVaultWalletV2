@@ -23,7 +23,7 @@ import ProfilePage from "@/pages/ProfilePage";
 import SettingsPage from "@/pages/SettingsPage";
 import TerminalPage from "@/pages/TerminalPage";
 import NFTsPage from "@/pages/NFTsPage";
-import NFTMarketplace from "@/pages/nft-marketplace";
+import NFTMarketplace from "@/pages/nft-marketplace-simple";
 import TransactionsPage from "@/pages/TransactionsPage";
 import ActionsPage from "@/pages/ActionsPage";
 import TransactionVisualizerPage from "@/pages/TransactionVisualizerPage";
@@ -72,6 +72,7 @@ function Router() {
           <ProtectedRoute path="/profile" component={ProfilePage} />
           <ProtectedRoute path="/settings" component={SettingsPage} />
           <ProtectedRoute path="/nfts" component={NFTsPage} />
+          <ProtectedRoute path="/marketplace" component={NFTMarketplace} />
           <ProtectedRoute path="/transactions" component={TransactionsPage} />
           <ProtectedRoute path="/actions" component={ActionsPage} />
           <ProtectedRoute path="/visualizer" component={TransactionVisualizerPage} />
