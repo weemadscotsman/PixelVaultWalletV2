@@ -47,8 +47,8 @@ export default function BlockchainPage() {
   // Get mining stats if active wallet exists
   const { data: miningStats, isLoading: isMiningStatsLoading } = getMiningStats(activeWallet || '');
   
-  // Check if wallet is currently mining
-  const isMining = miningStats?.isActiveMining || false;
+  // Check if wallet is currently mining - assume mining if we have mining stats and blocks found
+  const isMining = miningStats && miningStats.blocksFound > 0;
   
   // Get real data from blockchain status
   const activeMiners = blockchainStatus?.activeMiners || 0;
@@ -211,7 +211,7 @@ export default function BlockchainPage() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-blue-400">{(block as any).totalTransactions || block.transactions?.length || 0} txns</p>
+                              <p className="text-xs text-blue-400">{block.transactions?.length || 0} txns</p>
                               <p className="text-xs text-gray-500">{formatTimeAgo(new Date(block.timestamp))}</p>
                             </div>
                           </div>
@@ -281,7 +281,7 @@ export default function BlockchainPage() {
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-400">Blocks Mined:</span>
-                            <span className="text-xs text-blue-300">{miningStats.blocksMined || 0}</span>
+                            <span className="text-xs text-blue-300">{miningStats.blocksFound || 0}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-xs text-gray-400">Total Rewards:</span>
