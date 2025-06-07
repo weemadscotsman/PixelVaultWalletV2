@@ -5,6 +5,7 @@ import { Request, Response, NextFunction } from "express";
 import { WebSocketServer } from "ws";
 import crypto from "crypto";
 import { unifiedAuth } from "./unified-auth";
+import { personalityEngine } from "./personality-engine";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
@@ -332,6 +333,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
       uptime: process.uptime(),
       blockchain: 'operational'
     });
+  });
+
+  // ============= UNIFIED COMPANION SYSTEM =============
+  
+  // Create new blockchain companion
+  app.post('/api/companions/create', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      const { name } = req.body;
+      
+      const companion = await personalityEngine.createCompanion(wallet.address, name);
+      
+      // Log creation event
+      await personalityEngine.processBlockchainEvent(
+        companion.id,
+        'social',
+        wallet.address,
+        { action: 'companion_created', success: true }
+      );
+      
+      res.json(companion);
+    } catch (error) {
+      console.error('Create companion error:', error);
+      res.status(500).json({ error: 'Failed to create companion' });
+    }
+  });
+  
+  // Get user's companions
+  app.get('/api/companions', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      const companions = personalityEngine.getUserCompanions(wallet.address);
+      res.json(companions);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch companions' });
+    }
+  });
+  
+  // Get specific companion
+  app.get('/api/companions/:id', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      const companion = personalityEngine.getCompanion(req.params.id);
+      
+      if (!companion || companion.owner_address !== wallet.address) {
+        return res.status(404).json({ error: 'Companion not found' });
+      }
+      
+      res.json(companion);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch companion' });
+    }
+  });
+  
+  // Get companion personality summary
+  app.get('/api/companions/:id/summary', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      const companion = personalityEngine.getCompanion(req.params.id);
+      
+      if (!companion || companion.owner_address !== wallet.address) {
+        return res.status(404).json({ error: 'Companion not found' });
+      }
+      
+      const summary = personalityEngine.getPersonalitySummary(req.params.id);
+      res.json({ summary });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get personality summary' });
+    }
+  });
+  
+  // Process blockchain event for companion
+  app.post('/api/companions/:id/event', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      const { eventType, details } = req.body;
+      
+      const companion = personalityEngine.getCompanion(req.params.id);
+      if (!companion || companion.owner_address !== wallet.address) {
+        return res.status(404).json({ error: 'Companion not found' });
+      }
+      
+      await personalityEngine.processBlockchainEvent(
+        req.params.id,
+        eventType,
+        wallet.address,
+        details
+      );
+      
+      const updatedCompanion = personalityEngine.getCompanion(req.params.id);
+      res.json(updatedCompanion);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to process event' });
+    }
+  });
+  
+  // Simulate autonomous companion activity
+  app.post('/api/companions/:id/simulate', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+    try {
+      const wallet = (req as any).userWallet;
+      const companion = personalityEngine.getCompanion(req.params.id);
+      
+      if (!companion || companion.owner_address !== wallet.address) {
+        return res.status(404).json({ error: 'Companion not found' });
+      }
+      
+      const activities = await personalityEngine.simulateAutonomousActivity(req.params.id);
+      res.json({ activities });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to simulate activity' });
+    }
   });
 
   // Error handling middleware
