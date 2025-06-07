@@ -219,6 +219,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get recent transactions (compatibility endpoint)
+  app.get('/api/tx/recent', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      const transactions = await memBlockchainStorage.getRecentTransactions(limit);
+      
+      res.json({
+        transactions: transactions.map(tx => ({
+          hash: tx.hash,
+          fromAddress: tx.fromAddress,
+          toAddress: tx.toAddress,
+          amount: tx.amount,
+          timestamp: tx.timestamp,
+          status: 'confirmed',
+          fee: '0.001'
+        }))
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch recent transactions' });
+    }
+  });
+
   // ============= UNIFIED BLOCKCHAIN DATA =============
   
   // Blockchain status endpoint (for frontend compatibility)
@@ -579,8 +601,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============= STAKING SYSTEM =============
   
-  // Get staking pools
+  // Get staking pools (both endpoints for compatibility)
   app.get('/api/staking/pools', async (req: Request, res: Response) => {
+    try {
+      const pools = await memBlockchainStorage.getStakingPools();
+      res.json(pools);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch staking pools' });
+    }
+  });
+
+  app.get('/api/stake/pools', async (req: Request, res: Response) => {
     try {
       const pools = await memBlockchainStorage.getStakingPools();
       res.json(pools);
