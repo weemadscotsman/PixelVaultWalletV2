@@ -952,13 +952,23 @@ async function mineNewBlock() {
     selectedMiner.totalRewards = (BigInt(selectedMiner.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString();
     await memBlockchainStorage.updateMiner(selectedMiner);
     
-    // Update miner wallet balance
+    // Update miner wallet balance in both memory and database
     const minerWallet = await memBlockchainStorage.getWalletByAddress(selectedMiner.address);
     if (minerWallet) {
       const currentBalance = parseFloat(minerWallet.balance);
       const reward = parseFloat(PVX_BLOCK_REWARD);
-      minerWallet.balance = (currentBalance + reward).toString();
+      const newBalance = currentBalance + reward;
+      minerWallet.balance = newBalance.toString();
       await memBlockchainStorage.updateWallet(minerWallet);
+      
+      // Also update database directly for API consistency
+      try {
+        const { DatabaseStorage } = await import('../storage.js');
+        const dbStorage = new DatabaseStorage();
+        await dbStorage.updateWalletBalance(selectedMiner.address, newBalance);
+      } catch (err) {
+        console.error('Failed to sync wallet balance to database:', err);
+      }
     }
     
     // Check for mining badges
