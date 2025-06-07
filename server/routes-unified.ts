@@ -468,6 +468,169 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= GOVERNANCE SYSTEM =============
+  
+  // Get governance proposals
+  app.get('/api/governance/proposals', async (req: Request, res: Response) => {
+    try {
+      const proposals = [
+        {
+          id: 1,
+          title: "Increase Mining Rewards",
+          description: "Proposal to increase block rewards by 15%",
+          status: "active",
+          votesFor: 1250,
+          votesAgainst: 890,
+          endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        }
+      ];
+      res.json(proposals);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch proposals' });
+    }
+  });
+
+  // Get veto guardians
+  app.get('/api/governance/veto-guardians', async (req: Request, res: Response) => {
+    try {
+      const guardians = [
+        {
+          address: "PVX_guardian1",
+          vetoCount: 3,
+          isActive: true
+        }
+      ];
+      res.json(guardians);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch guardians' });
+    }
+  });
+
+  // ============= DROPS SYSTEM =============
+  
+  // Get active drops
+  app.get('/api/drops', async (req: Request, res: Response) => {
+    try {
+      const drops = [
+        {
+          id: 1,
+          name: "Genesis Collection",
+          description: "Limited edition NFTs",
+          isActive: true,
+          claimed: 63,
+          total: 100
+        }
+      ];
+      res.json(drops);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch drops' });
+    }
+  });
+
+  // ============= BADGES SYSTEM =============
+  
+  // Get user badges
+  app.get('/api/badges', async (req: Request, res: Response) => {
+    try {
+      const badges = [
+        {
+          id: 1,
+          name: "First Miner",
+          description: "Mined your first block",
+          earned: true,
+          earnedAt: new Date()
+        }
+      ];
+      res.json(badges);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch badges' });
+    }
+  });
+
+  // ============= LEARNING SYSTEM =============
+  
+  // Get learning modules
+  app.get('/api/learning/modules', async (req: Request, res: Response) => {
+    try {
+      const modules = [
+        {
+          id: 1,
+          title: "Blockchain Basics",
+          progress: 75,
+          completed: false
+        }
+      ];
+      res.json(modules);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch modules' });
+    }
+  });
+
+  // Get learning leaderboard
+  app.get('/api/learning/leaderboard', async (req: Request, res: Response) => {
+    try {
+      const leaderboard = [
+        {
+          address: "PVX_learner1",
+          score: 950,
+          rank: 1
+        }
+      ];
+      res.json(leaderboard);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch leaderboard' });
+    }
+  });
+
+  // ============= STAKING SYSTEM =============
+  
+  // Get staking pools
+  app.get('/api/stake/pools', async (req: Request, res: Response) => {
+    try {
+      const pools = [
+        {
+          id: 1,
+          name: "Genesis Pool",
+          apr: 12.5,
+          totalStaked: 50000,
+          minStake: 100
+        }
+      ];
+      res.json(pools);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch pools' });
+    }
+  });
+
+  // ============= TRANSACTION SYSTEM =============
+  
+  // Get recent transactions
+  app.get('/api/tx/recent', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 20;
+      const transactions = await memBlockchainStorage.getRecentTransactions(limit);
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+  });
+
+  // ============= UTR STATS =============
+  
+  // Get UTR stats
+  app.get('/api/utr/stats', async (req: Request, res: Response) => {
+    try {
+      const stats = {
+        totalTransactions: 15420,
+        averageBlockTime: 10.2,
+        networkUtilization: 78
+      };
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch UTR stats' });
+    }
+  });
+
   // ============= BLOCKCHAIN INFORMATION SYSTEM =============
   
   // Get blockchain information
