@@ -99,6 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(data.sessionToken);
       queryClient.setQueryData(['/api/auth/me'], data.wallet);
       
+      // CRITICAL: Set active wallet in localStorage for unified state
+      localStorage.setItem('activeWallet', data.wallet.address);
+      
       // Invalidate any queries that may now return different results with auth
       queryClient.invalidateQueries();
       

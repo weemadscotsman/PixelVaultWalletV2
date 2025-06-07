@@ -74,7 +74,7 @@ export function TransactionsList({ fullView = false }: TransactionsListProps) {
     );
   }
 
-  if (transactions.length === 0) {
+  if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
     return (
       <Card className="bg-black/70 border-blue-900/50">
         <CardHeader className="border-b border-blue-900/30 bg-blue-900/10">

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "./use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Wallet {
   address: string;
