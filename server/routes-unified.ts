@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { memBlockchainStorage } from "./mem-blockchain";
+import { simplifiedStorage } from "./storage-simplified";
 import { Request, Response, NextFunction } from "express";
 import { WebSocketServer } from "ws";
 import crypto from "crypto";
@@ -30,7 +30,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get wallet and validate passphrase
-      const wallet = await memBlockchainStorage.getWalletByAddress(address);
+      const wallet = await simplifiedStorage.getWalletByAddress(address);
       if (!wallet) {
         return res.status(401).json({ error: 'Invalid wallet address or passphrase' });
       }
@@ -104,7 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const privateKey = crypto.randomBytes(32).toString('hex');
       const salt = crypto.randomBytes(16).toString('hex');
       
-      const wallet = await memBlockchainStorage.createWallet({
+      const wallet = await simplifiedStorage.createWallet({
         address,
         publicKey,
         balance: "1000.0", // Starting balance
@@ -144,7 +144,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all wallets (public endpoint for dashboard) - MUST BE BEFORE :address route
   app.get('/api/wallet/all', async (req: Request, res: Response) => {
     try {
-      const wallets = Array.from(memBlockchainStorage.wallets.values()).map(wallet => ({
+      const wallets = Array.from(simplifiedStorage.wallets.values()).map(wallet => ({
         address: wallet.address,
         balance: wallet.balance,
         lastUpdated: wallet.lastUpdated
@@ -159,7 +159,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/wallet/:address', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
-      const wallet = await memBlockchainStorage.getWalletByAddress(address);
+      const wallet = await simplifiedStorage.getWalletByAddress(address);
       
       if (!wallet) {
         return res.status(404).json({ error: 'Wallet not found' });
@@ -182,7 +182,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/utr/transactions', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
     try {
       const userAddress = (req as any).userAddress;
-      const transactions = await memBlockchainStorage.getTransactionsByAddress(userAddress);
+      const transactions = await simplifiedStorage.getTransactionsByAddress(userAddress);
       
       res.json(transactions.map(tx => ({
         hash: tx.hash,
@@ -201,7 +201,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get real-time transaction data (public)
   app.get('/api/utr/realtime', async (req: Request, res: Response) => {
     try {
-      const recent = await memBlockchainStorage.getRecentTransactions(20);
+      const recent = await simplifiedStorage.getRecentTransactions(20);
       const totalValue = recent.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
       
       res.json({
@@ -223,7 +223,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/tx/recent', async (req: Request, res: Response) => {
     try {
       const limit = parseInt(req.query.limit as string) || 20;
-      const transactions = await memBlockchainStorage.getRecentTransactions(limit);
+      const transactions = await simplifiedStorage.getRecentTransactions(limit);
       
       res.json({
         transactions: transactions.map(tx => ({
@@ -246,7 +246,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Blockchain status endpoint (for frontend compatibility)
   app.get('/api/blockchain/status', async (req: Request, res: Response) => {
     try {
-      const latestBlock = await memBlockchainStorage.getLatestBlock();
+      const latestBlock = await simplifiedStorage.getLatestBlock();
       res.json({
         connected: true,
         synced: true,
@@ -266,9 +266,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Blockchain metrics
   app.get('/api/blockchain/metrics', async (req: Request, res: Response) => {
     try {
-      const latestBlock = await memBlockchainStorage.getLatestBlock();
-      const recentBlocks = await memBlockchainStorage.getRecentBlocks(10);
-      const allWallets = Array.from(memBlockchainStorage.wallets.values());
+      const latestBlock = await simplifiedStorage.getLatestBlock();
+      const recentBlocks = await simplifiedStorage.getRecentBlocks(10);
+      const allWallets = Array.from(simplifiedStorage.wallets.values());
       
       res.json({
         blockHeight: latestBlock?.height || 0,
@@ -286,10 +286,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Blockchain trends (fixed format for TrendRadar component)
   app.get('/api/blockchain/trends', async (req: Request, res: Response) => {
     try {
-      const recentBlocks = await memBlockchainStorage.getRecentBlocks(10);
-      const recentTransactions = await memBlockchainStorage.getRecentTransactions(50);
-      const allWallets = Array.from(memBlockchainStorage.wallets.values());
-      const activeMiners = await memBlockchainStorage.getAllActiveMiners();
+      const recentBlocks = await simplifiedStorage.getRecentBlocks(10);
+      const recentTransactions = await simplifiedStorage.getRecentTransactions(50);
+      const allWallets = Array.from(simplifiedStorage.wallets.values());
+      const activeMiners = await simplifiedStorage.getAllActiveMiners();
       
       // Calculate real metrics from blockchain data
       const hashRate = activeMiners.length * 2.5; // Simulated hash rate based on active miners
@@ -373,7 +373,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // General mining statistics endpoint (without specific address)
   app.get('/api/blockchain/mining/stats', async (req: Request, res: Response) => {
     try {
-      const allMiners = await memBlockchainStorage.getAllActiveMiners();
+      const allMiners = await simplifiedStorage.getAllActiveMiners();
       const totalHashRate = allMiners.reduce((sum, miner) => sum + parseFloat(miner.hashRate || "0"), 0);
       const totalBlocks = allMiners.reduce((sum, miner) => sum + (miner.blocksFound || 0), 0);
       
@@ -395,7 +395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Governance proposals endpoint
   app.get('/api/governance/proposals', async (req: Request, res: Response) => {
     try {
-      const recentBlocks = await memBlockchainStorage.getRecentBlocks(5);
+      const recentBlocks = await simplifiedStorage.getRecentBlocks(5);
       const proposals = recentBlocks.map((block, index) => ({
         id: `prop_${block.height}`,
         title: `Block Validation Proposal #${block.height}`,
@@ -418,7 +418,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Veto guardians endpoint
   app.get('/api/governance/veto-guardians', async (req: Request, res: Response) => {
     try {
-      const activeMiners = await memBlockchainStorage.getAllActiveMiners();
+      const activeMiners = await simplifiedStorage.getAllActiveMiners();
       const guardians = activeMiners.slice(0, 5).map((miner, index) => ({
         id: `guardian_${index}`,
         address: miner.address,
@@ -436,7 +436,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Drops endpoint
   app.get('/api/drops', async (req: Request, res: Response) => {
     try {
-      const recentTransactions = await memBlockchainStorage.getRecentTransactions(10);
+      const recentTransactions = await simplifiedStorage.getRecentTransactions(10);
       const drops = recentTransactions.map((tx, index) => ({
         id: `drop_${tx.hash.substring(0, 8)}`,
         name: `Mining Reward Drop #${index + 1}`,
@@ -457,8 +457,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Badges endpoint
   app.get('/api/badges', async (req: Request, res: Response) => {
     try {
-      const allWallets = Array.from(memBlockchainStorage.wallets.values());
-      const activeMiners = await memBlockchainStorage.getAllActiveMiners();
+      const allWallets = Array.from(simplifiedStorage.wallets.values());
+      const activeMiners = await simplifiedStorage.getAllActiveMiners();
       
       const badges = [
         {
@@ -499,7 +499,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // UTR stats endpoint
   app.get('/api/utr/stats', async (req: Request, res: Response) => {
     try {
-      const recentTransactions = await memBlockchainStorage.getRecentTransactions(100);
+      const recentTransactions = await simplifiedStorage.getRecentTransactions(100);
       const totalValue = recentTransactions.reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
       
       res.json({
@@ -562,7 +562,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Learning leaderboard endpoint
   app.get('/api/learning/leaderboard', async (req: Request, res: Response) => {
     try {
-      const allWallets = Array.from(memBlockchainStorage.wallets.values());
+      const allWallets = Array.from(simplifiedStorage.wallets.values());
       const leaderboard = allWallets
         .sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance))
         .slice(0, 10)
@@ -585,8 +585,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Real drop stats from blockchain data
   app.get('/api/drops/stats', async (req: Request, res: Response) => {
     try {
-      const allWallets = Array.from(memBlockchainStorage.wallets.values());
-      const recentTransactions = await memBlockchainStorage.getRecentTransactions(50);
+      const allWallets = Array.from(simplifiedStorage.wallets.values());
+      const recentTransactions = await simplifiedStorage.getRecentTransactions(50);
       
       res.json({
         totalDrops: Math.max(5, recentTransactions.length),
@@ -603,7 +603,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Real badge leaderboard from wallet data
   app.get('/api/badges/leaderboard', async (req: Request, res: Response) => {
     try {
-      const allWallets = Array.from(memBlockchainStorage.wallets.values());
+      const allWallets = Array.from(simplifiedStorage.wallets.values());
       
       const leaderboard = allWallets
         .sort((a, b) => parseFloat(b.balance) - parseFloat(a.balance))
@@ -626,7 +626,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get staking pools (both endpoints for compatibility)
   app.get('/api/staking/pools', async (req: Request, res: Response) => {
     try {
-      const pools = await memBlockchainStorage.getStakingPools();
+      const pools = await simplifiedStorage.getStakingPools();
       res.json(pools);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch staking pools' });
@@ -635,7 +635,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/stake/pools', async (req: Request, res: Response) => {
     try {
-      const pools = await memBlockchainStorage.getStakingPools();
+      const pools = await simplifiedStorage.getStakingPools();
       res.json(pools);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch staking pools' });
@@ -652,12 +652,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Pool ID and amount are required' });
       }
 
-      const pool = await memBlockchainStorage.getStakingPoolById(poolId);
+      const pool = await simplifiedStorage.getStakingPoolById(poolId);
       if (!pool) {
         return res.status(404).json({ error: 'Staking pool not found' });
       }
 
-      const stakeRecord = await memBlockchainStorage.createStakeRecord(poolId, userAddress, amount.toString());
+      const stakeRecord = await simplifiedStorage.createStakeRecord(poolId, userAddress, amount.toString());
 
       res.json({ success: true, stakeId: stakeRecord.id });
     } catch (error) {
@@ -672,7 +672,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/wallet/history/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
-      const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+      const transactions = await simplifiedStorage.getTransactionsByAddress(address);
       res.json({ transactions });
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch wallet history' });
@@ -752,7 +752,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/stake/status', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
     try {
       const wallet = (req as any).userWallet;
-      const stakes = await memBlockchainStorage.getActiveStakesByAddress(wallet.address);
+      const stakes = await simplifiedStorage.getActiveStakesByAddress(wallet.address);
       res.json({ 
         activeStakes: stakes.length,
         totalStaked: stakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0).toString(),
@@ -768,7 +768,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Latest block info
   app.get('/api/blockchain/latest-block', async (req: Request, res: Response) => {
     try {
-      const latestBlock = await memBlockchainStorage.getLatestBlock();
+      const latestBlock = await simplifiedStorage.getLatestBlock();
       res.json(latestBlock);
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch latest block' });
@@ -779,7 +779,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/blockchain/blocks', async (req: Request, res: Response) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
-      const blocks = await memBlockchainStorage.getRecentBlocks(limit);
+      const blocks = await simplifiedStorage.getRecentBlocks(limit);
       res.json({ blocks });
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch blocks' });
@@ -799,7 +799,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/blockchain/mining/stats/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
-      const miner = await memBlockchainStorage.getMinerByAddress(address);
+      const miner = await simplifiedStorage.getMinerByAddress(address);
       res.json({
         hashRate: miner ? parseFloat(miner.hashRate) : 0,
         blocksFound: miner ? miner.blocksFound : 0,
@@ -845,8 +845,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get chain metrics for dev dashboard
   app.get('/api/dev/chain/metrics', async (req: Request, res: Response) => {
     try {
-      const latestBlock = await memBlockchainStorage.getLatestBlock();
-      const wallets = Array.from(memBlockchainStorage.wallets.values());
+      const latestBlock = await simplifiedStorage.getLatestBlock();
+      const wallets = Array.from(simplifiedStorage.wallets.values());
       
       res.json({
         blockHeight: latestBlock?.height || 1,
@@ -1054,9 +1054,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get blockchain information
   app.get('/api/blockchain/info', async (req: Request, res: Response) => {
     try {
-      const latestBlock = await memBlockchainStorage.getLatestBlock();
-      const recentBlocks = await memBlockchainStorage.getRecentBlocks(10);
-      const recentTransactions = await memBlockchainStorage.getRecentTransactions(10);
+      const latestBlock = await simplifiedStorage.getLatestBlock();
+      const recentBlocks = await simplifiedStorage.getRecentBlocks(10);
+      const recentTransactions = await simplifiedStorage.getRecentTransactions(10);
       
       res.json({
         latestBlock: latestBlock ? {
@@ -1078,7 +1078,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get blockchain metrics
   app.get('/api/blockchain/metrics', async (req: Request, res: Response) => {
     try {
-      const recentBlocks = await memBlockchainStorage.getRecentBlocks(100);
+      const recentBlocks = await simplifiedStorage.getRecentBlocks(100);
       const avgBlockTime = recentBlocks.length > 1 ? 
         (recentBlocks[0].timestamp - recentBlocks[recentBlocks.length - 1].timestamp) / (recentBlocks.length - 1) / 1000 : 30;
       
@@ -1097,7 +1097,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get blockchain trends (for visualizer)
   app.get('/api/blockchain/trends', async (req: Request, res: Response) => {
     try {
-      const recentBlocks = await memBlockchainStorage.getRecentBlocks(24);
+      const recentBlocks = await simplifiedStorage.getRecentBlocks(24);
       const trends = recentBlocks.map(block => ({
         timestamp: block.timestamp,
         blockHeight: block.height,
@@ -1114,7 +1114,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get system health status
   app.get('/api/health', async (req: Request, res: Response) => {
     try {
-      const latestBlock = await memBlockchainStorage.getLatestBlock();
+      const latestBlock = await simplifiedStorage.getLatestBlock();
       const now = Date.now();
       const lastBlockTime = latestBlock ? latestBlock.timestamp : now;
       const timeSinceLastBlock = now - lastBlockTime;
@@ -1142,7 +1142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get system status
   app.get('/api/status', async (req: Request, res: Response) => {
     try {
-      const wallets = Array.from(memBlockchainStorage.wallets.values());
+      const wallets = Array.from(simplifiedStorage.wallets.values());
       const totalWallets = wallets.length;
       const totalBalance = wallets.reduce((sum, wallet) => sum + parseFloat(wallet.balance), 0);
       

@@ -127,22 +127,22 @@ export function Dashboard() {
   const stakingHook = useStaking();
   
   // Get live governance data
-  const { stats: governanceStats, proposals } = useGovernance(activeWallet);
+  const { stats: governanceStats, proposals } = useGovernance(activeWallet || undefined);
   
   // Get live drops data
-  const { drops, getActiveDrops, stats: dropsStats } = useDrops(activeWallet);
+  const { drops, getActiveDrops, stats: dropsStats } = useDrops(activeWallet || undefined);
   
   // Get live badges data
-  const { userBadges, getCompletedBadges, getTotalBadgeValue } = useBadges(activeWallet);
+  const { userBadges, getCompletedBadges, getTotalBadgeValue } = useBadges(activeWallet || undefined);
   
   // Get live UTR transaction data
-  const { transactions, stats: utrStats } = useUTR(undefined, activeWallet);
+  const { transactions, stats: utrStats } = useUTR(undefined, activeWallet || undefined);
   
   // Get live learning data
-  const { stats: learningStats, getOverallProgress } = useLearning(activeWallet);
+  const { stats: learningStats, getOverallProgress } = useLearning(activeWallet || undefined);
   
   // Initialize WebSocket for real-time updates
-  useWebSocket(activeWallet);
+  useWebSocket(activeWallet || undefined);
   
   // Query for active wallet data
   const { data: walletDataApi, isLoading: isLoadingWallet } = getWallet();
@@ -153,7 +153,7 @@ export function Dashboard() {
   });
   
   // Query for wallet transactions
-  const { data: walletTransactionsApi, isLoading: isLoadingTransactions } = useTransactionHistory(activeWallet || undefined);
+  const { data: walletTransactionsApi, isLoading: isLoadingTransactions } = useTransactionHistory(activeWallet ? Number(activeWallet) : undefined);
   
   // Query for staking data
   const { data: activeStakesApi, isLoading: isLoadingStakes } = useQuery({
