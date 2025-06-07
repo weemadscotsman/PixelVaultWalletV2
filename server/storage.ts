@@ -438,6 +438,64 @@ export class DatabaseStorage implements IStorage {
     }
   ];
   
+  // Staking Pools in-memory storage
+  private stakingPools: any[] = [
+    {
+      id: "pool-001",
+      name: "PVX Genesis Pool",
+      description: "The original high-yield staking pool for early adopters",
+      token: "PVX",
+      apy: "420.69",
+      totalStaked: "2500000.0",
+      minStakeAmount: "100.0",
+      maxStakeAmount: "10000.0",
+      stakingDuration: 30, // days
+      isActive: true,
+      createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+      rewards: {
+        daily: "0.115",
+        weekly: "0.805",
+        monthly: "3.45"
+      }
+    },
+    {
+      id: "pool-002", 
+      name: "PVX Validator Pool",
+      description: "Stake PVX to help secure the network and earn validator rewards",
+      token: "PVX",
+      apy: "169.42",
+      totalStaked: "1750000.0",
+      minStakeAmount: "500.0",
+      maxStakeAmount: "50000.0",
+      stakingDuration: 90, // days
+      isActive: true,
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
+      rewards: {
+        daily: "0.464",
+        weekly: "3.248",
+        monthly: "13.92"
+      }
+    },
+    {
+      id: "test-pool",
+      name: "Test Pool",
+      description: "Testing pool for audit purposes",
+      token: "PVX",
+      apy: "100.0",
+      totalStaked: "1000.0",
+      minStakeAmount: "10.0",
+      maxStakeAmount: "1000.0",
+      stakingDuration: 7, // days
+      isActive: true,
+      createdAt: new Date(),
+      rewards: {
+        daily: "0.274",
+        weekly: "1.918",
+        monthly: "8.22"
+      }
+    }
+  ];
+
   // Secret Drops in-memory storage
   private secretDrops: any[] = [
     {
@@ -1241,6 +1299,35 @@ export class DatabaseStorage implements IStorage {
     return [...this.utrEntries]
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
       .slice(0, limit);
+  }
+
+  // Staking Pool methods
+  async getStakingPools(): Promise<any[]> {
+    return this.stakingPools;
+  }
+
+  async getStakingPoolById(poolId: string): Promise<any | undefined> {
+    return this.stakingPools.find(pool => pool.id === poolId);
+  }
+
+  async createStakeRecord(poolId: string, address: string, amount: string): Promise<any> {
+    const pool = await this.getStakingPoolById(poolId);
+    if (!pool) {
+      throw new Error('Staking pool not found');
+    }
+
+    const stakeRecord = {
+      id: Date.now().toString(),
+      poolId,
+      address,
+      amount,
+      startTime: new Date(),
+      endTime: new Date(Date.now() + pool.stakingDuration * 24 * 60 * 60 * 1000),
+      status: 'active',
+      rewards: '0.0'
+    };
+
+    return stakeRecord;
   }
   
   async getUTREntriesByAddress(address: string, asReceiver: boolean = false, limit: number = 20): Promise<UTR[]> {

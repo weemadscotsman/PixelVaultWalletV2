@@ -635,15 +635,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'Staking pool not found' });
       }
 
-      const stakeRecord = await memBlockchainStorage.createStakeRecord({
-        id: crypto.randomUUID(),
-        walletAddress: userAddress,
-        poolId: poolId,
-        amount: amount.toString(),
-        startTime: new Date(),
-        isActive: true,
-        rewards: "0.0"
-      });
+      const stakeRecord = await memBlockchainStorage.createStakeRecord(poolId, userAddress, amount.toString());
 
       res.json({ success: true, stakeId: stakeRecord.id });
     } catch (error) {
