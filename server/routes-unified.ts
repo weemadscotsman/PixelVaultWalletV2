@@ -115,6 +115,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Get specific wallet by address (public endpoint)
+  app.get('/api/wallet/:address', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const wallet = await memBlockchainStorage.getWalletByAddress(address);
+      
+      if (!wallet) {
+        return res.status(404).json({ error: 'Wallet not found' });
+      }
+      
+      res.json({
+        address: wallet.address,
+        balance: wallet.balance,
+        lastUpdated: wallet.lastUpdated,
+        createdAt: wallet.createdAt
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch wallet' });
+    }
+  });
+
   // Get all wallets (public endpoint for dashboard)
   app.get('/api/wallet/all', async (req: Request, res: Response) => {
     try {
