@@ -330,21 +330,21 @@ export function Dashboard() {
                     transactions.slice(0, 2).map(tx => (
                       <div key={tx.id || Math.random().toString()} className="flex justify-between items-center bg-gray-900/30 p-2 rounded">
                         <div className="flex items-center">
-                          {tx.type === 'receive' ? (
+                          {tx.type === 'transfer' && tx.to ? (
                             <ArrowDownRight className="w-4 h-4 text-green-400 mr-2" />
                           ) : (
                             <ArrowUpRight className="w-4 h-4 text-orange-400 mr-2" />
                           )}
                           <div>
-                            <p className="text-xs text-gray-300">{tx.type === 'receive' ? 'Received' : 'Sent'}</p>
+                            <p className="text-xs text-gray-300">{tx.type === 'transfer' && tx.to ? 'Received' : tx.type}</p>
                             <p className="text-xs text-gray-500">
-                              {tx.type === 'receive' ? `From ${tx.from || 'Unknown'}` : `To ${tx.to || 'Unknown'}`}
+                              {tx.type === 'transfer' ? (tx.to ? `From ${tx.from || 'Unknown'}` : `To ${tx.to || 'Unknown'}`) : 'Network operation'}
                             </p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className={`text-sm ${tx.type === 'receive' ? 'text-green-400' : 'text-orange-400'}`}>
-                            {tx.type === 'receive' ? '+' : '-'}{formatCurrency(tx.amount)}
+                          <p className={`text-sm ${tx.type === 'transfer' && tx.to ? 'text-green-400' : 'text-orange-400'}`}>
+                            {tx.type === 'transfer' && tx.to ? '+' : '-'}{formatCurrency(tx.amount)}
                           </p>
                           <p className="text-xs text-gray-500">{formatTimeAgo(tx.timestamp)}</p>
                         </div>
