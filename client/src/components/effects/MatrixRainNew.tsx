@@ -13,10 +13,10 @@ export function MatrixRainNew() {
     canvas.style.left = '0';
     canvas.style.width = '100vw';
     canvas.style.height = '100vh';
-    canvas.style.zIndex = '10'; // Higher z-index to show above content
+    canvas.style.zIndex = '-1'; // Behind all content
     canvas.style.pointerEvents = 'none'; // Don't capture clicks
-    canvas.style.opacity = '0.8'; // Increased opacity for more visibility
-    canvas.style.mixBlendMode = 'overlay';
+    canvas.style.opacity = '0.1'; // Very subtle background effect
+    canvas.style.mixBlendMode = 'normal';
     canvas.className = 'matrix-rain-forced'; // Add class for additional styling options
     
     // Add it directly to the document body to ensure it's not nested in any container
