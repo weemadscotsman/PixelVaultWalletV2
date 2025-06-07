@@ -955,7 +955,9 @@ async function mineNewBlock() {
     // Update miner wallet balance
     const minerWallet = await memBlockchainStorage.getWalletByAddress(selectedMiner.address);
     if (minerWallet) {
-      minerWallet.balance = (BigInt(minerWallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
+      const currentBalance = parseFloat(minerWallet.balance);
+      const reward = parseFloat(PVX_BLOCK_REWARD);
+      minerWallet.balance = (currentBalance + reward).toString();
       await memBlockchainStorage.updateWallet(minerWallet);
     }
     
