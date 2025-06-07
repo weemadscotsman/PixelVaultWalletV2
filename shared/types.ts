@@ -40,26 +40,31 @@ export interface Block {
   timestamp: number;
   nonce: number;
   difficulty: number;
-  miner: string;
-  merkleRoot: string;
-  totalTransactions: number;
-  size: number;
+  miner?: string;
+  minerAddress?: string;
+  merkleRoot?: string;
+  totalTransactions?: number;
+  size?: number;
   transactions?: Transaction[];
 }
 
 // Mining related types
 export interface MiningStats {
   address: string;
-  blocksMined: number;
+  blocksFound: number;
   totalRewards: string;
-  lastBlockMined: number;
+  lastBlockTime: number | null;
   isCurrentlyMining: boolean;
-  hardware: 'CPU' | 'GPU' | 'ASIC';
-  joinedAt: Date;
-  currentHashRate: number;
+  hashRate: string;
+  startTime?: number;
+  // Legacy aliases for compatibility
+  blocksMined?: number; // Alias for blocksFound
+  lastBlockMined?: number; // Alias for lastBlockTime
+  hardware?: 'CPU' | 'GPU' | 'ASIC';
+  joinedAt?: Date;
+  currentHashRate?: number;
   isActive?: boolean;
-  totalBlocks?: number; // Alias for blocksMined used in some files
-  hashRate?: string; // String representation of currentHashRate
+  totalBlocks?: number; // Alias for blocksFound used in some files
 }
 
 export interface BlockchainMetrics {

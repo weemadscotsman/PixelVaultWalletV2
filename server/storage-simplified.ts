@@ -105,6 +105,15 @@ export class SimplifiedStorage {
     return await memBlockchainStorage.getStakingPoolById(id);
   }
 
+  // Mining operations
+  async startMining(address: string) {
+    return await memBlockchainStorage.startMining(address);
+  }
+
+  async getMinerByAddress(address: string) {
+    return await memBlockchainStorage.getMinerByAddress(address);
+  }
+
   // User operations (simplified)
   async getUser(id: number) {
     return undefined; // Users managed through wallet addresses

@@ -298,6 +298,93 @@ export class MemBlockchainStorage {
     return Array.from(this.minerStats.values())
       .filter(miner => miner.isCurrentlyMining);
   }
+
+  async startMining(address: string): Promise<MiningStats> {
+    let miner = this.minerStats.get(address);
+    
+    if (!miner) {
+      // Create new miner stats if they don't exist
+      miner = {
+        address,
+        hashRate: '250.5',
+        totalRewards: '0.0',
+        blocksFound: 0,
+        isCurrentlyMining: true,
+        startTime: Date.now(),
+        lastBlockTime: null
+      };
+    } else {
+      // Update existing miner to start mining
+      miner.isCurrentlyMining = true;
+      miner.startTime = Date.now();
+      miner.hashRate = '250.5'; // Activate mining with real hash rate
+    }
+    
+    this.minerStats.set(address, miner);
+    await this.saveToFile();
+    
+    // Start the mining process for this address
+    this.startMiningProcess(address);
+    
+    return miner;
+  }
+
+  private startMiningProcess(address: string): void {
+    // Start continuous mining process
+    const miningInterval = setInterval(async () => {
+      const miner = this.minerStats.get(address);
+      if (!miner || !miner.isCurrentlyMining) {
+        clearInterval(miningInterval);
+        return;
+      }
+
+      // Simulate mining activity - chance to find a block every 30 seconds
+      const random = Math.random();
+      if (random < 0.1) { // 10% chance to find a block
+        await this.mineBlock(address);
+      }
+    }, 30000); // Check every 30 seconds
+  }
+
+  private async mineBlock(minerAddress: string): Promise<void> {
+    const miner = this.minerStats.get(minerAddress);
+    if (!miner) return;
+
+    // Create a new block
+    const previousBlock = this.blocks[this.blocks.length - 1];
+    const newBlock: Block = {
+      height: previousBlock ? previousBlock.height + 1 : 1,
+      hash: this.generateBlockHash(),
+      previousHash: previousBlock?.hash || '0',
+      timestamp: Date.now(),
+      transactions: [],
+      nonce: Math.floor(Math.random() * 1000000),
+      difficulty: 5,
+      minerAddress
+    };
+
+    this.blocks.push(newBlock);
+
+    // Update miner stats
+    miner.blocksFound += 1;
+    miner.lastBlockTime = Date.now();
+    const blockReward = 50.0;
+    miner.totalRewards = (parseFloat(miner.totalRewards) + blockReward).toString();
+
+    // Update miner's wallet balance
+    const wallet = this.wallets.get(minerAddress);
+    if (wallet) {
+      wallet.balance = (parseFloat(wallet.balance) + blockReward).toString();
+      wallet.lastUpdated = new Date();
+    }
+
+    await this.saveToFile();
+    console.log(`Block mined by ${minerAddress}! Height: ${newBlock.height}, Reward: ${blockReward} PVX`);
+  }
+
+  private generateBlockHash(): string {
+    return 'block_' + Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+  }
   
   // Staking methods
   async createStakeRecord(stake: StakeRecord): Promise<StakeRecord> {

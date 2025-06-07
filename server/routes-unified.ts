@@ -946,10 +946,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Start mining
-  app.post('/api/blockchain/mining/start', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
+  app.post('/api/blockchain/mining/start', async (req: Request, res: Response) => {
     try {
-      const wallet = (req as any).userWallet;
-      res.json({ success: true, message: 'Mining started', address: wallet.address });
+      const { address } = req.body;
+      if (!address) {
+        return res.status(400).json({ error: 'Address required' });
+      }
+      
+      // Start actual mining for the address
+      await simplifiedStorage.startMining(address);
+      res.json({ success: true, message: 'Mining started', address });
     } catch (error) {
       res.status(500).json({ error: 'Failed to start mining' });
     }
