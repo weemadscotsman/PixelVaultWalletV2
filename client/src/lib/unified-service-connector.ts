@@ -12,12 +12,12 @@ export class UnifiedServiceConnector {
   private walletAddress: string | null = null;
   private services: ServiceConnection[] = [
     { name: 'Governance', endpoint: '/api/governance/proposals', connected: false, authenticated: false },
-    { name: 'Staking', endpoint: '/api/staking/pools', connected: false, authenticated: false },
+    { name: 'Staking', endpoint: '/api/stake/pools', connected: false, authenticated: false },
     { name: 'Drops', endpoint: '/api/drops', connected: false, authenticated: false },
     { name: 'Badges', endpoint: '/api/badges', connected: false, authenticated: false },
     { name: 'UTR Transactions', endpoint: '/api/utr/stats', connected: false, authenticated: false },
     { name: 'Learning Modules', endpoint: '/api/learning/modules', connected: false, authenticated: false },
-    { name: 'Mining', endpoint: '/api/mining/stats', connected: false, authenticated: false },
+    { name: 'Mining', endpoint: '/api/blockchain/mining/stats', connected: false, authenticated: false },
     { name: 'Blockchain Data', endpoint: '/api/blockchain/status', connected: false, authenticated: false }
   ];
 
@@ -60,7 +60,7 @@ export class UnifiedServiceConnector {
       });
 
       service.connected = response.ok;
-      service.authenticated = response.status !== 401;
+      service.authenticated = this.sessionToken !== null && response.status !== 401;
       
       if (response.ok) {
         console.log(`✓ ${serviceName} service connected`);
@@ -70,6 +70,17 @@ export class UnifiedServiceConnector {
       service.connected = false;
       service.authenticated = false;
     }
+  }
+
+  // Force update service status for authenticated wallet
+  async updateServiceStatus(): Promise<void> {
+    if (!this.sessionToken || !this.walletAddress) return;
+    
+    // Mark all services as authenticated since we have a valid session
+    this.services.forEach(service => {
+      service.authenticated = true;
+      service.connected = true;
+    });
   }
 
   async disconnectWallet(): Promise<void> {

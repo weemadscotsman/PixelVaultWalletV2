@@ -40,6 +40,36 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
 
   const { data: walletData, isLoading: isLoadingWallet } = getWallet();
 
+  // Auto-restore session on component mount
+  React.useEffect(() => {
+    const restoreSession = async () => {
+      const storedWallet = localStorage.getItem('activeWallet');
+      const storedToken = localStorage.getItem('pvx_session_token');
+      
+      if (storedWallet && storedToken && !activeWallet) {
+        try {
+          // Test if session is still valid
+          const response = await fetch('/api/auth/status', {
+            headers: { 'Authorization': `Bearer ${storedToken}` }
+          });
+          
+          if (response.ok) {
+            setActiveWalletAddress(storedWallet);
+            await unifiedServiceConnector.connectWallet(storedWallet, storedToken);
+          } else {
+            // Clear invalid session
+            localStorage.removeItem('activeWallet');
+            localStorage.removeItem('pvx_session_token');
+          }
+        } catch (error) {
+          console.log('Session restoration failed:', error);
+        }
+      }
+    };
+    
+    restoreSession();
+  }, [activeWallet, setActiveWalletAddress]);
+
   const handleCreateWallet = async () => {
     if (!createPassphrase.trim()) {
       toast({
