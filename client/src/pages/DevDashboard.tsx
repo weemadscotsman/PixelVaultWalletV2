@@ -23,6 +23,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { SystemValidator } from '@/components/debug/SystemValidator';
 
 interface ServiceStatus {
   name: string;
@@ -334,6 +335,7 @@ export function DevDashboard() {
           <TabsList className="bg-gray-900">
             <TabsTrigger value="services">Service Management</TabsTrigger>
             <TabsTrigger value="monitoring">Chain Monitoring</TabsTrigger>
+            <TabsTrigger value="validator">System Validator</TabsTrigger>
             <TabsTrigger value="logs">System Logs</TabsTrigger>
           </TabsList>
 
@@ -441,6 +443,10 @@ export function DevDashboard() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="validator">
+            <SystemValidator />
           </TabsContent>
 
           <TabsContent value="logs">
