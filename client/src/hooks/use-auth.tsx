@@ -23,8 +23,9 @@ interface LoginCredentials {
 }
 
 interface AuthResponse {
-  token: string;
-  user: WalletUser;
+  success: boolean;
+  sessionToken: string;
+  wallet: WalletUser;
 }
 
 interface AuthContextType {
@@ -32,7 +33,7 @@ interface AuthContextType {
   isLoading: boolean;
   error: Error | null;
   token: string | null;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (credentials: LoginCredentials) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -41,7 +42,7 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
-  const [token, setToken] = useState<string | null>(localStorage.getItem('pvx_token'));
+  const [token, setToken] = useState<string | null>(localStorage.getItem('pvx_session_token'));
   
   // Query for the current user based on the token
   const {
@@ -79,9 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Effect to sync token with localStorage
   useEffect(() => {
     if (token) {
-      localStorage.setItem('pvx_token', token);
+      localStorage.setItem('pvx_session_token', token);
     } else {
-      localStorage.removeItem('pvx_token');
+      localStorage.removeItem('pvx_session_token');
     }
   }, [token]);
 
@@ -92,15 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json() as AuthResponse;
     },
     onSuccess: (data) => {
-      setToken(data.token);
-      queryClient.setQueryData(['/api/auth/me'], data.user);
+      setToken(data.sessionToken);
+      queryClient.setQueryData(['/api/auth/me'], data.wallet);
       
       // Invalidate any queries that may now return different results with auth
       queryClient.invalidateQueries();
       
       toast({
         title: "Login successful",
-        description: `Welcome back, ${data.user.address}`,
+        description: `Welcome back, ${data.wallet.address}`,
       });
     },
     onError: (error: Error) => {
