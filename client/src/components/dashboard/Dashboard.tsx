@@ -166,75 +166,51 @@ export function Dashboard() {
     queryKey: ['/api/stake/pools'],
   });
   
-  // Update wallet data from API
+  // Update wallet data from hooks
   useEffect(() => {
-    if (walletDataApi && !isLoadingWallet) {
+    if (wallet && activeWallet) {
       setWalletData(prev => ({
         ...prev,
-        publicAddress: walletDataApi.address,
-        balance: parseFloat(walletDataApi.balance)
+        publicAddress: activeWallet,
+        balance: parseFloat(wallet.balance || '0')
       }));
     }
-  }, [walletDataApi, isLoadingWallet]);
-  
-  // Update transaction data from API
-  useEffect(() => {
-    if (walletTransactionsApi && !isLoadingTransactions) {
-      const formattedTransactions = walletTransactionsApi.slice(0, 3).map((tx, index) => ({
-        id: index + 1,
-        type: tx.senderAddress === activeWallet ? 'send' : 'receive',
-        amount: parseFloat(tx.amount),
-        from: tx.senderAddress !== activeWallet ? tx.senderAddress : undefined,
-        to: tx.receiverAddress !== activeWallet ? tx.receiverAddress : undefined,
-        timestamp: new Date(tx.timestamp)
-      }));
-      
-      setWalletData(prev => ({
-        ...prev,
-        transactions: formattedTransactions
-      }));
-    }
-  }, [walletTransactionsApi, isLoadingTransactions, activeWallet]);
+  }, [wallet, activeWallet]);
   
   // Update blockchain data from API
+  // Component state
+  const [walletData, setWalletData] = useState(defaultWalletData);
+  const [blockchainData, setBlockchainData] = useState(defaultBlockchainData);
+  const [stakingPanelData, setStakingPanelData] = useState(defaultStakingData);
+  const [governanceData, setGovernanceData] = useState(defaultGovernanceData);
+  const [thringletData, setThringletData] = useState(defaultThringletData);
+  const [dropsData, setDropsData] = useState(defaultDropsData);
+  const [learningData, setLearningData] = useState(defaultLearningData);
+  
   useEffect(() => {
-    if (blockchainStatusApi && !isLoadingBlockchain) {
+    if (blockchainMetrics.data && !blockchainMetrics.isLoading) {
       setBlockchainData(prev => ({
         ...prev,
-        currentHeight: blockchainStatusApi.latestBlockHeight || prev.currentHeight,
-        difficulty: blockchainStatusApi.difficulty || prev.difficulty, 
-        hashRate: blockchainStatusApi.hashRate ? `${blockchainStatusApi.hashRate} H/s` : prev.hashRate,
-        lastBlockTime: blockchainStatusApi.lastBlockTime ? new Date(blockchainStatusApi.lastBlockTime) : prev.lastBlockTime
+        currentHeight: blockchainMetrics.data.currentHeight || prev.currentHeight,
+        difficulty: blockchainMetrics.data.difficulty || prev.difficulty, 
+        hashRate: blockchainMetrics.data.hashRate ? `${blockchainMetrics.data.hashRate} H/s` : prev.hashRate,
+        lastBlockTime: blockchainMetrics.data.lastBlockTime ? new Date(blockchainMetrics.data.lastBlockTime) : prev.lastBlockTime
       }));
     }
-  }, [blockchainStatusApi, isLoadingBlockchain]);
+  }, [blockchainMetrics.data, blockchainMetrics.isLoading]);
   
   // Update staking data from API
   useEffect(() => {
-    if (activeStakesApi && stakingPoolsApi && !isLoadingStakes && !isLoadingPools) {
-      // Calculate total staked
-      const totalStaked = Array.isArray(activeStakesApi) 
-        ? activeStakesApi.reduce((sum: number, stake: any) => {
-            return sum + parseFloat(stake.amount);
-          }, 0)
-        : 0;
-      
-      // Calculate rewards
-      const totalRewards = Array.isArray(activeStakesApi) 
-        ? activeStakesApi.reduce((sum: number, stake: any) => {
-            return sum + parseFloat(stake.pendingRewards || '0');
-          }, 0)
-        : 0;
-      
+    if (stakingHook.stakes) {
       setStakingPanelData(prev => ({
         ...prev,
-        totalStaked,
-        activeStakes: Array.isArray(activeStakesApi) ? activeStakesApi.length : 0,
-        rewards: totalRewards,
-        stakingPower: Math.min(Math.round((totalStaked / 1000000) * 100), 100) // Cap at 100%
+        totalStaked: stakingHook.totalStaked || 0,
+        activeStakes: Array.isArray(stakingHook.stakes) ? stakingHook.stakes.length : 0,
+        rewards: 0, // Will be populated from actual rewards data
+        stakingPower: stakingHook.votingPower || 0
       }));
     }
-  }, [activeStakesApi, stakingPoolsApi, isLoadingStakes, isLoadingPools]);
+  }, [stakingHook.stakes, stakingHook.totalStaked, stakingHook.votingPower]);
   
   const handleRefresh = () => {
     setRefreshing(true);
