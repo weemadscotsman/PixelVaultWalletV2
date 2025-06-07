@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { MatrixRainNew } from "@/components/effects/MatrixRainNew";
 import { CacheManager } from "@/lib/cache-manager";
+import "@/lib/force-cache-clear";
 import NotFound from "@/pages/not-found";
 import HomePage from "@/pages/home-page";
 import AuthPage from "@/pages/auth-page";

@@ -9,16 +9,17 @@ export class CacheManager {
     
     // Clear if we detect the corrupted wallet reference
     if (storedWallet === this.CORRUPTED_WALLET) {
-      localStorage.removeItem('activeWallet');
-      localStorage.removeItem('pvx_session_token');
-      localStorage.removeItem('pvx_token');
-      console.log('Cleared corrupted wallet cache');
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('Cleared all corrupted cache data');
+      return;
     }
     
-    // Clear invalid tokens
+    // Also clear any tokens associated with corrupted wallet
     if (storedToken && storedWallet === this.CORRUPTED_WALLET) {
-      localStorage.removeItem('pvx_session_token');
-      console.log('Cleared invalid session token');
+      localStorage.clear();
+      sessionStorage.clear();
+      console.log('Cleared invalid session data');
     }
   }
   
