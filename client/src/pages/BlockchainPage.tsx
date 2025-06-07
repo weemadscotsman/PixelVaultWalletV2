@@ -573,6 +573,128 @@ export default function BlockchainPage() {
         </Card>
       </div>
 
+      {/* PVX System Validation Dashboard */}
+      <div className="mt-8">
+        <Card className="bg-gradient-to-br from-red-900/20 to-black border-red-700/30">
+          <CardHeader className="border-b border-red-700/30">
+            <CardTitle className="text-white flex items-center justify-between">
+              <div className="flex items-center">
+                <Settings className="w-5 h-5 mr-2 text-red-400" />
+                PVX System Interconnection Validator
+              </div>
+              <Button 
+                onClick={runSystemValidation}
+                disabled={isValidating || !activeWallet}
+                className="bg-red-700 hover:bg-red-600 text-white"
+              >
+                {isValidating ? (
+                  <><Loader2 className="h-4 w-4 animate-spin mr-2" /> Validating...</>
+                ) : (
+                  'Run Full System Check'
+                )}
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            {!activeWallet ? (
+              <div className="text-center text-gray-400 py-8">
+                <Wifi className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Connect wallet to run system validation</p>
+              </div>
+            ) : systemStatus ? (
+              <div className="space-y-6">
+                {/* System Health Overview */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <h4 className="text-gray-400 text-sm mb-2">Overall Health</h4>
+                    <div className={`text-lg font-bold ${
+                      systemStatus.overallHealth === 'healthy' ? 'text-green-400' :
+                      systemStatus.overallHealth === 'degraded' ? 'text-yellow-400' : 'text-red-400'
+                    }`}>
+                      {systemStatus.overallHealth.toUpperCase()}
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <h4 className="text-gray-400 text-sm mb-2">Services Online</h4>
+                    <div className="text-lg font-bold text-white">
+                      {systemStatus.servicesOnline}/{systemStatus.totalServices}
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <h4 className="text-gray-400 text-sm mb-2">Wallet Connected</h4>
+                    <div className={`text-lg font-bold ${systemStatus.walletConnected ? 'text-green-400' : 'text-red-400'}`}>
+                      {systemStatus.walletConnected ? 'YES' : 'NO'}
+                    </div>
+                  </div>
+                  <div className="bg-gray-800/50 rounded-lg p-4">
+                    <h4 className="text-gray-400 text-sm mb-2">Validation Time</h4>
+                    <div className="text-lg font-bold text-white">
+                      {systemStatus ? new Date(systemStatus.timestamp).toLocaleTimeString() : 'N/A'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Service Status Matrix */}
+                <div className="bg-gray-800/50 rounded-lg p-4">
+                  <h4 className="text-white font-semibold mb-4">Service Status Matrix</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                    {systemStatus.validationResults.map((result, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
+                        <div className="flex items-center">
+                          <div className={`w-2 h-2 rounded-full mr-2 ${
+                            result.status === 'success' ? 'bg-green-500' : 'bg-red-500'
+                          }`} />
+                          <span className="text-gray-300">{result.service}</span>
+                          {result.authRequired && (
+                            <Shield className="w-3 h-3 ml-1 text-blue-400" />
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs ${
+                            result.status === 'success' ? 'text-green-400' : 'text-red-400'
+                          }`}>
+                            {result.status === 'success' ? 'ONLINE' : 'OFFLINE'}
+                          </span>
+                          <span className="text-gray-500">{result.responseTime}ms</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Failed Services Detail */}
+                {systemStatus.validationResults.some(r => r.status === 'error') && (
+                  <div className="bg-red-900/20 rounded-lg p-4 border border-red-700/30">
+                    <h4 className="text-red-400 font-semibold mb-3">Failed Services</h4>
+                    <div className="space-y-2">
+                      {systemStatus.validationResults
+                        .filter(r => r.status === 'error')
+                        .map((result, index) => (
+                          <div key={index} className="bg-red-800/20 rounded p-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-red-300 font-medium">{result.service}</span>
+                              <span className="text-red-400 text-xs">{result.endpoint}</span>
+                            </div>
+                            {result.error && (
+                              <div className="text-red-200 text-xs mt-1">{result.error}</div>
+                            )}
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center text-gray-400 py-8">
+                <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                <p>Run system validation to check all endpoint connections</p>
+                <p className="text-xs mt-2">This will test all services with your connected wallet</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Real-time Chain Monitor */}
       <div className="mt-8">
         <Card className="bg-gradient-to-br from-purple-900/20 to-black border-purple-700/30">
