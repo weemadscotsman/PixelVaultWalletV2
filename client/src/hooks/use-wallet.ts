@@ -20,6 +20,11 @@ interface CreateWalletRequest {
   passphrase: string;
 }
 
+interface CreateWalletResponse {
+  wallet: Wallet;
+  sessionToken: string;
+}
+
 interface ImportWalletRequest {
   privateKey: string;
   passphrase: string;
@@ -65,14 +70,18 @@ export function useWallet() {
         const errorData = await res.json();
         throw new Error(errorData.error || 'Failed to create wallet');
       }
-      return await res.json() as Wallet;
+      return await res.json() as CreateWalletResponse;
     },
     onSuccess: (data) => {
       toast({
         title: "Wallet created",
-        description: `New wallet created with address ${data.address}`,
+        description: `New wallet created with address ${data.wallet.address}`,
       });
-      setActiveWalletAddress(data.address);
+      setActiveWalletAddress(data.wallet.address);
+      
+      // Store session token for immediate authentication
+      localStorage.setItem('pvx_session_token', data.sessionToken);
+      
       queryClient.invalidateQueries({ queryKey: ['/api/wallet/all'] });
     },
     onError: (error: Error) => {

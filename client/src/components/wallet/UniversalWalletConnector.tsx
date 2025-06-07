@@ -53,13 +53,11 @@ export function UniversalWalletConnector({ compact = false, showBalance = true }
       const result = await createWalletMutation.mutateAsync({ passphrase: createPassphrase });
       
       // Auto-connect the new wallet and enable all services
-      if (result?.address) {
-        setActiveWalletAddress(result.address);
+      if (result?.wallet?.address) {
+        setActiveWalletAddress(result.wallet.address);
         
-        // Store session token for authenticated API calls
-        if (result.sessionToken) {
-          localStorage.setItem('pvx_session_token', result.sessionToken);
-        }
+        // Session token is automatically stored by the mutation
+        // All blockchain services are now authenticated and connected
         
         toast({
           title: "Wallet created and connected",
