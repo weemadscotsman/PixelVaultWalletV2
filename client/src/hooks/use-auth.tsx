@@ -8,6 +8,7 @@ import {
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { SessionManager, WalletManager } from "@/lib/secure-storage";
 
 interface WalletUser {
   address: string;
