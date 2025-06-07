@@ -580,6 +580,232 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= NFT MARKETPLACE API =============
+  
+  // Get marketplace stats
+  app.get('/api/nft/stats', async (req: Request, res: Response) => {
+    try {
+      const stats = await nftService.getMarketplaceStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('NFT stats error:', error);
+      res.status(500).json({ error: 'Failed to fetch marketplace stats' });
+    }
+  });
+
+  // Get all collections
+  app.get('/api/nft/collections', async (req: Request, res: Response) => {
+    try {
+      const collections = await nftStorage.getCollections();
+      res.json(collections);
+    } catch (error) {
+      console.error('Collections error:', error);
+      res.status(500).json({ error: 'Failed to fetch collections' });
+    }
+  });
+
+  // Get collection by ID
+  app.get('/api/nft/collections/:id', async (req: Request, res: Response) => {
+    try {
+      const collection = await nftStorage.getCollection(req.params.id);
+      if (!collection) {
+        return res.status(404).json({ error: 'Collection not found' });
+      }
+      res.json(collection);
+    } catch (error) {
+      console.error('Collection error:', error);
+      res.status(500).json({ error: 'Failed to fetch collection' });
+    }
+  });
+
+  // Create new collection
+  app.post('/api/nft/collections', async (req: Request, res: Response) => {
+    try {
+      const { name, description, symbol, creatorAddress, imageUrl, bannerUrl, website, royaltyPercentage } = req.body;
+      
+      if (!name || !description || !symbol || !creatorAddress) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const collection = await nftService.createCollection({
+        name,
+        description,
+        symbol,
+        creatorAddress,
+        imageUrl,
+        bannerUrl,
+        website,
+        royaltyPercentage
+      });
+
+      res.status(201).json(collection);
+    } catch (error) {
+      console.error('Create collection error:', error);
+      res.status(500).json({ error: 'Failed to create collection' });
+    }
+  });
+
+  // Get NFTs by collection
+  app.get('/api/nft/collections/:id/tokens', async (req: Request, res: Response) => {
+    try {
+      const tokens = await nftStorage.getTokensByCollection(req.params.id);
+      res.json(tokens);
+    } catch (error) {
+      console.error('Collection tokens error:', error);
+      res.status(500).json({ error: 'Failed to fetch collection tokens' });
+    }
+  });
+
+  // Get user's NFTs
+  app.get('/api/nft/wallet/:address', async (req: Request, res: Response) => {
+    try {
+      const tokens = await nftStorage.getTokensByOwner(req.params.address);
+      res.json(tokens);
+    } catch (error) {
+      console.error('Wallet NFTs error:', error);
+      res.status(500).json({ error: 'Failed to fetch wallet NFTs' });
+    }
+  });
+
+  // Mint new NFT
+  app.post('/api/nft/mint', async (req: Request, res: Response) => {
+    try {
+      const { collectionId, name, description, imageUrl, attributes, ownerAddress, creatorAddress } = req.body;
+      
+      if (!collectionId || !name || !imageUrl || !ownerAddress || !creatorAddress) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const result = await nftService.mintNFT({
+        collectionId,
+        name,
+        description,
+        imageUrl,
+        attributes,
+        ownerAddress,
+        creatorAddress
+      });
+
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Mint NFT error:', error);
+      res.status(500).json({ error: 'Failed to mint NFT' });
+    }
+  });
+
+  // List NFT for sale
+  app.post('/api/nft/:tokenId/list', async (req: Request, res: Response) => {
+    try {
+      const { sellerAddress, price, listingType, duration, reservePrice } = req.body;
+      
+      if (!sellerAddress || !price || !listingType) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const listing = await nftService.listNFT({
+        tokenId: req.params.tokenId,
+        sellerAddress,
+        price,
+        listingType,
+        duration,
+        reservePrice
+      });
+
+      res.status(201).json(listing);
+    } catch (error) {
+      console.error('List NFT error:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to list NFT' });
+    }
+  });
+
+  // Buy NFT
+  app.post('/api/nft/:tokenId/buy', async (req: Request, res: Response) => {
+    try {
+      const { buyerAddress, price } = req.body;
+      
+      if (!buyerAddress || !price) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const result = await nftService.buyNFT({
+        tokenId: req.params.tokenId,
+        buyerAddress,
+        price
+      });
+
+      res.status(201).json(result);
+    } catch (error) {
+      console.error('Buy NFT error:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to buy NFT' });
+    }
+  });
+
+  // Place bid on auction
+  app.post('/api/nft/listings/:listingId/bid', async (req: Request, res: Response) => {
+    try {
+      const { bidderAddress, amount } = req.body;
+      
+      if (!bidderAddress || !amount) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+
+      const bid = await nftService.placeBid({
+        listingId: req.params.listingId,
+        bidderAddress,
+        amount
+      });
+
+      res.status(201).json(bid);
+    } catch (error) {
+      console.error('Place bid error:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to place bid' });
+    }
+  });
+
+  // Get active marketplace listings
+  app.get('/api/nft/marketplace', async (req: Request, res: Response) => {
+    try {
+      const listings = await nftStorage.getActiveListings();
+      
+      // Enrich listings with token data
+      const enrichedListings = await Promise.all(listings.map(async (listing) => {
+        const token = await nftStorage.getToken(listing.tokenId);
+        return {
+          ...listing,
+          token
+        };
+      }));
+
+      res.json(enrichedListings);
+    } catch (error) {
+      console.error('Marketplace listings error:', error);
+      res.status(500).json({ error: 'Failed to fetch marketplace listings' });
+    }
+  });
+
+  // Get NFT sales history
+  app.get('/api/nft/:tokenId/sales', async (req: Request, res: Response) => {
+    try {
+      const sales = await nftStorage.getSalesByToken(req.params.tokenId);
+      res.json(sales);
+    } catch (error) {
+      console.error('NFT sales error:', error);
+      res.status(500).json({ error: 'Failed to fetch NFT sales history' });
+    }
+  });
+
+  // Get recent sales
+  app.get('/api/nft/sales/recent', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const sales = await nftStorage.getRecentSales(limit);
+      res.json(sales);
+    } catch (error) {
+      console.error('Recent sales error:', error);
+      res.status(500).json({ error: 'Failed to fetch recent sales' });
+    }
+  });
+
   // Error handling middleware
   app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('API Error:', err);
