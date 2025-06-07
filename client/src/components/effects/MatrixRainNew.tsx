@@ -98,7 +98,9 @@ export function MatrixRainNew() {
     return () => {
       cancelAnimationFrame(animationId);
       window.removeEventListener('resize', handleResize);
-      document.body.removeChild(canvas);
+      if (document.body.contains(canvas)) {
+        document.body.removeChild(canvas);
+      }
     };
   }, []); // Empty dependency array ensures this runs once
   
