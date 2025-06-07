@@ -13,7 +13,20 @@
     }
   ],
   "transactions": [],
-  "wallets": [],
+  "wallets": [
+    [
+      "PVX_68e374e082a378040ab4f00623706a9d",
+      {
+        "address": "PVX_68e374e082a378040ab4f00623706a9d",
+        "publicKey": "48b3062443f37989785001f44e73088d179ae16c00ed07972beea2a34b39a013",
+        "balance": "1000.0",
+        "createdAt": "2025-06-07T18:20:20.257Z",
+        "lastUpdated": "2025-06-07T18:20:20.257Z",
+        "passphraseSalt": "a421c1eddd79b57c120f52bd47045136",
+        "passphraseHash": "fa05fdf9eb8631f79beb7a794c97cb4b7caf39e7f09dbda80b5de7c53c2f4362"
+      }
+    ]
+  ],
   "minerStats": [],
   "stakeRecords": [],
   "stakingPools": [

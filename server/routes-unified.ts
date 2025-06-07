@@ -36,7 +36,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Validate passphrase by hashing it with the stored salt
-      const crypto = require('crypto');
       const expectedHash = crypto.createHash('sha256').update(passphrase + wallet.passphraseSalt).digest('hex');
       
       if (expectedHash !== wallet.passphraseHash) {
