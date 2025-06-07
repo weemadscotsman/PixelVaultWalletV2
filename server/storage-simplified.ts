@@ -11,6 +11,11 @@ const db = drizzle({ client: pool, schema });
 
 // Simple storage interface that delegates to memory blockchain
 export class SimplifiedStorage {
+  // Direct access to wallets for compatibility
+  get wallets() {
+    return memBlockchainStorage.wallets;
+  }
+
   // Wallet operations
   async getWalletByAddress(address: string) {
     return await memBlockchainStorage.getWalletByAddress(address);
