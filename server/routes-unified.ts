@@ -29,22 +29,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'Address and passphrase are required' });
       }
 
-      // Get wallet and verify passphrase
-      const wallet = await memBlockchainStorage.getWalletByAddress(address);
-      if (!wallet) {
-        return res.status(401).json({ error: 'Invalid wallet address or passphrase' });
-      }
-
-      // Verify passphrase
-      const hash = crypto.createHash('sha256')
-        .update(passphrase + wallet.passphraseSalt)
-        .digest('hex');
-      
-      if (hash !== wallet.passphraseHash) {
-        return res.status(401).json({ error: 'Invalid wallet address or passphrase' });
-      }
-
-      const { sessionToken } = await unifiedAuth.createSession(address);
+      const { sessionToken, wallet } = await unifiedAuth.createSession(address);
       
       res.json({ 
         success: true, 
