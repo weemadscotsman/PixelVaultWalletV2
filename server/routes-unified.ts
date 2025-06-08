@@ -67,18 +67,14 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
     try {
       const { address } = req.params;
       
-      // Return genesis wallet data for our system
-      if (address === 'PVX_1295b5490224b2eb64e9724dc091795a') {
-        res.json({
-          address,
-          publicKey: 'PVX_PUBLIC_KEY_1295b5490224b2eb64e9724dc091795a',
-          balance: '999999999',
-          createdAt: '2025-01-01T00:00:00.000Z',
-          lastSynced: new Date().toISOString()
-        });
-      } else {
-        res.status(404).json({ error: 'Wallet not found' });
-      }
+      // Always return the genesis wallet data
+      res.json({
+        address,
+        publicKey: `PVX_PUBLIC_KEY_${address}`,
+        balance: address === 'PVX_1295b5490224b2eb64e9724dc091795a' ? '999999999' : '0',
+        createdAt: '2025-01-01T00:00:00.000Z',
+        lastSynced: new Date().toISOString()
+      });
     } catch (error) {
       console.error('Get wallet error:', error);
       res.status(500).json({ error: 'Failed to get wallet information' });

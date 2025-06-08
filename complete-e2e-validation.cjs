@@ -258,7 +258,7 @@ class ComprehensiveSystemValidator {
         testData: {
           walletAddress: 'PVX_1295b5490224b2eb64e9724dc091795a',
           poolId: '196b2afe445_d141a400',
-          amount: '50',
+          amount: '100',
           passphrase: 'zsfgaefhsethrthrtwtrh'
         },
         expectedFields: ['success', 'stakeId']

@@ -285,6 +285,28 @@ export class SimplifiedStorage {
   async getUserFeedbackAnalytics() {
     return null;
   }
+
+  // Governance operations
+  async getGovernanceProposals() {
+    try {
+      const proposals = await db.select().from(schema.governanceProposals);
+      return proposals;
+    } catch (error) {
+      console.error('Failed to get governance proposals:', error);
+      return [];
+    }
+  }
+
+  // Learning operations
+  async getLearningModules() {
+    try {
+      const modules = await db.select().from(schema.learningModules);
+      return modules;
+    } catch (error) {
+      console.error('Failed to get learning modules:', error);
+      return [];
+    }
+  }
 }
 
 export const simplifiedStorage = new SimplifiedStorage();
