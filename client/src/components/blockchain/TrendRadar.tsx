@@ -48,7 +48,7 @@ export function TrendRadar({ className }: TrendRadarProps) {
 
   // Process API data for the radar chart
   const radarData = React.useMemo(() => {
-    if (!blockchainTrends) return [];
+    if (!blockchainTrends || !blockchainTrends.metrics) return [];
     
     // Create an array to hold all the metric data points for the radar
     const processedData: Array<Record<string, any>> = [];
@@ -78,13 +78,13 @@ export function TrendRadar({ className }: TrendRadarProps) {
   
   // Generate keys for the radar chart
   const radarKeys = React.useMemo(() => {
-    if (!blockchainTrends) return [];
+    if (!blockchainTrends || !blockchainTrends.metrics) return [];
     return blockchainTrends.metrics.map((metric: any) => metric.id);
   }, [blockchainTrends]);
   
   // Generate colors for the radar chart
   const radarColors = React.useMemo(() => {
-    if (!blockchainTrends) return [];
+    if (!blockchainTrends || !blockchainTrends.metrics) return [];
     return blockchainTrends.metrics.map((metric: any) => metric.color);
   }, [blockchainTrends]);
 

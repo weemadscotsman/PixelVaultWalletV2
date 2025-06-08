@@ -97,17 +97,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
     onSuccess: (data) => {
       setToken(data.sessionToken);
-      queryClient.setQueryData(['/api/auth/me'], data.wallet);
+      
+      // Create wallet object from login response
+      const walletUser = {
+        address: data.address,
+        isAuthenticated: true,
+        sessionToken: data.sessionToken
+      };
+      
+      queryClient.setQueryData(['/api/auth/me'], walletUser);
       
       // CRITICAL: Set active wallet in localStorage for unified state
-      localStorage.setItem('activeWallet', data.wallet.address);
+      localStorage.setItem('activeWallet', data.address);
       
       // Invalidate any queries that may now return different results with auth
       queryClient.invalidateQueries();
       
       toast({
         title: "Login successful",
-        description: `Welcome back, ${data.wallet.address}`,
+        description: `Welcome back, ${data.address}`,
       });
     },
     onError: (error: Error) => {
