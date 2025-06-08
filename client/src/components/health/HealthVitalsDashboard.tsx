@@ -294,7 +294,7 @@ export default function HealthVitalsDashboard() {
               <div>
                 <h3 className="text-yellow-400 text-sm font-medium">Network Latency</h3>
                 <div className="text-2xl font-bold text-white">
-                  {safeValue(healthMetrics?.networkLatency, "0")}ms
+                  {healthMetrics?.networkLatency?.toFixed(1) || "0.0"}ms
                 </div>
               </div>
               <Wifi className="w-8 h-8 text-yellow-400" />
@@ -441,13 +441,13 @@ export default function HealthVitalsDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-red-900/20 rounded-lg p-4">
                 <h4 className="text-red-400 text-sm font-medium mb-2">Active Connections</h4>
-                <div className="text-2xl font-bold text-white">{healthMetrics.activeConnections}</div>
+                <div className="text-2xl font-bold text-white">{healthMetrics.activeConnections || 0}</div>
                 <div className="text-xs text-gray-400">WebSocket connections</div>
               </div>
               
               <div className="bg-yellow-900/20 rounded-lg p-4">
                 <h4 className="text-yellow-400 text-sm font-medium mb-2">Queue Depth</h4>
-                <div className="text-2xl font-bold text-white">{healthMetrics.queueDepth}</div>
+                <div className="text-2xl font-bold text-white">{healthMetrics.queueDepth || 0}</div>
                 <div className="text-xs text-gray-400">Pending operations</div>
               </div>
               
@@ -455,7 +455,7 @@ export default function HealthVitalsDashboard() {
                 <h4 className="text-orange-400 text-sm font-medium mb-2">Error Rate</h4>
                 <div className="text-2xl font-bold text-white">{(healthMetrics.errorRate || 0).toFixed(2)}%</div>
                 <div className="text-xs text-gray-400">Last 24 hours</div>
-                <Progress value={healthMetrics.errorRate} className="mt-2 h-2" />
+                <Progress value={healthMetrics.errorRate || 0} className="mt-2 h-2" />
               </div>
             </div>
           </CardContent>
