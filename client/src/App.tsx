@@ -103,10 +103,17 @@ function App() {
   React.useEffect(() => {
     // Listen for fetch errors that might indicate API connectivity issues
     const handleFetchErrors = (event: any) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      
+      // Prevent the default error handling that causes crashes
+      event.preventDefault();
+      
       if (event.reason && (
         event.reason.message?.includes('502') || 
         event.reason.message?.includes('503') ||
-        event.reason.message?.includes('network error')
+        event.reason.message?.includes('network error') ||
+        event.reason.message?.includes('404') ||
+        event.reason.message?.includes('Failed to fetch')
       )) {
         apiStatus.reportConnectionIssue(event.reason.message);
       }
@@ -115,9 +122,18 @@ function App() {
     // Set up global error handler for unhandled promise rejections
     window.addEventListener('unhandledrejection', handleFetchErrors);
     
+    // Also handle general errors
+    const handleError = (event: ErrorEvent) => {
+      console.error('Global error:', event.error);
+      event.preventDefault();
+    };
+    
+    window.addEventListener('error', handleError);
+    
     // Clean up
     return () => {
       window.removeEventListener('unhandledrejection', handleFetchErrors);
+      window.removeEventListener('error', handleError);
     };
   }, [apiStatus]);
   

@@ -48,10 +48,10 @@ export default function MiningPage() {
 
   // Fetch mining stats
   const { data: miningStats, isLoading: isLoadingStats } = useQuery<MiningStats>({
-    queryKey: ['/api/mining/stats', wallet?.address],
+    queryKey: ['/api/mine/stats', wallet?.address],
     enabled: !!wallet?.address,
     queryFn: async () => {
-      const response = await fetch(`/api/mining/stats?wallet=${wallet?.address}`);
+      const response = await fetch(`/api/mine/stats/${wallet?.address}`);
       if (!response.ok) {
         return {
           lastHashRate: '0 H/s',
@@ -73,8 +73,8 @@ export default function MiningPage() {
   // Start mining mutation
   const startMiningMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/mining/start', {
-        walletAddress: wallet?.address,
+      const response = await apiRequest('POST', '/api/mine/start', {
+        address: wallet?.address,
         hardware: hardwareType,
         threads: threads
       });
@@ -85,7 +85,7 @@ export default function MiningPage() {
         title: "Mining started",
         description: "Your mining operation has been started successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/mining/stats', wallet?.address] });
+      queryClient.invalidateQueries({ queryKey: ['/api/mine/stats', wallet?.address] });
       
       // Add dynamic terminal output
       let outputText = "Initializing mining operations...\n";
@@ -123,8 +123,8 @@ export default function MiningPage() {
   // Stop mining mutation
   const stopMiningMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/mining/stop', {
-        walletAddress: wallet?.address
+      const response = await apiRequest('POST', '/api/mine/stop', {
+        address: wallet?.address
       });
       return response.json();
     },
@@ -133,7 +133,7 @@ export default function MiningPage() {
         title: "Mining stopped",
         description: "Your mining operation has been stopped",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/mining/stats', wallet?.address] });
+      queryClient.invalidateQueries({ queryKey: ['/api/mine/stats', wallet?.address] });
       setMiningOutput(prev => prev + "\n\nMining operations stopped.");
     },
     onError: (error) => {
