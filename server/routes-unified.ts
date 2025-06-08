@@ -26,6 +26,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   }, 1000);
 
+  // ============= CORE ENDPOINTS =============
+  
+  // Health check ping endpoint
+  app.get('/api/ping', (req: Request, res: Response) => {
+    res.json({ message: 'pong', timestamp: Date.now() });
+  });
+
   // ============= UNIFIED AUTHENTICATION SYSTEM =============
   
   // Login endpoint - creates session for wallet
