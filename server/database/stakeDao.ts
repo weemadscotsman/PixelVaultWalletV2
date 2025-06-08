@@ -182,6 +182,52 @@ export class StakeDao {
   }
 
   /**
+   * Calculate and claim rewards for a stake
+   * @param stakeId Stake record ID
+   * @param claimTime Timestamp when rewards are claimed
+   * @returns Amount of rewards claimed
+   */
+  async claimRewards(stakeId: string, claimTime: number): Promise<number> {
+    try {
+      const stake = await this.getStakeById(stakeId);
+      if (!stake || !stake.isActive) {
+        throw new Error('Stake not found or not active');
+      }
+
+      // Calculate rewards based on time elapsed since last claim
+      const timeSinceLastClaim = claimTime - stake.lastRewardClaim;
+      const hoursElapsed = timeSinceLastClaim / (1000 * 60 * 60);
+      
+      // Get pool APY for calculation
+      const pools = await this.getStakingPools();
+      const pool = pools.find(p => p.id === stake.poolId);
+      const apy = pool ? pool.apr : 8.5; // Default 8.5% APY
+      
+      // Calculate rewards: (staked amount * APY / 365 / 24) * hours elapsed
+      const stakeAmount = parseFloat(stake.amount);
+      const hourlyRate = (apy / 100) / (365 * 24);
+      const newRewards = stakeAmount * hourlyRate * hoursElapsed;
+      
+      // Update stake record with new rewards and claim time
+      const totalRewards = parseFloat(stake.rewards) + newRewards;
+      
+      await db.update(stakeRecords)
+        .set({
+          rewards: totalRewards.toString(),
+          lastRewardClaim: BigInt(claimTime)
+        })
+        .where(eq(stakeRecords.id, stakeId));
+      
+      console.log(`✅ REWARDS CLAIMED: ${newRewards.toFixed(6)} PVX for stake ${stakeId}`);
+      
+      return newRewards;
+    } catch (error) {
+      console.error('Error claiming rewards:', error);
+      throw new Error('Failed to claim rewards');
+    }
+  }
+
+  /**
    * Update a stake record
    * @param stake Stake record to update
    * @returns Updated stake record
