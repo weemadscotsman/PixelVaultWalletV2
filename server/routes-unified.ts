@@ -819,47 +819,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Badges endpoint
-  app.get('/api/badges', async (req: Request, res: Response) => {
-    try {
-      const allWallets = Array.from(simplifiedStorage.wallets.values());
-      const activeMiners = await simplifiedStorage.getAllActiveMiners();
-      
-      const badges = [
-        {
-          id: 'early_adopter',
-          name: 'Early Adopter',
-          description: 'One of the first 100 wallet holders',
-          icon: '🌟',
-          rarity: 'epic',
-          holders: Math.min(100, allWallets.length),
-          totalSupply: 100
-        },
-        {
-          id: 'active_miner',
-          name: 'Active Miner',
-          description: 'Successfully mined at least 10 blocks',
-          icon: '⛏️',
-          rarity: 'rare',
-          holders: activeMiners.length,
-          totalSupply: null
-        },
-        {
-          id: 'validator',
-          name: 'Network Validator',
-          description: 'Validated transactions on the network',
-          icon: '✅',
-          rarity: 'common',
-          holders: Math.floor(allWallets.length * 0.6),
-          totalSupply: null
-        }
-      ];
-      
-      res.json({ badges });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch badges' });
-    }
-  });
+
 
   // UTR stats endpoint
   app.get('/api/utr/stats', async (req: Request, res: Response) => {
@@ -965,36 +925,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Missing endpoints for the system test
+  // Unified badges endpoint 
   app.get('/api/badges', async (req: Request, res: Response) => {
     try {
+      const allWallets = Array.from(simplifiedStorage.wallets.values());
+      const activeMiners = await simplifiedStorage.getAllActiveMiners();
+      
       const badges = [
         {
           id: 'early_adopter',
           name: 'Early Adopter',
-          description: 'One of the first 100 users',
+          description: 'One of the first 100 wallet holders',
           icon: '🌟',
-          rarity: 'rare',
+          rarity: 'epic',
+          holders: Math.min(100, allWallets.length),
+          totalSupply: 100,
           requirements: { type: 'wallet_age', value: 30 }
         },
         {
           id: 'mining_expert',
           name: 'Mining Expert',
-          description: 'Mined 50+ blocks',
+          description: 'Successfully mined at least 10 blocks',
           icon: '⛏️',
-          rarity: 'epic',
+          rarity: 'rare',
+          holders: activeMiners.length,
+          totalSupply: null,
           requirements: { type: 'blocks_mined', value: 50 }
         },
         {
-          id: 'transaction_master',
-          name: 'Transaction Master',
-          description: 'Completed 100+ transactions',
-          icon: '💎',
-          rarity: 'legendary',
+          id: 'validator',
+          name: 'Network Validator',
+          description: 'Validated transactions on the network',
+          icon: '✅',
+          rarity: 'common',
+          holders: Math.floor(allWallets.length * 0.6),
+          totalSupply: null,
           requirements: { type: 'transactions_count', value: 100 }
         }
       ];
-      res.json(badges);
+      
+      res.json({ badges });
     } catch (error) {
       res.status(500).json({ error: 'Failed to fetch badges' });
     }
@@ -1066,33 +1036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get('/api/drops', async (req: Request, res: Response) => {
-    try {
-      const drops = [
-        {
-          id: 'genesis_drop',
-          name: 'Genesis Drop',
-          description: 'Celebrate the launch of PVX',
-          amount: '1000 PVX',
-          eligibility: 'early_adopters',
-          status: 'active',
-          endsAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          id: 'mining_reward_drop',
-          name: 'Mining Reward Drop',
-          description: 'Extra rewards for active miners',
-          amount: '500 PVX',
-          eligibility: 'miners',
-          status: 'upcoming',
-          endsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ];
-      res.json(drops);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch drops' });
-    }
-  });
+
 
   app.get('/api/drops/eligibility', async (req: Request, res: Response) => {
     try {
