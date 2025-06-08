@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SystemValidator } from '@/components/debug/SystemValidator';
+import { ButtonTester } from '@/components/debug/ButtonTester';
 
 interface ServiceStatus {
   name: string;
@@ -238,8 +239,8 @@ export function DevDashboard() {
   const totalServices = services.filter(s => s.enabled).length;
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white p-2 sm:p-4 lg:p-6">
+      <div className="max-w-full mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-blue-400">PVX Chain Developer Dashboard</h1>
@@ -258,6 +259,7 @@ export function DevDashboard() {
               onClick={() => { checkAllServices(); updateChainMetrics(); }}
               variant="outline"
               size="sm"
+              data-testid="refresh-dashboard"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Refresh
@@ -266,6 +268,7 @@ export function DevDashboard() {
               onClick={emergencyShutdown}
               variant="destructive"
               size="sm"
+              data-testid="emergency-shutdown"
             >
               <PowerOff className="h-4 w-4 mr-2" />
               Emergency Shutdown
@@ -274,7 +277,7 @@ export function DevDashboard() {
         </div>
 
         {/* System Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8">
           <Card className="bg-gray-900 border-gray-700">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm text-gray-400">Network Status</CardTitle>
@@ -446,7 +449,10 @@ export function DevDashboard() {
           </TabsContent>
 
           <TabsContent value="validator">
-            <SystemValidator />
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <SystemValidator />
+              <ButtonTester />
+            </div>
           </TabsContent>
 
           <TabsContent value="logs">
