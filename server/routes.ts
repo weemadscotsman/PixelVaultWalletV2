@@ -3,7 +3,7 @@ import { createServer, Server } from 'http';
 import WebSocket, { WebSocketServer } from 'ws';
 import walletRoutes from './routes/wallet';
 import txRoutes from './routes/tx';
-import stakeRoutes from './routes/stake';
+// import stakeRoutes from './routes/stake'; // DISABLED - conflicts with routes-unified.ts
 import thringletRoutes from './routes/thringlet';
 import authRoutes from './routes/auth';
 import blockchainRoutes from './routes/blockchain-routes';

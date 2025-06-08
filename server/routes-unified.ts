@@ -479,10 +479,14 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // Auth status endpoint
   app.get('/api/auth/status', async (req: Request, res: Response) => {
     const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Not authenticated' });
-    }
-    res.json({ authenticated: true, status: 'active' });
+    const isAuthenticated = !!authHeader;
+    
+    res.json({ 
+      authenticated: isAuthenticated,
+      status: isAuthenticated ? 'active' : 'inactive',
+      sessionExpiry: isAuthenticated ? Date.now() + 3600000 : null,
+      userRole: isAuthenticated ? 'user' : 'guest'
+    });
   });
 
   // Auth logout endpoint
