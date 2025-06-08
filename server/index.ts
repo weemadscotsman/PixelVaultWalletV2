@@ -118,7 +118,9 @@ async function startServer() {
       });
     });
     
-    console.log('✅ [WEBSOCKET] WebSocket server initialized on /ws path');
+    // Make WebSocket server globally available for blockchain service
+    (global as any).wss = wss;
+    console.log('✅ [WEBSOCKET] WebSocket server initialized on /ws path and assigned to global scope');
     
     // Check database connection
     console.log("[BACKEND LIFECYCLE] Stage 5a: Checking database connection...");
@@ -136,7 +138,7 @@ async function startServer() {
       console.warn("[BACKEND WARNING] Database connection failed - falling back to in-memory storage");
     }
     
-    // Initialize the blockchain
+    // Initialize the blockchain AFTER WebSocket server is ready
     console.log("[BACKEND LIFECYCLE] Stage 6: Initializing PVX blockchain...");
     await blockchainService.initializeBlockchain();
     console.log("[BACKEND LIFECYCLE] Stage 6a: Connected to PVX blockchain successfully");

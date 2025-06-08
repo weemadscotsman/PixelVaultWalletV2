@@ -116,6 +116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Export WebSocket server as a global variable for other modules to use
   (global as any).wss = wss;
   
+  console.log('WebSocket server initialized and assigned to global scope');
+  
   // Drops stats endpoint - get real data from blockchain storage
   app.get('/api/drops/stats', async (req: Request, res: Response) => {
     try {

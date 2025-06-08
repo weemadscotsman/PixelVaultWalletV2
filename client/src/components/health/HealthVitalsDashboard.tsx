@@ -305,7 +305,7 @@ export default function HealthVitalsDashboard() {
               
               <div className="bg-purple-900/20 rounded-lg p-4">
                 <h4 className="text-purple-400 text-sm font-medium mb-2">Network Hash Rate</h4>
-                <div className="text-2xl font-bold text-white">{blockchainVitals.networkHashRate.toFixed(1)}</div>
+                <div className="text-2xl font-bold text-white">{blockchainVitals.networkHashRate ? blockchainVitals.networkHashRate.toFixed(1) : '0.0'}</div>
                 <div className="text-xs text-gray-400">MH/s total</div>
               </div>
               
@@ -337,8 +337,8 @@ export default function HealthVitalsDashboard() {
               
               <div className="bg-pink-900/20 rounded-lg p-4">
                 <h4 className="text-pink-400 text-sm font-medium mb-2">Consensus Health</h4>
-                <div className="text-2xl font-bold text-white">{blockchainVitals.consensusHealth.toFixed(1)}%</div>
-                <Progress value={blockchainVitals.consensusHealth} className="mt-2 h-2" />
+                <div className="text-2xl font-bold text-white">{blockchainVitals.consensusHealth ? blockchainVitals.consensusHealth.toFixed(1) : '0.0'}%</div>
+                <Progress value={blockchainVitals.consensusHealth || 0} className="mt-2 h-2" />
               </div>
             </div>
           ) : (

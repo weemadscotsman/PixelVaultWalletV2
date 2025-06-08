@@ -13,7 +13,7 @@ function broadcast(type: string, data: any): void {
   const wss = (global as any).wss;
   
   if (!wss) {
-    console.error('WebSocket server not initialized');
+    // Silently skip if WebSocket server not initialized yet - this is expected during startup
     return;
   }
   
