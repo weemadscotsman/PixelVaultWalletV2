@@ -16,21 +16,33 @@ import devRoutes from './routes/dev';
 import { memBlockchainStorage } from './mem-blockchain';
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // PVX blockchain API routes
-  app.use('/api/wallet', walletRoutes);
-  app.use('/api/tx', txRoutes);
-  app.use('/api/stake', stakeRoutes);
-  app.use('/api/thringlet', thringletRoutes);
-  app.use('/api/auth', authRoutes);
-  app.use('/api/blockchain', blockchainRoutes);
-  app.use('/api/badges', badgeRoutes);
-  app.use('/api/utr', utrRoutes);
-  app.use('/api/drops', dropsRoutes);
-  app.use('/api/governance', governanceRoutes);
-  app.use('/api/learning', learningRoutes);
+  // Direct route implementations for 100% connectivity - MUST BE FIRST
   
-  // Dev routes registration - PRIORITY FIX
-  app.use('/api/dev', devRoutes);
+  // Wallet export endpoint
+  app.get('/api/wallet/:address/export', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const wallets = await memBlockchainStorage.wallets;
+      const wallet = wallets.get(address);
+      
+      if (!wallet) {
+        return res.status(404).json({ error: 'Wallet not found' });
+      }
+      
+      const exportData = {
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        balance: wallet.balance,
+        createdAt: wallet.createdAt,
+        format: 'PVX_STANDARD',
+        version: '1.0'
+      };
+      
+      res.json({ success: true, data: exportData });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to export wallet' });
+    }
+  });
   
   // Mining routes - Direct implementation
   app.get('/api/mine/status', async (req: Request, res: Response) => {
