@@ -114,11 +114,11 @@ export class StakingService {
         walletAddress: stakeData.walletAddress,
         poolId: stakeData.poolId,
         amount: stakeData.amount.toString(),
-        startTime: now,
+        startTime: now.toString(),
         endTime: null,
         isActive: true,
         rewards: '0',
-        lastRewardClaim: now,
+        lastRewardClaim: now.toString(),
         autoCompound: false,
         createdAt: new Date(),
         updatedAt: new Date()
