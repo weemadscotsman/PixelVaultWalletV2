@@ -118,6 +118,20 @@ export function getBlockchainStatus(): BlockchainStatus {
 }
 
 /**
+ * Get block by hash
+ */
+export async function getBlockByHash(hash: string): Promise<Block | null> {
+  return await memBlockchainStorage.getBlockByHash(hash);
+}
+
+/**
+ * Get block by height
+ */
+export async function getBlockByHeight(height: number): Promise<Block | null> {
+  return await memBlockchainStorage.getBlockByHeight(height);
+}
+
+/**
  * Create a new wallet
  */
 export async function createWallet(passphrase: string): Promise<string> {
@@ -1267,3 +1281,52 @@ export function shortenAddress(address: string): string {
   if (!address || address.length < 12) return address;
   return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
 }
+
+/**
+ * Export blockchain service object for unified access
+ */
+export const blockchainService = {
+  // Core blockchain functions
+  initializeBlockchain,
+  connectToBlockchain,
+  getBlockchainStatus,
+  getLatestBlock,
+  getBlockByHash,
+  getBlockByHeight,
+  getRecentBlocks,
+  getRecentTransactions,
+  getBlockchainTrends,
+  
+  // Mining functions
+  startMining,
+  stopMining,
+  getMiningStats,
+  getMiningRewards,
+  
+  // Transaction functions
+  getTransactionsByAddress,
+  getTransactionByHash,
+  createTransaction,
+  
+  // Wallet functions
+  createWallet,
+  getWalletByAddress,
+  updateWalletBalance,
+  getAllWallets,
+  getPaginatedAddresses,
+  
+  // Utility functions
+  shortenAddress,
+  generateRandomHash,
+  
+  // Thringlet functions
+  getThringletById,
+  simulateThringletInteraction,
+  
+  // Internal blockchain instance
+  blockchain: {
+    memBlockchainStorage,
+    blockchainStatus,
+    latestBlock
+  }
+};
