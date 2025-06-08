@@ -49,6 +49,7 @@ function Router() {
       <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
         <Switch key={location}>
           {/* Landing page - first screen visitors see */}
+          <Route path="/" component={CRTLandingPage} />
           <Route path="/landing" component={CRTLandingPage} />
           
           {/* Public routes */}
@@ -56,7 +57,7 @@ function Router() {
           <Route path="/learning" component={LearningPage} />
           
           {/* Protected routes */}
-          <ProtectedRoute path="/" component={HomePage} />
+          <ProtectedRoute path="/home" component={HomePage} />
           <ProtectedRoute path="/dashboard" component={HomePage} />
           <ProtectedRoute path="/wallet" component={WalletPage} />
           <ProtectedRoute path="/wallet/overview" component={WalletPage} />
