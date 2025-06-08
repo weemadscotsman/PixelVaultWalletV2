@@ -50,8 +50,30 @@ export class MemBlockchainStorage {
     if (this.stakingPools.length === 0) {
       this.initializeDefaultStakingPools();
     }
+    // Initialize genesis wallet if it doesn't exist
+    this.initializeGenesisWallet();
   }
   
+  // Initialize genesis wallet
+  private initializeGenesisWallet() {
+    const genesisAddress = 'PVX_1295b5490224b2eb64e9724dc091795a';
+    
+    if (!this.wallets.has(genesisAddress)) {
+      const genesisWallet: Wallet = {
+        address: genesisAddress,
+        publicKey: 'PVX_1295b5490224b2eb64e9724dc091795a_PUBLIC',
+        balance: '125000000000',
+        createdAt: new Date(),
+        lastUpdated: new Date(),
+        passphraseSalt: 'genesis_salt',
+        passphraseHash: 'genesis_hash'
+      };
+      
+      this.wallets.set(genesisAddress, genesisWallet);
+      console.log('Genesis wallet initialized:', genesisAddress);
+    }
+  }
+
   // Initialize default staking pools
   private initializeDefaultStakingPools() {
     this.stakingPools = [

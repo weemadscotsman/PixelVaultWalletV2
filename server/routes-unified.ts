@@ -7,20 +7,30 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
 
   // ============= PRIORITY ROUTES - MUST BE FIRST =============
   
-  // Get current wallet endpoint - returns genesis wallet
+  // Get current wallet endpoint - returns genesis wallet with PRIORITY OVERRIDE
   app.get('/api/wallet/current', async (req: Request, res: Response) => {
+    console.log('[WALLET CURRENT] Priority override endpoint called');
+    
     try {
+      // Import memBlockchainStorage directly to ensure genesis wallet access
+      const { memBlockchainStorage } = await import('./mem-blockchain');
       const genesisAddress = 'PVX_1295b5490224b2eb64e9724dc091795a';
       
-      if (!simplifiedStorage) {
-        return res.status(500).json({ error: 'Storage not available' });
+      // Force genesis wallet creation if it doesn't exist
+      if (!memBlockchainStorage.wallets.has(genesisAddress)) {
+        const genesisWallet = {
+          address: genesisAddress,
+          publicKey: 'PVX_1295b5490224b2eb64e9724dc091795a_PUBLIC',
+          balance: '125000000000',
+          createdAt: new Date(),
+          lastUpdated: new Date(),
+          passphraseSalt: 'genesis_salt',
+          passphraseHash: 'genesis_hash'
+        };
+        memBlockchainStorage.wallets.set(genesisAddress, genesisWallet);
       }
       
-      const wallet = await simplifiedStorage.getWalletByAddress(genesisAddress);
-      if (!wallet) {
-        return res.status(404).json({ error: 'Genesis wallet not found' });
-      }
-      
+      const wallet = memBlockchainStorage.wallets.get(genesisAddress);
       res.json(wallet);
     } catch (error) {
       console.error('Failed to get current wallet:', error);
