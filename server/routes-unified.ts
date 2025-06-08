@@ -1871,69 +1871,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
-  // ============= MISSING CRITICAL ENDPOINTS =============
-  
-  // User staking endpoint
-  app.get('/api/stake/user/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      const stakes = [
-        {
-          id: 'stake_1',
-          walletAddress: address,
-          poolId: 'pool1',
-          amount: '10000',
-          startTime: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-          endTime: null,
-          rewards: '150.75',
-          status: 'active',
-          unlockTime: null
-        }
-      ];
-      res.json({ stakes });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch user staking' });
-    }
-  });
 
-  // User drops endpoint
-  app.get('/api/drops/user/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      const userDrops = [
-        {
-          id: 'drop_user_1',
-          name: 'Personal Mining Reward',
-          amount: '500',
-          token: 'PVX',
-          claimed: false,
-          claimableAt: Date.now(),
-          expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000
-        }
-      ];
-      res.json({ drops: userDrops });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch user drops' });
-    }
-  });
-
-  // Learning progress endpoint
-  app.get('/api/learning/user/:address/progress', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      const progress = {
-        totalModules: 3,
-        completedModules: 1,
-        currentModule: 'blockchain_basics',
-        progress: 33,
-        achievements: ['first_lesson', 'quiz_master'],
-        timeSpent: 1250 // minutes
-      };
-      res.json(progress);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch learning progress' });
-    }
-  });
 
   // UTR transactions without auth
   app.get('/api/utr/transactions', async (req: Request, res: Response) => {
