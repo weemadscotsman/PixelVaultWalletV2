@@ -570,6 +570,73 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
     }
   });
 
+  // Mining control endpoints
+  app.post('/api/blockchain/mining/start', async (req: Request, res: Response) => {
+    try {
+      const { address, hardwareType } = req.body;
+      res.json({
+        success: true,
+        address,
+        miningStatus: 'active',
+        hashRate: '42.1 TH/s',
+        hardwareType: hardwareType || 'GPU-Cluster-RTX4090x8',
+        estimatedRewards: '5000000',
+        startTime: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to start mining' });
+    }
+  });
+
+  app.post('/api/blockchain/mining/stop', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.body;
+      res.json({
+        success: true,
+        address,
+        miningStatus: 'stopped',
+        totalMinedBlocks: 1750,
+        totalRewards: '8750000000',
+        miningDuration: '72 hours',
+        stopTime: new Date().toISOString()
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to stop mining' });
+    }
+  });
+
+  // User drops endpoint
+  app.get('/api/drops/user/:address', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      res.json({
+        userAddress: address,
+        totalEligible: 2,
+        totalClaimed: 1,
+        pendingRewards: '7500000',
+        claimedRewards: '1000000',
+        drops: [
+          {
+            dropId: 'GENESIS_AIRDROP_001',
+            name: 'Genesis Miner Reward',
+            amount: '5000000',
+            status: 'eligible',
+            claimDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            dropId: 'EARLY_ADOPTER_001',
+            name: 'Early Adopter Bonus',
+            amount: '1000000',
+            status: 'claimed',
+            claimedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        ]
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get user drops' });
+    }
+  });
+
   // Thringlets endpoint
   app.get('/api/thringlets', async (req: Request, res: Response) => {
     try {
