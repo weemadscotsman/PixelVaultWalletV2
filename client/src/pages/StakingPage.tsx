@@ -166,6 +166,7 @@ export default function StakingPage() {
                 </CardContent>
                 <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
                   <Button 
+                    data-testid="stake-button"
                     className="w-full bg-blue-700 hover:bg-blue-600 text-white"
                     onClick={() => setIsCreateDialogOpen(true)}
                   >

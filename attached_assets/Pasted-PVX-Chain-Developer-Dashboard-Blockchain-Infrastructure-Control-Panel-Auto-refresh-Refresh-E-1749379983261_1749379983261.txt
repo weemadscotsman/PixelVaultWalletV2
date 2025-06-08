@@ -1,0 +1,148 @@
+PVX Chain Developer Dashboard
+Blockchain Infrastructure Control Panel
+
+Auto-refresh
+
+Refresh
+Emergency Shutdown
+Network Status
+OPERATIONAL
+Services Online
+8/8
+100% operational
+Block Height
+1
+Difficulty: 5
+Connected Peers
+15
+Network nodes
+Service Management
+Chain Monitoring
+System Validator
+System Logs
+System Validator
+Run Full Test
+19
+Total Tests
+18
+Passed
+1
+Failed
+95%
+Success Rate
+Auth Status
+GET /api/auth/status
+SUCCESS
+160ms
+Auth Me
+GET /api/auth/meAuth Required
+ERROR
+160ms
+401: {"error":"No session token provided"}
+All Wallets
+GET /api/wallet/all
+SUCCESS
+157ms
+Genesis Wallet
+GET /api/wallet/PVX_1295b5490224b2eb64e9724dc091795a
+SUCCESS
+160ms
+Wallet History
+GET /api/wallet/history/PVX_1295b5490224b2eb64e9724dc091795aAuth Required
+SUCCESS
+179ms
+Blockchain Status
+GET /api/blockchain/status
+SUCCESS
+159ms
+Blockchain Metrics
+GET /api/blockchain/metrics
+SUCCESS
+160ms
+Latest Block
+GET /api/blockchain/latest-block
+SUCCESS
+157ms
+Mining Stats
+GET /api/blockchain/mining/stats/PVX_1295b5490224b2eb64e9724dc091795a
+SUCCESS
+160ms
+Staking Pools
+GET /api/staking/pools
+SUCCESS
+368ms
+Recent Transactions
+GET /api/tx/recent
+SUCCESS
+162ms
+User Transactions
+GET /api/utr/transactions?userAddress=PVX_1295b5490224b2eb64e9724dc091795aAuth Required
+SUCCESS
+169ms
+Governance Proposals
+GET /api/governance/proposals
+SUCCESS
+403ms
+Governance Stats
+GET /api/governance/stats?address=PVX_1295b5490224b2eb64e9724dc091795aAuth Required
+SUCCESS
+164ms
+Badges
+GET /api/badges
+SUCCESS
+364ms
+User Badges
+GET /api/badges/user/PVX_1295b5490224b2eb64e9724dc091795aAuth Required
+SUCCESS
+366ms
+Learning Modules
+GET /api/learning/modules
+SUCCESS
+368ms
+Health Check
+GET /api/health
+SUCCESS
+158ms
+Dev Services
+GET /api/dev/services/status
+SUCCESS
+185ms
+Button Functionality Tester
+Test All Buttons
+0
+Passed
+8
+Failed
+0%
+Success Rate
+Wallet - Send Button
+Navigate to send
+Element not found: [data-testid='send-button']
+FAILED
+Wallet - Receive Button
+Navigate to receive
+Element not found: [data-testid='receive-button']
+FAILED
+Mining - Start Mining
+Start mining process
+Element not found: [data-testid='start-mining']
+FAILED
+Staking - Stake Tokens
+Open staking modal
+Element not found: [data-testid='stake-button']
+FAILED
+Governance - Vote
+Submit vote
+Element not found: [data-testid='vote-button']
+FAILED
+Sidebar - Navigation Links
+Navigate to page
+Element not found: .sidebar-link
+FAILED
+Header - Profile Menu
+Open profile menu
+Element not found: [data-testid='profile-menu']
+FAILED
+Transaction - View Details
+Show transaction details
+Element not found: [data-testid='tx-details']

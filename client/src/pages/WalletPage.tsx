@@ -210,6 +210,7 @@ export default function WalletPage() {
                           <div className="pt-4 flex gap-3">
                             <Link href="/wallet/send" className="flex-1">
                               <Button 
+                                data-testid="send-button"
                                 className="w-full bg-blue-700 hover:bg-blue-600 text-white"
                               >
                                 <Send className="mr-2 h-4 w-4" />
@@ -218,6 +219,7 @@ export default function WalletPage() {
                             </Link>
                             <Link href="/wallet/receive" className="flex-1">
                               <Button 
+                                data-testid="receive-button"
                                 variant="outline"
                                 className="w-full border-blue-900/50 text-blue-300"
                               >

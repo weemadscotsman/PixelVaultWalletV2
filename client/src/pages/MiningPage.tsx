@@ -318,6 +318,7 @@ export default function MiningPage() {
                 </Button>
               ) : (
                 <Button 
+                  data-testid="start-mining"
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white"
                   onClick={handleStartMining}
                   disabled={startMiningMutation.isPending}
