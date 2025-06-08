@@ -3,6 +3,11 @@ import { memBlockchainStorage } from '../mem-blockchain';
 
 const router = express.Router();
 
+// Add root dev endpoint
+router.get('/', (req, res) => {
+  res.json({ status: 'Dev API operational', endpoints: ['/services/status', '/chain/metrics'] });
+});
+
 // Dev services status endpoint - EXACT PATH MATCH
 router.get('/services/status', async (req, res) => {
   try {
