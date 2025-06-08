@@ -581,6 +581,17 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to get veto guardians' });
     }
   });
+
+  // Add missing /api/tx/recent endpoint (alternative to /api/transactions/recent)
+  app.get('/api/tx/recent', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const transactions = await simplifiedStorage.getRecentTransactions(limit);
+      res.json({ transactions, count: transactions.length });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get recent transactions' });
+    }
+  });
   
   // Blockchain trends
   app.get('/api/blockchain/trends', async (req: Request, res: Response) => {
