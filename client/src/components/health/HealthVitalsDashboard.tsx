@@ -255,16 +255,16 @@ export default function HealthVitalsDashboard() {
                   <div className="space-y-1 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-400">Response Time:</span>
-                      <span className="text-white">{service.responseTime}ms</span>
+                      <span className="text-white">{service.responseTime || 0}ms</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Uptime:</span>
-                      <span className="text-white">{service.uptime.toFixed(2)}%</span>
+                      <span className="text-white">{service.uptime ? service.uptime.toFixed(2) : '0.00'}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Error Count:</span>
-                      <span className={service.errorCount > 0 ? "text-red-400" : "text-green-400"}>
-                        {service.errorCount}
+                      <span className={(service.errorCount || 0) > 0 ? "text-red-400" : "text-green-400"}>
+                        {service.errorCount || 0}
                       </span>
                     </div>
                   </div>
