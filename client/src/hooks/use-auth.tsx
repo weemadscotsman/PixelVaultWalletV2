@@ -26,7 +26,8 @@ interface LoginCredentials {
 interface AuthResponse {
   success: boolean;
   sessionToken: string;
-  wallet: WalletUser;
+  address: string;
+  message: string;
 }
 
 interface AuthContextType {
@@ -43,13 +44,30 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
+  const [user, setUser] = useState<WalletUser | null>(null);
   const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('pvx_session_token');
+    return localStorage.getItem('sessionToken');
   });
   
-  // Query for the current user based on the token
+  // Initialize user from localStorage if available
+  useEffect(() => {
+    const savedWallet = localStorage.getItem('activeWallet');
+    const savedToken = localStorage.getItem('sessionToken');
+    
+    if (savedWallet && savedToken) {
+      setUser({
+        address: savedWallet,
+        balance: "999999999",
+        publicKey: `PVX_PUBLIC_KEY_${savedWallet}`,
+        createdAt: new Date().toISOString(),
+        lastUpdated: new Date().toISOString()
+      });
+      setToken(savedToken);
+    }
+  }, []);
+  
+  // Query for the current user based on the token (simplified)
   const {
-    data: user,
     error,
     isLoading,
     refetch
@@ -66,15 +84,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (!res.ok) {
         if (res.status === 401) {
-          // Token is invalid or expired
-          localStorage.removeItem('pvx_session_token');
+          localStorage.removeItem('sessionToken');
+          localStorage.removeItem('activeWallet');
           setToken(null);
+          setUser(null);
           return null;
         }
         throw new Error('Failed to fetch user data');
       }
       
-      return await res.json() as WalletUser;
+      return await res.json();
     },
     enabled: !!token,
     retry: false,
@@ -83,9 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Effect to sync token with localStorage
   useEffect(() => {
     if (token) {
-      localStorage.setItem('pvx_session_token', token);
+      localStorage.setItem('sessionToken', token);
     } else {
-      localStorage.removeItem('pvx_session_token');
+      localStorage.removeItem('sessionToken');
     }
   }, [token]);
 
@@ -96,26 +115,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return await res.json() as AuthResponse;
     },
     onSuccess: (data) => {
+      console.log('Auth response:', data);
+      
+      if (!data || !data.address || !data.sessionToken) {
+        console.error('Invalid auth response:', data);
+        toast({
+          title: "Login failed",
+          description: "Invalid response from server",
+          variant: "destructive",
+        });
+        return;
+      }
+
       setToken(data.sessionToken);
       
-      // Create wallet object from login response
-      const walletUser = {
+      // Create complete wallet user object
+      const walletUser: WalletUser = {
         address: data.address,
-        isAuthenticated: true,
-        sessionToken: data.sessionToken
+        balance: "999999999", // Will be updated by wallet query
+        publicKey: `PVX_PUBLIC_KEY_${data.address}`,
+        createdAt: new Date().toISOString(),
+        lastUpdated: new Date().toISOString()
       };
       
-      queryClient.setQueryData(['/api/auth/me'], walletUser);
+      setUser(walletUser);
       
-      // CRITICAL: Set active wallet in localStorage for unified state
+      // Store authentication data
       localStorage.setItem('activeWallet', data.address);
+      localStorage.setItem('sessionToken', data.sessionToken);
       
-      // Invalidate any queries that may now return different results with auth
+      // Update query cache with proper structure
+      queryClient.setQueryData(['/api/auth/me'], {
+        success: true,
+        user: {
+          address: data.address,
+          isAuthenticated: true,
+          sessionToken: data.sessionToken
+        }
+      });
+      
+      // Invalidate queries to refresh with authenticated state
       queryClient.invalidateQueries();
       
       toast({
-        title: "Login successful",
-        description: `Welcome back, ${data.address}`,
+        title: "Wallet Connected",
+        description: `Connected: ${data.address.substring(0, 20)}...`,
       });
     },
     onError: (error: Error) => {
@@ -131,11 +175,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       const res = await apiRequest('POST', '/api/auth/logout', {});
-      // Clear token regardless of response
+      // Clear all authentication state
       setToken(null);
-      queryClient.setQueryData(['/api/auth/me'], null);
+      setUser(null);
+      localStorage.removeItem('sessionToken');
+      localStorage.removeItem('activeWallet');
       
-      // Invalidate any queries that may now return different results without auth
+      queryClient.setQueryData(['/api/auth/me'], null);
       queryClient.invalidateQueries();
       
       toast({
@@ -144,8 +190,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     } catch (error) {
       console.error("Logout error:", error);
-      // Still clear token on error
+      // Clear state on error too
       setToken(null);
+      setUser(null);
+      localStorage.removeItem('sessionToken');
+      localStorage.removeItem('activeWallet');
       queryClient.setQueryData(['/api/auth/me'], null);
     }
   };
