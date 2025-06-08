@@ -202,6 +202,7 @@ export default function GovernancePage() {
                                 {proposal.status === 'Active' && (
                                   <div className="flex gap-2">
                                     <Button 
+                                      data-testid="vote-button"
                                       size="sm" 
                                       variant="outline" 
                                       className="border-green-600 text-green-400 hover:bg-green-600/20"
@@ -211,6 +212,7 @@ export default function GovernancePage() {
                                       For
                                     </Button>
                                     <Button 
+                                      data-testid="vote-button"
                                       size="sm" 
                                       variant="outline" 
                                       className="border-red-600 text-red-400 hover:bg-red-600/20"

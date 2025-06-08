@@ -262,6 +262,7 @@ export default function WalletPage() {
                         <div className="flex gap-3">
                           <Link href="/wallet/staking" className="flex-1">
                             <Button 
+                              data-testid="manage-stakes-button"
                               className="w-full bg-blue-700 hover:bg-blue-600 text-white"
                             >
                               <Coins className="mr-2 h-4 w-4" />
@@ -269,6 +270,7 @@ export default function WalletPage() {
                             </Button>
                           </Link>
                           <Button 
+                            data-testid="claim-rewards-button"
                             variant="outline"
                             className="flex-1 border-green-900/50 text-green-300"
                           >
