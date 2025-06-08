@@ -65,12 +65,11 @@ export function CRTLandingPage() {
       {/* CRT TV Frame Overlay */}
       {selectedOverlay && (
         <img 
-          src={`/tv_skins/${selectedOverlay}`}
+          src={`/tv_skins/crt_frame_1749377946560.png`}
           alt="CRT Frame"
-          className="fixed top-0 left-0 w-full h-full pointer-events-none"
-          style={{ zIndex: 999 }}
+          className="fixed top-0 left-0 w-full h-full pointer-events-none opacity-30"
+          style={{ zIndex: 999, mixBlendMode: 'overlay' }}
           onError={() => {
-            // Fallback if TV overlay images aren't available
             console.log('TV overlay not found, using CSS frame instead');
           }}
         />

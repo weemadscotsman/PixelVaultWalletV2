@@ -65,14 +65,20 @@ class FlawlessTransferTester {
       passphrase: passphrase
     });
 
-    if (result.success && result.data.address) {
+    // Handle both direct response and nested wallet response
+    const walletData = result.data.wallet || result.data;
+    
+    if (result.success && (walletData.address || result.data.address)) {
+      const address = walletData.address || result.data.address;
+      const publicKey = walletData.publicKey || result.data.pubkey;
+      
       console.log(`✅ Wallet ${name} created successfully`);
-      console.log(`   Address: ${result.data.address}`);
-      console.log(`   Public Key: ${result.data.pubkey}`);
+      console.log(`   Address: ${address}`);
+      console.log(`   Public Key: ${publicKey}`);
       this.results.walletCreation.passed++;
       return {
-        address: result.data.address,
-        publicKey: result.data.pubkey,
+        address: address,
+        publicKey: publicKey,
         passphrase: passphrase
       };
     } else {
