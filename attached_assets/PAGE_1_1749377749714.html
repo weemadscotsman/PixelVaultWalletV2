@@ -1,0 +1,57 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PIXELVAULT | Beyond the Simulation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-black text-green-400 font-mono">
+<canvas id="matrix" class="fixed top-0 left-0 w-full h-full"></canvas>
+<div class="relative z-10 flex flex-col items-center justify-center min-h-screen">
+  <h1 class="text-4xl mb-4">🛡️ BEYOND THE SIMULATION 🛡️</h1>
+  <a href="PAGE_2.html" class="mt-6 px-6 py-3 bg-green-400 text-black font-bold border-2 border-green-400 hover:bg-black hover:text-green-400 transition">ENTER BREATHING TERMINAL 🚀</a>
+</div>
+<script>
+var canvas = document.getElementById('matrix');
+var ctx = canvas.getContext('2d');
+canvas.height = window.innerHeight;
+canvas.width = window.innerWidth;
+var letters = Array(256).join(1).split('');
+setInterval(function(){
+  ctx.fillStyle='rgba(0,0,0,0.05)';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle='#0f0';
+  letters.map(function(y,i){
+    var text=String.fromCharCode(3e4+Math.random()*33);
+    var x=i*10;
+    ctx.fillText(text,x,y);
+    letters[i]=(y>758+Math.random()*1e4)?0:y+10;
+  });
+},33);
+</script>
+
+<style>
+  .crt-frame {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 999;
+    pointer-events: none;
+  }
+</style>
+<script>
+  const tvOverlays = [
+    "exodus_Samsung_Day.png", "exodus_Samsung_Night.png",
+    "exodus_Trinitron_Day.png", "exodus_Trinitron_Night.png"
+  ];
+  const chosenOverlay = tvOverlays[Math.floor(Math.random() * tvOverlays.length)];
+  const img = document.createElement('img');
+  img.src = 'tv_skins/' + chosenOverlay;
+  img.className = 'crt-frame';
+  document.body.appendChild(img);
+</script>
+</body>
+</html>

@@ -37,6 +37,7 @@ import React from "react";
 import { AnimatePresence } from "framer-motion";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { useApiConnectionStatus } from "@/components/ui/api-status-toast";
+import { CRTLandingPage } from "@/components/landing/CRTLandingPage";
 
 // Router component
 function Router() {
@@ -47,12 +48,16 @@ function Router() {
     <AnimatePresence mode="sync" initial={false}>
       <div className="relative z-10" style={{ pointerEvents: 'auto' }}>
         <Switch key={location}>
+          {/* Landing page - first screen visitors see */}
+          <Route path="/landing" component={CRTLandingPage} />
+          
           {/* Public routes */}
           <Route path="/auth" component={AuthPage} />
           <Route path="/learning" component={LearningPage} />
           
           {/* Protected routes */}
           <ProtectedRoute path="/" component={HomePage} />
+          <ProtectedRoute path="/dashboard" component={HomePage} />
           <ProtectedRoute path="/wallet" component={WalletPage} />
           <ProtectedRoute path="/wallet/overview" component={WalletPage} />
           <ProtectedRoute path="/wallet/send" component={WalletPage} />
