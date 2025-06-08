@@ -211,7 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   // Create stable authentication state that persists across renders
-  const authValue = React.useMemo(() => {
+  const authValue = useMemo(() => {
     const savedWallet = localStorage.getItem('activeWallet');
     const savedToken = localStorage.getItem('sessionToken');
     const hasValidSession = !!(savedWallet && savedToken);

@@ -16,7 +16,13 @@ export async function apiRequest(
     retryCount?: number;
   }
 ): Promise<Response> {
+  const startTime = Date.now();
   console.log(`API Request: ${method} ${url}`, data);
+  
+  // Import system logger dynamically to avoid circular dependencies
+  import('../components/SystemLogger').then(({ systemLogger }) => {
+    systemLogger.logSystemEvent(`API Request: ${method} ${url}`, 'info', { data });
+  });
   
   // Set default retry parameters
   const maxRetries = options?.retryCount || 3;

@@ -17,6 +17,7 @@ import { useTransactionHistory } from "@/hooks/use-transaction-history";
 import { LiveDataLogger } from "@/components/debug/LiveDataLogger";
 import { PanelDataDisplay } from "@/components/debug/PanelDataDisplay";
 import { usePanelLogger } from "@/hooks/use-panel-logger";
+import { SystemLogger, systemLogger } from "@/components/SystemLogger";
 
 export default function Dashboard() {
   const { wallet, loadWalletFromStorage } = useWallet();
@@ -39,8 +40,9 @@ export default function Dashboard() {
     dashboardLogger.logPanelData('INITIALIZATION', { 
       activeSection, 
       wallet: wallet?.address,
-      miningActive: miningStats?.isCurrentlyMining 
+      miningActive: miningStats?.isActive 
     });
+    systemLogger.logSystemEvent('Dashboard initialized', 'info', { activeSection, wallet: wallet?.address });
   }, [dashboardLogger, activeSection, wallet, miningStats]);
 
   useEffect(() => {
@@ -457,6 +459,11 @@ export default function Dashboard() {
       <div className={activeSection === "learn" ? "block" : "hidden"}>
         <h2 className="text-2xl font-bold text-blue-400 mb-6 text-shadow-neon">Learning Center</h2>
         <OnboardingSection />
+      </div>
+
+      {/* System Logs Section */}
+      <div className="mb-8">
+        <SystemLogger />
       </div>
       
 
