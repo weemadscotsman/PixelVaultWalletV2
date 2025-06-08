@@ -115,11 +115,17 @@ export default function HealthVitalsDashboard() {
     }
   };
 
-  const formatUptime = (seconds: number) => {
+  const formatUptime = (seconds: number | undefined) => {
+    if (seconds === undefined || isNaN(seconds) || seconds < 0) return "0d 0h 0m";
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     return `${days}d ${hours}h ${minutes}m`;
+  };
+
+  const safeValue = (value: any, fallback: string = "0") => {
+    if (value === undefined || value === null || isNaN(value)) return fallback;
+    return typeof value === 'number' ? value.toString() : String(value);
   };
 
   return (
@@ -162,7 +168,7 @@ export default function HealthVitalsDashboard() {
               <div>
                 <h3 className="text-blue-400 text-sm font-medium">System Uptime</h3>
                 <div className="text-2xl font-bold text-white">
-                  {healthMetrics ? formatUptime(healthMetrics.systemUptime) : 'Loading...'}
+                  {formatUptime(healthMetrics?.systemUptime)}
                 </div>
               </div>
               <Clock className="w-8 h-8 text-blue-400" />
@@ -176,14 +182,12 @@ export default function HealthVitalsDashboard() {
               <div>
                 <h3 className="text-green-400 text-sm font-medium">CPU Usage</h3>
                 <div className="text-2xl font-bold text-white">
-                  {healthMetrics ? `${healthMetrics.cpuUsage}%` : 'Loading...'}
+                  {safeValue(healthMetrics?.cpuUsage, "0")}%
                 </div>
-                {healthMetrics && (
-                  <Progress 
-                    value={healthMetrics.cpuUsage} 
-                    className="mt-2 h-2" 
-                  />
-                )}
+                <Progress 
+                  value={parseFloat(safeValue(healthMetrics?.cpuUsage, "0"))} 
+                  className="mt-2 h-2" 
+                />
               </div>
               <Cpu className="w-8 h-8 text-green-400" />
             </div>
