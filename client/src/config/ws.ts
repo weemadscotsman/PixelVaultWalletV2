@@ -7,10 +7,10 @@
 const isSecure = window.location.protocol === 'https:';
 const wsProtocol = isSecure ? 'wss' : 'ws';
 
-// For Replit environments, use the same hostname but don't rely on window.location.port
-// as it might be undefined in some contexts
+// For Replit environments, use the same hostname and port
+// Use window.location.host (includes port) instead of hostname
 export const WS_URL = import.meta.env.VITE_WS_URL || 
-  `${wsProtocol}://${window.location.hostname}/ws`;
+  `${wsProtocol}://${window.location.host}/ws`;
 
 // WebSocket reconnection settings
 export const WS_RECONNECT_INTERVAL = 3000; // 3 seconds
