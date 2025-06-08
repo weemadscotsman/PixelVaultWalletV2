@@ -19,8 +19,11 @@ export function useWebSocket(walletAddress?: string) {
   const connect = () => {
     try {
       const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const wsUrl = `${protocol}//${window.location.host}/ws`;
+      const host = window.location.hostname;
+      const port = window.location.port || (protocol === "wss:" ? "443" : "80");
+      const wsUrl = `${protocol}//${host}:${port}/ws`;
       
+      console.log('Connecting to WebSocket:', wsUrl);
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
