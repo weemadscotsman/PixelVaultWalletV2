@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import { createServer } from 'http';
-import { WebSocketServer } from 'ws';
 import { stakingService } from './services/stakingService';
 
-export function registerRoutes(app: any, simplifiedStorage: any) {
-  const httpServer = createServer(app);
-
+export function registerRoutes(app: any, simplifiedStorage?: any) {
   // Initialize staking pools on startup
   stakingService.initializeStakingPools();
 

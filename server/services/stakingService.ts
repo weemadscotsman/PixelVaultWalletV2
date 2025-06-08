@@ -249,7 +249,7 @@ export class StakingService {
       await db.update(stakeRecords)
         .set({
           rewards: totalRewards.toString(),
-          lastRewardClaim: BigInt(now),
+          lastRewardClaim: now,
           updatedAt: new Date()
         })
         .where(eq(stakeRecords.id, stakeId));
@@ -275,9 +275,9 @@ export class StakingService {
         type: 'REWARD_CLAIM',
         fromAddress: `STAKE_POOL_${stake.poolId}`,
         toAddress: walletAddress,
-        amount: BigInt(Math.floor(newRewards * 1000000)), // Convert to μPVX
-        timestamp: BigInt(now),
-        nonce: BigInt(Math.floor(Math.random() * 100000)),
+        amount: Math.floor(newRewards * 1000000), // Convert to μPVX
+        timestamp: now,
+        nonce: Math.floor(Math.random() * 100000),
         signature: `sig_${Math.random().toString(36).substr(2, 16)}`,
         status: 'confirmed',
         blockHeight: null,
@@ -286,7 +286,7 @@ export class StakingService {
         createdAt: new Date()
       };
 
-      await db.insert(transactions).values(transaction);
+      await db.insert(transactions).values([transaction]);
 
       console.log(`✅ REWARDS CLAIMED FROM DATABASE: ${newRewards.toFixed(6)} PVX for stake ${stakeId}`);
       

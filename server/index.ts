@@ -2,11 +2,13 @@ import express, { Request, Response, NextFunction } from "express";
 import { json, urlencoded } from "express";
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { createServer } from 'http';
 import { registerRoutes } from "./routes-unified";
 import * as blockchainService from "./services/blockchain-service";
 import { setupVite, serveStatic } from "./vite";
 import { dbInit } from "./database/dbInit";
 import { closeDatabase, checkDatabaseConnection } from "./database";
+import { simplifiedStorage } from "./storage-simplified";
 
 // --- Load .env variables ---
 dotenv.config();
@@ -44,6 +46,9 @@ async function startServer() {
   try {
     console.log("[BACKEND LIFECYCLE] Stage 5: Starting server initialization process...");
     
+    // Create HTTP server
+    const server = createServer(app);
+    
     // Check database connection
     console.log("[BACKEND LIFECYCLE] Stage 5a: Checking database connection...");
     const isDatabaseConnected = await checkDatabaseConnection();
@@ -68,7 +73,7 @@ async function startServer() {
     // Register API routes
     console.log("[BACKEND LIFECYCLE] Stage 7: Mounting feature API routes...");
     try {
-      const server = await registerRoutes(app);
+      await registerRoutes(app, simplifiedStorage);
       console.log("[BACKEND LIFECYCLE] Stage 7a: Feature routes mounted successfully.");
       
       // --- GENERIC ERROR HANDLING MIDDLEWARE (Catches errors from routes) ---
