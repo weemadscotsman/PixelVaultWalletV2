@@ -28,7 +28,31 @@ export function ButtonTester() {
 
   const testButton = async (test: ButtonTest): Promise<ButtonTest> => {
     try {
-      const element = document.querySelector(test.selector);
+      // Wait for potential DOM updates
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      let element = document.querySelector(test.selector);
+      
+      // If element not found, try navigating to relevant page
+      if (!element) {
+        if (test.selector.includes('send-button') || test.selector.includes('receive-button')) {
+          setLocation('/wallet');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          element = document.querySelector(test.selector);
+        } else if (test.selector.includes('start-mining')) {
+          setLocation('/');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          element = document.querySelector(test.selector);
+        } else if (test.selector.includes('stake-button')) {
+          setLocation('/staking');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          element = document.querySelector(test.selector);
+        } else if (test.selector.includes('vote-button')) {
+          setLocation('/governance');
+          await new Promise(resolve => setTimeout(resolve, 500));
+          element = document.querySelector(test.selector);
+        }
+      }
       
       if (!element) {
         return {
@@ -38,9 +62,8 @@ export function ButtonTester() {
         };
       }
 
-      const isButton = element.tagName === 'BUTTON' || element.getAttribute('role') === 'button';
-      const hasClick = element.onclick !== null || element.addEventListener;
-      const isDisabled = element.hasAttribute('disabled');
+      const isButton = element.tagName === 'BUTTON' || element.getAttribute('role') === 'button' || element.classList.contains('cursor-pointer');
+      const isDisabled = element.hasAttribute('disabled') || element.getAttribute('aria-disabled') === 'true';
 
       if (isDisabled) {
         return {
@@ -50,7 +73,7 @@ export function ButtonTester() {
         };
       }
 
-      if (!isButton && !hasClick) {
+      if (!isButton) {
         return {
           ...test,
           status: 'failed',
@@ -58,9 +81,15 @@ export function ButtonTester() {
         };
       }
 
-      // Simulate click test
-      const clickEvent = new MouseEvent('click', { bubbles: true });
-      element.dispatchEvent(clickEvent);
+      // Test if element is visible
+      const rect = element.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        return {
+          ...test,
+          status: 'failed',
+          error: 'Element is not visible'
+        };
+      }
 
       return {
         ...test,
@@ -78,10 +107,17 @@ export function ButtonTester() {
   const runAllTests = async () => {
     const results: ButtonTest[] = [];
     
+    // Start from dashboard to ensure proper navigation context
+    setLocation('/');
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
     for (const test of tests) {
       const result = await testButton(test);
       results.push(result);
       setTests([...results, ...tests.slice(results.length)]);
+      
+      // Add delay between tests for DOM updates
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
     
     setTests(results);
