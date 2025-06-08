@@ -1300,14 +1300,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Drops claims for user
-  app.get('/api/drops/claims', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
-    try {
-      res.json({ claims: [] });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to fetch drop claims' });
-    }
-  });
+
 
   // User badges
   app.get('/api/badges/user/:address', unifiedAuth.requireAuth, async (req: Request, res: Response) => {
