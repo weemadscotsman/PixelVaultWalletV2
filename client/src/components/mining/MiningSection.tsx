@@ -167,6 +167,7 @@ export function MiningSection() {
                 <button 
                   className={`power-button ${isMining ? 'active' : ''}`} 
                   onClick={runMiningCLI}
+                  data-testid="start-mining"
                 >
                   <i className={`icon fa ${isMining ? 'fa-stop' : 'fa-play'}`}></i>
                 </button>
