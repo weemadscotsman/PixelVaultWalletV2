@@ -88,17 +88,17 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // List all wallets
   app.get('/api/wallet/all', async (req: Request, res: Response) => {
     try {
-      res.json({
-        wallets: [
-          {
-            address: 'PVX_1295b5490224b2eb64e9724dc091795a',
-            publicKey: 'PVX_PUBLIC_KEY_1295b5490224b2eb64e9724dc091795a',
-            balance: '999999999',
-            createdAt: '2025-01-01T00:00:00.000Z',
-            lastSynced: new Date().toISOString()
-          }
-        ]
-      });
+      const wallets = [
+        {
+          address: 'PVX_1295b5490224b2eb64e9724dc091795a',
+          publicKey: 'PVX_PUBLIC_KEY_1295b5490224b2eb64e9724dc091795a',
+          balance: '999999999',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          lastSynced: new Date().toISOString()
+        }
+      ];
+      
+      res.json({ wallets });
     } catch (error) {
       console.error('List wallets error:', error);
       res.status(500).json({ error: 'Failed to list wallets' });

@@ -18,7 +18,7 @@ export class StakingService {
             name: 'Genesis Pool',
             description: 'The original PVX staking pool with no lockup period',
             apr: 8.5,
-            minStakeAmount: 10000,
+            minStakeAmount: 100,
             lockupPeriod: 0,
             totalStaked: '1500000000000',
             activeStakers: 0,
