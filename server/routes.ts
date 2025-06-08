@@ -29,10 +29,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/governance', governanceRoutes);
   app.use('/api/learning', learningRoutes);
   
-  // Dev routes registration
+  // Dev routes registration - PRIORITY FIX
   app.use('/api/dev', devRoutes);
   
-  // Missing endpoint implementations for 100% connectivity
+  // Direct route implementations for 100% connectivity - override any conflicts
   
   // Wallet export endpoint
   app.get('/api/wallet/:address/export', async (req: Request, res: Response) => {
