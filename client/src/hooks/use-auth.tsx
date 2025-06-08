@@ -45,11 +45,12 @@ export const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const [user, setUser] = useState<WalletUser | null>(null);
-  const [token, setToken] = useState<string | null>(() => {
-    return localStorage.getItem('sessionToken');
-  });
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
+  const error = null;
   
-  // Initialize user from localStorage if available
+  // Initialize authentication state from localStorage
   useEffect(() => {
     const savedWallet = localStorage.getItem('activeWallet');
     const savedToken = localStorage.getItem('sessionToken');
@@ -64,40 +65,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setToken(savedToken);
     }
+    
+    setIsLoading(false);
+    setInitialized(true);
   }, []);
-  
-  // Query for the current user based on the token (simplified)
-  const {
-    error,
-    isLoading,
-    refetch
-  } = useQuery({
-    queryKey: ['/api/auth/me'],
-    queryFn: async () => {
-      if (!token) return null;
-      
-      const res = await fetch('/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (!res.ok) {
-        if (res.status === 401) {
-          localStorage.removeItem('sessionToken');
-          localStorage.removeItem('activeWallet');
-          setToken(null);
-          setUser(null);
-          return null;
-        }
-        throw new Error('Failed to fetch user data');
-      }
-      
-      return await res.json();
-    },
-    enabled: !!token,
-    retry: false,
-  });
 
   // Effect to sync token with localStorage
   useEffect(() => {
@@ -208,12 +179,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user: user || null,
-        isLoading,
+        isLoading: !initialized,
         error,
         token,
         login,
         logout,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user && initialized,
       }}
     >
       {children}
