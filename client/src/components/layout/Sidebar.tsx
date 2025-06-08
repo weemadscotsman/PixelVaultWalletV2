@@ -174,7 +174,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
               <li key={item.path} className="py-1">
                 <div 
                   className={cn(
-                    "flex items-center px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer",
+                    "flex items-center px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer sidebar-link",
                     window.location.pathname === item.path
                       ? "bg-blue-800 bg-opacity-90 text-white border border-blue-600 shadow-md shadow-blue-900/50" 
                       : "text-blue-400 hover:bg-blue-900 hover:bg-opacity-30 hover:text-blue-300 hover:border hover:border-blue-700/50 text-shadow-neon"

@@ -41,7 +41,10 @@ export function TransactionItem({ transaction }: TransactionItemProps) {
   if (isStaking) title = "Staking Rewards";
   
   return (
-    <div className="flex justify-between items-center p-2 bg-background rounded-md">
+    <div 
+      className="flex justify-between items-center p-2 bg-background rounded-md cursor-pointer hover:bg-background/80 transition-colors"
+      data-testid="tx-details"
+    >
       <div className="flex items-center">
         <div className={`w-8 h-8 rounded-full ${bgColor} flex items-center justify-center mr-3`}>
           <i className={`${icon} text-white`}></i>

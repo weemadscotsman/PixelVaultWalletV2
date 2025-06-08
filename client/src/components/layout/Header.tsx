@@ -124,7 +124,10 @@ export function Header({ isConnected }: HeaderProps) {
             <i className="fas fa-bell"></i>
           </button>
           
-          <div className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-blue-400 font-bold text-shadow-neon border border-blue-500">
+          <div 
+            className="w-10 h-10 rounded-full bg-blue-900 flex items-center justify-center text-blue-400 font-bold text-shadow-neon border border-blue-500 cursor-pointer"
+            data-testid="profile-menu"
+          >
             PVX
           </div>
         </div>

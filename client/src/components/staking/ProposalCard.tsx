@@ -120,6 +120,7 @@ export function ProposalCard({ proposal }: ProposalCardProps) {
                 variant="link" 
                 className="text-primary hover:text-primary-light text-sm p-0"
                 disabled={userHasVoted || !wallet}
+                data-testid="vote-button"
               >
                 {userHasVoted ? "Voted" : "Vote"}
               </Button>
