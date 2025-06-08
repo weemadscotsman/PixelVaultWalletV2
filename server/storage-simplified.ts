@@ -218,13 +218,19 @@ export class SimplifiedStorage {
           id: schema.badges.id,
           name: schema.badges.name,
           description: schema.badges.description,
-          icon: schema.badges.icon,
+          imageUrl: schema.badges.imageUrl,
+          tier: schema.badges.tier,
           category: schema.badges.category,
-          earnedAt: schema.userBadges.earnedAt
+          dateObtained: schema.userBadges.dateObtained,
+          obtained: schema.userBadges.obtained,
+          progress: schema.userBadges.progress
         })
         .from(schema.userBadges)
         .innerJoin(schema.badges, eq(schema.badges.id, schema.userBadges.badgeId))
-        .where(eq(schema.userBadges.userAddress, address));
+        .where(and(
+          eq(schema.userBadges.userId, address),
+          eq(schema.userBadges.obtained, true)
+        ));
       
       return userBadges;
     } catch (error) {
