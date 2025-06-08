@@ -98,10 +98,6 @@ const TEST_SUITES = {
             log('FAIL', 'Server health check failed', result);
             return false;
           }
-        } else {
-            log('FAIL', 'Server health check failed', result);
-            return false;
-          }
         }
       },
       {
@@ -275,12 +271,6 @@ const TEST_SUITES = {
             return true;
           } else {
             log('FAIL', 'Blockchain status retrieval failed', result);
-            return false;
-          }
-        } blocks)`);
-            return true;
-          } else {
-            log('FAIL', 'Block list retrieval failed', result);
             return false;
           }
         }
