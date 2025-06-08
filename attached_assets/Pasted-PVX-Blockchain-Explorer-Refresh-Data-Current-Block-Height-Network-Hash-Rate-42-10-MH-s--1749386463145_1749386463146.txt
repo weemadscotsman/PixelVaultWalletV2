@@ -1,0 +1,192 @@
+PVX Blockchain Explorer
+Refresh Data
+Current Block Height
+
+-
+
+Network Hash Rate
+
+42.10 MH/s
+
+Difficulty
+
+-
+
+Network Metrics Radar
+Blockchain Trend Radar
+
+This radar chart displays the relative trends in various blockchain metrics compared to their historical maximums.
+
+Recent Blocks
+No blocks found
+
+View All Blocks
+Mining Status
+Consensus Health
+
+Status
+
+Healthy
+
+Difficulty
+
+-
+
+Active Miners
+
+0
+
+Your Mining Stats
+Hash Rate:
+42.1 TH/s MH/s
+Blocks Mined:
+0
+Total Rewards:
+8,645,000,000 μPVX
+Network Version
+
+v1.51-PVX
+
+Current
+Start Mining
+Live Block Inspector - Chain Transparency
+Loading blockchain transparency data...
+
+Mining Operation Transparency
+Active Mining Session
+Wallet ID:
+PVX_1295b5490224b2eb64e9724dc091795a
+Hash Rate:
+42.1 TH/s MH/s
+Blocks Found:
+0
+Total Rewards:
+8,645,000,000 μPVX
+Reward/Block:
+5,000,000 μPVX
+Est. Value:
+0 μPVX
+Network Integrity Check
+Network Status:
+Disconnected
+Sync Status:
+Syncing
+Peer Count:
+0
+Current Difficulty:
+0
+Latest Block:
+#0
+Chain Version:
+v1.51-PVX
+PVX System Interconnection Validator
+Run Full System Check
+Overall Health
+CRITICAL
+Services Online
+11/22
+Wallet Connected
+YES
+Validation Time
+13:39:31
+Service Status Matrix
+Wallet System
+ONLINE
+167ms
+Wallet Balance
+ONLINE
+164ms
+Blockchain Status
+ONLINE
+166ms
+Latest Block
+ONLINE
+180ms
+Recent Blocks
+ONLINE
+158ms
+Mining Stats
+ONLINE
+156ms
+Blockchain Trends
+ONLINE
+161ms
+Staking Rewards
+OFFLINE
+163ms
+Staking Pools
+ONLINE
+363ms
+NFT Marketplace
+OFFLINE
+159ms
+User NFTs
+OFFLINE
+160ms
+Governance Proposals
+OFFLINE
+176ms
+User Governance
+OFFLINE
+154ms
+Drops Stats
+ONLINE
+1001ms
+User Drops
+OFFLINE
+161ms
+Badge Leaderboard
+ONLINE
+155ms
+User Badges
+ONLINE
+366ms
+Thringlet State
+OFFLINE
+161ms
+Learning Modules
+OFFLINE
+155ms
+User Progress
+OFFLINE
+163ms
+Companions
+OFFLINE
+155ms
+Transaction History
+OFFLINE
+186ms
+Failed Services
+Staking Rewards
+/stake/rewards
+HTTP 404: Not Found
+NFT Marketplace
+/nfts/all
+HTTP 404: Not Found
+User NFTs
+/nfts/mine/PVX_1295b5490224b2eb64e9724dc091795a
+HTTP 404: Not Found
+Governance Proposals
+/gov/proposals
+HTTP 404: Not Found
+User Governance
+/gov/user-votes
+HTTP 404: Not Found
+User Drops
+/drops/user-claims
+HTTP 404: Not Found
+Thringlet State
+/thringlet/state
+HTTP 404: Not Found
+Learning Modules
+/learn/modules
+HTTP 404: Not Found
+User Progress
+/learn/progress
+HTTP 404: Not Found
+Companions
+/companions/mine
+HTTP 404: Not Found
+Transaction History
+/transactions/wallet/PVX_1295b5490224b2eb64e9724dc091795a
+HTTP 404: Not Found
