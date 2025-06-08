@@ -272,6 +272,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Missing wallet transactions endpoint
+  app.get('/api/wallet/:address/transactions', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const transactions = await simplifiedStorage.getTransactionsByAddress(address);
+      res.json(transactions);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch wallet transactions' });
+    }
+  });
+
   // ============= UNIFIED STAKING SYSTEM =============
   
   // Get staking status for a wallet
