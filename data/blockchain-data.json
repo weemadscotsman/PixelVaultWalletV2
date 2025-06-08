@@ -13308,6 +13308,380 @@
       "nonce": "258943",
       "difficulty": 5,
       "reward": "5000000"
+    },
+    {
+      "height": 1211,
+      "hash": "49de2094170d24025440111498876f9fbfadac49094fd6949246a2901fecea70",
+      "previousHash": "5bccc00e467384047686a98327f7446bd40212d4050a816d5b19fa09404a088c",
+      "timestamp": 1749346153391,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "345825",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1212,
+      "hash": "a39b7e3e06802b662f6260342abe2167dfd923c79061490fbf00415888ec00f9",
+      "previousHash": "49de2094170d24025440111498876f9fbfadac49094fd6949246a2901fecea70",
+      "timestamp": 1749346163392,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "70584",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1213,
+      "hash": "2b7555ca028679ab537f02523f574f6c64700a015ad641a1307d80c8421812d1",
+      "previousHash": "a39b7e3e06802b662f6260342abe2167dfd923c79061490fbf00415888ec00f9",
+      "timestamp": 1749346173392,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "273134",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1214,
+      "hash": "aba6737f56c70eac434256c2e7ab9cad8cb6a73e048c90e167a47fc316fffca1",
+      "previousHash": "2b7555ca028679ab537f02523f574f6c64700a015ad641a1307d80c8421812d1",
+      "timestamp": 1749346183392,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "311935",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1215,
+      "hash": "9e6b538858c4cb1eaa538ef3e6273ee289ad5b2ffc2cf9390470bb5524c6cfa9",
+      "previousHash": "aba6737f56c70eac434256c2e7ab9cad8cb6a73e048c90e167a47fc316fffca1",
+      "timestamp": 1749346193393,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "83967",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1216,
+      "hash": "327fb52ccb4c6e2283e363ed652ee80330368c84d6429c85700fbdb2b4409d09",
+      "previousHash": "9e6b538858c4cb1eaa538ef3e6273ee289ad5b2ffc2cf9390470bb5524c6cfa9",
+      "timestamp": 1749346203392,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "734849",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1217,
+      "hash": "3e8e195e126fee13ce64c0f32b95bcf09c51694fc423a10aa175ff0025ae010b",
+      "previousHash": "327fb52ccb4c6e2283e363ed652ee80330368c84d6429c85700fbdb2b4409d09",
+      "timestamp": 1749346213393,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "846656",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1218,
+      "hash": "fbb53630512c1b55836c61c1da8ec0d731ecb925468eb78b0c15fd6411a5a2d8",
+      "previousHash": "3e8e195e126fee13ce64c0f32b95bcf09c51694fc423a10aa175ff0025ae010b",
+      "timestamp": 1749346223393,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "521166",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1219,
+      "hash": "6d7a69092d396e76c0ec3ac9dec1f63d3ae4f87a81a84ec5044a466a274717ff",
+      "previousHash": "fbb53630512c1b55836c61c1da8ec0d731ecb925468eb78b0c15fd6411a5a2d8",
+      "timestamp": 1749346233394,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "985006",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1220,
+      "hash": "6c938ea87f0059084983f51e89f4c8d2404e1205fd7c6cfeed07253c3bd1ef0d",
+      "previousHash": "6d7a69092d396e76c0ec3ac9dec1f63d3ae4f87a81a84ec5044a466a274717ff",
+      "timestamp": 1749346243393,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "452803",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1221,
+      "hash": "b402bb698ceb08aeadcdcab87ea38f90cb48c163f774fb38daf1876965b31d1c",
+      "previousHash": "6c938ea87f0059084983f51e89f4c8d2404e1205fd7c6cfeed07253c3bd1ef0d",
+      "timestamp": 1749346253394,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "350574",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1222,
+      "hash": "ad5f0a3399de830432cbd573658dae4b6eebc745d292792c1c0fef45be618a2b",
+      "previousHash": "b402bb698ceb08aeadcdcab87ea38f90cb48c163f774fb38daf1876965b31d1c",
+      "timestamp": 1749346263395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "232263",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1223,
+      "hash": "6557433f810a462b3a5d81545aa180eaf9add942cab9570403dc5f80c66088b6",
+      "previousHash": "ad5f0a3399de830432cbd573658dae4b6eebc745d292792c1c0fef45be618a2b",
+      "timestamp": 1749346273396,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "500407",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1224,
+      "hash": "2d0b58ecd5a7b1656f383a2eb3617e662fae93340a482f5c801bb3605f5d10ad",
+      "previousHash": "6557433f810a462b3a5d81545aa180eaf9add942cab9570403dc5f80c66088b6",
+      "timestamp": 1749346283396,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "705925",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1225,
+      "hash": "93cb5d1f94f63a4f0dda1648e2716fe4d5b0170acaa1c03a574e76d2c65b6f6c",
+      "previousHash": "2d0b58ecd5a7b1656f383a2eb3617e662fae93340a482f5c801bb3605f5d10ad",
+      "timestamp": 1749346293396,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "927827",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1226,
+      "hash": "7790359ae3ef3fdb145502ce322d60927b4a15e9af7c4c8c59048a6e3bcd60b6",
+      "previousHash": "93cb5d1f94f63a4f0dda1648e2716fe4d5b0170acaa1c03a574e76d2c65b6f6c",
+      "timestamp": 1749346303396,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "886205",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1227,
+      "hash": "82cbe9bf95063a6e5ccdb401e5f83b093de1527f85e6bac9aac1fa13d3ceb663",
+      "previousHash": "7790359ae3ef3fdb145502ce322d60927b4a15e9af7c4c8c59048a6e3bcd60b6",
+      "timestamp": 1749346313395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "70526",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1228,
+      "hash": "b464c4c45a57e8a7ff52d38e7b15f734dc5177d1ae68b9302784ab918b0996f2",
+      "previousHash": "82cbe9bf95063a6e5ccdb401e5f83b093de1527f85e6bac9aac1fa13d3ceb663",
+      "timestamp": 1749346323395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "350930",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1229,
+      "hash": "4e6a28495f803abc651376f2ddf3940f2294b26b05203953c7d016e4890d4faa",
+      "previousHash": "b464c4c45a57e8a7ff52d38e7b15f734dc5177d1ae68b9302784ab918b0996f2",
+      "timestamp": 1749346333396,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "923917",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1230,
+      "hash": "86217dd75960ef7fec0511f23b11bcab8f54bd8016cee464855b15e9194d25a4",
+      "previousHash": "4e6a28495f803abc651376f2ddf3940f2294b26b05203953c7d016e4890d4faa",
+      "timestamp": 1749346343395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "481163",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1231,
+      "hash": "e15a3aaf91b239f1cbd1bcaa57a0164caed42f235d280f7c66035c7381c34840",
+      "previousHash": "86217dd75960ef7fec0511f23b11bcab8f54bd8016cee464855b15e9194d25a4",
+      "timestamp": 1749346353395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "921706",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1232,
+      "hash": "2d41c2020ebf7c0fa19ec684c2b1d470e50f57ce4a005ca3cbc0be307c0520f7",
+      "previousHash": "e15a3aaf91b239f1cbd1bcaa57a0164caed42f235d280f7c66035c7381c34840",
+      "timestamp": 1749346363395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "312829",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1233,
+      "hash": "fb5ea819f2ec792b717b9e1a65c223555df06a83281cc4667f9cd4e7e1b5ac4d",
+      "previousHash": "2d41c2020ebf7c0fa19ec684c2b1d470e50f57ce4a005ca3cbc0be307c0520f7",
+      "timestamp": 1749346373395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "979732",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1234,
+      "hash": "f8e73652c10f827974810f568939e0578c0ce0d99f8c347089760b07468f575e",
+      "previousHash": "fb5ea819f2ec792b717b9e1a65c223555df06a83281cc4667f9cd4e7e1b5ac4d",
+      "timestamp": 1749346383396,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "946995",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1235,
+      "hash": "d8b0ad14434edab321e66f3ef348cc30be5f22a8c8bfa24d3e3cb03ba7b17f5a",
+      "previousHash": "f8e73652c10f827974810f568939e0578c0ce0d99f8c347089760b07468f575e",
+      "timestamp": 1749346393395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "589432",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1236,
+      "hash": "abc163bbc2ee7bf79703f3f15625b57e9fc92b6a5c2e1b7a96835afaf0371e70",
+      "previousHash": "d8b0ad14434edab321e66f3ef348cc30be5f22a8c8bfa24d3e3cb03ba7b17f5a",
+      "timestamp": 1749346403395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "517002",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1237,
+      "hash": "43ec503d4c86d03ee5762105f1668d446796de80a86aa9cbabdf4b376c951821",
+      "previousHash": "abc163bbc2ee7bf79703f3f15625b57e9fc92b6a5c2e1b7a96835afaf0371e70",
+      "timestamp": 1749346413395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "686036",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1238,
+      "hash": "edfc9c4f09f3cafaeec4bc4146bb6406de1dd1ffc925c9078f173bc71ca04d7d",
+      "previousHash": "43ec503d4c86d03ee5762105f1668d446796de80a86aa9cbabdf4b376c951821",
+      "timestamp": 1749346423395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "828078",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1239,
+      "hash": "2e411cb08813d6e662db558b752dd6efd3da57dd282e6d9bd83f84913dd79c8c",
+      "previousHash": "edfc9c4f09f3cafaeec4bc4146bb6406de1dd1ffc925c9078f173bc71ca04d7d",
+      "timestamp": 1749346433395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "14584",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1240,
+      "hash": "1cc05b07a67a91a0cee3c35c4529cb1fc6ec94ea528c6a127ef2c69f9a8afa3d",
+      "previousHash": "2e411cb08813d6e662db558b752dd6efd3da57dd282e6d9bd83f84913dd79c8c",
+      "timestamp": 1749346443395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "710586",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1241,
+      "hash": "532df83781d490645ad08b661d04f92bcbfbef533ab6c0e7797b78de11f07a07",
+      "previousHash": "1cc05b07a67a91a0cee3c35c4529cb1fc6ec94ea528c6a127ef2c69f9a8afa3d",
+      "timestamp": 1749346453395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "818446",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1242,
+      "hash": "286f7c2015f4ad782bd069c2a3d168c69eb9a94d36be07a886a530b3fd7a228e",
+      "previousHash": "532df83781d490645ad08b661d04f92bcbfbef533ab6c0e7797b78de11f07a07",
+      "timestamp": 1749346463396,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "245872",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1243,
+      "hash": "4cfe8bd557265fc16b5384026ccd6556548b7b60c73ed299ae27888fabd440ce",
+      "previousHash": "286f7c2015f4ad782bd069c2a3d168c69eb9a94d36be07a886a530b3fd7a228e",
+      "timestamp": 1749346473395,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "827094",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1244,
+      "hash": "677b42308e2a143a85a368fa20e62e71cfe1f2aa2ba190c2034ae9b74dddce93",
+      "previousHash": "4cfe8bd557265fc16b5384026ccd6556548b7b60c73ed299ae27888fabd440ce",
+      "timestamp": 1749346501171,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "293406",
+      "difficulty": 5,
+      "reward": "5000000"
     }
   ],
   "transactions": [
@@ -26598,6 +26972,380 @@
       "nonce": 60849,
       "signature": "a295988cb78ff4c0c79707eb966779169e86383f26c2252609b1307a41c3a2f6",
       "status": "confirmed"
+    },
+    {
+      "hash": "50896378cac6aed74abbc8dc593b197d9164caab1caee7854b0d19573afef51c",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346153391,
+      "nonce": 76942,
+      "signature": "8d8a070d17d5c7a29eee6f798787b0773c4e41f1105201f00448d05368cf8105",
+      "status": "confirmed"
+    },
+    {
+      "hash": "6ca9d56dfd4fe5cdb2dd2a175e3793851ec108c05dfdf04203aa3a44dde540bb",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346163392,
+      "nonce": 13105,
+      "signature": "fbd10cb14a381e3cc141b06886964729ab074669adee9d30efc56adfdd065385",
+      "status": "confirmed"
+    },
+    {
+      "hash": "4c231cc8ccc7263e8cda8d8d7c7550f1af393cfd231e03bc07f95799db99002a",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346173392,
+      "nonce": 10455,
+      "signature": "241bf991e3be2015618abb191ed27c5dd3be20db389370350a0c36d0e6a7c38b",
+      "status": "confirmed"
+    },
+    {
+      "hash": "0a8b098b4797dba8142029bedd761fbdbfb0e3fc59f65566edcc81feb8082da9",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346183392,
+      "nonce": 7688,
+      "signature": "8d63f3ebfc896ce6ed42c2117c889b0f415121ff05e4d38e1a4fe172a6e01e8e",
+      "status": "confirmed"
+    },
+    {
+      "hash": "8130f19a21fe12f923b30e34c6d3fba8ddac624f524be46ec448b6c2e7f5b628",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346193393,
+      "nonce": 60862,
+      "signature": "b29dc6efaea39783634a371094780b58ebfaafac3da983c7999e8a838bb3c8ec",
+      "status": "confirmed"
+    },
+    {
+      "hash": "e593ac88b3dec0e767b51b2a850445635ce931f5f5599c698aa10ea1c0713ec4",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346203392,
+      "nonce": 57036,
+      "signature": "392bd8cb3c4a10eac153358ed312d33728797882ef6c95a7cf4a861808922637",
+      "status": "confirmed"
+    },
+    {
+      "hash": "db7c667b5cf44a4facd34d913aa8f511782dcd0c9762ff13af7a2a99432eeefb",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346213393,
+      "nonce": 8144,
+      "signature": "dfd1ab27ed41371a0c10600d0d31ba6fe2d016366a61e8b366b830b67456faa0",
+      "status": "confirmed"
+    },
+    {
+      "hash": "e7e84c760d17beef14362fb43ac49ba8bf537f31cd29be2c254b0497b0316047",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346223393,
+      "nonce": 6655,
+      "signature": "037026d504b798b36a7dcedbbbe13bd9b1a11e03965fa478994fed60cb4b5cf2",
+      "status": "confirmed"
+    },
+    {
+      "hash": "276d5a49720c54ddaca411c266cd16ae5eec22cac9264d8f3478d81b48bbefc7",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346233394,
+      "nonce": 74743,
+      "signature": "3e19242377e4faaed513c1e802f8e987fb9cd4765b7b413297178774fd492b97",
+      "status": "confirmed"
+    },
+    {
+      "hash": "a8a947e96962baed6df7dee22705c3defbdc657029accdd431d4772774fa4d30",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346243393,
+      "nonce": 61899,
+      "signature": "59c25c899f5c15d710ad3ab76b48190f5e2a44daf154b963fa32ec6cfec0e201",
+      "status": "confirmed"
+    },
+    {
+      "hash": "755c66e3b884cee5fe3079f7c8ae403f6fea7755b02664cb6f36792dd037d112",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346253394,
+      "nonce": 91625,
+      "signature": "87277c68a7a927702d2276ef2167de0befc0ec840cdb118949ac62ac24fe4498",
+      "status": "confirmed"
+    },
+    {
+      "hash": "0aa54338b038345ac3ce8defe046aac12703d21aa60150d3b0fc63b36a3737eb",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346263395,
+      "nonce": 25343,
+      "signature": "60677f8c46529afd8e9f3320e8b0399319de8de9611704164832accbc0ce12e8",
+      "status": "confirmed"
+    },
+    {
+      "hash": "a4abd50ef2c5c8a64998b1f82c67ffab007bd31d521f42a1511b68c32d7f9ede",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346273396,
+      "nonce": 42669,
+      "signature": "0895eb975ea94cc5e61f885ea038f036187a9d4c58c210a85a280aa31f39dee2",
+      "status": "confirmed"
+    },
+    {
+      "hash": "b5736bca46cbff30097ef47ab64089709572f66d0ddb0f3aa08e778543d12cc5",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346283396,
+      "nonce": 52213,
+      "signature": "60d18e139065214a807642f9fb57213eae60994f13d237029a80f3e9c2782669",
+      "status": "confirmed"
+    },
+    {
+      "hash": "115f360c68fb58ca29212d39192c1bf59852e2d4f67254a261a42acb9f0a935a",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346293396,
+      "nonce": 44992,
+      "signature": "d239d3c81ac0a8e9fc17a387fb60d9b89d6a902b64d9694ed8f51e30a0ec7475",
+      "status": "confirmed"
+    },
+    {
+      "hash": "8675339f3518b0c121ef256d2d28459161cdd0cdca69e5986b2ac60354f615af",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346303396,
+      "nonce": 68046,
+      "signature": "cca44a538e16d1a03f32131d605cbc58b032d5e5cae2ccb2e89b5c09b9553016",
+      "status": "confirmed"
+    },
+    {
+      "hash": "62c4bfc7d909a51dfa7ddf76cb940a23b2d30346066834f18d05d02fd676e853",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346313395,
+      "nonce": 28634,
+      "signature": "3d5d82affd75e4b1cbed65f152cb6f351211bafb278925cf184a20f3c1c0188e",
+      "status": "confirmed"
+    },
+    {
+      "hash": "d8f2414d633094223cce74309f712b6282ff98c2b077166c01963accf7386deb",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346323395,
+      "nonce": 51151,
+      "signature": "19c7677b1e85b4df65efb79f5bad2159b1c2f0dd8e0fb7cb75c15ee6816340b1",
+      "status": "confirmed"
+    },
+    {
+      "hash": "62f0f422281f82b39f34a7b39ea4586bb5d2c33d873f7d4f2db03306fb7e61fb",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346333396,
+      "nonce": 85828,
+      "signature": "26a6807d331d86794dcfd86be4567140fe1d7ac0a9f30413f8257413a544b05b",
+      "status": "confirmed"
+    },
+    {
+      "hash": "b370ae0665b89316f724d1875a5932125d5df06f46715e436e8fc5a42be9ad48",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346343395,
+      "nonce": 78632,
+      "signature": "59923a9b4f2f7cd9fc56143cce7f3a5a6363a9f4d13e6fbede14ec39669097cc",
+      "status": "confirmed"
+    },
+    {
+      "hash": "069326cabf6429122ff88fd7547e9ea24f54e6a78d6df7a7e3878b364a1e508d",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346353395,
+      "nonce": 21751,
+      "signature": "48722a27170d99d25a154ea7ee9957498dfb3a0bec84f691c0062050ea572917",
+      "status": "confirmed"
+    },
+    {
+      "hash": "490b5e7b0d4225ec3fba06f033bd2a8f450b9c00b26e8bcbac09af94de8b7b01",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346363395,
+      "nonce": 89923,
+      "signature": "b82b5d5e2b8495cb50a2a0459923a55ef23bac79d719d1296ebfa52c70d43b89",
+      "status": "confirmed"
+    },
+    {
+      "hash": "9712ee488e8411945ff80cb9606d3e3b9aa83e8819815ac98130a3bff2b34056",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346373395,
+      "nonce": 53207,
+      "signature": "e9097c626ac5e5f0c1b2ca58b91f6337eb2f5f5e532ad4b398c4d48f022334a1",
+      "status": "confirmed"
+    },
+    {
+      "hash": "4a151a6603c14a889035a4985c8773b1830da1e891256cfb55febc79b8a8c7f8",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346383396,
+      "nonce": 96771,
+      "signature": "10c1599d75f02c068d0d84f0ebfbfa4015d97bbd7cf015d701e604327fce85bb",
+      "status": "confirmed"
+    },
+    {
+      "hash": "43a368665490d8376f040269ca9b77bce0407db86d177909a7346518bf954776",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346393395,
+      "nonce": 78139,
+      "signature": "5024bec5705a7493458fefa492d6f7aaacc7dcabe74d1dfcc9e929784a55fd4b",
+      "status": "confirmed"
+    },
+    {
+      "hash": "64981b8a455bdd7cf673ef42eab04a46ae0ba3923c392d5c00ace121c67dd7b6",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346403395,
+      "nonce": 48879,
+      "signature": "3f9a28a43883345af5a3f8ee26c6095a3a2c6d2a4d4ae1ccbb3aea4569876881",
+      "status": "confirmed"
+    },
+    {
+      "hash": "d7408bd114ceb1c23317c5488d44f55959e458fd098cba917189929c3640d8c8",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346413395,
+      "nonce": 21051,
+      "signature": "bcdfc3bab501c4ded7a5c74c1c79ea2be16d8c5ebf93396fd6ee5f35d018cbde",
+      "status": "confirmed"
+    },
+    {
+      "hash": "aeab8e7133bde983d43cb0755d0d40d8b704a5d04fbadc2494ac23da93e391ba",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346423395,
+      "nonce": 13893,
+      "signature": "db89d107c824a4cde2b408a97e7df3c5c063aebcba9956181529ff282c6b7175",
+      "status": "confirmed"
+    },
+    {
+      "hash": "92930c4e2f042378dbefbf0621e0fdeeba17d9b47d0ae8b14cedabe3f553f910",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346433395,
+      "nonce": 40463,
+      "signature": "ce0582d2917b3148bb621e499679cfe1c3a60fa7c71faa14f745715c07b35de2",
+      "status": "confirmed"
+    },
+    {
+      "hash": "4879a4d3d671786d6474662f711602b17e18b0b0a361f99ba6db493ab1ad9c4d",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346443395,
+      "nonce": 32666,
+      "signature": "6010501415de2eb64ac57d1e56b5d9abba6d48de75896c14f8a9582e1b5e5889",
+      "status": "confirmed"
+    },
+    {
+      "hash": "361cf38662d60d6049066e06fed46a7b4b867feeadb5234a5506040d8f4f6498",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346453395,
+      "nonce": 24423,
+      "signature": "da40dc9707be7795a4a3d2ef6098952a9eb58fccd64785c93f09f31a961232ae",
+      "status": "confirmed"
+    },
+    {
+      "hash": "58e605df0f3a9c747480efbe4417d201b8bef5be3af1a69dd2d396716e204460",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346463396,
+      "nonce": 75332,
+      "signature": "cb8bcbaea17f5a51a4f8a5c571a48948e34f3a7c15e8bad40ae707315420eca9",
+      "status": "confirmed"
+    },
+    {
+      "hash": "15cc3049c2307464d29dd2baf2824e374a64ac6ca15832421919454be6c6df3c",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346473395,
+      "nonce": 6605,
+      "signature": "6814ee05c5b5bc476c4651c439a2e9006403093e4ecaed752b41ca455f105a96",
+      "status": "confirmed"
+    },
+    {
+      "hash": "a865618b1cf82e7dc1de6e2a10e66107b97bb299342cca15919fcc2c548c6282",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346501171,
+      "nonce": 28390,
+      "signature": "dcdf2b981813f010392bd7090011e96c145e2d3d5128d4fee3e05dbfaab3556d",
+      "status": "confirmed"
     }
   ],
   "wallets": [
@@ -26606,10 +27354,10 @@
       {
         "address": "PVX_1295b5490224b2eb64e9724dc091795a",
         "publicKey": "genesis_key_1295b5490224b2eb64e9724dc091795a",
-        "balance": "5419995703.75",
+        "balance": "5589991457.5",
         "createdAt": "2025-06-07T17:00:00.000Z",
-        "lastUpdated": "2025-06-08T01:29:03.453Z",
-        "lastSynced": "2025-06-08T01:28:42.216Z",
+        "lastUpdated": "2025-06-08T01:35:01.188Z",
+        "lastSynced": "2025-06-08T01:34:34.338Z",
         "passphraseSalt": "genesis_salt_1295b5490224b2eb64e9724dc091795a",
         "passphraseHash": "f0a500f76209a6795332b5eb388ff943ededa3fb47740d1cd485cbd6624fb11e"
       }
@@ -26964,6 +27712,45 @@
         "passphraseHash": "e2ac311798505a7a8fbec2ed9ca76842ddf2b4c0ccd67edd045b6a652c6bfb30",
         "lastSynced": "2025-06-08T01:28:26.917Z"
       }
+    ],
+    [
+      "PVX_d4e5a3078e31fef94f3b879fcb843bcc",
+      {
+        "address": "PVX_d4e5a3078e31fef94f3b879fcb843bcc",
+        "publicKey": "67f4926c18263fa6e60e202098577c69fc9c637a1159b83f3465e9387912ee0b",
+        "balance": "1000.0",
+        "createdAt": "2025-06-08T01:32:33.496Z",
+        "lastUpdated": "2025-06-08T01:32:33.496Z",
+        "passphraseSalt": "72e81ab21a6e536aebbfe4210e043667",
+        "passphraseHash": "c435dcf3d1a314b6786fbd0aeafc20ef2ee58aeeea9fa50b909e37d17985e667",
+        "lastSynced": "2025-06-08T01:32:33.496Z"
+      }
+    ],
+    [
+      "PVX_37eae6d2794e0201a3951e261f8cae53",
+      {
+        "address": "PVX_37eae6d2794e0201a3951e261f8cae53",
+        "publicKey": "f1a32b58a3478f0b133c93ae60b3201df1a784b9aeb40e7a859d938a55849118",
+        "balance": "1000.0",
+        "createdAt": "2025-06-08T01:33:38.896Z",
+        "lastUpdated": "2025-06-08T01:33:38.896Z",
+        "passphraseSalt": "33daeff0a8882d1215578e322b3e6ce9",
+        "passphraseHash": "e421ca4554939dcf160d8ba70a1f0f302cc55bde3d1145829eeae36a09dc4a2b",
+        "lastSynced": "2025-06-08T01:33:38.896Z"
+      }
+    ],
+    [
+      "PVX_e3d1bd081e846a369d633762538dd3aa",
+      {
+        "address": "PVX_e3d1bd081e846a369d633762538dd3aa",
+        "publicKey": "c7e4bde3adb1f2c04b67e46b3815d1058c3ef390195bcb9e62c516c6b497400a",
+        "balance": "1000.0",
+        "createdAt": "2025-06-08T01:34:34.099Z",
+        "lastUpdated": "2025-06-08T01:34:34.099Z",
+        "passphraseSalt": "0bc7b6a5598470b81205cc532bd20369",
+        "passphraseHash": "f9183468e99fa7260abc596489d941bf5c7c85b0e7ed09d1d2dc791b59f78f15",
+        "lastSynced": "2025-06-08T01:34:34.099Z"
+      }
     ]
   ],
   "minerStats": [
@@ -26972,13 +27759,13 @@
       {
         "address": "PVX_1295b5490224b2eb64e9724dc091795a",
         "hashRate": "250.5",
-        "totalRewards": "6040000050",
+        "totalRewards": "6210000050",
         "blocksFound": 1,
         "isCurrentlyMining": true,
         "startTime": 1749335637763,
         "lastBlockTime": 1749332247379,
-        "blocksMined": 1207,
-        "lastBlockMined": 1749346143391
+        "blocksMined": 1241,
+        "lastBlockMined": 1749346501171
       }
     ]
   ],
