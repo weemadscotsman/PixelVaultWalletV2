@@ -449,6 +449,120 @@ export class MemBlockchainStorage {
       } : null
     };
   }
+
+  // Mining operations
+  get miners(): Map<string, any> {
+    return this.minerStats;
+  }
+
+  async startMining(walletAddress: string): Promise<any> {
+    const miner = {
+      address: walletAddress,
+      isActive: true,
+      hashRate: Math.floor(Math.random() * 100) + 50,
+      blocksFound: 0,
+      totalRewards: '0',
+      lastBlockTime: null,
+      startedAt: new Date()
+    };
+    
+    this.minerStats.set(walletAddress, miner);
+    await this.saveToFile();
+    
+    return {
+      success: true,
+      message: 'Mining started successfully',
+      miner
+    };
+  }
+
+  async stopMining(walletAddress: string): Promise<any> {
+    const miner = this.minerStats.get(walletAddress);
+    if (miner) {
+      miner.isActive = false;
+      miner.stoppedAt = new Date();
+      this.minerStats.set(walletAddress, miner);
+      await this.saveToFile();
+    }
+    
+    return {
+      success: true,
+      message: 'Mining stopped successfully'
+    };
+  }
+
+  // Staking rewards
+  async getStakeRewards(address: string): Promise<any> {
+    const stakes = await this.getStakesByAddress(address);
+    let totalRewards = '0';
+    let pendingRewards = '0';
+    let claimedRewards = '0';
+    
+    stakes.forEach(stake => {
+      if (stake.rewards) {
+        totalRewards = (parseFloat(totalRewards) + parseFloat(stake.rewards)).toString();
+        if (stake.isActive) {
+          pendingRewards = (parseFloat(pendingRewards) + parseFloat(stake.rewards)).toString();
+        } else {
+          claimedRewards = (parseFloat(claimedRewards) + parseFloat(stake.rewards)).toString();
+        }
+      }
+    });
+    
+    return {
+      totalRewards,
+      pendingRewards,
+      claimedRewards,
+      stakes: stakes.length
+    };
+  }
+
+  // Governance operations
+  async createProposal(proposal: any): Promise<any> {
+    const newProposal = {
+      id: `prop_${Date.now()}`,
+      ...proposal,
+      votes: { for: 0, against: 0, abstain: 0 },
+      status: 'active',
+      createdAt: new Date()
+    };
+    
+    // Store in a simple array for now
+    if (!this.proposals) {
+      this.proposals = [];
+    }
+    this.proposals.push(newProposal);
+    await this.saveToFile();
+    
+    return newProposal;
+  }
+
+  async voteOnProposal(proposalId: string, vote: string, voter: string): Promise<any> {
+    if (!this.proposals) {
+      this.proposals = [];
+    }
+    
+    const proposal = this.proposals.find(p => p.id === proposalId);
+    if (!proposal) {
+      throw new Error('Proposal not found');
+    }
+    
+    // Simple vote counting
+    if (vote === 'for') proposal.votes.for++;
+    else if (vote === 'against') proposal.votes.against++;
+    else if (vote === 'abstain') proposal.votes.abstain++;
+    
+    await this.saveToFile();
+    
+    return {
+      success: true,
+      proposal,
+      vote,
+      voter
+    };
+  }
+
+  private proposals: any[] = [];
 }
 
 // Create and export singleton instance

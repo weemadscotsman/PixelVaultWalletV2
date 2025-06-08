@@ -340,33 +340,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'Failed to fetch chain metrics' });
     }
   });
-  
-  // Wallet export endpoint
-  app.get('/api/wallet/:address/export', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      const wallets = await memBlockchainStorage.wallets;
-      const wallet = wallets.get(address);
-      
-      if (!wallet) {
-        return res.status(404).json({ error: 'Wallet not found' });
-      }
-      
-      const exportData = {
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        balance: wallet.balance,
-        createdAt: wallet.createdAt,
-        lastUpdated: wallet.lastUpdated,
-        exportTimestamp: new Date().toISOString(),
-        exportFormat: 'PVX_v1.0'
-      };
-      
-      res.json(exportData);
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to export wallet' });
-    }
-  });
 
   // Error handling middleware
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
