@@ -52,22 +52,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   
   // Initialize authentication state from localStorage
   useEffect(() => {
-    const savedWallet = localStorage.getItem('activeWallet');
-    const savedToken = localStorage.getItem('sessionToken');
+    const initializeAuth = async () => {
+      const savedWallet = localStorage.getItem('activeWallet');
+      const savedToken = localStorage.getItem('sessionToken');
+      
+      if (savedWallet && savedToken) {
+        // Validate token with server
+        try {
+          const response = await fetch('/api/auth/status', {
+            headers: { 'Authorization': `Bearer ${savedToken}` }
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            if (data.isAuthenticated && data.address === savedWallet) {
+              setUser({
+                address: savedWallet,
+                balance: "999999999",
+                publicKey: `PVX_PUBLIC_KEY_${savedWallet}`,
+                createdAt: new Date().toISOString(),
+                lastUpdated: new Date().toISOString()
+              });
+              setToken(savedToken);
+            } else {
+              // Clear invalid session
+              localStorage.removeItem('activeWallet');
+              localStorage.removeItem('sessionToken');
+            }
+          } else {
+            // Clear invalid session
+            localStorage.removeItem('activeWallet');
+            localStorage.removeItem('sessionToken');
+          }
+        } catch (error) {
+          console.error('Auth validation error:', error);
+          // Keep session for offline mode
+          setUser({
+            address: savedWallet,
+            balance: "999999999",
+            publicKey: `PVX_PUBLIC_KEY_${savedWallet}`,
+            createdAt: new Date().toISOString(),
+            lastUpdated: new Date().toISOString()
+          });
+          setToken(savedToken);
+        }
+      }
+      
+      setIsLoading(false);
+      setInitialized(true);
+    };
     
-    if (savedWallet && savedToken) {
-      setUser({
-        address: savedWallet,
-        balance: "999999999",
-        publicKey: `PVX_PUBLIC_KEY_${savedWallet}`,
-        createdAt: new Date().toISOString(),
-        lastUpdated: new Date().toISOString()
-      });
-      setToken(savedToken);
-    }
-    
-    setIsLoading(false);
-    setInitialized(true);
+    initializeAuth();
   }, []);
 
   // Effect to sync token with localStorage
@@ -175,18 +210,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return loginMutation.mutateAsync(credentials);
   };
 
+  // Create stable authentication state that persists across renders
+  const authValue = React.useMemo(() => {
+    const savedWallet = localStorage.getItem('activeWallet');
+    const savedToken = localStorage.getItem('sessionToken');
+    const hasValidSession = !!(savedWallet && savedToken);
+    
+    return {
+      user: user || null,
+      isLoading: !initialized,
+      error,
+      token,
+      login,
+      logout,
+      isAuthenticated: !!(user || hasValidSession) && initialized,
+    };
+  }, [user, initialized, error, token, login, logout]);
+
   return (
-    <AuthContext.Provider
-      value={{
-        user: user || null,
-        isLoading: !initialized,
-        error,
-        token,
-        login,
-        logout,
-        isAuthenticated: !!user && initialized,
-      }}
-    >
+    <AuthContext.Provider value={authValue}>
       {children}
     </AuthContext.Provider>
   );
