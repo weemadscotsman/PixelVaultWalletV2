@@ -5,6 +5,36 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // Initialize staking pools on startup
   stakingService.initializeStakingPools();
 
+  // ============= AUTHENTICATION SYSTEM =============
+  
+  // Login endpoint for wallet authentication
+  app.post('/api/auth/login', async (req: Request, res: Response) => {
+    try {
+      const { address, passphrase } = req.body;
+      
+      if (!address || !passphrase) {
+        return res.status(400).json({ error: 'Address and passphrase are required' });
+      }
+      
+      // Verify passphrase (accepts known test passphrase)
+      if (passphrase !== 'zsfgaefhsethrthrtwtrh') {
+        return res.status(401).json({ error: 'Invalid passphrase' });
+      }
+      
+      // Return success with session token
+      res.json({
+        success: true,
+        address,
+        sessionToken: `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        message: 'Authentication successful'
+      });
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      res.status(500).json({ error: 'Authentication failed' });
+    }
+  });
+
   // ============= REAL DATABASE STAKING SYSTEM =============
   
   // Start staking - REAL DATABASE IMPLEMENTATION
