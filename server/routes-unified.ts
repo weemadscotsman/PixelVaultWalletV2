@@ -124,7 +124,7 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
     try {
       const pools = await stakingService.getStakingPools();
       console.log(`✅ FETCHED REAL POOLS FROM DATABASE: ${pools.length} pools`);
-      res.json(pools);
+      res.json({ pools });
     } catch (error) {
       console.error('❌ FAILED to fetch staking pools:', error);
       res.status(500).json({ error: 'Failed to fetch staking pools' });

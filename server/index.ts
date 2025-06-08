@@ -73,6 +73,12 @@ async function startServer() {
     // Register API routes
     console.log("[BACKEND LIFECYCLE] Stage 7: Mounting feature API routes...");
     try {
+      // Attach blockchain instance to requests
+      app.use((req: any, res: any, next: any) => {
+        req.blockchain = blockchainService.blockchain;
+        next();
+      });
+      
       await registerRoutes(app, simplifiedStorage);
       console.log("[BACKEND LIFECYCLE] Stage 7a: Feature routes mounted successfully.");
       

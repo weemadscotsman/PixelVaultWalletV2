@@ -116,7 +116,7 @@ class PVXSystemValidator {
         data: {
           address: GENESIS_WALLET,
           poolId: '196b2afe445_d141a400',
-          amount: 25,
+          amount: 1000,
           passphrase: GENESIS_PASSPHRASE
         },
         expected: ['success', 'stakeId']
@@ -214,7 +214,7 @@ class PVXSystemValidator {
     const createStakeResult = await this.makeRequest('POST', '/api/stake/start', {
       address: GENESIS_WALLET,
       poolId: '196b2afe445_d141a400',
-      amount: 15,
+      amount: 500,
       passphrase: GENESIS_PASSPHRASE
     });
 
