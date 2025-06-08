@@ -290,17 +290,17 @@ export function BlockInspector() {
                     
                     <div>
                       <span className="text-muted-foreground text-sm">Size:</span>
-                      <div>{selectedBlock.size.toLocaleString()} bytes</div>
+                      <div>{selectedBlock.size ? selectedBlock.size.toLocaleString() : 'N/A'} bytes</div>
                     </div>
                     
                     <div>
                       <span className="text-muted-foreground text-sm">Transactions:</span>
-                      <div>{selectedBlock.totalTransactions}</div>
+                      <div>{selectedBlock.totalTransactions || 0}</div>
                     </div>
                     
                     <div>
                       <span className="text-muted-foreground text-sm">Height:</span>
-                      <div>#{selectedBlock.height}</div>
+                      <div>#{selectedBlock.height || 0}</div>
                     </div>
                   </div>
                 </div>
