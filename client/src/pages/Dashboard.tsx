@@ -34,6 +34,44 @@ export default function Dashboard() {
   const stakingLogger = usePanelLogger('Staking');
   const blockchainLogger = usePanelLogger('Blockchain');
 
+  // Real-time data logging effects
+  useEffect(() => {
+    dashboardLogger.logPanelData('INITIALIZATION', { 
+      activeSection, 
+      wallet: wallet?.address,
+      miningActive: miningStats?.isCurrentlyMining 
+    });
+  }, [dashboardLogger, activeSection, wallet, miningStats]);
+
+  useEffect(() => {
+    if (wallet) {
+      walletLogger.logPanelData('WALLET_DATA', {
+        address: wallet.address,
+        balance: wallet.balance,
+        lastUpdated: wallet.lastUpdated
+      });
+    }
+  }, [walletLogger, wallet]);
+
+  useEffect(() => {
+    if (miningStats) {
+      miningLogger.logPanelData('MINING_STATS', {
+        isActive: miningStats.isCurrentlyMining,
+        hashRate: miningStats.currentHashRate,
+        blocksFound: miningStats.blocksFound
+      });
+    }
+  }, [miningLogger, miningStats]);
+
+  useEffect(() => {
+    if (recentTransactions.length > 0) {
+      blockchainLogger.logPanelData('RECENT_TRANSACTIONS', {
+        count: recentTransactions.length,
+        latestTx: recentTransactions[0]
+      });
+    }
+  }, [blockchainLogger, recentTransactions]);
+
   // Handle hash change from sidebar navigation
   useEffect(() => {
     const handleHashChange = () => {
@@ -42,6 +80,7 @@ export default function Dashboard() {
         // Remove the # symbol to get the section name
         const section = hash.substring(1);
         setActiveSection(section);
+        dashboardLogger.logUserAction('SECTION_CHANGE', { from: activeSection, to: section });
       }
     };
 
@@ -52,7 +91,7 @@ export default function Dashboard() {
     return () => {
       window.removeEventListener('hashchange', handleHashChange);
     };
-  }, []);
+  }, [dashboardLogger, activeSection]);
 
   useEffect(() => {
     // Load wallet from storage on initial render
@@ -77,22 +116,30 @@ export default function Dashboard() {
   };
 
   const handleQuickCommand = (command: string) => {
+    dashboardLogger.logUserAction('TERMINAL_COMMAND', { command, walletConnected: !!wallet });
     addTerminalLine(`$ ${command}`);
     
     switch (command) {
       case 'start-mining':
         if (wallet) {
+          miningLogger.logUserAction('START_MINING_CLICKED', { walletAddress: wallet.address });
           startMining();
           setTimeout(() => {
             addTerminalLine('Mining operation initialized');
             addTerminalLine('Connected to PVX network');
             addTerminalLine('Calculating hash rate...');
+            miningLogger.logPanelData('MINING_STARTED', { timestamp: new Date().toISOString() });
           }, 500);
         } else {
+          miningLogger.logError('NO_WALLET_CONNECTED', 'start-mining command');
           addTerminalLine('Error: No wallet connected');
         }
         break;
       case 'stats':
+        blockchainLogger.logUserAction('STATS_REQUESTED', { 
+          currentHashRate: miningStats?.currentHashRate,
+          blocksMined: miningStats?.blocksMined 
+        });
         addTerminalLine('PVX Network Stats:');
         addTerminalLine('-------------------------');
         addTerminalLine('Current difficulty: 1243.45');
@@ -100,6 +147,7 @@ export default function Dashboard() {
         addTerminalLine(`Blocks mined: ${miningStats?.blocksMined || 0}`);
         break;
       default:
+        dashboardLogger.logError('UNKNOWN_COMMAND', command);
         addTerminalLine(`Unknown command: ${command}`);
     }
   };
