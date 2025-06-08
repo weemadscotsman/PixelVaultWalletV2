@@ -32,6 +32,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dev routes registration - PRIORITY FIX
   app.use('/api/dev', devRoutes);
   
+  // Mining routes - Direct implementation
+  app.get('/api/mine/status', async (req: Request, res: Response) => {
+    try {
+      const miners = await memBlockchainStorage.getMiners();
+      const activeMining = miners.filter(m => m.isActive);
+      res.json({
+        isActive: activeMining.length > 0,
+        activeMiners: activeMining.length,
+        totalMiners: miners.length,
+        globalHashRate: miners.reduce((sum, m) => sum + m.hashRate, 0),
+        difficulty: 4
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get mining status' });
+    }
+  });
+
+  app.post('/api/mine/start', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.body;
+      if (!address) {
+        return res.status(400).json({ error: 'Address is required' });
+      }
+      
+      const result = await memBlockchainStorage.startMining(address);
+      res.json({ success: true, message: 'Mining started', data: result });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to start mining' });
+    }
+  });
+
+  app.post('/api/mine/stop', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.body;
+      if (!address) {
+        return res.status(400).json({ error: 'Address is required' });
+      }
+      
+      const result = await memBlockchainStorage.stopMining(address);
+      res.json({ success: true, message: 'Mining stopped', data: result });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to stop mining' });
+    }
+  });
+
+  app.get('/api/mine/stats/:address', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const stats = await memBlockchainStorage.getMiningStats(address);
+      res.json(stats);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get mining stats' });
+    }
+  });
+
+  // Additional blockchain routes
+  app.get('/api/blockchain/block/latest', async (req: Request, res: Response) => {
+    try {
+      const latestBlock = await memBlockchainStorage.getLatestBlock();
+      res.json(latestBlock);
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get latest block' });
+    }
+  });
+
+  // Transaction routes
+  app.get('/api/tx/:address', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const transactions = await memBlockchainStorage.getTransactionsByAddress(address);
+      res.json({ transactions });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get transactions' });
+    }
+  });
+
+  // Governance routes
+  app.post('/api/governance/propose', async (req: Request, res: Response) => {
+    try {
+      const { title, description, proposer, votingPeriod } = req.body;
+      if (!title || !description || !proposer) {
+        return res.status(400).json({ error: 'Title, description, and proposer are required' });
+      }
+      
+      const proposal = await memBlockchainStorage.createProposal({
+        title,
+        description,
+        proposer,
+        votingPeriod: votingPeriod || 604800, // 7 days default
+        type: 'general'
+      });
+      res.json({ success: true, proposal });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to create proposal' });
+    }
+  });
+
+  app.post('/api/governance/vote', async (req: Request, res: Response) => {
+    try {
+      const { proposalId, voter, support } = req.body;
+      if (!proposalId || !voter || support === undefined) {
+        return res.status(400).json({ error: 'ProposalId, voter, and support are required' });
+      }
+      
+      const vote = await memBlockchainStorage.voteOnProposal(proposalId, voter, support);
+      res.json({ success: true, vote });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to cast vote' });
+    }
+  });
+
+  // Drops routes
+  app.post('/api/drops/claim', async (req: Request, res: Response) => {
+    try {
+      const { dropId, address } = req.body;
+      if (!dropId || !address) {
+        return res.status(400).json({ error: 'DropId and address are required' });
+      }
+      
+      const claim = await memBlockchainStorage.claimDrop(dropId, address);
+      res.json({ success: true, claim });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to claim drop' });
+    }
+  });
+
+  // Learning routes
+  app.post('/api/learning/complete', async (req: Request, res: Response) => {
+    try {
+      const { moduleId, userAddress, score } = req.body;
+      if (!moduleId || !userAddress) {
+        return res.status(400).json({ error: 'ModuleId and userAddress are required' });
+      }
+      
+      const completion = await memBlockchainStorage.completeModule(moduleId, userAddress, score || 100);
+      res.json({ success: true, completion });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to complete module' });
+    }
+  });
+
+  // Staking position route
+  app.get('/api/stake/positions/:address', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const positions = await memBlockchainStorage.getUserStakePositions(address);
+      res.json({ positions });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get stake positions' });
+    }
+  });
+
+  app.get('/api/stake/rewards/:address', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.params;
+      const rewards = await memBlockchainStorage.getStakingRewards(address);
+      res.json({ rewards });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to get staking rewards' });
+    }
+  });
+  
   // Direct route implementations for 100% connectivity - override any conflicts
   
   // Wallet export endpoint

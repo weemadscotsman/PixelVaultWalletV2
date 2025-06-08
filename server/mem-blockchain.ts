@@ -563,6 +563,139 @@ export class MemBlockchainStorage {
   }
 
   private proposals: any[] = [];
+
+  async getUserStakePositions(address: string) {
+    return this.stakingPositions.filter(pos => pos.walletAddress === address);
+  }
+
+  async getStakingRewards(address: string) {
+    const positions = await this.getUserStakePositions(address);
+    return positions.map(pos => ({
+      poolId: pos.poolId,
+      amount: pos.amount,
+      rewards: pos.rewards,
+      lastRewardClaim: pos.lastRewardClaim,
+      isActive: pos.isActive
+    }));
+  }
+
+  async claimDrop(dropId: string, address: string) {
+    const drop = this.drops.find(d => d.id === dropId);
+    if (!drop) {
+      throw new Error('Drop not found');
+    }
+
+    const existingClaim = this.dropClaims.find(c => c.dropId === dropId && c.userAddress === address);
+    if (existingClaim) {
+      throw new Error('Drop already claimed');
+    }
+
+    const claim = {
+      id: `claim_${Date.now()}`,
+      dropId,
+      userAddress: address,
+      amount: drop.amount,
+      claimedAt: new Date(),
+      txHash: `0x${Math.random().toString(16).substring(2, 18)}`
+    };
+
+    this.dropClaims.push(claim);
+    await this.saveToFile();
+    return claim;
+  }
+
+  async completeModule(moduleId: string, userAddress: string, score: number) {
+    const module = this.learningModules.find(m => m.id === moduleId);
+    if (!module) {
+      throw new Error('Module not found');
+    }
+
+    const existingProgress = this.userLearningProgress.find(
+      p => p.moduleId === moduleId && p.userAddress === userAddress
+    );
+
+    if (existingProgress) {
+      existingProgress.completed = true;
+      existingProgress.score = score;
+      existingProgress.completedAt = new Date();
+    } else {
+      this.userLearningProgress.push({
+        id: `progress_${Date.now()}`,
+        moduleId,
+        userAddress,
+        completed: true,
+        score,
+        startedAt: new Date(),
+        completedAt: new Date()
+      });
+    }
+
+    await this.saveToFile();
+    return { moduleId, userAddress, score, completed: true };
+  }
+
+  async voteOnProposal(proposalId: string, voter: string, support: boolean) {
+    const proposal = this.proposals.find(p => p.id === proposalId);
+    if (!proposal) {
+      throw new Error('Proposal not found');
+    }
+
+    const existingVote = this.governanceVotes.find(
+      v => v.proposalId === proposalId && v.voter === voter
+    );
+
+    if (existingVote) {
+      throw new Error('Already voted on this proposal');
+    }
+
+    const vote = {
+      id: `vote_${Date.now()}`,
+      proposalId,
+      voter,
+      support,
+      votedAt: new Date(),
+      weight: 1
+    };
+
+    this.governanceVotes.push(vote);
+
+    // Update proposal vote counts
+    if (support) {
+      proposal.votes.for++;
+    } else {
+      proposal.votes.against++;
+    }
+
+    await this.saveToFile();
+    return vote;
+  }
+
+  async createProposal(data: any) {
+    const proposal = {
+      id: `prop_${Date.now()}`,
+      title: data.title,
+      description: data.description,
+      proposer: data.proposer,
+      type: data.type || 'general',
+      status: 'active',
+      votingPeriod: data.votingPeriod || 604800, // 7 days
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + (data.votingPeriod || 604800) * 1000),
+      votes: {
+        for: 0,
+        against: 0,
+        abstain: 0
+      }
+    };
+
+    this.proposals.push(proposal);
+    await this.saveToFile();
+    return proposal;
+  }
+
+  private dropClaims: any[] = [];
+  private userLearningProgress: any[] = [];
+  private governanceVotes: any[] = [];
 }
 
 // Create and export singleton instance

@@ -105,6 +105,7 @@ export function Sidebar({ networkStats }: SidebarProps) {
     { path: "/learning", icon: "fa-graduation-cap", label: "Learning" },
     { path: "/terminal", icon: "fa-terminal", label: "Terminal" },
     { path: "/drops", icon: "fa-gift", label: "Drops" },
+    { path: "/dev", icon: "fa-code", label: "Dev" },
   ];
 
   return (

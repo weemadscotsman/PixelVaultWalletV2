@@ -253,7 +253,7 @@ export function BlockInspector() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <span className="text-muted-foreground text-sm">Nonce:</span>
-                      <div className="font-mono">{selectedBlock.nonce.toLocaleString()}</div>
+                      <div className="font-mono">{selectedBlock.nonce?.toLocaleString() || 'N/A'}</div>
                     </div>
                     
                     <div>
