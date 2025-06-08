@@ -94,32 +94,32 @@ async function startServer() {
       });
       console.log("[BACKEND LIFECYCLE] Stage 7c: API 404 handling middleware added.");
     
-      // Setup Vite in development mode
-      if (process.env.NODE_ENV === "development") {
-        console.log("[BACKEND LIFECYCLE] Stage 8: Setting up Vite for development...");
-        await setupVite(app, server);
-      } else {
-        console.log("[BACKEND LIFECYCLE] Stage 8: Setting up static serving for production...");
-        serveStatic(app);
-      }
+    // Setup Vite in development mode
+    if (process.env.NODE_ENV === "development") {
+      console.log("[BACKEND LIFECYCLE] Stage 8: Setting up Vite for development...");
+      await setupVite(app, server);
+    } else {
+      console.log("[BACKEND LIFECYCLE] Stage 8: Setting up static serving for production...");
+      serveStatic(app);
+    }
+    
+    // Start the server
+    server.listen(PORT, () => {
+      console.log(`✅ [BACKEND ONLINE] Server successfully listening on port ${PORT}`);
+      console.log(`   Test Ping: http://localhost:${PORT}/api/ping`);
+      console.log(`   Wallet Create (POST): http://localhost:${PORT}/api/wallet/create`);
+    });
+    
+    // Setup graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('[BACKEND LIFECYCLE] Shutting down server...');
+      server.close();
       
-      // Start the server
-      server.listen(PORT, () => {
-        console.log(`✅ [BACKEND ONLINE] Server successfully listening on port ${PORT}`);
-        console.log(`   Test Ping: http://localhost:${PORT}/api/ping`);
-        console.log(`   Wallet Create (POST): http://localhost:${PORT}/api/wallet/create`);
-      });
+      // Close the database connection
+      await closeDatabase();
       
-      // Setup graceful shutdown
-      process.on('SIGINT', async () => {
-        console.log('[BACKEND LIFECYCLE] Shutting down server...');
-        server.close();
-        
-        // Close the database connection
-        await closeDatabase();
-        
-        process.exit(0);
-      });
+      process.exit(0);
+    });
     } catch (routeError: any) {
       console.error("❌ [BACKEND CRITICAL ERROR] Failed to mount routes:", routeError.message);
       process.exit(1); // Exit if routes can't be mounted

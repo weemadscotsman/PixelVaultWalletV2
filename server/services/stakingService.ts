@@ -249,7 +249,7 @@ export class StakingService {
       await db.update(stakeRecords)
         .set({
           rewards: totalRewards.toString(),
-          lastRewardClaim: now,
+          lastRewardClaim: now.toString(),
           updatedAt: new Date()
         })
         .where(eq(stakeRecords.id, stakeId));
