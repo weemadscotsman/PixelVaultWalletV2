@@ -378,7 +378,7 @@ export function StakingCard() {
       <CreateStakeDialog 
         open={isCreateDialogOpen} 
         onOpenChange={setIsCreateDialogOpen}
-        stakingPools={stakingPools?.filter(pool => pool.active !== false) || [] as any[]}
+        stakingPools={Array.isArray(stakingPools) ? stakingPools.filter(pool => pool.active !== false) : []}
       />
       
       {/* Claim Reward Dialog */}
