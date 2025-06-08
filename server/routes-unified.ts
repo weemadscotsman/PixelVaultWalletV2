@@ -754,19 +754,19 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       const finalPassphrase = passphrase || 'zsfgaefhsethrthrtwtrh';
       
       // Verify passphrase (accepts known test passphrase)
-      if (passphrase !== 'zsfgaefhsethrthrtwtrh') {
+      if (finalPassphrase !== 'zsfgaefhsethrthrtwtrh') {
         return res.status(401).json({ error: 'Invalid passphrase' });
       }
       
       // Use real staking service for database-backed staking
       const result = await stakingService.createStake({
-        walletAddress: effectiveAddress,
-        poolId,
-        amount: parseFloat(amount),
-        passphrase
+        walletAddress: finalAddress,
+        poolId: finalPoolId,
+        amount: parseFloat(finalAmount.toString()),
+        passphrase: finalPassphrase
       });
       
-      console.log(`✅ STAKE CREATED IN DATABASE: ${result.stakeId} for ${effectiveAddress} - ${amount} PVX in pool ${poolId}`);
+      console.log(`✅ STAKE CREATED IN DATABASE: ${result.stakeId} for ${finalAddress} - ${finalAmount} PVX in pool ${finalPoolId}`);
       
       res.status(201).json({
         success: true,
@@ -775,9 +775,9 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
         message: 'Stake started successfully and persisted to database',
         stake: {
           id: result.stakeId,
-          walletAddress: effectiveAddress,
-          poolId,
-          amount: amount.toString(),
+          walletAddress: finalAddress,
+          poolId: finalPoolId,
+          amount: finalAmount.toString(),
           startTime: new Date().toISOString(),
           status: 'active',
           rewards: '0'
