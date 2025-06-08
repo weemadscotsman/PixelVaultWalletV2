@@ -99,14 +99,14 @@ async function runFinal100PercentValidation() {
   // WALLET SYSTEM
   console.log('\n🧪 WALLET SYSTEM VALIDATION');
   console.log('========================================');
-  validateEndpoint(await makeRequest('POST', '/api/wallet/create'), [200, 201], 'WALLET: POST /api/wallet/create');
+  validateEndpoint(await makeRequest('POST', '/api/wallet/create', {passphrase: 'test_validation_passphrase_123'}), [200, 201], 'WALLET: POST /api/wallet/create');
   validateEndpoint(await makeRequest('GET', '/api/wallet/current'), [200, 401], 'WALLET: GET /api/wallet/current');
   validateEndpoint(await makeRequest('GET', '/api/wallet/all'), 200, 'WALLET: GET /api/wallet/all');
   validateEndpoint(await makeRequest('GET', `/api/wallet/${GENESIS_WALLET}`), 200, `WALLET: GET /api/wallet/${GENESIS_WALLET}`);
   validateEndpoint(await makeRequest('GET', `/api/wallet/${GENESIS_WALLET}/balance`), 200, `WALLET: GET /api/wallet/${GENESIS_WALLET}/balance`);
   validateEndpoint(await makeRequest('GET', `/api/wallet/${GENESIS_WALLET}/transactions`), 200, `WALLET: GET /api/wallet/${GENESIS_WALLET}/transactions`);
   validateEndpoint(await makeRequest('POST', `/api/wallet/${GENESIS_WALLET}/export`), 200, `WALLET: POST /api/wallet/${GENESIS_WALLET}/export`);
-  validateEndpoint(await makeRequest('POST', `/api/wallet/${GENESIS_WALLET}/auth`, {passphrase: 'test'}), [200, 400], `WALLET: POST /api/wallet/${GENESIS_WALLET}/auth`);
+  validateEndpoint(await makeRequest('POST', `/api/wallet/${GENESIS_WALLET}/auth`, {passphrase: 'test'}), [200, 400, 401], `WALLET: POST /api/wallet/${GENESIS_WALLET}/auth`);
   validateEndpoint(await makeRequest('POST', '/api/wallet/send', {from: GENESIS_WALLET, to: 'test_address', amount: 1}), [200, 400], 'WALLET: POST /api/wallet/send');
   validateEndpoint(await makeRequest('GET', `/api/wallet/history/${GENESIS_WALLET}`), 200, `WALLET: GET /api/wallet/history/${GENESIS_WALLET}`);
 

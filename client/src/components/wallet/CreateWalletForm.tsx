@@ -84,14 +84,14 @@ export function CreateWalletForm() {
       
       const data = await res.json();
       setWalletCreated({
-        address: data.address,
-        publicKey: data.pubkey,
+        address: data.wallet.address,
+        publicKey: data.wallet.publicKey,
         passphrase: values.passphrase
       });
       
       toast({
         title: "Wallet created successfully",
-        description: `Your new wallet address is: ${data.address}. SAVE YOUR PASSPHRASE! You'll need it to login.`,
+        description: `Your new wallet address is: ${data.wallet.address}. SAVE YOUR PASSPHRASE! You'll need it to login.`,
       });
       
       // Keep the passphrase visible in the form for now
