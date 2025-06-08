@@ -12,6 +12,7 @@ import utrRoutes from './routes/utr-routes';
 import dropsRoutes from './routes/drops';
 import governanceRoutes from './routes/governance';
 import learningRoutes from './routes/learning';
+import devRoutes from './routes/dev';
 import { memBlockchainStorage } from './mem-blockchain';
 
 export async function registerRoutes(app: Express): Promise<Server> {

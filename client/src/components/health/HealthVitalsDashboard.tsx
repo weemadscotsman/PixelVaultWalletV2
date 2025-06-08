@@ -375,7 +375,7 @@ export default function HealthVitalsDashboard() {
               
               <div className="bg-orange-900/20 rounded-lg p-4">
                 <h4 className="text-orange-400 text-sm font-medium mb-2">Error Rate</h4>
-                <div className="text-2xl font-bold text-white">{healthMetrics.errorRate.toFixed(2)}%</div>
+                <div className="text-2xl font-bold text-white">{(healthMetrics.errorRate || 0).toFixed(2)}%</div>
                 <div className="text-xs text-gray-400">Last 24 hours</div>
                 <Progress value={healthMetrics.errorRate} className="mt-2 h-2" />
               </div>
