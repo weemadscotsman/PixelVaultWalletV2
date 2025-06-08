@@ -10,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Terminal as TerminalIcon, AlertCircle, Check, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatTokenAmount } from "@/lib/format";
+import { useLocation } from "wouter";
 
 // Generate a random hash for simulation purposes
 function generateHash(length = 64) {
@@ -31,6 +32,7 @@ interface CommandResponse {
 export default function TerminalPage() {
   const { wallet } = useWallet();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [commandHistory, setCommandHistory] = useState<CommandResponse[]>([
     {
       command: "help",
@@ -323,6 +325,25 @@ export default function TerminalPage() {
           status: "info",
           timestamp: new Date()
         };
+        break;
+
+      case "drop":
+        if (args.length > 0 && args[0] === "--ycata") {
+          response = {
+            command: cmd,
+            response: "🔓 DROP_ACCESS_GRANTED\n💀 Unsealing YCATA.EXE...\n💸 This hoodie costs more than your GPU.\n🚀 Redirecting to secret drops terminal...",
+            status: "success",
+            timestamp: new Date()
+          };
+          setTimeout(() => setLocation('/ycata'), 2000);
+        } else {
+          response = {
+            command: cmd,
+            response: "Error: Invalid drop command. Available flags:\n--ycata (requires special access)",
+            status: "error",
+            timestamp: new Date()
+          };
+        }
         break;
         
       default:
