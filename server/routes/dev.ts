@@ -5,10 +5,14 @@ const router = express.Router();
 
 // Add root dev endpoint
 router.get('/', (req, res) => {
-  res.json({ status: 'Dev API operational', endpoints: ['/services/status', '/chain/metrics'] });
+  res.json({ 
+    status: 'Dev API operational', 
+    endpoints: ['/api/dev/services/status', '/api/dev/chain/metrics'],
+    timestamp: new Date().toISOString()
+  });
 });
 
-// Dev services status endpoint - EXACT PATH MATCH
+// Dev services status endpoint
 router.get('/services/status', async (req, res) => {
   try {
     const blockchainStatus = await memBlockchainStorage.getBlockchainStatus();
