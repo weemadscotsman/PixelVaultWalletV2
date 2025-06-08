@@ -1,59 +1,71 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { WebWorkerMiner, getMiningStats, getMiningRewards } from "@/lib/mining";
-import { getHalvingProgress, getRewardDistribution, getCurrentBlockReward } from "@/lib/blockchain";
-import { MiningReward, MiningStats } from "@/types/blockchain";
-import { useWallet } from "./use-wallet";
-import { useToast } from "./use-toast";
+import { useState, useEffect, useRef } from 'react';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { useToast } from '@/hooks/use-toast';
+import { useWallet } from '@/hooks/use-wallet';
+import { queryClient } from '@/lib/queryClient';
 
 export type HardwareType = 'cpu' | 'gpu' | 'asic';
+
+export interface MiningStats {
+  address: string;
+  hashRate: string;
+  blocksFound: number;
+  totalRewards: string;
+  isActive: boolean;
+  startedAt: Date;
+  lastBlockTime: Date | null;
+}
+
+export interface MiningReward {
+  id: string;
+  amount: string;
+  timestamp: Date;
+  blockHeight: number;
+  type: 'block_reward' | 'transaction_fee';
+}
 
 export function useMining() {
   const { wallet, refreshBalance } = useWallet();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-
+  
   // Mining state
   const [isMining, setIsMining] = useState(false);
   const [hashRate, setHashRate] = useState(0);
   const [blocksMined, setBlocksMined] = useState(0);
-  const [threads, setThreads] = useState(2);
-  const [hardwareType, setHardwareType] = useState<HardwareType>('cpu');
   const [isStarting, setIsStarting] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
-  const [blockReward, setBlockReward] = useState<number>(150);
-  const [halvingProgress, setHalvingProgress] = useState<{current: number, total: number} | null>(null);
-  const [nextHalvingEstimate, setNextHalvingEstimate] = useState<string>("");
-  const [rewardDistribution, setRewardDistribution] = useState<{
-    miner: number;
-    governance: number;
-    staking: number;
-    reserve: number;
-  } | null>(null);
-  const [miningRewards, setMiningRewards] = useState<MiningReward[]>([]);
+  const [threads, setThreads] = useState(2);
+  const [hardwareType, setHardwareType] = useState<HardwareType>('cpu');
+  
+  // Additional mining data
   const [miningStats, setMiningStats] = useState<MiningStats | null>(null);
+  const [miningRewards, setMiningRewards] = useState<MiningReward[]>([]);
+  const [blockReward, setBlockReward] = useState('5000000000');
+  const [halvingProgress, setHalvingProgress] = useState({ current: 0, total: 210000 });
+  const [nextHalvingEstimate, setNextHalvingEstimate] = useState('');
+  const [rewardDistribution, setRewardDistribution] = useState({
+    miner: 60,
+    governance: 15,
+    staking: 15,
+    reserve: 10
+  });
 
-  // Reference to the miner instance
-  const minerRef = useRef<WebWorkerMiner | null>(null);
+  const minerRef = useRef<Worker | null>(null);
 
   // Fetch current block reward
   const blockRewardQuery = useQuery({
     queryKey: ['/api/mining/block-reward'],
-    staleTime: 60000,
+    staleTime: 300000, // 5 minutes
   });
   
-  // Update state when block reward data changes
   useEffect(() => {
     if (blockRewardQuery.data && typeof blockRewardQuery.data === 'object' && blockRewardQuery.data !== null) {
-      const data = blockRewardQuery.data as { reward: number };
-      if ('reward' in data && typeof data.reward === 'number') {
+      const data = blockRewardQuery.data as { reward: string };
+      if ('reward' in data && typeof data.reward === 'string') {
         setBlockReward(data.reward);
       }
     }
-    if (blockRewardQuery.error) {
-      console.error("Error fetching block reward:", blockRewardQuery.error);
-    }
-  }, [blockRewardQuery.data, blockRewardQuery.error]);
+  }, [blockRewardQuery.data]);
 
   // Fetch halving progress
   const halvingProgressQuery = useQuery({
@@ -61,7 +73,6 @@ export function useMining() {
     staleTime: 60000,
   });
   
-  // Update state when halving progress data changes
   useEffect(() => {
     if (halvingProgressQuery.data && typeof halvingProgressQuery.data === 'object' && halvingProgressQuery.data !== null) {
       const data = halvingProgressQuery.data as { current: number; total: number; nextEstimate: string };
@@ -78,10 +89,7 @@ export function useMining() {
         setNextHalvingEstimate(data.nextEstimate);
       }
     }
-    if (halvingProgressQuery.error) {
-      console.error("Error fetching halving progress:", halvingProgressQuery.error);
-    }
-  }, [halvingProgressQuery.data, halvingProgressQuery.error]);
+  }, [halvingProgressQuery.data]);
 
   // Fetch reward distribution
   const rewardDistributionQuery = useQuery({
@@ -89,7 +97,6 @@ export function useMining() {
     staleTime: 60000,
   });
   
-  // Update state when reward distribution data changes
   useEffect(() => {
     if (rewardDistributionQuery.data && typeof rewardDistributionQuery.data === 'object' && rewardDistributionQuery.data !== null) {
       const data = rewardDistributionQuery.data as {
@@ -100,64 +107,79 @@ export function useMining() {
       };
       setRewardDistribution(data);
     }
-    if (rewardDistributionQuery.error) {
-      console.error("Error fetching reward distribution:", rewardDistributionQuery.error);
-    }
-  }, [rewardDistributionQuery.data, rewardDistributionQuery.error]);
+  }, [rewardDistributionQuery.data]);
 
   // Fetch mining stats when wallet is available
   const miningStatsQuery = useQuery({
-    queryKey: [`/api/mining/stats?address=${wallet?.publicAddress || ''}`],
-    enabled: !!wallet,
-    staleTime: 30000,
+    queryKey: [`/api/blockchain/mining/stats/${wallet?.address || ''}`],
+    enabled: !!wallet?.address,
+    staleTime: 5000,
+    refetchInterval: 5000, // Refresh every 5 seconds for real-time updates
   });
   
   // Update state when mining stats data changes
   useEffect(() => {
     if (miningStatsQuery.data) {
-      const data = miningStatsQuery.data as MiningStats;
-      setMiningStats(data);
-      setBlocksMined(data.blocksMined);
-      if (data.isCurrentlyMining && !isMining) {
-        setIsMining(true);
-        setHashRate(data.currentHashRate || 0);
+      const data = miningStatsQuery.data as any;
+      console.log('Mining stats received:', data);
+      
+      // Set mining status based on backend response
+      const isCurrentlyMining = data.status === 'active';
+      setIsMining(isCurrentlyMining);
+      
+      // Parse hash rate from string format like "42.1 TH/s"
+      if (data.hashRate && typeof data.hashRate === 'string') {
+        const hashRateMatch = data.hashRate.match(/[\d.]+/);
+        if (hashRateMatch) {
+          setHashRate(parseFloat(hashRateMatch[0]));
+        }
       }
+      
+      // Set blocks mined
+      if (data.blocksMinedToday) {
+        setBlocksMined(data.blocksMinedToday);
+      }
+      
+      // Create mining stats object compatible with existing code
+      const miningStatsData: MiningStats = {
+        address: data.address || wallet?.address || '',
+        hashRate: data.hashRate || '0 MH/s',
+        blocksFound: data.totalBlocksMined || 0,
+        totalRewards: data.totalRewards || '0',
+        isActive: isCurrentlyMining,
+        startedAt: new Date(),
+        lastBlockTime: null
+      };
+      
+      setMiningStats(miningStatsData);
     }
-    if (miningStatsQuery.error) {
-      console.error("Error fetching mining stats:", miningStatsQuery.error);
-    }
-  }, [miningStatsQuery.data, miningStatsQuery.error, isMining]);
+  }, [miningStatsQuery.data, wallet?.address]);
 
   // Fetch mining rewards when wallet is available
   const miningRewardsQuery = useQuery({
-    queryKey: [`/api/mining/rewards?address=${wallet?.publicAddress || ''}`],
+    queryKey: [`/api/mining/rewards?address=${wallet?.address || ''}`],
     enabled: !!wallet,
     staleTime: 30000,
   });
   
-  // Update state when mining rewards data changes
   useEffect(() => {
     if (miningRewardsQuery.data) {
       setMiningRewards(miningRewardsQuery.data as MiningReward[]);
     }
-    if (miningRewardsQuery.error) {
-      console.error("Error fetching mining rewards:", miningRewardsQuery.error);
-    }
-  }, [miningRewardsQuery.data, miningRewardsQuery.error]);
+  }, [miningRewardsQuery.data]);
 
   // Start mining mutation
   const { mutate: startMiningMutation } = useMutation({
     mutationFn: async () => {
       if (!wallet) throw new Error("No wallet available");
       
-      // Make API call to the blockchain service with hardware type
       const res = await fetch('/api/blockchain/mining/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          address: wallet.publicAddress,
+          address: wallet.address,
           hardwareType: hardwareType
         })
       });
@@ -170,17 +192,24 @@ export function useMining() {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/mining/stats?address=${wallet?.publicAddress || ''}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/blockchain/mining/stats/${wallet?.address || ''}`] });
+      refreshBalance();
+      
+      toast({
+        title: "Mining Started",
+        description: "Successfully started mining operations"
+      });
+      
+      setIsMining(true);
+      setHashRate(10);
+      setIsStarting(false);
     },
     onError: (error) => {
-      console.error("Error starting mining:", error);
       toast({
-        title: "Mining Start Failed",
-        description: error instanceof Error ? error.message : "Failed to start mining",
-        variant: "destructive",
+        title: "Mining Failed",
+        description: error.message,
+        variant: "destructive"
       });
-      setIsMining(false);
-      setHashRate(0);
       setIsStarting(false);
     }
   });
@@ -190,14 +219,13 @@ export function useMining() {
     mutationFn: async () => {
       if (!wallet) throw new Error("No wallet available");
       
-      // Make API call to the blockchain service to stop mining
       const res = await fetch('/api/blockchain/mining/stop', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          address: wallet.publicAddress
+          address: wallet.address
         })
       });
       
@@ -209,186 +237,108 @@ export function useMining() {
       return await res.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [`/api/mining/stats?address=${wallet?.publicAddress || ''}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/blockchain/mining/stats/${wallet?.address || ''}`] });
       refreshBalance();
+      
+      toast({
+        title: "Mining Stopped",
+        description: "Successfully stopped mining operations"
+      });
+      
+      setIsMining(false);
+      setHashRate(0);
+      setIsStopping(false);
     },
     onError: (error) => {
-      console.error("Error stopping mining:", error);
       toast({
-        title: "Mining Stop Failed",
-        description: error instanceof Error ? error.message : "Failed to stop mining",
-        variant: "destructive",
+        title: "Stop Mining Failed",
+        description: error.message,
+        variant: "destructive"
       });
       setIsStopping(false);
     }
   });
 
   // Start mining function
-  const startMining = useCallback(() => {
+  const startMining = () => {
     if (!wallet || isMining || isStarting) return;
-
-    try {
-      setIsStarting(true);
-
-      // Create a new miner instance if needed
-      if (!minerRef.current) {
-        minerRef.current = new WebWorkerMiner(
-          wallet.publicAddress,
-          (rate) => setHashRate(rate),
-          (blockHeight, reward) => {
-            setBlocksMined((prev) => prev + 1);
-            
-            // Add new reward
-            const newReward: MiningReward = {
-              id: `${Date.now()}`,
-              blockHeight,
-              amount: reward,
-              timestamp: new Date(),
-              address: wallet.publicAddress
-            };
-            
-            setMiningRewards((prev) => [newReward, ...prev]);
-            
-            // Update wallet balance
-            refreshBalance();
-            
-            // Show notification
-            toast({
-              title: "Block Found!",
-              description: `You mined block #${blockHeight} and earned ${reward} PVX`,
-            });
-          }
-        );
-      }
-
-      // Apply hardware-specific settings
-      let effectiveThreads = threads;
-      let speedMultiplier = 1;
-      
-      switch(hardwareType) {
-        case 'cpu':
-          speedMultiplier = 1;
-          break;
-        case 'gpu':
-          speedMultiplier = 15; // GPUs are ~15x faster than CPUs
-          effectiveThreads = Math.min(threads * 4, 32); // GPUs can handle more parallel work
-          break;
-        case 'asic':
-          speedMultiplier = 100; // ASICs are ~100x faster than CPUs
-          effectiveThreads = Math.min(threads * 8, 64); // ASICs are highly parallel
-          break;
-      }
-
-      // Start mining with selected threads, configured speed multiplier and hardware type
-      minerRef.current.start(effectiveThreads, speedMultiplier, hardwareType);
-      
-      // Report to server
-      startMiningMutation();
-      
-      // Update state
-      setIsMining(true);
-      setIsStarting(false);
-      
-      toast({
-        title: "Mining Started",
-        description: `Mining started with ${hardwareType.toUpperCase()} (${threads} threads)`,
-      });
-    } catch (error) {
-      console.error("Error starting mining:", error);
-      toast({
-        title: "Mining Start Failed",
-        description: error instanceof Error ? error.message : "Failed to start mining",
-        variant: "destructive",
-      });
-      setIsStarting(false);
+    
+    setIsStarting(true);
+    
+    // Cleanup any existing miner
+    if (minerRef.current) {
+      minerRef.current.terminate();
     }
-  }, [wallet, isMining, isStarting, threads, hardwareType, startMiningMutation, refreshBalance, toast]);
+    
+    // Start mining process
+    startMiningMutation();
+  };
 
   // Stop mining function
-  const stopMining = useCallback(() => {
+  const stopMining = () => {
     if (!isMining || isStopping) return;
-
-    try {
-      setIsStopping(true);
-
-      // Stop mining worker if it exists
-      if (minerRef.current) {
-        minerRef.current.stop();
-      }
-      
-      // Report to server
-      if (wallet) {
-        stopMiningMutation();
-      }
-      
-      // Update state
-      setIsMining(false);
-      setHashRate(0);
-      setIsStopping(false);
-      
-      toast({
-        title: "Mining Stopped",
-        description: "Mining has been stopped",
-      });
-    } catch (error) {
-      console.error("Error stopping mining:", error);
-      toast({
-        title: "Mining Stop Failed",
-        description: error instanceof Error ? error.message : "Failed to stop mining",
-        variant: "destructive",
-      });
-      setIsStopping(false);
-    }
-  }, [isMining, isStopping, wallet, stopMiningMutation, toast]);
-
-  // Function to refresh all mining data
-  const refreshAllMiningData = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: [`/api/mining/stats?address=${wallet?.publicAddress || ''}`] });
-    queryClient.invalidateQueries({ queryKey: [`/api/mining/rewards?address=${wallet?.publicAddress || ''}`] });
-    refreshBalance();
-  }, [queryClient, wallet, refreshBalance]);
-
-  // Refresh data periodically while mining
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
     
-    if (wallet && isMining) {
-      interval = setInterval(() => {
-        refreshAllMiningData();
-      }, 30000); // Update every 30 seconds
+    setIsStopping(true);
+    
+    // Cleanup miner worker
+    if (minerRef.current) {
+      minerRef.current.terminate();
+      minerRef.current = null;
     }
     
-    return () => {
-      if (interval) clearInterval(interval);
-    };
-  }, [wallet, isMining, refreshAllMiningData]);
+    // Stop mining process
+    stopMiningMutation();
+  };
 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (minerRef.current) {
-        minerRef.current.stop();
+        minerRef.current.terminate();
       }
     };
   }, []);
 
+  // Auto-refresh mining stats and balance when mining
+  useEffect(() => {
+    if (!wallet || !isMining) return;
+    
+    const interval = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: [`/api/blockchain/mining/stats/${wallet.address}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/wallet/${wallet.address}`] });
+      refreshBalance();
+      queryClient.invalidateQueries({ queryKey: [`/api/mining/rewards?address=${wallet.address}`] });
+    }, 30000); // Refresh every 30 seconds
+    
+    return () => clearInterval(interval);
+  }, [wallet, isMining, refreshBalance]);
+
   return {
+    // Mining state
     isMining,
     hashRate,
     blocksMined,
+    isStarting,
+    isStopping,
     threads,
     setThreads,
     hardwareType,
     setHardwareType,
+    
+    // Actions
     startMining,
     stopMining,
-    isStarting,
-    isStopping,
+    
+    // Data
+    miningStats,
+    miningRewards,
     blockReward,
     halvingProgress,
     nextHalvingEstimate,
     rewardDistribution,
-    miningRewards,
-    miningStats,
+    
+    // Query states
+    isLoading: miningStatsQuery.isLoading,
+    error: miningStatsQuery.error
   };
 }
