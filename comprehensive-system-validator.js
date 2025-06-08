@@ -25,7 +25,7 @@ const COMPLETE_ENDPOINT_REGISTRY = {
     { method: 'POST', path: '/api/auth/logout', expected: 200 }
   ],
   wallet: [
-    { method: 'POST', path: '/api/wallet/create', expected: 201 },
+    { method: 'POST', path: '/api/wallet/create', data: { passphrase: 'test_validation_passphrase' }, expected: 201 },
     { method: 'GET', path: '/api/wallet/current', expected: 401 },
     { method: 'GET', path: '/api/wallet/all', expected: 200 },
     { method: 'GET', path: `/api/wallet/${TEST_ADDRESS}`, expected: 200 },
