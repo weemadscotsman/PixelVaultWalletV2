@@ -200,6 +200,78 @@ export class SimplifiedStorage {
     return null;
   }
 
+  // Badge operations
+  async getAllBadges() {
+    try {
+      const badges = await db.select().from(schema.badges);
+      return badges;
+    } catch (error) {
+      console.error('Failed to get all badges:', error);
+      return [];
+    }
+  }
+
+  async getUserBadges(address: string) {
+    try {
+      const userBadges = await db
+        .select({
+          id: schema.badges.id,
+          name: schema.badges.name,
+          description: schema.badges.description,
+          icon: schema.badges.icon,
+          category: schema.badges.category,
+          earnedAt: schema.userBadges.earnedAt
+        })
+        .from(schema.userBadges)
+        .innerJoin(schema.badges, eq(schema.badges.id, schema.userBadges.badgeId))
+        .where(eq(schema.userBadges.userAddress, address));
+      
+      return userBadges;
+    } catch (error) {
+      console.error('Failed to get user badges:', error);
+      return [];
+    }
+  }
+
+  async awardBadge(userAddress: string, badgeId: string) {
+    try {
+      const existingBadge = await db
+        .select()
+        .from(schema.userBadges)
+        .where(
+          and(
+            eq(schema.userBadges.userAddress, userAddress),
+            eq(schema.userBadges.badgeId, badgeId)
+          )
+        );
+
+      if (existingBadge.length === 0) {
+        await db.insert(schema.userBadges).values({
+          userAddress,
+          badgeId,
+          earnedAt: new Date()
+        });
+        console.log(`✅ BADGE AWARDED: ${badgeId} to ${userAddress}`);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to award badge:', error);
+      return false;
+    }
+  }
+
+  // Drop operations
+  async getAllDrops() {
+    try {
+      const drops = await db.select().from(schema.drops);
+      return drops;
+    } catch (error) {
+      console.error('Failed to get all drops:', error);
+      return [];
+    }
+  }
+
   async searchUserFeedback() {
     return [];
   }
