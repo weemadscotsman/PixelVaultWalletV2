@@ -237,7 +237,7 @@ export function StakingCard() {
           </div>
           <div key="available-pools" className="bg-blue-900/10 border border-blue-900/30 rounded-md p-4 flex flex-col h-full justify-between">
             <p className="text-sm text-gray-400">Available Pools</p>
-            <p className="text-xl font-bold text-blue-300 mt-2">{stakingPools?.filter(p => p.active !== false).length || 0}</p>
+            <p className="text-xl font-bold text-blue-300 mt-2">{Array.isArray(stakingPools) ? stakingPools.filter(p => p.active !== false).length : 0}</p>
           </div>
         </div>
         

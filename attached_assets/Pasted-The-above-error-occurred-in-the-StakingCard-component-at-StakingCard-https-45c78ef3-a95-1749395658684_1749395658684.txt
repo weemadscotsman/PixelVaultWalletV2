@@ -1,0 +1,58 @@
+The above error occurred in the <StakingCard> component:
+
+    at StakingCard (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/wallet/StakingCard.tsx:46:28)
+    at div
+    at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BOL2CCOG.js?v=8d7ff1d2:42:13
+    at Presence (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-VCJEE5DL.js?v=8d7ff1d2:24:11)
+    at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=8d7ff1d2:176:13
+    at _c5 (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/ui/tabs.tsx:72:12)
+    at div
+    at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-BOL2CCOG.js?v=8d7ff1d2:42:13
+    at Provider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=8d7ff1d2:38:15)
+    at https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=8d7ff1d2:54:7
+    at div
+    at div
+    at div
+    at div
+    at main
+    at div
+    at div
+    at div
+    at PageLayout (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/layout/PageLayout.tsx:24:30)
+    at WalletPage (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/pages/WalletPage.tsx:52:60)
+    at Route (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8d7ff1d2:323:16)
+    at ProtectedRoute (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/auth/ProtectedRoute.tsx:22:34)
+    at Switch (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8d7ff1d2:379:17)
+    at div
+    at PresenceChild (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=8d7ff1d2:7742:24)
+    at AnimatePresence (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/framer-motion.js?v=8d7ff1d2:7800:26)
+    at Router (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/App.tsx?v=yUIhMZO2sfv5bTP2p-VsV:61:22)
+    at Provider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=8d7ff1d2:38:15)
+    at TooltipProvider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=8d7ff1d2:64:5)
+    at AuthProvider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/hooks/use-auth.tsx:26:32)
+    at V (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/next-themes.js?v=8d7ff1d2:44:25)
+    at J (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/next-themes.js?v=8d7ff1d2:42:18)
+    at QueryClientProvider (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=8d7ff1d2:2805:3)
+    at App (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/App.tsx?v=yUIhMZO2sfv5bTP2p-VsV:253:21)
+
+Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries.
+stakingPools?.filter is not a function
+at StakingCard (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/wallet/StakingCard.tsx:381:223)
+at renderWithHooks (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:11548:26)
+at mountIndeterminateComponent (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:14926:21)
+at beginWork (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:15914:22)
+at beginWork$1 (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19753:22)
+at performUnitOfWork (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19198:20)
+at workLoopSync (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19137:13)
+at renderRootSync (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19116:15)
+at recoverFromConcurrentError (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:18736:28)
+at performSyncWorkOnRoot (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:18879:28)
+Global error: 
+TypeError {_suppressLogging: true}
+_suppressLogging: true
+message: "stakingPools?.filter is not a function"
+stack: "TypeError: stakingPools?.filter is not a function↵ at StakingCard (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/src/components/wallet/StakingCard.tsx:381:223)↵ at renderWithHooks (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:11548:26)↵ at mountIndeterminateComponent (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:14926:21)↵ at beginWork (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:15914:22)↵ at beginWork$1 (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19753:22)↵ at performUnitOfWork (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19198:20)↵ at workLoopSync (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19137:13)↵ at renderRootSync (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:19116:15)↵ at recoverFromConcurrentError (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:18736:28)↵ at performSyncWorkOnRoot (https://45c78ef3-a958-4bea-8b99-e6ad0ddfe44f-00-24g6r3k96rr84.sisko.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-RPCDYKBN.js?v=8d7ff1d2:18879:28)"
+get stack: ƒ ()
+set stack: ƒ ()
+[[Prototype]]: Object
