@@ -28,6 +28,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/drops', dropsRoutes);
   app.use('/api/governance', governanceRoutes);
   app.use('/api/learning', learningRoutes);
+  app.use('/api/dev', devRoutes);
 
   // Add a simple health check endpoint
   app.get('/api/health', (_req: Request, res: Response) => {

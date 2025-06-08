@@ -1305,6 +1305,59 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
     }
   });
 
+  // Companions endpoint
+  app.get('/api/companions', async (req: Request, res: Response) => {
+    try {
+      const companions = [
+        {
+          id: 'comp_001',
+          name: 'Cipher',
+          type: 'Mining Specialist',
+          level: 15,
+          xp: 12500,
+          skills: ['Advanced Mining', 'Block Validation', 'Hash Optimization'],
+          bondLevel: 'Elite',
+          status: 'active',
+          earnings: '2,340 PVX',
+          efficiency: 94.7,
+          lastActive: new Date().toISOString(),
+          personality: 'analytical'
+        },
+        {
+          id: 'comp_002', 
+          name: 'Vector',
+          type: 'Staking Guardian',
+          level: 12,
+          xp: 8750,
+          skills: ['Stake Management', 'Reward Optimization', 'Pool Analytics'],
+          bondLevel: 'Expert',
+          status: 'active',
+          earnings: '1,890 PVX',
+          efficiency: 91.2,
+          lastActive: new Date().toISOString(),
+          personality: 'protective'
+        },
+        {
+          id: 'comp_003',
+          name: 'Matrix',
+          type: 'Transaction Analyzer',
+          level: 18,
+          xp: 16200,
+          skills: ['Pattern Recognition', 'Risk Assessment', 'Fee Optimization'],
+          bondLevel: 'Master',
+          status: 'active',
+          earnings: '3,120 PVX',
+          efficiency: 97.8,
+          lastActive: new Date().toISOString(),
+          personality: 'strategic'
+        }
+      ];
+      res.json({ companions, totalCompanions: companions.length });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch companions' });
+    }
+  });
+
   // ============= LEARNING API ENDPOINTS =============
   
   // Get learning modules

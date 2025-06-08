@@ -53,8 +53,8 @@ router.get('/services/status', async (req, res) => {
 router.get('/chain/metrics', async (req, res) => {
   try {
     const latestBlock = await memBlockchainStorage.getLatestBlock();
-    const recentBlocks = await memBlockchainStorage.getBlocks(10);
-    const recentTransactions = await memBlockchainStorage.getTransactions(50);
+    const recentBlocks = await memBlockchainStorage.getAllBlocks();
+    const recentTransactions = await memBlockchainStorage.getAllTransactions();
     
     const chainMetrics = {
       overview: {
