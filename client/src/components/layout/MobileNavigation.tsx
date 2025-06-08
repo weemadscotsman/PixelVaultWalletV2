@@ -19,20 +19,19 @@ export function MobileNavigation() {
   return (
     <div className="md:hidden flex justify-between mb-4 bg-sidebar p-2 rounded-md overflow-x-auto whitespace-nowrap">
       {navItems.map((item) => (
-        <Link key={item.id} href={`/${item.id}`}>
-          <a
-            href={item.id}
-            className={cn(
-              "px-4 py-2 text-center flex-shrink-0 rounded-md",
-              isActive(item.id)
-                ? "text-white bg-primary"
-                : "text-gray-300 hover:bg-gray-800"
-            )}
-          >
-            <i className={`${item.icon} block mx-auto mb-1`}></i>
-            <span className="text-xs">{item.label}</span>
-          </a>
-        </Link>
+        <a
+          key={item.id}
+          href={item.id}
+          className={cn(
+            "px-4 py-2 text-center flex-shrink-0 rounded-md",
+            isActive(item.id)
+              ? "text-white bg-primary"
+              : "text-gray-300 hover:bg-gray-800"
+          )}
+        >
+          <i className={`${item.icon} block mx-auto mb-1`}></i>
+          <span className="text-xs">{item.label}</span>
+        </a>
       ))}
     </div>
   );

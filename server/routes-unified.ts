@@ -969,6 +969,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Stop mining
+  app.post('/api/blockchain/mining/stop', async (req: Request, res: Response) => {
+    try {
+      const { address } = req.body;
+      if (!address) {
+        return res.status(400).json({ error: 'Address required' });
+      }
+      
+      // Stop mining for the address
+      await simplifiedStorage.stopMining(address);
+      res.json({ success: true, message: 'Mining stopped', address });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to stop mining' });
+    }
+  });
+
   // ============= DEVELOPER DASHBOARD ENDPOINTS =============
   
   // Get service status for dev dashboard
