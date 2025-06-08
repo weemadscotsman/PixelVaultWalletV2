@@ -25,6 +25,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TrendRadar } from '@/components/blockchain/TrendRadar';
 import HealthVitalsDashboard from '@/components/health/HealthVitalsDashboard';
+import { BlockInspector } from '@/components/blockchain/BlockInspector';
 import { useBlockchain } from '@/hooks/use-blockchain';
 import { useQueryClient } from '@tanstack/react-query';
 import { useWallet } from '@/hooks/use-wallet';
@@ -704,47 +705,171 @@ export default function BlockchainPage() {
         <HealthVitalsDashboard />
       </div>
 
-      {/* Real-time Chain Monitor */}
+      {/* Comprehensive Transparency Interface */}
       <div className="mt-8">
-        <Card className="bg-gradient-to-br from-purple-900/20 to-black border-purple-700/30">
-          <CardHeader className="border-b border-purple-700/30">
+        <Card className="bg-gradient-to-br from-indigo-900/20 to-black border-indigo-700/30">
+          <CardHeader className="border-b border-indigo-700/30">
             <CardTitle className="text-white flex items-center">
-              <Activity className="w-5 h-5 mr-2 text-purple-400" />
-              Real-time Chain Monitor
+              <Search className="w-5 h-5 mr-2 text-indigo-400" />
+              PVX Blockchain Transparency & Verification
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/30">
-                <h4 className="text-purple-400 font-semibold mb-2">Block Production</h4>
-                <div className="text-2xl font-bold text-white">{latestBlock?.height || 0}</div>
-                <div className="text-xs text-gray-400">Current Height</div>
-                <div className="mt-2 text-xs">
-                  <div className="text-gray-400">Latest Hash:</div>
-                  <div className="text-purple-300 font-mono break-all">{latestBlock?.hash || 'N/A'}</div>
-                </div>
-              </div>
+            <Tabs defaultValue="inspector" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 bg-gray-900/50">
+                <TabsTrigger value="inspector" className="data-[state=active]:bg-indigo-600">
+                  Block Inspector
+                </TabsTrigger>
+                <TabsTrigger value="monitor" className="data-[state=active]:bg-purple-600">
+                  Chain Monitor  
+                </TabsTrigger>
+                <TabsTrigger value="validator" className="data-[state=active]:bg-green-600">
+                  System Validator
+                </TabsTrigger>
+                <TabsTrigger value="trends" className="data-[state=active]:bg-blue-600">
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
               
-              <div className="bg-green-900/20 rounded-lg p-4 border border-green-700/30">
-                <h4 className="text-green-400 font-semibold mb-2">Mining Stats</h4>
-                <div className="text-2xl font-bold text-white">{miningStats?.blocksFound || 0}</div>
-                <div className="text-xs text-gray-400">Total Blocks Mined</div>
-                <div className="mt-2 text-xs">
-                  <div className="text-gray-400">Success Rate:</div>
-                  <div className="text-green-300">100% (Solo Mining)</div>
-                </div>
-              </div>
+              <TabsContent value="inspector" className="mt-6">
+                <BlockInspector />
+              </TabsContent>
               
-              <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700/30">
-                <h4 className="text-yellow-400 font-semibold mb-2">Rewards Earned</h4>
-                <div className="text-2xl font-bold text-white">{Number(miningStats?.totalRewards || 0).toLocaleString()}</div>
-                <div className="text-xs text-gray-400">μPVX Total</div>
-                <div className="mt-2 text-xs">
-                  <div className="text-gray-400">Last Reward:</div>
-                  <div className="text-yellow-300">5,000,000 μPVX</div>
+              <TabsContent value="monitor" className="mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-purple-900/20 rounded-lg p-4 border border-purple-700/30">
+                    <h4 className="text-purple-400 font-semibold mb-2">Block Production</h4>
+                    <div className="text-2xl font-bold text-white">{latestBlock?.height || 0}</div>
+                    <div className="text-xs text-gray-400">Current Height</div>
+                    <div className="mt-2 text-xs">
+                      <div className="text-gray-400">Latest Hash:</div>
+                      <div className="text-purple-300 font-mono break-all">{latestBlock?.hash || 'N/A'}</div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-green-900/20 rounded-lg p-4 border border-green-700/30">
+                    <h4 className="text-green-400 font-semibold mb-2">Mining Stats</h4>
+                    <div className="text-2xl font-bold text-white">{miningStats?.blocksFound || 0}</div>
+                    <div className="text-xs text-gray-400">Total Blocks Mined</div>
+                    <div className="mt-2 text-xs">
+                      <div className="text-gray-400">Success Rate:</div>
+                      <div className="text-green-300">100% (Solo Mining)</div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-yellow-900/20 rounded-lg p-4 border border-yellow-700/30">
+                    <h4 className="text-yellow-400 font-semibold mb-2">Rewards Earned</h4>
+                    <div className="text-2xl font-bold text-white">{Number(miningStats?.totalRewards || 0).toLocaleString()}</div>
+                    <div className="text-xs text-gray-400">μPVX Total</div>
+                    <div className="mt-2 text-xs">
+                      <div className="text-gray-400">Last Reward:</div>
+                      <div className="text-yellow-300">5,000,000 μPVX</div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </TabsContent>
+              
+              <TabsContent value="validator" className="mt-6">
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-semibold text-white">System Interconnection Validation</h3>
+                    <Button
+                      onClick={runSystemValidation}
+                      disabled={isValidating || !activeWallet}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      {isValidating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Validating...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4 mr-2" />
+                          Run Full Validation
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {!activeWallet ? (
+                    <div className="text-center text-gray-400 py-8">
+                      <Wifi className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Connect wallet to run system validation</p>
+                    </div>
+                  ) : systemStatus ? (
+                    <div className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="bg-gray-800/50 rounded-lg p-4">
+                          <h4 className="text-gray-400 text-sm mb-2">Overall Health</h4>
+                          <div className={`text-lg font-bold ${
+                            systemStatus.overallHealth === 'healthy' ? 'text-green-400' :
+                            systemStatus.overallHealth === 'degraded' ? 'text-yellow-400' : 'text-red-400'
+                          }`}>
+                            {systemStatus.overallHealth.toUpperCase()}
+                          </div>
+                        </div>
+                        <div className="bg-gray-800/50 rounded-lg p-4">
+                          <h4 className="text-gray-400 text-sm mb-2">Services Online</h4>
+                          <div className="text-lg font-bold text-white">
+                            {systemStatus.servicesOnline}/{systemStatus.totalServices}
+                          </div>
+                        </div>
+                        <div className="bg-gray-800/50 rounded-lg p-4">
+                          <h4 className="text-gray-400 text-sm mb-2">Wallet Connected</h4>
+                          <div className={`text-lg font-bold ${systemStatus.walletConnected ? 'text-green-400' : 'text-red-400'}`}>
+                            {systemStatus.walletConnected ? 'YES' : 'NO'}
+                          </div>
+                        </div>
+                        <div className="bg-gray-800/50 rounded-lg p-4">
+                          <h4 className="text-gray-400 text-sm mb-2">Validation Time</h4>
+                          <div className="text-lg font-bold text-white">
+                            {systemStatus ? new Date(systemStatus.timestamp).toLocaleTimeString() : 'N/A'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800/50 rounded-lg p-4">
+                        <h4 className="text-white font-semibold mb-4">Service Status Matrix</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                          {systemStatus.validationResults.map((result, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-gray-700/50 rounded">
+                              <div className="flex items-center">
+                                <div className={`w-2 h-2 rounded-full mr-2 ${
+                                  result.status === 'success' ? 'bg-green-500' : 'bg-red-500'
+                                }`} />
+                                <span className="text-gray-300">{result.service}</span>
+                                {result.authRequired && (
+                                  <Shield className="w-3 h-3 ml-1 text-blue-400" />
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <span className={`text-xs ${
+                                  result.status === 'success' ? 'text-green-400' : 'text-red-400'
+                                }`}>
+                                  {result.status === 'success' ? 'ONLINE' : 'OFFLINE'}
+                                </span>
+                                <span className="text-gray-500">{result.responseTime}ms</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-400 py-8">
+                      <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                      <p>Run system validation to check all endpoint connections</p>
+                      <p className="text-xs mt-2">This will test all services with your connected wallet</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="trends" className="mt-6">
+                <TrendRadar />
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
