@@ -13682,6 +13682,28 @@
       "nonce": "293406",
       "difficulty": 5,
       "reward": "5000000"
+    },
+    {
+      "height": 1245,
+      "hash": "84a268c47c2731dfb70817fc0e8764ea96679680aa4bd1dcbcd3ad7709a4ec92",
+      "previousHash": "677b42308e2a143a85a368fa20e62e71cfe1f2aa2ba190c2034ae9b74dddce93",
+      "timestamp": 1749346511170,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "941150",
+      "difficulty": 5,
+      "reward": "5000000"
+    },
+    {
+      "height": 1246,
+      "hash": "27d22047f6c99c5aa3d6679c71268d7169f89fec3cc416ad93899fde823eb0f3",
+      "previousHash": "84a268c47c2731dfb70817fc0e8764ea96679680aa4bd1dcbcd3ad7709a4ec92",
+      "timestamp": 1749346521170,
+      "transactions": [],
+      "miner": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "nonce": "814558",
+      "difficulty": 5,
+      "reward": "5000000"
     }
   ],
   "transactions": [
@@ -27346,6 +27368,28 @@
       "nonce": 28390,
       "signature": "dcdf2b981813f010392bd7090011e96c145e2d3d5128d4fee3e05dbfaab3556d",
       "status": "confirmed"
+    },
+    {
+      "hash": "61decd7efc6d6cd2da04439a051c6a36a714785fbdcbfb8eededbe4a8b490e10",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346511170,
+      "nonce": 34351,
+      "signature": "8f000a9e4fea65b406814c7581c0c52ac9dca7a94dcae58ac2d9d5e49feaeda9",
+      "status": "confirmed"
+    },
+    {
+      "hash": "2787b2891b1ea59861b7f107eed238dca79e203221bdf26b94afb32d06aad7c9",
+      "type": "MINING_REWARD",
+      "from": "PVX_GENESIS_ADDR_00000000000000",
+      "to": "PVX_1295b5490224b2eb64e9724dc091795a",
+      "amount": "5000000",
+      "timestamp": 1749346521170,
+      "nonce": 80887,
+      "signature": "d6abcdb83ad98ed02e8241f1d76fb7a3064650b4b99b14683bf45df2e6ac2ae3",
+      "status": "confirmed"
     }
   ],
   "wallets": [
@@ -27354,9 +27398,9 @@
       {
         "address": "PVX_1295b5490224b2eb64e9724dc091795a",
         "publicKey": "genesis_key_1295b5490224b2eb64e9724dc091795a",
-        "balance": "5589991457.5",
+        "balance": "5599991457.5",
         "createdAt": "2025-06-07T17:00:00.000Z",
-        "lastUpdated": "2025-06-08T01:35:01.188Z",
+        "lastUpdated": "2025-06-08T01:35:21.230Z",
         "lastSynced": "2025-06-08T01:34:34.338Z",
         "passphraseSalt": "genesis_salt_1295b5490224b2eb64e9724dc091795a",
         "passphraseHash": "f0a500f76209a6795332b5eb388ff943ededa3fb47740d1cd485cbd6624fb11e"
@@ -27759,13 +27803,13 @@
       {
         "address": "PVX_1295b5490224b2eb64e9724dc091795a",
         "hashRate": "250.5",
-        "totalRewards": "6210000050",
+        "totalRewards": "6220000050",
         "blocksFound": 1,
         "isCurrentlyMining": true,
         "startTime": 1749335637763,
         "lastBlockTime": 1749332247379,
-        "blocksMined": 1241,
-        "lastBlockMined": 1749346501171
+        "blocksMined": 1243,
+        "lastBlockMined": 1749346521170
       }
     ]
   ],
