@@ -179,13 +179,13 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // Get recent blocks
   app.get('/api/blockchain/blocks', async (req: Request, res: Response) => {
     try {
-      const blockchain = (req as any).blockchain;
-      if (!blockchain) {
-        return res.status(500).json({ error: 'Blockchain not available' });
+      const blockchainService = (req as any).blockchainService;
+      if (!blockchainService) {
+        return res.status(500).json({ error: 'Blockchain service not available' });
       }
       
       const limit = parseInt(req.query.limit as string) || 10;
-      const recentBlocks = blockchain.blocks.slice(-limit).reverse();
+      const recentBlocks = await blockchainService.getRecentBlocks(limit);
       
       res.json({ blocks: recentBlocks });
     } catch (error) {
@@ -199,21 +199,26 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // Get mining statistics
   app.get('/api/mining/stats', async (req: Request, res: Response) => {
     try {
-      const blockchain = (req as any).blockchain;
-      if (!blockchain) {
-        return res.status(500).json({ error: 'Blockchain not available' });
+      const blockchainService = (req as any).blockchainService;
+      if (!blockchainService) {
+        return res.status(500).json({ error: 'Blockchain service not available' });
       }
       
+      const status = blockchainService.getBlockchainStatus();
+      const recentBlocks = await blockchainService.getRecentBlocks(100);
+      
+      const today = new Date();
+      const blocksMinedToday = recentBlocks.filter((block: any) => {
+        const blockDate = new Date(block.timestamp);
+        return blockDate.toDateString() === today.toDateString();
+      }).length;
+      
       const stats = {
-        hashRate: blockchain.hashRate || 1000000,
-        difficulty: blockchain.difficulty,
-        blocksMinedToday: blockchain.blocks.filter((block: any) => {
-          const today = new Date();
-          const blockDate = new Date(block.timestamp);
-          return blockDate.toDateString() === today.toDateString();
-        }).length,
-        totalBlocks: blockchain.blocks.length,
-        lastBlockReward: 5,
+        hashRate: status.hashRate || 150000,
+        difficulty: status.difficulty,
+        blocksMinedToday,
+        totalBlocks: status.currentBlock,
+        lastBlockReward: 5000000,
         isActiveMining: true
       };
       

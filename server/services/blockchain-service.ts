@@ -639,17 +639,37 @@ export async function getLatestBlock(): Promise<Block | null> {
 }
 
 /**
- * Get block by height
- */
-export async function getBlockByHeight(height: number): Promise<Block | null> {
-  return await memBlockchainStorage.getBlockByHeight(height);
-}
-
-/**
  * Get transaction by hash
  */
 export async function getTransactionByHash(hash: string): Promise<Transaction | null> {
   return await memBlockchainStorage.getTransactionByHash(hash);
+}
+
+/**
+ * Create a transaction
+ */
+export async function createTransaction(transaction: Transaction): Promise<Transaction> {
+  return await memBlockchainStorage.createTransaction(transaction);
+}
+
+/**
+ * Get wallet by address
+ */
+export async function getWalletByAddress(address: string) {
+  return await memBlockchainStorage.getWalletByAddress(address);
+}
+
+/**
+ * Update wallet balance
+ */
+export async function updateWalletBalance(address: string, newBalance: string) {
+  const wallet = await memBlockchainStorage.getWalletByAddress(address);
+  if (wallet) {
+    wallet.balance = newBalance;
+    wallet.lastUpdated = new Date();
+    return await memBlockchainStorage.updateWallet(wallet);
+  }
+  return null;
 }
 
 /**
