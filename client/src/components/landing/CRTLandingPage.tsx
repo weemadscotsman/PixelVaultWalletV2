@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLocation } from 'wouter';
+import { useAuth } from '@/hooks/use-auth';
 
 export function CRTLandingPage() {
   const [, setLocation] = useLocation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedOverlay, setSelectedOverlay] = useState<string>('');
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     // Matrix rain effect from your original code
@@ -49,8 +51,26 @@ export function CRTLandingPage() {
     };
   }, []);
 
+  // Check if user is already authenticated and redirect immediately
+  useEffect(() => {
+    const savedWallet = localStorage.getItem('activeWallet');
+    const savedToken = localStorage.getItem('sessionToken');
+    
+    if (isAuthenticated || (savedWallet && savedToken)) {
+      setLocation('/home');
+    }
+  }, [isAuthenticated, setLocation]);
+
   const handleEnterReality = () => {
-    setLocation('/dashboard');
+    // Check authentication status before navigation
+    const savedWallet = localStorage.getItem('activeWallet');
+    const savedToken = localStorage.getItem('sessionToken');
+    
+    if (isAuthenticated || (savedWallet && savedToken)) {
+      setLocation('/home');
+    } else {
+      setLocation('/auth');
+    }
   };
 
   return (

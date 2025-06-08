@@ -53,10 +53,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize authentication state from localStorage
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log('[AUTH] Initializing authentication state');
       const savedWallet = localStorage.getItem('activeWallet');
       const savedToken = localStorage.getItem('sessionToken');
       
+      console.log('[AUTH] Saved wallet:', savedWallet);
+      console.log('[AUTH] Saved token exists:', !!savedToken);
+      
       if (savedWallet && savedToken) {
+        console.log('[AUTH] Found saved credentials, validating...');
         // Validate token with server
         try {
           const response = await fetch('/api/auth/status', {
@@ -65,41 +70,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           if (response.ok) {
             const data = await response.json();
+            console.log('[AUTH] Server validation response:', data);
             if (data.isAuthenticated && data.address === savedWallet) {
-              setUser({
+              console.log('[AUTH] Token validated, setting authenticated user');
+              const authenticatedUser = {
                 address: savedWallet,
                 balance: "999999999",
                 publicKey: `PVX_PUBLIC_KEY_${savedWallet}`,
                 createdAt: new Date().toISOString(),
                 lastUpdated: new Date().toISOString()
-              });
+              };
+              setUser(authenticatedUser);
               setToken(savedToken);
+              console.log('[AUTH] User set successfully:', authenticatedUser);
             } else {
-              // Clear invalid session
+              console.log('[AUTH] Invalid server response, clearing session');
               localStorage.removeItem('activeWallet');
               localStorage.removeItem('sessionToken');
+              setUser(null);
+              setToken(null);
             }
           } else {
-            // Clear invalid session
+            console.log('[AUTH] Server validation failed, clearing session');
             localStorage.removeItem('activeWallet');
             localStorage.removeItem('sessionToken');
+            setUser(null);
+            setToken(null);
           }
         } catch (error) {
-          console.error('Auth validation error:', error);
+          console.error('[AUTH] Validation error, keeping offline session:', error);
           // Keep session for offline mode
-          setUser({
+          const offlineUser = {
             address: savedWallet,
             balance: "999999999",
             publicKey: `PVX_PUBLIC_KEY_${savedWallet}`,
             createdAt: new Date().toISOString(),
             lastUpdated: new Date().toISOString()
-          });
+          };
+          setUser(offlineUser);
           setToken(savedToken);
+          console.log('[AUTH] Offline user set:', offlineUser);
         }
+      } else {
+        console.log('[AUTH] No saved credentials found');
+        setUser(null);
+        setToken(null);
       }
       
       setIsLoading(false);
       setInitialized(true);
+      console.log('[AUTH] Initialization complete');
     };
     
     initializeAuth();

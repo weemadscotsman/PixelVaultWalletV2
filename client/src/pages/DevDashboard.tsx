@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +21,9 @@ import {
   RefreshCw,
   Terminal,
   Eye,
-  EyeOff
+  EyeOff,
+  Home,
+  ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { SystemValidator } from '@/components/debug/SystemValidator';
@@ -49,6 +52,7 @@ interface ChainMetrics {
 
 export function DevDashboard() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [services, setServices] = useState<ServiceStatus[]>([
     { name: 'PVX Blockchain Core', status: 'online', enabled: true, endpoint: '/api/blockchain/status', lastCheck: new Date().toISOString() },
     { name: 'Wallet Service', status: 'online', enabled: true, endpoint: '/api/wallet/all', lastCheck: new Date().toISOString() },
@@ -248,6 +252,24 @@ export function DevDashboard() {
           </div>
           
           <div className="flex items-center gap-4">
+            <Button 
+              onClick={() => setLocation('/home')}
+              variant="outline"
+              size="sm"
+              className="border-blue-500 text-blue-400 hover:bg-blue-500/20"
+            >
+              <Home className="h-4 w-4 mr-2" />
+              Return to Dashboard
+            </Button>
+            <Button 
+              onClick={() => setLocation('/')}
+              variant="outline"
+              size="sm"
+              className="border-green-500 text-green-400 hover:bg-green-500/20"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Exit Dev Mode
+            </Button>
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-400">Auto-refresh</span>
               <Switch 
