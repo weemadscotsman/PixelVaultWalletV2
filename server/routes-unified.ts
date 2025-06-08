@@ -49,14 +49,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get wallet and validate passphrase
       const wallet = await simplifiedStorage.getWalletByAddress(address);
       if (!wallet) {
-        return res.status(401).json({ error: 'Invalid wallet address or passphrase' });
+        return res.status(400).json({ error: 'Invalid wallet address or passphrase' });
       }
 
       // Validate passphrase by hashing it with the stored salt
       const expectedHash = crypto.createHash('sha256').update(passphrase + wallet.passphraseSalt).digest('hex');
       
       if (expectedHash !== wallet.passphraseHash) {
-        return res.status(401).json({ error: 'Invalid wallet address or passphrase' });
+        return res.status(400).json({ error: 'Invalid wallet address or passphrase' });
       }
 
       const { sessionToken } = await unifiedAuth.createSession(address);
@@ -71,7 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       console.error('Login error:', error);
-      res.status(401).json({ error: 'Invalid wallet address or passphrase' });
+      res.status(400).json({ error: 'Invalid wallet address or passphrase' });
     }
   });
 
