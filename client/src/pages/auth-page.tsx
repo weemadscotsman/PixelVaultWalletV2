@@ -12,10 +12,10 @@ export default function AuthPage() {
   const [, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState<string>("login");
 
-  // Redirect to home if already authenticated
+  // Redirect to dashboard if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      setLocation("/");
+      setLocation("/home");
     }
   }, [isAuthenticated, setLocation]);
 

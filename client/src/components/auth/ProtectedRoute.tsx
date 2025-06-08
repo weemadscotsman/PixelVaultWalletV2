@@ -11,9 +11,17 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ path, component: Component }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading } = useAuth();
   const [hasCheckedAuth, setHasCheckedAuth] = React.useState(false);
+  const [authBypass, setAuthBypass] = React.useState(false);
 
-  // Prevent immediate redirects by ensuring auth has been properly checked
+  // Check for valid session tokens on mount
   React.useEffect(() => {
+    const savedWallet = localStorage.getItem('activeWallet');
+    const savedToken = localStorage.getItem('sessionToken');
+    
+    if (savedWallet && savedToken) {
+      setAuthBypass(true);
+    }
+    
     if (!isLoading) {
       setHasCheckedAuth(true);
     }
@@ -31,15 +39,13 @@ export function ProtectedRoute({ path, component: Component }: ProtectedRoutePro
           );
         }
 
-        // Check for stored authentication before redirecting
-        const savedWallet = localStorage.getItem('activeWallet');
-        const savedToken = localStorage.getItem('sessionToken');
-        
-        if (!isAuthenticated && (!savedWallet || !savedToken)) {
-          return <Redirect to="/auth" />;
+        // Allow access if authenticated OR has valid session tokens
+        if (isAuthenticated || authBypass) {
+          return <Component />;
         }
 
-        return <Component />;
+        // Only redirect if no authentication and no valid session
+        return <Redirect to="/auth" />;
       }}
     </Route>
   );

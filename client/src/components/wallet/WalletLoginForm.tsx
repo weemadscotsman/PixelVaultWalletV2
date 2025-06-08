@@ -2,6 +2,7 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useLocation } from "wouter";
 import { Loader2, Shield, Key, LogIn } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ export function WalletLoginForm() {
   const [showPassphrase, setShowPassphrase] = useState(false);
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const [, setLocation] = useLocation();
 
   // Create form
   const form = useForm<FormValues>({
@@ -63,6 +65,8 @@ export function WalletLoginForm() {
     setLoading(true);
     try {
       await login(values);
+      // Navigate directly to dashboard after successful login
+      setLocation("/home");
     } catch (error) {
       console.error("Login error:", error);
     } finally {
