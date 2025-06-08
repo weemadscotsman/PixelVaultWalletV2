@@ -7,6 +7,27 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
 
   // ============= PRIORITY ROUTES - MUST BE FIRST =============
   
+  // Get current wallet endpoint - returns genesis wallet
+  app.get('/api/wallet/current', async (req: Request, res: Response) => {
+    try {
+      const genesisAddress = 'PVX_1295b5490224b2eb64e9724dc091795a';
+      
+      if (!simplifiedStorage) {
+        return res.status(500).json({ error: 'Storage not available' });
+      }
+      
+      const wallet = await simplifiedStorage.getWalletByAddress(genesisAddress);
+      if (!wallet) {
+        return res.status(404).json({ error: 'Genesis wallet not found' });
+      }
+      
+      res.json(wallet);
+    } catch (error) {
+      console.error('Failed to get current wallet:', error);
+      res.status(500).json({ error: 'Failed to get current wallet' });
+    }
+  });
+  
   // Wallet export endpoint
   app.get('/api/wallet/:address/export', async (req: Request, res: Response) => {
     try {

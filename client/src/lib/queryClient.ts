@@ -48,13 +48,19 @@ export async function apiRequest(
         const errorText = await res.text();
         console.error(`API Error: ${res.status} for ${method} ${url}`, errorText);
         
-        // If it's a 502 error (Bad Gateway) or 503 (Service Unavailable), retry
-        if ((res.status === 502 || res.status === 503) && attempt < maxRetries - 1) {
+        // If it's a 502 error (Bad Gateway), 503 (Service Unavailable), or 404 (Not Found), retry
+        if ((res.status === 502 || res.status === 503 || res.status === 404) && attempt < maxRetries - 1) {
           attempt++;
           console.log(`Retrying request (${attempt}/${maxRetries}) after ${retryDelay}ms delay...`);
           await new Promise(resolve => setTimeout(resolve, retryDelay));
           retryDelay *= 2; // Exponential backoff
           continue;
+        }
+        
+        // For other errors, don't throw immediately - return the response to let components handle gracefully
+        if (res.status >= 400 && res.status < 500) {
+          console.warn(`Client error ${res.status} for ${method} ${url}, returning response for graceful handling`);
+          return res; // Let the component handle the error gracefully
         }
         
         throw new Error(`${res.status}: ${errorText || res.statusText}`);
