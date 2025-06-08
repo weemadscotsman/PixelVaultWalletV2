@@ -231,6 +231,7 @@ export function SendTransactionForm() {
         <CardFooter className="border-t border-blue-900/30 bg-blue-900/10 py-4">
           <Button
             type="submit"
+            data-testid="send-button"
             className="w-full bg-blue-700 hover:bg-blue-600 text-white flex items-center"
             disabled={!activeWallet || isSubmitting}
           >

@@ -306,6 +306,7 @@ export default function MiningPage() {
             <CardFooter className="flex flex-col gap-4">
               {isMining ? (
                 <Button 
+                  data-testid="stop-mining"
                   className="w-full bg-red-600 hover:bg-red-500 text-white"
                   onClick={handleStopMining}
                   disabled={stopMiningMutation.isPending}

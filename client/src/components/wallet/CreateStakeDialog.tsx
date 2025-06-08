@@ -387,6 +387,7 @@ export function CreateStakeDialog({
               </Button>
               <Button
                 type="submit"
+                data-testid="create-stake-button"
                 className="bg-blue-700 hover:bg-blue-600 text-white"
                 disabled={createStakeMutation.isPending}
               >

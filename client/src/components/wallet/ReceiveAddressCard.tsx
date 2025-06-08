@@ -123,6 +123,7 @@ export function ReceiveAddressCard() {
             <div className="flex gap-3">
               <Button 
                 onClick={copyToClipboard}
+                data-testid="receive-button"
                 className="flex-1 border-blue-900/50 text-blue-300"
                 variant="outline"
               >
