@@ -14,6 +14,9 @@ import { OnboardingSection } from "@/components/onboarding/OnboardingSection";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TransactionFlowVisualizer } from "@/components/visualization/TransactionFlowVisualizer";
 import { useTransactionHistory } from "@/hooks/use-transaction-history";
+import { LiveDataLogger } from "@/components/debug/LiveDataLogger";
+import { PanelDataDisplay } from "@/components/debug/PanelDataDisplay";
+import { usePanelLogger } from "@/hooks/use-panel-logger";
 
 export default function Dashboard() {
   const { wallet, loadWalletFromStorage } = useWallet();
@@ -23,6 +26,13 @@ export default function Dashboard() {
   const { data: recentTransactions = [] } = useTransactionHistory(10);
   const [activeSection, setActiveSection] = useState("dashboard");
   const [terminalOutput, setTerminalOutput] = useState("PIXELVAULT TERMINAL v1.0\n> Loading system...\n> Welcome to PIXELVAULT secure blockchain interface\n> Type 'help' for available commands\n>");
+  
+  // Panel logging system
+  const dashboardLogger = usePanelLogger('Dashboard');
+  const walletLogger = usePanelLogger('Wallet');
+  const miningLogger = usePanelLogger('Mining');
+  const stakingLogger = usePanelLogger('Staking');
+  const blockchainLogger = usePanelLogger('Blockchain');
 
   // Handle hash change from sidebar navigation
   useEffect(() => {
@@ -101,7 +111,13 @@ export default function Dashboard() {
       
       {/* No top navigation tabs needed since we're using the sidebar */}
       
-      {/* Main Dashboard Panels */}
+      {/* System Logging Section - Top Priority */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <LiveDataLogger />
+        <PanelDataDisplay title="Real-Time Panel Data" />
+      </div>
+
+      {/* Main Dashboard Panels with Logging */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Mining Stats Panel */}
         <div className="bg-black bg-opacity-78 rounded-lg p-4 border border-blue-800 shadow-lg shadow-blue-900/30">
@@ -113,6 +129,7 @@ export default function Dashboard() {
             </div>
             <span className="ml-2 text-xs text-blue-300">{miningStats?.isCurrentlyMining ? '85%' : '0%'}</span>
           </div>
+          <PanelDataDisplay title="Mining Data" className="mt-3" />
         </div>
         
         {/* Hash Rate Panel */}
@@ -122,6 +139,7 @@ export default function Dashboard() {
             {miningStats?.currentHashRate ? `${(miningStats.currentHashRate / 1000).toFixed(1)} KH/s` : '0 H/s'}
           </p>
           <p className="text-xs text-blue-400">+2.5% from yesterday</p>
+          <PanelDataDisplay title="Hash Rate Data" className="mt-3" />
         </div>
         
         {/* Earnings Panel */}
@@ -131,6 +149,7 @@ export default function Dashboard() {
             {miningStats?.isCurrentlyMining ? '0.00124 PVX' : '0 PVX'}
           </p>
           <p className="text-xs text-blue-400">≈ $0.42 USD</p>
+          <PanelDataDisplay title="Earnings Data" className="mt-3" />
         </div>
       </div>
 
