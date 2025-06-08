@@ -3,13 +3,15 @@ import { memBlockchainStorage } from '../mem-blockchain';
 
 const router = express.Router();
 
-// Dev services status endpoint
+// Dev services status endpoint - EXACT PATH MATCH
 router.get('/services/status', async (req, res) => {
   try {
     const blockchainStatus = await memBlockchainStorage.getBlockchainStatus();
     const latestBlock = await memBlockchainStorage.getLatestBlock();
     
     const servicesStatus = {
+      status: 'operational',
+      timestamp: new Date().toISOString(),
       blockchain: {
         status: 'operational',
         currentBlock: latestBlock?.height || 0,
