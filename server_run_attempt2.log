@@ -1,0 +1,171 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+Blockchain data loaded from file
+Genesis wallet initialized: PVX_1295b5490224b2eb64e9724dc091795a
+[BACKEND LIFECYCLE] Stage 1: .env loaded. Raw process.env.PORT: 5000
+[BACKEND LIFECYCLE] Stage 2: App initialized. Attempting to use PORT: 5000
+[BACKEND LIFECYCLE] Stage 3: Core middleware (trust proxy, cors, json, urlencoded) added.
+[BACKEND LIFECYCLE] Stage 4: /api/ping route added.
+[BACKEND LIFECYCLE] Stage 9: Calling startServer function...
+[BACKEND LIFECYCLE] Stage 5: Starting server initialization process...
+✅ [WEBSOCKET] WebSocket server initialized on /ws path and assigned to global scope
+[BACKEND LIFECYCLE] Stage 5a: Checking database connection...
+Database connection check failed: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://localhost/v2',
+    _req: null,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: connect ECONNREFUSED 127.0.0.1:443
+      at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+      at __node_internal_exceptionWithHostPort (node:internal/errors:671:12)
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1549:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 443
+  },
+  [Symbol(kMessage)]: 'connect ECONNREFUSED 127.0.0.1:443'
+}
+[BACKEND WARNING] Database connection failed - falling back to in-memory storage
+[BACKEND LIFECYCLE] Stage 6: Initializing PVX blockchain...
+Blockchain initialized and running
+[BACKEND LIFECYCLE] Stage 6a: Connected to PVX blockchain successfully
+[BACKEND LIFECYCLE] Stage 7: Mounting feature API routes...
+[BACKEND LIFECYCLE] Stage 7a: Feature routes mounted successfully.
+[BACKEND LIFECYCLE] Stage 7b: Error handling middleware added.
+[BACKEND LIFECYCLE] Stage 7c: API 404 handling middleware added.
+[BACKEND LIFECYCLE] Stage 8: Setting up Vite for development...
+✅ [BACKEND ONLINE] Server successfully listening on port 5000
+   Test Ping: http://localhost:5000/api/ping
+   Wallet Create (POST): http://localhost:5000/api/wallet/create
+❌ Failed to initialize staking pools: Error: connect ECONNREFUSED 127.0.0.1:5432
+    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+    at __node_internal_exceptionWithHostPort (node:internal/errors:671:12)
+    at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1549:16) {
+  errno: -111,
+  code: 'ECONNREFUSED',
+  syscall: 'connect',
+  address: '127.0.0.1',
+  port: 5432
+}
+Failed to get all drops: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://localhost/v2',
+    _req: null,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: connect ECONNREFUSED 127.0.0.1:443
+      at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+      at __node_internal_exceptionWithHostPort (node:internal/errors:671:12)
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1549:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 443
+  },
+  [Symbol(kMessage)]: 'connect ECONNREFUSED 127.0.0.1:443'
+}
+Failed to get user badges: ErrorEvent {
+  [Symbol(kTarget)]: WebSocket {
+    _events: [Object: null prototype] {
+      error: [Function],
+      message: [Function],
+      close: [Function],
+      open: [Function]
+    },
+    _eventsCount: 4,
+    _maxListeners: undefined,
+    _binaryType: 'arraybuffer',
+    _closeCode: 1006,
+    _closeFrameReceived: false,
+    _closeFrameSent: false,
+    _closeMessage: <Buffer >,
+    _closeTimer: null,
+    _errorEmitted: true,
+    _extensions: {},
+    _paused: false,
+    _protocol: '',
+    _readyState: 3,
+    _receiver: null,
+    _sender: null,
+    _socket: null,
+    _bufferedAmount: 0,
+    _isServer: false,
+    _redirects: 0,
+    _autoPong: true,
+    _url: 'wss://localhost/v2',
+    _req: null,
+    [Symbol(kCapture)]: false
+  },
+  [Symbol(kType)]: 'error',
+  [Symbol(kError)]: Error: connect ECONNREFUSED 127.0.0.1:443
+      at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+      at __node_internal_exceptionWithHostPort (node:internal/errors:671:12)
+      at TCPConnectWrap.afterConnect [as oncomplete] (node:net:1549:16) {
+    errno: -111,
+    code: 'ECONNREFUSED',
+    syscall: 'connect',
+    address: '127.0.0.1',
+    port: 443
+  },
+  [Symbol(kMessage)]: 'connect ECONNREFUSED 127.0.0.1:443'
+}
