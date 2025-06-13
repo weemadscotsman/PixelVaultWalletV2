@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
-import { memBlockchainStorage } from '../mem-blockchain';
 import { transactionDao } from '../database/transactionDao';
 import { walletDao } from '../database/walletDao';
-import * as cryptoUtils from '../utils/crypto';
+import * as cryptoUtils from '../utils/crypto'; // Will be used for hash generation if kept here
 import * as passphraseUtils from '../utils/passphrase';
-import { TransactionType, Transaction } from '../types';
+import { TransactionType, Transaction } from '../types'; // Assuming Transaction type is from shared types
+import { transactionEngine } from '../transaction-engine';
 import { checkTransactionBadges } from './badgeController';
 import { broadcastTransaction } from '../utils/websocket';
 
@@ -15,16 +15,17 @@ import { broadcastTransaction } from '../utils/websocket';
  */
 export const sendTransaction = async (req: Request, res: Response) => {
   try {
-    const { from, to, amount, passphrase, memo } = req.body;
+    // Updated to expect nonce and signature from client
+    const { from, to, amount, passphrase, memo, nonce, signature } = req.body;
     
-    if (!from || !to || !amount || !passphrase) {
+    if (!from || !to || !amount || !passphrase || nonce === undefined || !signature) {
       return res.status(400).json({ 
-        error: 'From address, to address, amount, and passphrase are required' 
+        error: 'From address, to address, amount, passphrase, nonce, and signature are required'
       });
     }
     
-    // Verify sender wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(from);
+    // Verify sender wallet exists using walletDao
+    const wallet = await walletDao.getWalletByAddress(from);
     if (!wallet) {
       return res.status(404).json({ error: 'Sender wallet not found' });
     }
@@ -51,59 +52,38 @@ export const sendTransaction = async (req: Request, res: Response) => {
       }
     }
     
-    // Check balance
+    // Check balance (important to do this before calling the engine,
+    // though engine might also do a check if not trusting upstream)
     if (BigInt(wallet.balance) < BigInt(amount)) {
       return res.status(400).json({ error: 'Insufficient balance' });
     }
     
-    // Create transaction
+    // Construct transaction object for the engine
+    // The hash can be generated here or by the engine. Let's generate it here for now.
     const timestamp = Date.now();
     const txHash = crypto.createHash('sha256')
-      .update(from + to + amount + timestamp.toString())
+      .update(from + to + amount.toString() + timestamp.toString() + nonce.toString())
       .digest('hex');
-    
-    const transaction: Transaction = {
+
+    const transactionToProcess: any = { // Use 'any' for now if Transaction type is strict
       hash: txHash,
-      type: 'TRANSFER',
-      from,
-      to,
-      amount,
+      type: 'TRANSFER' as TransactionType,
+      fromAddress: from, // transactionEngine expects fromAddress
+      toAddress: to,     // transactionEngine expects toAddress
+      amount: String(amount), // Ensure amount is a string or number as expected by engine
       timestamp,
-      nonce: Math.floor(Math.random() * 100000),
-      signature: cryptoUtils.generateRandomHash(),
-      status: 'pending'
+      nonce: Number(nonce), // Ensure nonce is a number
+      signature,
+      status: 'pending', // Engine will manage status changes
+      metadata: { memo: memo || '' }
     };
+
+    // Process transaction using the transaction engine
+    const processedTx = await transactionEngine.processTransaction(transactionToProcess);
     
-    // Update sender wallet balance
-    const senderBalance = BigInt(wallet.balance) - BigInt(amount);
-    wallet.balance = senderBalance.toString();
-    await memBlockchainStorage.updateWallet(wallet);
-    
-    // Add to or create receiver wallet
-    const receiverWallet = await memBlockchainStorage.getWalletByAddress(to);
-    if (receiverWallet) {
-      const receiverBalance = BigInt(receiverWallet.balance) + BigInt(amount);
-      receiverWallet.balance = receiverBalance.toString();
-      await memBlockchainStorage.updateWallet(receiverWallet);
-    } else {
-      // Create receiver wallet if it doesn't exist
-      await memBlockchainStorage.createWallet({
-        address: to,
-        publicKey: cryptoUtils.generateRandomHash(),
-        balance: amount,
-        createdAt: new Date(),
-        lastUpdated: new Date(), // Changed from lastSynced to match database schema
-        passphraseSalt: '',
-        passphraseHash: ''
-      });
-    }
-    
-    // Store transaction
-    await memBlockchainStorage.createTransaction(transaction);
-    
-    // Broadcast transaction via WebSocket for real-time updates
+    // Broadcast processed transaction via WebSocket for real-time updates
     try {
-      broadcastTransaction(transaction);
+      broadcastTransaction(processedTx);
     } catch (err) {
       console.error('Error broadcasting transaction via WebSocket:', err);
       // Continue even if WebSocket broadcast fails
@@ -111,18 +91,19 @@ export const sendTransaction = async (req: Request, res: Response) => {
     
     // Check for transaction-related achievements
     try {
-      // Get transaction count for this sender
-      const senderTxs = await memBlockchainStorage.getTransactionsByAddress(from);
+      // Get transaction count for this sender from the database
+      const senderTxs = await transactionDao.getTransactionsByAddress(from);
       // Check and award badges
-      await checkTransactionBadges(from, amount, senderTxs.length);
+      // Note: checkTransactionBadges might need processedTx.amount if it's a number
+      await checkTransactionBadges(from, String(processedTx.amount), senderTxs.length);
     } catch (err) {
       console.error('Error checking transaction badges:', err);
       // Continue even if badge check fails
     }
     
     res.status(201).json({ 
-      tx_hash: txHash, 
-      status: 'success' 
+      tx_hash: processedTx.hash,
+      status: processedTx.status
     });
   } catch (error) {
     console.error('Error sending transaction:', error);

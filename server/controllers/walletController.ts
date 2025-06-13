@@ -24,7 +24,7 @@ export const authenticateWallet = async (req: Request, res: Response) => {
     }
     
     // Verify wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(address);
+    const wallet = await walletDao.getWalletByAddress(address);
     if (!wallet) {
       return res.status(404).json({ error: 'Wallet not found' });
     }
@@ -131,9 +131,6 @@ export const createWallet = async (req: Request, res: Response) => {
     
     const wallet = await walletDao.createWallet(walletData);
     
-    // Also create in memory storage for backup
-    await memBlockchainStorage.createWallet(walletData);
-    
     console.log('Created new wallet:', address);
     
     res.status(201).json({
@@ -219,11 +216,6 @@ export const getWallet = async (req: Request, res: Response) => {
     
     // Try to get the wallet from DB first
     let wallet = await walletDao.getWalletByAddress(address);
-    
-    // If not found in DB, try memory storage
-    if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
-    }
     
     // If still not found, return 404
     if (!wallet) {
@@ -494,17 +486,11 @@ export const sendTransaction = async (req: Request, res: Response) => {
     // Get sender wallet - try DB first, then memory storage
     let sender = await walletDao.getWalletByAddress(from);
     if (!sender) {
-      sender = await memBlockchainStorage.getWalletByAddress(from);
-    }
-    if (!sender) {
       return res.status(404).json({ error: 'Sender wallet not found' });
     }
     
     // Get recipient wallet - try DB first, then memory storage
     let recipient = await walletDao.getWalletByAddress(to);
-    if (!recipient) {
-      recipient = await memBlockchainStorage.getWalletByAddress(to);
-    }
     
     // Use centralized passphrase verification utility
     const isPassphraseValid = passphraseUtils.verifyPassphrase(
@@ -576,7 +562,6 @@ export const sendTransaction = async (req: Request, res: Response) => {
         const recipientBalanceBigInt = BigInt(recipient.balance);
         recipient.balance = (recipientBalanceBigInt + amountBigInt).toString();
         await walletDao.updateWallet(recipient);
-        await memBlockchainStorage.updateWallet(recipient);
       }
       
       // Update transaction status to confirmed
@@ -618,11 +603,6 @@ export const getStakingInfo = async (req: Request, res: Response) => {
     
     // Try to get the wallet from DB first
     let wallet = await walletDao.getWalletByAddress(address);
-    
-    // If not found in DB, try memory storage
-    if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
-    }
     
     // If still not found, return 404
     if (!wallet) {

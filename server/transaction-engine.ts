@@ -15,9 +15,6 @@ export class TransactionEngine {
   async verifyTransaction(transaction: Transaction): Promise<boolean> {
     // Get the sender's wallet
     let wallet = await walletDao.getWalletByAddress(transaction.fromAddress);
-    if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(transaction.fromAddress);
-    }
     
     if (!wallet) {
       console.error(`Wallet not found for address: ${transaction.fromAddress}`);
@@ -31,7 +28,7 @@ export class TransactionEngine {
     }
     
     // Verify the signature
-    return this.verifySignature(transaction);
+    return await this.verifySignature(transaction); // Add await as verifySignature becomes async
   }
   
   /**
@@ -61,35 +58,34 @@ export class TransactionEngine {
       metadata: transaction.metadata || {}
     };
     
-    // Save to both memory and database for consistency
-    const memTx = await memBlockchainStorage.createTransaction(tx);
-    
-    // Increment the nonce for the sender's wallet
-    let wallet = await walletDao.getWalletByAddress(transaction.fromAddress);
-    if (wallet) {
-      wallet = await walletDao.updateWallet({
-        ...wallet,
-        nonce: (wallet.nonce || 0) + 1
-      });
-    }
-    
-    // Also update in-memory wallet
-    const memWallet = await memBlockchainStorage.getWalletByAddress(transaction.fromAddress);
-    if (memWallet) {
-      await memBlockchainStorage.updateWallet({
-        ...memWallet,
-        nonce: (memWallet.nonce || 0) + 1
-      });
-    }
-    
     try {
-      // Store in database if it exists
+      // Store in database
       const dbTx = await transactionDao.createTransaction(tx);
+
+      // Increment the nonce for the sender's wallet in the database
+      // This should only happen if the transaction is successfully saved to the DB
+      let wallet = await walletDao.getWalletByAddress(transaction.fromAddress);
+      if (wallet) {
+        // Ensure nonce is treated as a number
+        const currentNonce = typeof wallet.nonce === 'number' ? wallet.nonce : 0;
+        await walletDao.updateWallet({
+          ...wallet,
+          nonce: currentNonce + 1
+        });
+      } else {
+        // This case should ideally not be reached if verifyTransaction passed
+        // and didn't find a wallet in the DB.
+        // If it does, it indicates an inconsistency or a race condition.
+        console.error(`CRITICAL: Wallet ${transaction.fromAddress} not found in DB after transaction save, but was present for verification.`);
+        // Depending on desired behavior, could throw an error here or try to create/update.
+        // For now, log critical error.
+      }
       return dbTx;
     } catch (err) {
-      console.error('Error saving transaction to database:', err);
-      // Fall back to memory transaction if database save fails
-      return memTx;
+      console.error('Error saving transaction to database or updating wallet nonce:', err);
+      // If database save or nonce update fails, throw an error.
+      // Do not fall back to a memory-only transaction.
+      throw new Error('Failed to process transaction due to database error.');
     }
   }
   
@@ -110,8 +106,15 @@ export class TransactionEngine {
   /**
    * Verify digital signature of a transaction
    */
-  private verifySignature(transaction: Transaction): boolean {
+  private async verifySignature(transaction: Transaction): Promise<boolean> { // Make async
     try {
+      const wallet = await walletDao.getWalletByAddress(transaction.fromAddress);
+      if (!wallet || !wallet.publicKey) {
+        console.error(`Public key not found for address: ${transaction.fromAddress} during signature verification.`);
+        return false;
+      }
+      const publicKey = wallet.publicKey;
+
       // Recreate the transaction data that was signed
       const txData = {
         fromAddress: transaction.fromAddress,
@@ -127,10 +130,6 @@ export class TransactionEngine {
       // Create the verification instance
       const verify = crypto.createVerify('SHA256');
       verify.update(dataString);
-      
-      // Get public key from the wallet service
-      // For now, assuming the fromAddress is the public key (in a real impl, we'd have a lookup)
-      const publicKey = transaction.fromAddress;
       
       // Verify signature (base64 encoded)
       return verify.verify(

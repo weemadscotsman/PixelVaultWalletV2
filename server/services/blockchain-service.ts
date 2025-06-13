@@ -14,6 +14,11 @@ import {
 import { checkMiningBadges } from '../controllers/badgeController';
 import { broadcastBlock, broadcastStatusUpdate, broadcastTransaction } from '../utils/websocket';
 
+import { walletDao } from '../database/walletDao';
+import { transactionDao } from '../database/transactionDao';
+import { blockDao } from '../database/blockDao';
+import { stakeDao } from '../database/stakeDao';
+
 // Constants for PVX blockchain
 const PVX_GENESIS_BLOCK_TIMESTAMP = 1714637462000; // May 1, 2024
 const PVX_GENESIS_ADDRESS = "PVX_GENESIS_ADDR_00000000000000";
@@ -57,28 +62,31 @@ function generateRandomHash(): string {
 export async function connectToBlockchain(): Promise<BlockchainStatus> {
   try {
     // Create genesis block if it doesn't exist
-    const existingLatestBlock = await memBlockchainStorage.getLatestBlock();
+    let currentLatestBlock = await blockDao.getLatestBlock();
     
-    if (!existingLatestBlock) {
+    if (!currentLatestBlock) {
       console.log('No blocks found, creating genesis block...');
       
-      const genesisBlock: Block = {
+      const genesisBlockData: Block = {
         height: 1,
-        hash: generateRandomHash(),
+        hash: generateRandomHash(), // Consider making this deterministic for genesis
         previousHash: '0000000000000000000000000000000000000000000000000000000000000000',
         timestamp: PVX_GENESIS_BLOCK_TIMESTAMP,
-        transactions: [],
+        transactions: [], // Genesis block has no transactions
         miner: PVX_GENESIS_ADDRESS,
-        nonce: '0',
+        nonce: '0', // Or a specific genesis nonce
         difficulty: PVX_MIN_DIFFICULTY,
-        reward: '0'
+        reward: '0', // No reward for genesis block
+        // Optional fields if your Block type requires them and DAO handles them
+        merkleRoot: crypto.createHash('sha256').update('').digest('hex'), // Empty merkle root
+        totalTransactions: 0,
+        size: 0 // Approximate size
       };
       
-      await memBlockchainStorage.createBlock(genesisBlock);
-      latestBlock = genesisBlock;
-    } else {
-      latestBlock = existingLatestBlock;
+      currentLatestBlock = await blockDao.createBlock(genesisBlockData);
+      console.log('Genesis block created and saved to DB.');
     }
+    latestBlock = currentLatestBlock; // Update service-scoped latestBlock
     
     // Update status
     blockchainStatus = {
@@ -121,14 +129,14 @@ export function getBlockchainStatus(): BlockchainStatus {
  * Get block by hash
  */
 export async function getBlockByHash(hash: string): Promise<Block | null> {
-  return await memBlockchainStorage.getBlockByHash(hash);
+  return await blockDao.getBlockByHash(hash);
 }
 
 /**
  * Get block by height
  */
 export async function getBlockByHeight(height: number): Promise<Block | null> {
-  return await memBlockchainStorage.getBlockByHeight(height);
+  return await blockDao.getBlockByHeight(height);
 }
 
 /**
@@ -150,7 +158,7 @@ export async function createWallet(passphrase: string): Promise<string> {
     .digest('hex');
   
   // Store the wallet in memory with initial PVX
-  await memBlockchainStorage.createWallet({
+  await walletDao.createWallet({
     address,
     publicKey,
     balance: "100000", // 0.1 PVX as starting balance for testing
@@ -167,14 +175,14 @@ export async function createWallet(passphrase: string): Promise<string> {
  * Get wallet by address
  */
 export async function getWallet(address: string) {
-  return await memBlockchainStorage.getWalletByAddress(address);
+  return await walletDao.getWalletByAddress(address);
 }
 
 /**
  * Export wallet keys by address and passphrase
  */
 export async function exportWalletKeys(address: string, passphrase: string) {
-  const wallet = await memBlockchainStorage.getWalletByAddress(address);
+  const wallet = await walletDao.getWalletByAddress(address);
   
   if (!wallet) {
     throw new Error('Wallet not found');
@@ -221,17 +229,17 @@ export async function importWallet(privateKey: string, passphrase: string): Prom
     .digest('hex');
   
   // Check if wallet already exists
-  const existingWallet = await memBlockchainStorage.getWalletByAddress(address);
+  const existingWallet = await walletDao.getWalletByAddress(address);
   
   if (existingWallet) {
     // Update existing wallet passphrase
     existingWallet.passphraseSalt = salt;
     existingWallet.passphraseHash = hash;
     existingWallet.lastUpdated = new Date(); // Changed from lastSynced to match database schema
-    await memBlockchainStorage.updateWallet(existingWallet);
+    await walletDao.updateWallet(existingWallet);
   } else {
     // Create new wallet
-    await memBlockchainStorage.createWallet({
+    await walletDao.createWallet({
       address,
       publicKey,
       balance: "0",
@@ -255,7 +263,7 @@ export async function sendTransaction(
   passphrase: string
 ): Promise<string> {
   // Validate wallet
-  const wallet = await memBlockchainStorage.getWalletByAddress(fromAddress);
+  const wallet = await walletDao.getWalletByAddress(fromAddress);
   
   if (!wallet) {
     throw new Error('Sender wallet not found');
@@ -296,29 +304,30 @@ export async function sendTransaction(
   // Update balances
   const senderBalance = BigInt(wallet.balance) - BigInt(amount);
   wallet.balance = senderBalance.toString();
-  await memBlockchainStorage.updateWallet(wallet);
+  await walletDao.updateWallet(wallet);
   
   // Add to or create receiver wallet
-  const receiverWallet = await memBlockchainStorage.getWalletByAddress(toAddress);
+  let receiverWallet = await walletDao.getWalletByAddress(toAddress);
   if (receiverWallet) {
     const receiverBalance = BigInt(receiverWallet.balance) + BigInt(amount);
     receiverWallet.balance = receiverBalance.toString();
-    await memBlockchainStorage.updateWallet(receiverWallet);
+    await walletDao.updateWallet(receiverWallet);
   } else {
     // Create receiver wallet if it doesn't exist
-    await memBlockchainStorage.createWallet({
+    receiverWallet = {
       address: toAddress,
       publicKey: generateRandomHash(),
       balance: amount,
       createdAt: new Date(),
       lastUpdated: new Date(), // Changed from lastSynced to match database schema
-      passphraseSalt: '',
-      passphraseHash: ''
-    });
+      passphraseSalt: '', // Consider how to handle this for new wallets created this way
+      passphraseHash: ''  // Consider how to handle this for new wallets created this way
+    };
+    await walletDao.createWallet(receiverWallet);
   }
   
   // Store transaction
-  await memBlockchainStorage.createTransaction(transaction);
+  await transactionDao.createTransaction(transaction);
   
   // Add to pending transactions
   pendingTransactions.push(transaction);
@@ -523,8 +532,8 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
     };
     
     // Store new block
-    await memBlockchainStorage.createBlock(newBlock);
-    latestBlock = newBlock;
+    const savedBlock = await blockDao.createBlock(newBlock);
+    latestBlock = savedBlock; // Update service-scoped latestBlock
     
     // Update miner stats
     minerStats.blocksMined += 1;
@@ -533,10 +542,10 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
     await memBlockchainStorage.updateMiner(minerStats);
     
     // Update wallet balance
-    const wallet = await memBlockchainStorage.getWalletByAddress(minerAddress);
+    const wallet = await walletDao.getWalletByAddress(minerAddress);
     if (wallet) {
       wallet.balance = (BigInt(wallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
-      await memBlockchainStorage.updateWallet(wallet);
+      await walletDao.updateWallet(wallet);
     }
     
     // Check and award mining-related badges
@@ -635,39 +644,39 @@ function adjustDifficulty(previousBlock: Block): number {
  * Get latest block
  */
 export async function getLatestBlock(): Promise<Block | null> {
-  return await memBlockchainStorage.getLatestBlock();
+  return await blockDao.getLatestBlock();
 }
 
 /**
  * Get transaction by hash
  */
 export async function getTransactionByHash(hash: string): Promise<Transaction | null> {
-  return await memBlockchainStorage.getTransactionByHash(hash);
+  return await transactionDao.getTransactionByHash(hash);
 }
 
 /**
  * Create a transaction
  */
 export async function createTransaction(transaction: Transaction): Promise<Transaction> {
-  return await memBlockchainStorage.createTransaction(transaction);
+  return await transactionDao.createTransaction(transaction);
 }
 
 /**
  * Get wallet by address
  */
 export async function getWalletByAddress(address: string) {
-  return await memBlockchainStorage.getWalletByAddress(address);
+  return await walletDao.getWalletByAddress(address);
 }
 
 /**
  * Update wallet balance
  */
 export async function updateWalletBalance(address: string, newBalance: string) {
-  const wallet = await memBlockchainStorage.getWalletByAddress(address);
+  const wallet = await walletDao.getWalletByAddress(address);
   if (wallet) {
     wallet.balance = newBalance;
     wallet.lastUpdated = new Date();
-    return await memBlockchainStorage.updateWallet(wallet);
+    return await walletDao.updateWallet(wallet); // or use walletDao.updateWalletBalance if preferred
   }
   return null;
 }
@@ -676,35 +685,26 @@ export async function updateWalletBalance(address: string, newBalance: string) {
  * Get transactions by address
  */
 export async function getTransactionsByAddress(address: string): Promise<Transaction[]> {
-  return await memBlockchainStorage.getTransactionsByAddress(address);
+  // Consider pagination if needed, transactionDao.getTransactionsByAddress supports it
+  return await transactionDao.getTransactionsByAddress(address);
 }
 
 /**
  * Get all wallets
  */
 export async function getAllWallets() {
-  const allWallets = [];
-  
-  // Get all wallets from storage with memory implementation 
-  // Based on the in-memory map in MemBlockchainStorage
-  const walletEntries = Array.from(memBlockchainStorage.wallets.entries());
-  
-  for (const [_, wallet] of walletEntries) {
-    allWallets.push(wallet);
-  }
-  
-  return allWallets;
+  return await walletDao.getAllWallets();
 }
 
 /**
  * Get blockchain trends data for visualization
  */
 export async function getRecentBlocks(limit: number = 10): Promise<Block[]> {
-  return await memBlockchainStorage.getRecentBlocks(limit);
+  return await blockDao.getRecentBlocks(limit);
 }
 
 export async function getRecentTransactions(limit: number = 10): Promise<Transaction[]> {
-  return await memBlockchainStorage.getRecentTransactions(limit);
+  return await transactionDao.getRecentTransactions(limit);
 }
 
 export function getBlockchainTrends(): any {
@@ -959,8 +959,8 @@ async function mineNewBlock() {
     };
     
     // Store block
-    await memBlockchainStorage.createBlock(newBlock);
-    latestBlock = newBlock;
+    const savedBlock = await blockDao.createBlock(newBlock);
+    latestBlock = savedBlock; // Update service-scoped latestBlock
     
     // Create a reward transaction for the miner
     const rewardTx: Transaction = {
@@ -978,7 +978,7 @@ async function mineNewBlock() {
     };
     
     // Store reward transaction
-    await memBlockchainStorage.createTransaction(rewardTx);
+    await transactionDao.createTransaction(rewardTx);
     
     // Update miner stats
     selectedMiner.blocksMined++;
@@ -987,22 +987,14 @@ async function mineNewBlock() {
     await memBlockchainStorage.updateMiner(selectedMiner);
     
     // Update miner wallet balance in both memory and database
-    const minerWallet = await memBlockchainStorage.getWalletByAddress(selectedMiner.address);
+    const minerWallet = await walletDao.getWalletByAddress(selectedMiner.address);
     if (minerWallet) {
-      const currentBalance = parseFloat(minerWallet.balance);
-      const reward = parseFloat(PVX_BLOCK_REWARD);
+      const currentBalance = BigInt(minerWallet.balance);
+      const reward = BigInt(PVX_BLOCK_REWARD);
       const newBalance = currentBalance + reward;
       minerWallet.balance = newBalance.toString();
-      await memBlockchainStorage.updateWallet(minerWallet);
-      
-      // Also update database directly for API consistency
-      try {
-        const { DatabaseStorage } = await import('../storage.js');
-        const dbStorage = new DatabaseStorage();
-        await dbStorage.updateWalletBalance(selectedMiner.address, newBalance);
-      } catch (err) {
-        console.error('Failed to sync wallet balance to database:', err);
-      }
+      minerWallet.lastUpdated = new Date();
+      await walletDao.updateWallet(minerWallet);
     }
     
     // Check for mining badges
@@ -1070,11 +1062,12 @@ async function distributeStakingRewards() {
   try {
     // Get all active stakes
     const now = Date.now();
-    const stakingPools = await memBlockchainStorage.getStakingPools();
+    // Fetch Staking Pools from DB
+    const stakingPools = await stakeDao.getStakingPools();
     
     for (const pool of stakingPools) {
-      // Get all active stakes for this pool
-      const activeStakes = await memBlockchainStorage.getActiveStakesByPoolId(pool.id);
+      // Get all active stakes for this pool from DB
+      const activeStakes = await stakeDao.getActiveStakesByPoolId(pool.id);
       
       // Skip if no active stakes
       if (!activeStakes || activeStakes.length === 0) {
@@ -1097,10 +1090,13 @@ async function distributeStakingRewards() {
           continue;
         }
         
-        // Update stake record
-        stake.lastRewardTime = now;
-        stake.rewards = (BigInt(stake.rewards || '0') + BigInt(reward)).toString();
-        await memBlockchainStorage.updateStakeRecord(stake);
+        // Update stake record in DB
+        const updatedStakeRecord = {
+          ...stake,
+          lastRewardTime: now,
+          rewards: (BigInt(stake.rewards || '0') + BigInt(reward)).toString()
+        };
+        await stakeDao.updateStakeRecord(updatedStakeRecord);
         
         // Create reward transaction
         const rewardTx: Transaction = {
@@ -1117,58 +1113,43 @@ async function distributeStakingRewards() {
             status: 'confirmed'
         };
         
-        // Store reward transaction in memory first
-        await memBlockchainStorage.createTransaction(rewardTx);
-        
         // Persist transaction to database
+        // The transactionDao is already imported at the top of the file.
+        // No need to dynamically import it here.
+        const txForDb: Transaction = { // Ensure this object matches what transactionDao expects
+          hash: rewardTx.hash,
+          type: rewardTx.type as TransactionType,
+          from: rewardTx.from,
+          to: rewardTx.to,
+          amount: rewardTx.amount, // transactionDao expects string or number based on its own conversion
+          timestamp: rewardTx.timestamp,
+          nonce: rewardTx.nonce,
+          signature: rewardTx.signature,
+          status: rewardTx.status as 'pending' | 'confirmed' | 'failed',
+          blockHeight: rewardTx.blockHeight,
+          fee: rewardTx.fee,
+          metadata: {
+            stakeId: stake.id,
+            poolId: stake.poolId,
+            poolApr: pool.apy || pool.apr, // Ensure pool.apy or pool.apr is defined
+            rewardDate: now
+          }
+        };
+
         try {
-          const { transactionDao } = await import('../database/transactionDao');
-          
-          // In TransactionDao.createTransaction, it expects a Transaction object and does the DB mapping internally
-          // So we'll just create a Transaction with the metadata we need
-          const txForDb: Transaction = {
-            hash: rewardTx.hash,
-            type: rewardTx.type as TransactionType,
-            from: rewardTx.from,
-            to: rewardTx.to,
-            amount: Number(rewardTx.amount),
-            timestamp: Number(rewardTx.timestamp),
-            nonce: rewardTx.nonce,
-            signature: rewardTx.signature,
-            status: rewardTx.status as 'pending' | 'confirmed' | 'failed',
-            blockHeight: rewardTx.blockHeight,
-            fee: rewardTx.fee,
-            metadata: {
-              stakeId: stake.id,
-              poolId: stake.poolId,
-              poolApr: pool.apy || pool.apr,
-              rewardDate: now
-            }
-          };
-          
-          // Store in database - the DAO will handle the field name conversion
           await transactionDao.createTransaction(txForDb);
           console.log(`Staking reward transaction [${rewardTx.hash}] persisted to database for ${stake.walletAddress}`);
         } catch (dbError) {
           console.error('Failed to persist staking reward to database:', dbError);
-          // Continue even if database persistence fails
+          // Decide if we should continue or throw, for now, it continues
         }
         
         // Update wallet balance
-        const wallet = await memBlockchainStorage.getWalletByAddress(stake.walletAddress);
+        const wallet = await walletDao.getWalletByAddress(stake.walletAddress);
         if (wallet) {
           wallet.balance = (BigInt(wallet.balance) + BigInt(reward)).toString();
-          await memBlockchainStorage.updateWallet(wallet);
-          
-          // Also update the wallet in the database if possible
-          try {
-            const { walletDao } = await import('../database/walletDao');
-            await walletDao.updateWallet(wallet);
-            console.log(`Wallet balance updated in database for ${stake.walletAddress}`);
-          } catch (dbError) {
-            console.error('Failed to update wallet balance in database:', dbError);
-            // Continue even if database update fails
-          }
+          wallet.lastUpdated = new Date();
+          await walletDao.updateWallet(wallet);
         }
         
         // Broadcast reward transaction
