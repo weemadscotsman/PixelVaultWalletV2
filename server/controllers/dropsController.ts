@@ -1,109 +1,50 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
-import { memBlockchainStorage } from '../mem-blockchain';
 import { broadcastTransaction } from '../utils/websocket';
 import { PVX_GENESIS_ADDRESS } from '../utils/constants';
 import { updateBadgeStatus } from '../services/badge-service';
 import { generateRandomHash } from '../utils/crypto';
+import { dropDao } from '../database/dropDao';
+import { Drop as SharedDrop, Transaction as SharedTransaction, Wallet as SharedWallet, MiningStats as SharedMiningStats } from '@shared/types'; // Assuming a shared type exists
+import { walletDao } from '../database/walletDao';
+import { stakingService } from '../services/stakingService';
+import { minerDao } from '../database/minerDao';
+import { transactionDao } from '../database/transactionDao';
+
 
 // Define TransactionType as string literals since the enum is not available
-const TransactionType = {
-  TRANSFER: 'TRANSFER',
-  MINING_REWARD: 'MINING_REWARD',
-  STAKING_REWARD: 'STAKING_REWARD',
-  AIRDROP: 'AIRDROP',
-  NFT_MINT: 'NFT_MINT',
-  BADGE_AWARD: 'BADGE_AWARD'
+// Using TransactionType from shared types if possible, otherwise this is fallback
+const LocalTransactionType = {
+  TRANSFER: 'TRANSFER' as SharedTransaction['type'],
+  MINING_REWARD: 'MINING_REWARD' as SharedTransaction['type'],
+  STAKING_REWARD: 'STAKING_REWARD' as SharedTransaction['type'],
+  AIRDROP: 'AIRDROP' as SharedTransaction['type'],
+  NFT_MINT: 'NFT_MINT' as SharedTransaction['type'],
+  BADGE_AWARD: 'BADGE_AWARD' as SharedTransaction['type']
 };
 
-interface Drop {
-  id: string;
-  name: string;
-  description: string;
-  type: 'NFT' | 'TOKEN' | 'BADGE';
-  rarity: 'Common' | 'Rare' | 'Legendary' | 'Mythical';
-  imageUrl: string;
-  tokenAmount?: number;
-  createdAt: Date;
-  expiresAt: Date;
-  claimedBy: string[];
-  claimLimit: number;
-  minWalletAge: number; // In days
-  minStakingAmount: number; // Minimum amount staked to be eligible
-  minMiningBlocks: number; // Minimum blocks mined to be eligible
-  securityScore: number; // 0-100, higher is more secure/valuable
-}
-
-// In-memory storage for drops until we move to database
-const activeDrops: Drop[] = [
-  {
-    id: 'drop_001',
-    name: 'Genesis Supporter',
-    description: 'An exclusive badge for early supporters of PixelVault blockchain',
-    type: 'BADGE',
-    rarity: 'Rare',
-    imageUrl: '/assets/drops/genesis_badge.png',
-    createdAt: new Date(),
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
-    claimedBy: [],
-    claimLimit: 100,
-    minWalletAge: 1, // 1 day
-    minStakingAmount: 0,
-    minMiningBlocks: 0,
-    securityScore: 85
-  },
-  {
-    id: 'drop_002',
-    name: 'First Mining Reward',
-    description: 'A small reward for miners who support the PixelVault network',
-    type: 'TOKEN',
-    rarity: 'Common',
-    imageUrl: '/assets/drops/mining_reward.png',
-    tokenAmount: 1000, // μPVX
-    createdAt: new Date(),
-    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-    claimedBy: [],
-    claimLimit: 200,
-    minWalletAge: 0,
-    minStakingAmount: 0,
-    minMiningBlocks: 5, // Must have mined at least 5 blocks
-    securityScore: 70
-  },
-  {
-    id: 'drop_003',
-    name: 'Quantum Pioneer NFT',
-    description: 'A rare NFT for early adopters of PixelVault\'s quantum features',
-    type: 'NFT',
-    rarity: 'Legendary',
-    imageUrl: '/assets/drops/quantum_nft.png',
-    createdAt: new Date(),
-    expiresAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
-    claimedBy: [],
-    claimLimit: 50,
-    minWalletAge: 3, // 3 days
-    minStakingAmount: 5000, // Must have staked at least 5000 μPVX
-    minMiningBlocks: 0,
-    securityScore: 95
-  }
-];
 
 /**
  * Get all active drops
  */
 export const getActiveDrops = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Filter to only show active drops (not expired)
-    const now = new Date();
-    const activeDrps = activeDrops.filter(drop => drop.expiresAt > now);
+    const activeDbDrops: SharedDrop[] = await dropDao.getActiveDrops();
     
-    // Don't send claimedBy array to client for privacy
-    const sanitizedDrops = activeDrps.map(({ claimedBy, ...rest }) => ({
-      ...rest,
-      claimedCount: claimedBy.length,
-      remainingClaims: rest.claimLimit - claimedBy.length
+    const responseDrops = await Promise.all(activeDbDrops.map(async (drop) => {
+      const claimedCount = await dropDao.getDropClaimCount(drop.id);
+      const remainingClaims = drop.claimLimit - claimedCount;
+      return {
+        ...drop, // Spread fields from the DAO's Drop type
+        claimedCount,
+        remainingClaims,
+        // Ensure date fields are in the expected format if necessary (e.g., toISOString)
+        createdAt: new Date(drop.createdAt).toISOString(),
+        expiresAt: new Date(drop.expiresAt).toISOString(),
+      };
     }));
     
-    res.status(200).json(sanitizedDrops);
+    res.status(200).json(responseDrops);
   } catch (error) {
     console.error('Error getting active drops:', error);
     res.status(500).json({ error: 'Failed to fetch active drops' });
@@ -116,22 +57,26 @@ export const getActiveDrops = async (req: Request, res: Response): Promise<void>
 export const getDropById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { dropId } = req.params;
-    const drop = activeDrops.find(d => d.id === dropId);
+    const drop = await dropDao.getDropById(dropId);
     
     if (!drop) {
       res.status(404).json({ error: 'Drop not found' });
       return;
     }
     
-    // Don't send claimedBy array to client for privacy
-    const { claimedBy, ...rest } = drop;
-    const sanitizedDrop = {
-      ...rest,
-      claimedCount: claimedBy.length,
-      remainingClaims: rest.claimLimit - claimedBy.length
+    const claimedCount = await dropDao.getDropClaimCount(drop.id);
+    const remainingClaims = drop.claimLimit - claimedCount;
+
+    const responseDrop = {
+      ...drop, // Spread fields from the DAO's Drop type
+      claimedCount,
+      remainingClaims,
+      // Ensure date fields are in the expected format if necessary
+      createdAt: new Date(drop.createdAt).toISOString(),
+      expiresAt: new Date(drop.expiresAt).toISOString(),
     };
     
-    res.status(200).json(sanitizedDrop);
+    res.status(200).json(responseDrop);
   } catch (error) {
     console.error('Error getting drop by ID:', error);
     res.status(500).json({ error: 'Failed to fetch drop' });
@@ -145,22 +90,20 @@ export const checkDropEligibility = async (req: Request, res: Response): Promise
   try {
     const { dropId, walletAddress } = req.params;
     
-    // Find the drop
-    const drop = activeDrops.find(d => d.id === dropId);
+    const drop = await dropDao.getDropById(dropId);
     if (!drop) {
       res.status(404).json({ error: 'Drop not found' });
       return;
     }
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(walletAddress);
+    const wallet = await walletDao.getWalletByAddress(walletAddress);
     if (!wallet) {
       res.status(404).json({ error: 'Wallet not found' });
       return;
     }
     
-    // Check if already claimed
-    if (drop.claimedBy.includes(walletAddress)) {
+    const alreadyClaimed = await dropDao.hasDropBeenClaimed(dropId, walletAddress);
+    if (alreadyClaimed) {
       res.status(400).json({ 
         eligible: false,
         reason: 'This drop has already been claimed by this wallet'
@@ -168,8 +111,8 @@ export const checkDropEligibility = async (req: Request, res: Response): Promise
       return;
     }
     
-    // Check if claim limit reached
-    if (drop.claimedBy.length >= drop.claimLimit) {
+    const claimCount = await dropDao.getDropClaimCount(dropId);
+    if (claimCount >= drop.claimLimit) {
       res.status(400).json({ 
         eligible: false,
         reason: 'Claim limit for this drop has been reached'
@@ -177,9 +120,8 @@ export const checkDropEligibility = async (req: Request, res: Response): Promise
       return;
     }
     
-    // Check if expired
     const now = new Date();
-    if (drop.expiresAt < now) {
+    if (new Date(drop.expiresAt) < now) {
       res.status(400).json({ 
         eligible: false,
         reason: 'This drop has expired'
@@ -187,8 +129,7 @@ export const checkDropEligibility = async (req: Request, res: Response): Promise
       return;
     }
     
-    // Check minimum wallet age
-    const walletAgeInDays = (now.getTime() - wallet.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    const walletAgeInDays = (now.getTime() - new Date(wallet.createdAt).getTime()) / (1000 * 60 * 60 * 24);
     if (walletAgeInDays < drop.minWalletAge) {
       res.status(400).json({ 
         eligible: false,
@@ -197,11 +138,9 @@ export const checkDropEligibility = async (req: Request, res: Response): Promise
       return;
     }
     
-    // Check minimum staking amount if required
     if (drop.minStakingAmount > 0) {
-      const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(walletAddress);
+      const activeStakes = await stakingService.getActiveStakes(walletAddress);
       const totalStaked = activeStakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0);
-      
       if (totalStaked < drop.minStakingAmount) {
         res.status(400).json({ 
           eligible: false,
@@ -211,10 +150,8 @@ export const checkDropEligibility = async (req: Request, res: Response): Promise
       }
     }
     
-    // Check minimum mining blocks if required
     if (drop.minMiningBlocks > 0) {
-      const minerStats = await memBlockchainStorage.getMinerByAddress(walletAddress);
-      
+      const minerStats = await minerDao.getMinerStatsByAddress(walletAddress);
       if (!minerStats || minerStats.blocksMined < drop.minMiningBlocks) {
         res.status(400).json({ 
           eligible: false,
@@ -249,86 +186,82 @@ export const claimDrop = async (req: Request, res: Response): Promise<void> => {
   try {
     const { dropId, walletAddress } = req.params;
     
-    // Find the drop
-    const drop = activeDrops.find(d => d.id === dropId);
+    const drop = await dropDao.getDropById(dropId);
     if (!drop) {
       res.status(404).json({ error: 'Drop not found' });
       return;
     }
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(walletAddress);
+    const wallet = await walletDao.getWalletByAddress(walletAddress);
     if (!wallet) {
       res.status(404).json({ error: 'Wallet not found' });
       return;
     }
     
-    // Check if already claimed
-    if (drop.claimedBy.includes(walletAddress)) {
+    const alreadyClaimed = await dropDao.hasDropBeenClaimed(dropId, walletAddress);
+    if (alreadyClaimed) {
       res.status(400).json({ error: 'This drop has already been claimed by this wallet' });
       return;
     }
     
-    // Check if claim limit reached
-    if (drop.claimedBy.length >= drop.claimLimit) {
+    const claimCount = await dropDao.getDropClaimCount(dropId);
+    if (claimCount >= drop.claimLimit) {
       res.status(400).json({ error: 'Claim limit for this drop has been reached' });
       return;
     }
     
-    // Check if expired
     const now = new Date();
-    if (drop.expiresAt < now) {
+    if (new Date(drop.expiresAt) < now) {
       res.status(400).json({ error: 'This drop has expired' });
       return;
     }
     
-    // Check minimum wallet age
-    const walletAgeInDays = (now.getTime() - wallet.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    const walletAgeInDays = (now.getTime() - new Date(wallet.createdAt).getTime()) / (1000 * 60 * 60 * 24);
     if (walletAgeInDays < drop.minWalletAge) {
       res.status(400).json({ error: `Wallet must be at least ${drop.minWalletAge} days old` });
       return;
     }
     
-    // Check minimum staking amount if required
     if (drop.minStakingAmount > 0) {
-      const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(walletAddress);
+      const activeStakes = await stakingService.getActiveStakes(walletAddress);
       const totalStaked = activeStakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0);
-      
       if (totalStaked < drop.minStakingAmount) {
         res.status(400).json({ error: `Minimum staking amount of ${drop.minStakingAmount} μPVX required` });
         return;
       }
     }
     
-    // Check minimum mining blocks if required
     if (drop.minMiningBlocks > 0) {
-      const minerStats = await memBlockchainStorage.getMinerByAddress(walletAddress);
-      
+      const minerStats = await minerDao.getMinerStatsByAddress(walletAddress);
       if (!minerStats || minerStats.blocksMined < drop.minMiningBlocks) {
         res.status(400).json({ error: `Must have mined at least ${drop.minMiningBlocks} blocks` });
         return;
       }
     }
     
-    // Process the claim based on drop type
     let claimResult;
+    let generatedTxHash: string | undefined = undefined;
+
     switch (drop.type) {
       case 'TOKEN':
-        claimResult = await processTokenDrop(drop, walletAddress);
+        claimResult = await processTokenDrop(drop, wallet); // Pass fetched wallet
+        generatedTxHash = claimResult.transactionHash;
         break;
       case 'NFT':
         claimResult = await processNftDrop(drop, walletAddress);
+        generatedTxHash = claimResult.transactionHash;
         break;
       case 'BADGE':
         claimResult = await processBadgeDrop(drop, walletAddress);
+        generatedTxHash = claimResult.transactionHash;
         break;
       default:
         res.status(400).json({ error: 'Invalid drop type' });
         return;
     }
     
-    // Mark as claimed
-    drop.claimedBy.push(walletAddress);
+    // Record the claim in the database
+    await dropDao.claimDrop(dropId, walletAddress, generatedTxHash);
     
     res.status(200).json({
       success: true,
@@ -345,16 +278,11 @@ export const claimDrop = async (req: Request, res: Response): Promise<void> => {
 /**
  * Process a token drop - send tokens to the user
  */
-async function processTokenDrop(drop: Drop, walletAddress: string) {
+async function processTokenDrop(drop: SharedDrop, wallet: SharedWallet) { // Use SharedWallet
   if (!drop.tokenAmount) {
     throw new Error('Token amount is not defined for this drop');
   }
-  
-  // Get the wallet
-  const wallet = await memBlockchainStorage.getWalletByAddress(walletAddress);
-  if (!wallet) {
-    throw new Error('Wallet not found');
-  }
+  // Wallet is already fetched and passed in
   
   // Create a transaction for the token transfer
   const timestamp = Date.now();
@@ -374,14 +302,12 @@ async function processTokenDrop(drop: Drop, walletAddress: string) {
     status: 'confirmed'
   };
   
-  // Add transaction to the blockchain
-  await memBlockchainStorage.createTransaction(transaction);
+  // Add transaction to the blockchain via DAO
+  await transactionDao.createTransaction(transaction as any); // Cast if local type mismatches shared
   
-  // Update wallet balance
+  // Update wallet balance via DAO
   const newBalance = BigInt(wallet.balance) + BigInt(drop.tokenAmount);
-  wallet.balance = newBalance.toString();
-  wallet.lastSynced = new Date(timestamp);
-  await memBlockchainStorage.updateWallet(wallet);
+  await walletDao.updateWallet({ ...wallet, balance: newBalance.toString(), lastUpdated: new Date(timestamp) });
   
   // Broadcast transaction via WebSocket
   try {
@@ -413,7 +339,7 @@ async function processNftDrop(drop: Drop, walletAddress: string) {
   
   const transaction = {
     hash: txHash,
-    type: TransactionType.NFT_MINT,
+    type: LocalTransactionType.NFT_MINT as SharedTransaction['type'],
     from: PVX_GENESIS_ADDRESS,
     to: walletAddress,
     amount: 0, // NFTs don't have a token amount
@@ -430,8 +356,8 @@ async function processNftDrop(drop: Drop, walletAddress: string) {
     }
   };
   
-  // Add transaction to the blockchain
-  await memBlockchainStorage.createTransaction(transaction);
+  // Add transaction to the blockchain via DAO
+  await transactionDao.createTransaction(transaction as any); // Cast if local type mismatches shared
   
   // Broadcast transaction via WebSocket
   try {
@@ -467,7 +393,7 @@ async function processBadgeDrop(drop: Drop, walletAddress: string) {
   
   const transaction = {
     hash: txHash,
-    type: TransactionType.BADGE_AWARD,
+    type: LocalTransactionType.BADGE_AWARD as SharedTransaction['type'],
     from: PVX_GENESIS_ADDRESS,
     to: walletAddress,
     amount: 0, // Badges don't have a token amount
@@ -483,8 +409,8 @@ async function processBadgeDrop(drop: Drop, walletAddress: string) {
     }
   };
   
-  // Add transaction to the blockchain
-  await memBlockchainStorage.createTransaction(transaction);
+  // Add transaction to the blockchain via DAO
+  await transactionDao.createTransaction(transaction as any); // Cast if local type mismatches shared
   
   // Broadcast transaction via WebSocket
   try {
@@ -509,18 +435,28 @@ export const getUserClaimedDrops = async (req: Request, res: Response): Promise<
   try {
     const { walletAddress } = req.params;
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(walletAddress);
+    const wallet = await walletDao.getWalletByAddress(walletAddress);
     if (!wallet) {
       res.status(404).json({ error: 'Wallet not found' });
       return;
     }
     
-    // Find all drops claimed by this wallet
-    const claimedDrops = activeDrops.filter(drop => drop.claimedBy.includes(walletAddress))
-      .map(({ claimedBy, ...rest }) => rest);
+    const claims = await dropDao.getDropClaimsByWallet(walletAddress);
+    const claimedDropDetails = await Promise.all(
+      claims.map(async (claim) => {
+        const dropDetail = await dropDao.getDropById(claim.dropId);
+        if (!dropDetail) return null;
+        return {
+          ...dropDetail,
+          claimedAt: new Date(claim.claimedAt).toISOString(),
+          transactionHash: claim.transactionHash,
+          // Add claimCount and remainingClaims if needed for consistency, though they are claimed.
+          // For simplicity, returning the core drop details + claim info.
+        };
+      })
+    );
     
-    res.status(200).json(claimedDrops);
+    res.status(200).json(claimedDropDetails.filter(Boolean));
   } catch (error) {
     console.error('Error getting user claimed drops:', error);
     res.status(500).json({ error: 'Failed to fetch claimed drops' });

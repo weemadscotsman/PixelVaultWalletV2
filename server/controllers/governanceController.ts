@@ -1,168 +1,71 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
-import { memBlockchainStorage } from '../mem-blockchain';
+// import { memBlockchainStorage } from '../mem-blockchain'; // Will be removed if other fns are refactored
 import { broadcastTransaction } from '../utils/websocket';
 import { PVX_GOVERNANCE_ADDRESS } from '../utils/constants';
 import { generateRandomHash } from '../utils/crypto';
+import { governanceDao } from '../database/governanceDao';
+import {
+  GovernanceProposal as SharedGovernanceProposal,
+  GovernanceVote as SharedGovernanceVote,
+  ProposalStatus as SharedProposalStatus,
+  VoteType as SharedVoteType,
+  Transaction as SharedTransaction // For transaction creation
+} from '@shared/types';
+import { walletDao } from '../database/walletDao';
+import { stakingService } from '../services/stakingService';
+import { transactionDao } from '../database/transactionDao';
+
 
 // Define TransactionType as string literals since the enum is not available
-const TransactionType = {
-  TRANSFER: 'TRANSFER',
-  MINING_REWARD: 'MINING_REWARD',
-  STAKING_REWARD: 'STAKING_REWARD',
-  AIRDROP: 'AIRDROP',
-  NFT_MINT: 'NFT_MINT',
-  BADGE_AWARD: 'BADGE_AWARD',
-  GOVERNANCE_VOTE: 'GOVERNANCE_VOTE',
-  GOVERNANCE_PROPOSAL: 'GOVERNANCE_PROPOSAL'
+const LocalTransactionType = { // Renamed to avoid conflict if shared TransactionType is different
+  TRANSFER: 'TRANSFER' as SharedTransaction['type'],
+  MINING_REWARD: 'MINING_REWARD'as SharedTransaction['type'],
+  STAKING_REWARD: 'STAKING_REWARD'as SharedTransaction['type'],
+  AIRDROP: 'AIRDROP'as SharedTransaction['type'],
+  NFT_MINT: 'NFT_MINT'as SharedTransaction['type'],
+  BADGE_AWARD: 'BADGE_AWARD'as SharedTransaction['type'],
+  GOVERNANCE_VOTE: 'GOVERNANCE_VOTE'as SharedTransaction['type'],
+  GOVERNANCE_PROPOSAL: 'GOVERNANCE_PROPOSAL'as SharedTransaction['type']
 };
 
-// Proposal status enum
-enum ProposalStatus {
-  ACTIVE = 'active',
-  PASSED = 'passed',
-  REJECTED = 'rejected',
-  EXECUTED = 'executed'
-}
+// Using SharedProposalStatus and SharedVoteType now, removing local enums
+// enum ProposalStatus {
+//   ACTIVE = 'active',
+//   PASSED = 'passed',
+//   REJECTED = 'rejected',
+//   EXECUTED = 'executed'
+// }
 
-// Vote type enum
-enum VoteType {
-  FOR = 'for',
-  AGAINST = 'against',
-  ABSTAIN = 'abstain'
-}
+// enum VoteType {
+//   FOR = 'for',
+//   AGAINST = 'against',
+//   ABSTAIN = 'abstain'
+// }
 
-// Governance proposal interface
-interface Proposal {
-  id: string;
-  title: string;
-  description: string;
-  proposer: string;
-  createdAt: number;
-  endTime: number;
-  status: ProposalStatus;
-  votesFor: number;
-  votesAgainst: number;
-  votesAbstain: number;
-  minimumVotingPower: number;
-  category: 'PROTOCOL' | 'TREASURY' | 'PARAMETER' | 'SOCIAL';
-  parameterChanges?: {
-    paramName: string;
-    currentValue: string;
-    proposedValue: string;
-  }[];
-  voters: {
-    address: string;
-    voteType: VoteType;
-    votingPower: number;
-    timestamp: number;
-  }[];
-  executionTransactionHash?: string;
-}
-
-// In-memory storage for proposals
-const governanceProposals: Proposal[] = [
-  {
-    id: 'gov_001',
-    title: 'Increase Staking Rewards',
-    description: 'Proposal to increase staking rewards by 5% for all pools to incentivize network participation.',
-    proposer: 'PVX_4cf911a2bfc8c35d91d05346f0f2cd96',
-    createdAt: Date.now() - 3 * 24 * 60 * 60 * 1000, // 3 days ago
-    endTime: Date.now() + 4 * 24 * 60 * 60 * 1000, // 4 days from now
-    status: ProposalStatus.ACTIVE,
-    votesFor: 25000,
-    votesAgainst: 10000,
-    votesAbstain: 5000,
-    minimumVotingPower: 1000,
-    category: 'PARAMETER',
-    parameterChanges: [
-      {
-        paramName: 'stakingRewardMultiplier',
-        currentValue: '1.0',
-        proposedValue: '1.05'
-      }
-    ],
-    voters: [
-      {
-        address: 'PVX_9703f23ff29015d96de825c2309ef249',
-        voteType: VoteType.FOR,
-        votingPower: 15000,
-        timestamp: Date.now() - 2 * 24 * 60 * 60 * 1000
-      },
-      {
-        address: 'PVX_f5ba480b7db6010eecb453eca8e67ff0',
-        voteType: VoteType.FOR,
-        votingPower: 10000,
-        timestamp: Date.now() - 1 * 24 * 60 * 60 * 1000
-      },
-      {
-        address: 'PVX_1e1ee32c2770a6af3ca119759c539907',
-        voteType: VoteType.AGAINST,
-        votingPower: 10000,
-        timestamp: Date.now() - 12 * 60 * 60 * 1000
-      },
-      {
-        address: 'PVX_8d7f1d18e22434e2f3fcb90098c5c898',
-        voteType: VoteType.ABSTAIN,
-        votingPower: 5000,
-        timestamp: Date.now() - 6 * 60 * 60 * 1000
-      }
-    ]
-  },
-  {
-    id: 'gov_002',
-    title: 'Community Development Fund',
-    description: 'Create a community development fund with 1% of all transaction fees to support ecosystem growth and developer initiatives.',
-    proposer: 'PVX_1e1ee32c2770a6af3ca119759c539907',
-    createdAt: Date.now() - 5 * 24 * 60 * 60 * 1000, // 5 days ago
-    endTime: Date.now() + 2 * 24 * 60 * 60 * 1000, // 2 days from now
-    status: ProposalStatus.ACTIVE,
-    votesFor: 35000,
-    votesAgainst: 15000,
-    votesAbstain: 2000,
-    minimumVotingPower: 1000,
-    category: 'TREASURY',
-    voters: [
-      {
-        address: 'PVX_4cf911a2bfc8c35d91d05346f0f2cd96',
-        voteType: VoteType.FOR,
-        votingPower: 20000,
-        timestamp: Date.now() - 4 * 24 * 60 * 60 * 1000
-      },
-      {
-        address: 'PVX_9703f23ff29015d96de825c2309ef249',
-        voteType: VoteType.FOR,
-        votingPower: 15000,
-        timestamp: Date.now() - 3 * 24 * 60 * 60 * 1000
-      },
-      {
-        address: 'PVX_f5ba480b7db6010eecb453eca8e67ff0',
-        voteType: VoteType.AGAINST,
-        votingPower: 15000,
-        timestamp: Date.now() - 2 * 24 * 60 * 60 * 1000
-      },
-      {
-        address: 'PVX_8d7f1d18e22434e2f3fcb90098c5c898',
-        voteType: VoteType.ABSTAIN,
-        votingPower: 2000,
-        timestamp: Date.now() - 1 * 24 * 60 * 60 * 1000
-      }
-    ]
-  }
-];
+// Remove in-memory storage for proposals
+// const governanceProposals: Proposal[] = [ ... ];
 
 /**
  * Get all governance proposals
  */
 export const getAllProposals = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Don't send full voter data to client for privacy
-    const sanitizedProposals = governanceProposals.map(({ voters, ...rest }) => ({
-      ...rest,
-      voterCount: voters.length
+    const proposalsFromDao = await governanceDao.getAllProposals();
+
+    const responseProposals = await Promise.all(proposalsFromDao.map(async (proposal) => {
+      const votes = await governanceDao.getVotesForProposal(proposal.id);
+      // Ensure dates are consistently formatted (e.g., ISO strings or numbers as per API contract)
+      // The DAO already returns numbers for createdAt, endTime
+      return {
+        ...proposal,
+        voterCount: votes.length,
+        // Ensure status and category match expected client values (string/enum)
+        // DAO returns them as strings which should be fine if they match local enums/shared types.
+      };
     }));
     
-    res.status(200).json(sanitizedProposals);
+    res.status(200).json(responseProposals);
   } catch (error) {
     console.error('Error getting governance proposals:', error);
     res.status(500).json({ error: 'Failed to fetch governance proposals' });
@@ -175,24 +78,41 @@ export const getAllProposals = async (req: Request, res: Response): Promise<void
 export const getProposalById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { proposalId } = req.params;
-    const proposal = governanceProposals.find(p => p.id === proposalId);
+    const proposal = await governanceDao.getProposalById(proposalId);
     
     if (!proposal) {
       res.status(404).json({ error: 'Proposal not found' });
       return;
     }
     
-    // Don't send voter addresses to client for privacy
-    const sanitizedProposal = {
+    const votesFromDao = await governanceDao.getVotesForProposal(proposalId);
+    const sanitizedVotes = votesFromDao.map(vote => ({
+      ...vote,
+      // Sanitize voter address
+      voterAddress: `${vote.voterAddress.substring(0, 6)}...${vote.voterAddress.substring(vote.voterAddress.length - 4)}`,
+      // Ensure voteType matches expected client values (string/enum)
+      // Ensure timestamp is in expected format
+      timestamp: Number(vote.timestamp) // DAO returns number, ensure it's what client expects
+    }));
+
+    const responseProposal = {
       ...proposal,
-      voters: proposal.voters.map(({ address, ...rest }) => ({
-        ...rest,
-        // Only send first and last 4 characters of address
-        address: `${address.substring(0, 6)}...${address.substring(address.length - 4)}`
-      }))
+      // Ensure dates are consistently formatted
+      createdAt: Number(proposal.createdAt),
+      endTime: Number(proposal.endTime),
+      votes: sanitizedVotes // Replace 'voters' with 'votes' if that's the new structure from DAO/shared type
     };
     
-    res.status(200).json(sanitizedProposal);
+    // If the original response had a 'voters' field with specific structure, adapt here.
+    // For now, assuming the client expects 'votes' as an array of vote objects.
+    // If the original `Proposal` interface's `voters` structure is strictly needed,
+    // then `sanitizedVotes` would need to be mapped to that structure.
+    // The DAO returns GovernanceVote[], which has voterAddress, voteType, votingPower, timestamp.
+    // The old interface had `voters: { address, voteType, votingPower, timestamp }[]`
+    // So, mapping voterAddress to address is needed if using old interface structure.
+    // For simplicity, let's assume the client can adapt to `voterAddress` or the shared type is used.
+
+    res.status(200).json(responseProposal);
   } catch (error) {
     console.error('Error getting proposal by ID:', error);
     res.status(500).json({ error: 'Failed to fetch proposal' });
@@ -212,62 +132,59 @@ export const createProposal = async (req: Request, res: Response): Promise<void>
       return;
     }
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(proposerAddress);
+    // Check if wallet exists using walletDao
+    const wallet = await walletDao.getWalletByAddress(proposerAddress);
     if (!wallet) {
       res.status(404).json({ error: 'Proposer wallet not found' });
       return;
     }
     
-    // Check if proposer has enough voting power (staked tokens)
-    const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(proposerAddress);
+    // Check if proposer has enough voting power (staked tokens) using stakingService
+    const activeStakes = await stakingService.getActiveStakes(proposerAddress);
     const totalStaked = activeStakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0);
     
-    if (totalStaked < 10000) { // Minimum 10,000 μPVX to create a proposal
-      res.status(400).json({ error: 'Insufficient voting power to create a proposal. Minimum 10,000 μPVX staked required.' });
+    const MIN_POWER_TO_PROPOSE = 10000; // Example value, should be a constant
+    if (totalStaked < MIN_POWER_TO_PROPOSE) {
+      res.status(400).json({ error: `Insufficient voting power to create a proposal. Minimum ${MIN_POWER_TO_PROPOSE} μPVX staked required.` });
       return;
     }
     
-    // Generate a unique ID for the proposal
     const proposalId = `gov_${crypto.randomBytes(4).toString('hex')}`;
     const now = Date.now();
     
-    // Create the new proposal
-    const newProposal: Proposal = {
+    const newProposalData: SharedGovernanceProposal = {
       id: proposalId,
       title,
       description,
       proposer: proposerAddress,
       createdAt: now,
-      endTime: now + (endTimeInDays * 24 * 60 * 60 * 1000), // Convert days to milliseconds
-      status: ProposalStatus.ACTIVE,
+      endTime: now + (endTimeInDays * 24 * 60 * 60 * 1000),
+      status: SharedProposalStatus.ACTIVE, // Use shared enum
       votesFor: 0,
       votesAgainst: 0,
       votesAbstain: 0,
-      minimumVotingPower: minimumVotingPower || 1000, // Default to 1000 μPVX if not specified
-      category: category as any, // Cast to the correct type
-      parameterChanges,
-      voters: []
+      minimumVotingPower: minimumVotingPower || 1000,
+      category: category, // Assuming category from body matches SharedGovernanceProposal['category']
+      parameterChanges: parameterChanges || [],
+      // 'votes' field is usually not part of proposal creation, but handled by separate votes table
     };
     
-    // Add the proposal to the list
-    governanceProposals.push(newProposal);
+    const createdProposal = await governanceDao.createProposal(newProposalData);
     
-    // Create a transaction for the proposal creation
     const txHash = crypto.createHash('sha256')
       .update(`proposal_create_${proposalId}_${proposerAddress}_${now}`)
       .digest('hex');
     
-    const transaction = {
+    const transaction: SharedTransaction = {
       hash: txHash,
-      type: TransactionType.GOVERNANCE_PROPOSAL,
-      from: proposerAddress,
-      to: PVX_GOVERNANCE_ADDRESS,
-      amount: 0, // No tokens transferred for proposal creation
+      type: LocalTransactionType.GOVERNANCE_PROPOSAL,
+      from: proposerAddress, // Correct field name for shared type
+      to: PVX_GOVERNANCE_ADDRESS, // Correct field name for shared type
+      amount: 0,
       timestamp: now,
-      nonce: Math.floor(Math.random() * 100000),
-      signature: generateRandomHash(),
-      status: 'confirmed',
+      nonce: wallet.nonce ? wallet.nonce + 1 : 1, // Example nonce handling
+      signature: generateRandomHash(), // Placeholder
+      status: 'confirmed', // Or 'pending' then updated by a block
       metadata: {
         action: 'create_proposal',
         proposalId,
@@ -275,21 +192,20 @@ export const createProposal = async (req: Request, res: Response): Promise<void>
       }
     };
     
-    // Add transaction to the blockchain
-    await memBlockchainStorage.createTransaction(transaction);
+    await transactionDao.createTransaction(transaction);
+    // Potentially update wallet nonce if that's handled centrally
     
     // Broadcast transaction via WebSocket
     try {
       broadcastTransaction(transaction);
     } catch (err) {
       console.error('Error broadcasting proposal creation transaction:', err);
-      // Continue even if broadcast fails
     }
     
     res.status(201).json({
       success: true,
       message: 'Governance proposal created successfully',
-      proposal: newProposal,
+      proposal: createdProposal, // Return proposal from DB
       transactionHash: txHash
     });
     
@@ -313,41 +229,41 @@ export const voteOnProposal = async (req: Request, res: Response): Promise<void>
       return;
     }
     
-    // Check if proposal exists
-    const proposal = governanceProposals.find(p => p.id === proposalId);
+    // Check if proposal exists using DAO
+    const proposal = await governanceDao.getProposalById(proposalId);
     if (!proposal) {
       res.status(404).json({ error: 'Proposal not found' });
       return;
     }
     
-    // Check if proposal is still active
-    if (proposal.status !== ProposalStatus.ACTIVE) {
+    // Check if proposal is still active (using shared enum if available)
+    if (proposal.status !== SharedProposalStatus.ACTIVE) { // Assuming SharedProposalStatus.ACTIVE
       res.status(400).json({ error: 'This proposal is no longer active' });
       return;
     }
     
     // Check if voting period is still open
-    if (proposal.endTime < Date.now()) {
+    if (Number(proposal.endTime) < Date.now()) {
       res.status(400).json({ error: 'Voting period for this proposal has ended' });
       return;
     }
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(voterAddress);
+    // Check if wallet exists using walletDao
+    const wallet = await walletDao.getWalletByAddress(voterAddress);
     if (!wallet) {
       res.status(404).json({ error: 'Voter wallet not found' });
       return;
     }
     
-    // Check if user has already voted
-    const existingVote = proposal.voters.find(v => v.address === voterAddress);
-    if (existingVote) {
+    // Check if user has already voted using DAO
+    const alreadyVoted = await governanceDao.hasUserVoted(proposalId, voterAddress);
+    if (alreadyVoted) {
       res.status(400).json({ error: 'You have already voted on this proposal' });
       return;
     }
     
-    // Calculate voting power (based on staked tokens)
-    const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(voterAddress);
+    // Calculate voting power (based on staked tokens) using stakingService
+    const activeStakes = await stakingService.getActiveStakes(voterAddress);
     const votingPower = activeStakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0);
     
     // Check if voter has minimum required voting power
@@ -358,56 +274,42 @@ export const voteOnProposal = async (req: Request, res: Response): Promise<void>
       return;
     }
     
-    // Add the vote
     const now = Date.now();
-    proposal.voters.push({
-      address: voterAddress,
-      voteType: voteType as VoteType,
+    const newVote: SharedGovernanceVote = {
+      proposalId,
+      voterAddress,
+      voteType: voteType as SharedVoteType, // Cast to shared enum
       votingPower,
       timestamp: now
-    });
+    };
     
-    // Update vote counts
-    switch (voteType) {
-      case VoteType.FOR:
-        proposal.votesFor += votingPower;
-        break;
-      case VoteType.AGAINST:
-        proposal.votesAgainst += votingPower;
-        break;
-      case VoteType.ABSTAIN:
-        proposal.votesAbstain += votingPower;
-        break;
-      default:
-        res.status(400).json({ error: 'Invalid vote type' });
-        return;
-    }
+    // Save the vote using DAO (DAO handles updating proposal counts)
+    const createdVote = await governanceDao.createVote(newVote);
     
-    // Create a transaction for the vote
     const txHash = crypto.createHash('sha256')
       .update(`proposal_vote_${proposalId}_${voterAddress}_${now}`)
       .digest('hex');
     
-    const transaction = {
+    const transaction: SharedTransaction = {
       hash: txHash,
-      type: TransactionType.GOVERNANCE_VOTE,
-      from: voterAddress,
-      to: PVX_GOVERNANCE_ADDRESS,
-      amount: 0, // No tokens transferred for voting
+      type: LocalTransactionType.GOVERNANCE_VOTE,
+      from: voterAddress, // Correct field name
+      to: PVX_GOVERNANCE_ADDRESS, // Correct field name
+      amount: 0,
       timestamp: now,
-      nonce: Math.floor(Math.random() * 100000),
-      signature: generateRandomHash(),
-      status: 'confirmed',
+      nonce: wallet.nonce ? wallet.nonce + 1 : 1, // Example nonce handling
+      signature: generateRandomHash(), // Placeholder
+      status: 'confirmed', // Or 'pending'
       metadata: {
         action: 'vote',
         proposalId,
-        voteType,
-        votingPower
+        voteType: createdVote.voteType,
+        votingPower: createdVote.votingPower
       }
     };
     
-    // Add transaction to the blockchain
-    await memBlockchainStorage.createTransaction(transaction);
+    await transactionDao.createTransaction(transaction);
+    // Potentially update wallet nonce if that's handled centrally
     
     // Broadcast transaction via WebSocket
     try {

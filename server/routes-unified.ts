@@ -154,109 +154,109 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Staking positions endpoint
-  app.get('/api/stake/positions/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      const positions = await stakingService.getActiveStakes(address);
-      res.json({ positions });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get stake positions' });
-    }
-  });
+  // app.get('/api/stake/positions/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     const positions = await stakingService.getActiveStakes(address);
+  //     res.json({ positions });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get stake positions' });
+  //   }
+  // });
 
   // Staking rewards endpoint
-  app.get('/api/stake/rewards/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      const stakes = await stakingService.getActiveStakes(address);
-      const rewards = stakes.map(stake => ({
-        poolId: stake.poolId,
-        amount: stake.amount,
-        rewards: stake.rewards,
-        lastRewardClaim: stake.lastRewardClaim,
-        isActive: stake.isActive
-      }));
-      res.json({ rewards });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get staking rewards' });
-    }
-  });
+  // app.get('/api/stake/rewards/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     const stakes = await stakingService.getActiveStakes(address);
+  //     const rewards = stakes.map(stake => ({
+  //       poolId: stake.poolId,
+  //       amount: stake.amount,
+  //       rewards: stake.rewards,
+  //       lastRewardClaim: stake.lastRewardClaim,
+  //       isActive: stake.isActive
+  //     }));
+  //     res.json({ rewards });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get staking rewards' });
+  //   }
+  // });
 
   // Mining status endpoint
-  app.get('/api/mine/status', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        status: 'operational',
-        isActive: true,
-        activeMiners: 3,
-        totalMiners: 8,
-        networkHashRate: '487.23 MH/s',
-        difficulty: 1000000,
-        lastBlockTime: Date.now() - 45000
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get mining status' });
-    }
-  });
+  // app.get('/api/mine/status', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       status: 'operational',
+  //       isActive: true,
+  //       activeMiners: 3,
+  //       totalMiners: 8,
+  //       networkHashRate: '487.23 MH/s',
+  //       difficulty: 1000000,
+  //       lastBlockTime: Date.now() - 45000
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get mining status' });
+  //   }
+  // });
 
   // Mining start endpoint
-  app.post('/api/mine/start', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.body;
-      if (!address) {
-        return res.status(400).json({ error: 'Address is required' });
-      }
-      
-      res.json({ 
-        success: true, 
-        message: 'Mining started successfully',
-        address,
-        hashRate: '45.2 MH/s',
-        estimatedRewards: '5000000 PVX/day'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to start mining' });
-    }
-  });
+  // app.post('/api/mine/start', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.body;
+  //     if (!address) {
+  //       return res.status(400).json({ error: 'Address is required' });
+  //     }
+
+  //     res.json({
+  //       success: true,
+  //       message: 'Mining started successfully',
+  //       address,
+  //       hashRate: '45.2 MH/s',
+  //       estimatedRewards: '5000000 PVX/day'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to start mining' });
+  //   }
+  // });
 
   // Mining stop endpoint
-  app.post('/api/mine/stop', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.body;
-      if (!address) {
-        return res.status(400).json({ error: 'Address is required' });
-      }
-      
-      res.json({ 
-        success: true, 
-        message: 'Mining stopped successfully',
-        address,
-        totalEarnings: '2,450,000 PVX',
-        miningDuration: '4.7 hours'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to stop mining' });
-    }
-  });
+  // app.post('/api/mine/stop', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.body;
+  //     if (!address) {
+  //       return res.status(400).json({ error: 'Address is required' });
+  //     }
+
+  //     res.json({
+  //       success: true,
+  //       message: 'Mining stopped successfully',
+  //       address,
+  //       totalEarnings: '2,450,000 PVX',
+  //       miningDuration: '4.7 hours'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to stop mining' });
+  //   }
+  // });
 
   // Mining stats endpoint
-  app.get('/api/mine/stats/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        address,
-        isActive: true,
-        hashRate: 45234567,
-        blocksFound: 127,
-        totalRewards: '12450000',
-        lastBlockTime: Date.now() - 120000,
-        startedAt: new Date(Date.now() - 3600000).toISOString(),
-        efficiency: 97.8
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get mining stats' });
-    }
-  });
+  // app.get('/api/mine/stats/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       address,
+  //       isActive: true,
+  //       hashRate: 45234567,
+  //       blocksFound: 127,
+  //       totalRewards: '12450000',
+  //       lastBlockTime: Date.now() - 120000,
+  //       startedAt: new Date(Date.now() - 3600000).toISOString(),
+  //       efficiency: 97.8
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get mining stats' });
+  //   }
+  // });
 
   // Latest block endpoint
   app.get('/api/blockchain/block/latest', async (req: Request, res: Response) => {
@@ -363,27 +363,27 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Drops claim endpoint
-  app.post('/api/drops/claim', async (req: Request, res: Response) => {
-    try {
-      const { dropId, address } = req.body;
-      if (!dropId || !address) {
-        return res.status(400).json({ error: 'DropId and address are required' });
-      }
-      
-      const claim = {
-        id: 'claim_' + Date.now(),
-        dropId,
-        userAddress: address,
-        amount: 1000000,
-        claimedAt: new Date(),
-        txHash: '0x' + Math.random().toString(16).substring(2, 18)
-      };
-      
-      res.json({ success: true, claim });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to claim drop' });
-    }
-  });
+  // app.post('/api/drops/claim', async (req: Request, res: Response) => {
+  //   try {
+  //     const { dropId, address } = req.body;
+  //     if (!dropId || !address) {
+  //       return res.status(400).json({ error: 'DropId and address are required' });
+  //     }
+
+  //     const claim = {
+  //       id: 'claim_' + Date.now(),
+  //       dropId,
+  //       userAddress: address,
+  //       amount: 1000000,
+  //       claimedAt: new Date(),
+  //       txHash: '0x' + Math.random().toString(16).substring(2, 18)
+  //     };
+
+  //     res.json({ success: true, claim });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to claim drop' });
+  //   }
+  // });
 
   // Learning complete endpoint
   app.post('/api/learning/complete', async (req: Request, res: Response) => {
@@ -834,23 +834,19 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
 
   // ============= MISSING CRITICAL API ENDPOINTS =============
 
+import { blockchainService } from './services/blockchain-service'; // Import the service
+
   // Blockchain info endpoint
   app.get('/api/blockchain/info', async (req: Request, res: Response) => {
     try {
-      res.json({
-        version: '1.0.0',
-        network: 'PVX-MAINNET',
-        currentBlock: 1731,
-        difficulty: 1000000,
-        hashRate: '125.4 TH/s',
-        totalSupply: '6009420000',
-        circulatingSupply: '8655000000',
-        consensus: 'Hybrid PoW+PoS+zkSNARK',
-        totalTransactions: 2341,
-        activeValidators: 8
-      });
+      // Note: blockchainService is directly imported, not from req object
+      const blockchainInfo = await blockchainService.getBlockchainInfoDetails();
+      res.json(blockchainInfo);
     } catch (error) {
-      res.status(500).json({ error: 'Failed to get blockchain info' });
+      console.error('Failed to get blockchain info:', error);
+      res.status(500).json({
+        error: error instanceof Error ? error.message : 'Failed to get blockchain info'
+      });
     }
   });
 
@@ -890,54 +886,54 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Mining stats endpoints
-  app.get('/api/blockchain/mining/stats', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        totalHashRate: '125.4 TH/s',
-        difficulty: 1000000,
-        blocksMinedToday: 144,
-        averageBlockTime: 600,
-        networkMiners: 3,
-        estimatedRewards: '5000000'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get mining stats' });
-    }
-  });
+  // app.get('/api/blockchain/mining/stats', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       totalHashRate: '125.4 TH/s',
+  //       difficulty: 1000000,
+  //       blocksMinedToday: 144,
+  //       averageBlockTime: 600,
+  //       networkMiners: 3,
+  //       estimatedRewards: '5000000'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get mining stats' });
+  //   }
+  // });
 
-  app.get('/api/blockchain/mining/stats/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        address,
-        hashRate: '42.1 TH/s',
-        blocksMinedToday: 48,
-        totalBlocksMined: 1729,
-        totalRewards: '8645000000',
-        dailyRewards: '240000000',
-        efficiency: 94.2,
-        status: 'active'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get user mining stats' });
-    }
-  });
+  // app.get('/api/blockchain/mining/stats/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       address,
+  //       hashRate: '42.1 TH/s',
+  //       blocksMinedToday: 48,
+  //       totalBlocksMined: 1729,
+  //       totalRewards: '8645000000',
+  //       dailyRewards: '240000000',
+  //       efficiency: 94.2,
+  //       status: 'active'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get user mining stats' });
+  //   }
+  // });
 
-  app.get('/api/mining/status/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        address,
-        status: 'mining',
-        currentHashRate: '42.1 TH/s',
-        estimatedRewards: '5000000',
-        nextRewardIn: 360,
-        miningHardware: 'GPU-Cluster-RTX4090x8'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get mining status' });
-    }
-  });
+  // app.get('/api/mining/status/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       address,
+  //       status: 'mining',
+  //       currentHashRate: '42.1 TH/s',
+  //       estimatedRewards: '5000000',
+  //       nextRewardIn: 360,
+  //       miningHardware: 'GPU-Cluster-RTX4090x8'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get mining status' });
+  //   }
+  // });
 
   // Governance stats endpoint
   app.get('/api/governance/stats', async (req: Request, res: Response) => {
@@ -981,79 +977,79 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Drops eligibility endpoint
-  app.get('/api/drops/eligibility', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.query;
-      res.json({
-        userAddress: address,
-        eligibleDrops: [
-          {
-            dropId: 'GENESIS_AIRDROP_001',
-            name: 'Genesis Miner Reward',
-            amount: '5000000',
-            eligibleReason: 'Early miner with 1729+ blocks',
-            claimDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            dropId: 'STAKER_BONUS_002',
-            name: 'Staking Champion Bonus',
-            amount: '2500000',
-            eligibleReason: 'Active staker with 27 stakes',
-            claimDeadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        ],
-        totalEligibleAmount: '7500000'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get drop eligibility' });
-    }
-  });
+  // app.get('/api/drops/eligibility', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.query;
+  //     res.json({
+  //       userAddress: address,
+  //       eligibleDrops: [
+  //         {
+  //           dropId: 'GENESIS_AIRDROP_001',
+  //           name: 'Genesis Miner Reward',
+  //           amount: '5000000',
+  //           eligibleReason: 'Early miner with 1729+ blocks',
+  //           claimDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+  //         },
+  //         {
+  //           dropId: 'STAKER_BONUS_002',
+  //           name: 'Staking Champion Bonus',
+  //           amount: '2500000',
+  //           eligibleReason: 'Active staker with 27 stakes',
+  //           claimDeadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString()
+  //         }
+  //       ],
+  //       totalEligibleAmount: '7500000'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get drop eligibility' });
+  //   }
+  // });
 
   // Fix /drops/user-claims endpoint - handle missing address gracefully
-  app.get('/api/drops/user-claims', async (req: Request, res: Response) => {
-    try {
-      const address = req.query.address as string;
-      res.json({
-        userAddress: address || null,
-        claimedDrops: address ? [
-          {
-            dropId: 'EARLY_ADOPTER_001',
-            name: 'Early Adopter Bonus',
-            amount: '1000000',
-            claimedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            transactionHash: 'tx_claim_' + Date.now()
-          }
-        ] : [],
-        totalClaimed: address ? '1000000' : '0',
-        pendingClaims: address ? 2 : 0
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get drop claims' });
-    }
-  });
+  // app.get('/api/drops/user-claims', async (req: Request, res: Response) => {
+  //   try {
+  //     const address = req.query.address as string;
+  //     res.json({
+  //       userAddress: address || null,
+  //       claimedDrops: address ? [
+  //         {
+  //           dropId: 'EARLY_ADOPTER_001',
+  //           name: 'Early Adopter Bonus',
+  //           amount: '1000000',
+  //           claimedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+  //           transactionHash: 'tx_claim_' + Date.now()
+  //         }
+  //       ] : [],
+  //       totalClaimed: address ? '1000000' : '0',
+  //       pendingClaims: address ? 2 : 0
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get drop claims' });
+  //   }
+  // });
 
   // Legacy endpoint for backward compatibility
-  app.get('/api/drops/claims', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.query;
-      res.json({
-        userAddress: address,
-        claimedDrops: [
-          {
-            dropId: 'EARLY_ADOPTER_001',
-            name: 'Early Adopter Bonus',
-            amount: '1000000',
-            claimedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            transactionHash: 'tx_claim_' + Date.now()
-          }
-        ],
-        totalClaimed: '1000000',
-        pendingClaims: 2
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get drop claims' });
-    }
-  });
+  // app.get('/api/drops/claims', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.query;
+  //     res.json({
+  //       userAddress: address,
+  //       claimedDrops: [
+  //         {
+  //           dropId: 'EARLY_ADOPTER_001',
+  //           name: 'Early Adopter Bonus',
+  //           amount: '1000000',
+  //           claimedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+  //           transactionHash: 'tx_claim_' + Date.now()
+  //         }
+  //       ],
+  //       totalClaimed: '1000000',
+  //       pendingClaims: 2
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get drop claims' });
+  //   }
+  // });
 
   // Fix /gov/user-votes endpoint - handle missing address gracefully  
   app.get('/api/gov/user-votes', async (req: Request, res: Response) => {
@@ -1183,71 +1179,71 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Mining control endpoints
-  app.post('/api/blockchain/mining/start', async (req: Request, res: Response) => {
-    try {
-      const { address, hardwareType } = req.body;
-      res.json({
-        success: true,
-        address,
-        miningStatus: 'active',
-        hashRate: '42.1 TH/s',
-        hardwareType: hardwareType || 'GPU-Cluster-RTX4090x8',
-        estimatedRewards: '5000000',
-        startTime: new Date().toISOString()
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to start mining' });
-    }
-  });
+  // app.post('/api/blockchain/mining/start', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address, hardwareType } = req.body;
+  //     res.json({
+  //       success: true,
+  //       address,
+  //       miningStatus: 'active',
+  //       hashRate: '42.1 TH/s',
+  //       hardwareType: hardwareType || 'GPU-Cluster-RTX4090x8',
+  //       estimatedRewards: '5000000',
+  //       startTime: new Date().toISOString()
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to start mining' });
+  //   }
+  // });
 
-  app.post('/api/blockchain/mining/stop', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.body;
-      res.json({
-        success: true,
-        address,
-        miningStatus: 'stopped',
-        totalMinedBlocks: 1750,
-        totalRewards: '8750000000',
-        miningDuration: '72 hours',
-        stopTime: new Date().toISOString()
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to stop mining' });
-    }
-  });
+  // app.post('/api/blockchain/mining/stop', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.body;
+  //     res.json({
+  //       success: true,
+  //       address,
+  //       miningStatus: 'stopped',
+  //       totalMinedBlocks: 1750,
+  //       totalRewards: '8750000000',
+  //       miningDuration: '72 hours',
+  //       stopTime: new Date().toISOString()
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to stop mining' });
+  //   }
+  // });
 
   // User drops endpoint
-  app.get('/api/drops/user/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        userAddress: address,
-        totalEligible: 2,
-        totalClaimed: 1,
-        pendingRewards: '7500000',
-        claimedRewards: '1000000',
-        drops: [
-          {
-            dropId: 'GENESIS_AIRDROP_001',
-            name: 'Genesis Miner Reward',
-            amount: '5000000',
-            status: 'eligible',
-            claimDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-          },
-          {
-            dropId: 'EARLY_ADOPTER_001',
-            name: 'Early Adopter Bonus',
-            amount: '1000000',
-            status: 'claimed',
-            claimedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        ]
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get user drops' });
-    }
-  });
+  // app.get('/api/drops/user/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       userAddress: address,
+  //       totalEligible: 2,
+  //       totalClaimed: 1,
+  //       pendingRewards: '7500000',
+  //       claimedRewards: '1000000',
+  //       drops: [
+  //         {
+  //           dropId: 'GENESIS_AIRDROP_001',
+  //           name: 'Genesis Miner Reward',
+  //           amount: '5000000',
+  //           status: 'eligible',
+  //           claimDeadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+  //         },
+  //         {
+  //           dropId: 'EARLY_ADOPTER_001',
+  //           name: 'Early Adopter Bonus',
+  //           amount: '1000000',
+  //           status: 'claimed',
+  //           claimedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  //         }
+  //       ]
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get user drops' });
+  //   }
+  // });
 
   // Thringlets endpoint
   app.get('/api/thringlets', async (req: Request, res: Response) => {
@@ -1308,171 +1304,171 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Staking status endpoint
-  app.get('/api/stake/status', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        totalStaked: '15000000000',
-        totalStakers: 127,
-        averageAPR: 12.5,
-        totalRewards: '1250000000',
-        activePools: 4,
-        networkStakingRatio: 67.3,
-        nextRewardDistribution: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get staking status' });
-    }
-  });
+  // app.get('/api/stake/status', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       totalStaked: '15000000000',
+  //       totalStakers: 127,
+  //       averageAPR: 12.5,
+  //       totalRewards: '1250000000',
+  //       activePools: 4,
+  //       networkStakingRatio: 67.3,
+  //       nextRewardDistribution: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get staking status' });
+  //   }
+  // });
 
   // User staking info endpoint
-  app.get('/api/stake/user/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        userAddress: address,
-        totalStaked: '85000000',
-        activeStakes: 27,
-        totalRewards: '4250000',
-        claimableRewards: '125000',
-        averageAPR: 14.2,
-        stakingPower: '15000000',
-        nextRewardClaim: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString()
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get user staking info' });
-    }
-  });
+  // app.get('/api/stake/user/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       userAddress: address,
+  //       totalStaked: '85000000',
+  //       activeStakes: 27,
+  //       totalRewards: '4250000',
+  //       claimableRewards: '125000',
+  //       averageAPR: 14.2,
+  //       stakingPower: '15000000',
+  //       nextRewardClaim: new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString()
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get user staking info' });
+  //   }
+  // });
 
   // ============= REAL DATABASE STAKING SYSTEM =============
   
   // Start staking - REAL DATABASE IMPLEMENTATION
-  app.post('/api/stake/start', async (req: Request, res: Response) => {
-    try {
-      const { 
-        walletAddress, 
-        address,
-        poolId,
-        amount,
-        passphrase
-      } = req.body;
-      
-      const effectiveAddress = walletAddress || address;
-      
-      // Provide defaults for test scenarios
-      const finalAddress = effectiveAddress || 'PVX_1295b5490224b2eb64e9724dc091795a';
-      const finalPoolId = poolId || 'pool_1';
-      const finalAmount = amount || 1000;
-      const finalPassphrase = passphrase || 'zsfgaefhsethrthrtwtrh';
-      
-      // Verify passphrase (accepts known test passphrase)
-      if (finalPassphrase !== 'zsfgaefhsethrthrtwtrh') {
-        return res.status(401).json({ error: 'Invalid passphrase' });
-      }
-      
-      // Create stake directly to avoid pool validation issues
-      const stakeId = `stake_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      const result = {
-        stakeId,
-        walletAddress: finalAddress,
-        poolId: finalPoolId,
-        amount: parseFloat(finalAmount.toString()),
-        startTime: new Date().toISOString(),
-        status: 'active',
-        estimatedRewards: '0',
-        lockPeriod: 30 * 24 * 60 * 60 * 1000 // 30 days
-      };
-      
-      console.log(`✅ STAKE CREATED IN DATABASE: ${result.stakeId} for ${finalAddress} - ${finalAmount} PVX in pool ${finalPoolId}`);
-      
-      res.status(201).json({
-        success: true,
-        stakeId: result.stakeId,
-        transactionHash: result.transactionHash,
-        message: 'Stake started successfully and persisted to database',
-        stake: {
-          id: result.stakeId,
-          walletAddress: finalAddress,
-          poolId: finalPoolId,
-          amount: finalAmount.toString(),
-          startTime: new Date().toISOString(),
-          status: 'active',
-          rewards: '0'
-        }
-      });
-    } catch (error) {
-      console.error('❌ STAKE CREATION FAILED:', error);
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Failed to start staking'
-      });
-    }
-  });
+  // app.post('/api/stake/start', async (req: Request, res: Response) => {
+  //   try {
+  //     const {
+  //       walletAddress,
+  //       address,
+  //       poolId,
+  //       amount,
+  //       passphrase
+  //     } = req.body;
+
+  //     const effectiveAddress = walletAddress || address;
+
+  //     // Provide defaults for test scenarios
+  //     const finalAddress = effectiveAddress || 'PVX_1295b5490224b2eb64e9724dc091795a';
+  //     const finalPoolId = poolId || 'pool_1';
+  //     const finalAmount = amount || 1000;
+  //     const finalPassphrase = passphrase || 'zsfgaefhsethrthrtwtrh';
+
+  //     // Verify passphrase (accepts known test passphrase)
+  //     if (finalPassphrase !== 'zsfgaefhsethrthrtwtrh') {
+  //       return res.status(401).json({ error: 'Invalid passphrase' });
+  //     }
+
+  //     // Create stake directly to avoid pool validation issues
+  //     const stakeId = `stake_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  //     const result = {
+  //       stakeId,
+  //       walletAddress: finalAddress,
+  //       poolId: finalPoolId,
+  //       amount: parseFloat(finalAmount.toString()),
+  //       startTime: new Date().toISOString(),
+  //       status: 'active',
+  //       estimatedRewards: '0',
+  //       lockPeriod: 30 * 24 * 60 * 60 * 1000 // 30 days
+  //     };
+
+  //     console.log(`✅ STAKE CREATED IN DATABASE: ${result.stakeId} for ${finalAddress} - ${finalAmount} PVX in pool ${finalPoolId}`);
+
+  //     res.status(201).json({
+  //       success: true,
+  //       stakeId: result.stakeId,
+  //       transactionHash: result.transactionHash,
+  //       message: 'Stake started successfully and persisted to database',
+  //       stake: {
+  //         id: result.stakeId,
+  //         walletAddress: finalAddress,
+  //         poolId: finalPoolId,
+  //         amount: finalAmount.toString(),
+  //         startTime: new Date().toISOString(),
+  //         status: 'active',
+  //         rewards: '0'
+  //       }
+  //     });
+  //   } catch (error) {
+  //     console.error('❌ STAKE CREATION FAILED:', error);
+  //     res.status(500).json({
+  //       error: error instanceof Error ? error.message : 'Failed to start staking'
+  //     });
+  //   }
+  // });
 
   // Get staking status for a wallet - READ FROM REAL DATABASE
-  app.get('/api/stake/status/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
+  // app.get('/api/stake/status/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
       
-      // Get real stakes from database using staking service
-      const realStakes = await stakingService.getActiveStakes(address);
+  //     // Get real stakes from database using staking service
+  //     const realStakes = await stakingService.getActiveStakes(address);
       
-      console.log(`✅ FETCHED REAL STAKES FROM DATABASE: ${realStakes.length} active stakes for ${address}`);
+  //     console.log(`✅ FETCHED REAL STAKES FROM DATABASE: ${realStakes.length} active stakes for ${address}`);
       
-      res.json({ stakes: realStakes });
-    } catch (error) {
-      console.error('❌ FAILED to fetch staking status:', error);
-      res.status(500).json({ error: 'Failed to fetch staking status' });
-    }
-  });
+  //     res.json({ stakes: realStakes });
+  //   } catch (error) {
+  //     console.error('❌ FAILED to fetch staking status:', error);
+  //     res.status(500).json({ error: 'Failed to fetch staking status' });
+  //   }
+  // });
 
   // Claim staking rewards - REAL DATABASE IMPLEMENTATION
-  app.post('/api/stake/claim', async (req: Request, res: Response) => {
-    try {
-      const { 
-        stakeId, 
-        address, 
-        passphrase 
-      } = req.body;
-      
-      if (!stakeId || !address || !passphrase) {
-        return res.status(400).json({ 
-          error: 'StakeId, address, and passphrase are required' 
-        });
-      }
-      
-      // Verify passphrase
-      if (passphrase !== 'zsfgaefhsethrthrtwtrh') {
-        return res.status(401).json({ error: 'Invalid passphrase' });
-      }
-      
-      // Claim rewards from database using staking service
-      const claimedAmount = await stakingService.claimRewards(stakeId, address);
-      
-      console.log(`✅ REWARDS CLAIMED FROM DATABASE: ${claimedAmount.toFixed(6)} PVX for ${address}`);
-      
-      res.json({ 
-        success: true, 
-        rewards: claimedAmount.toString(),
-        message: `Successfully claimed ${claimedAmount.toFixed(6)} PVX rewards from database`
-      });
-    } catch (error) {
-      console.error('❌ REWARD CLAIM FAILED:', error);
-      res.status(500).json({ 
-        error: error instanceof Error ? error.message : 'Failed to claim rewards' 
-      });
-    }
-  });
+  // app.post('/api/stake/claim', async (req: Request, res: Response) => {
+  //   try {
+  //     const {
+  //       stakeId,
+  //       address,
+  //       passphrase
+  //     } = req.body;
+
+  //     if (!stakeId || !address || !passphrase) {
+  //       return res.status(400).json({
+  //         error: 'StakeId, address, and passphrase are required'
+  //       });
+  //     }
+
+  //     // Verify passphrase
+  //     if (passphrase !== 'zsfgaefhsethrthrtwtrh') {
+  //       return res.status(401).json({ error: 'Invalid passphrase' });
+  //     }
+
+  //     // Claim rewards from database using staking service
+  //     const claimedAmount = await stakingService.claimRewards(stakeId, address);
+
+  //     console.log(`✅ REWARDS CLAIMED FROM DATABASE: ${claimedAmount.toFixed(6)} PVX for ${address}`);
+
+  //     res.json({
+  //       success: true,
+  //       rewards: claimedAmount.toString(),
+  //       message: `Successfully claimed ${claimedAmount.toFixed(6)} PVX rewards from database`
+  //     });
+  //   } catch (error) {
+  //     console.error('❌ REWARD CLAIM FAILED:', error);
+  //     res.status(500).json({
+  //       error: error instanceof Error ? error.message : 'Failed to claim rewards'
+  //     });
+  //   }
+  // });
 
   // Get staking pools from database
-  app.get('/api/stake/pools', async (req: Request, res: Response) => {
-    try {
-      const pools = await stakingService.getStakingPools();
-      console.log(`✅ FETCHED REAL POOLS FROM DATABASE: ${pools.length} pools`);
-      res.json({ pools });
-    } catch (error) {
-      console.error('❌ FAILED to fetch staking pools:', error);
-      res.status(500).json({ error: 'Failed to fetch staking pools' });
-    }
-  });
+  // app.get('/api/stake/pools', async (req: Request, res: Response) => {
+  //   try {
+  //     const pools = await stakingService.getStakingPools();
+  //     console.log(`✅ FETCHED REAL POOLS FROM DATABASE: ${pools.length} pools`);
+  //     res.json({ pools });
+  //   } catch (error) {
+  //     console.error('❌ FAILED to fetch staking pools:', error);
+  //     res.status(500).json({ error: 'Failed to fetch staking pools' });
+  //   }
+  // });
 
   app.get('/api/staking/pools', async (req: Request, res: Response) => {
     try {
@@ -1628,25 +1624,25 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // ============= DROPS API ENDPOINTS =============
   
   // Get drops statistics
-  app.get('/api/drops/stats', async (req: Request, res: Response) => {
-    try {
-      if (!simplifiedStorage) {
-        return res.status(500).json({ error: 'Storage not available' });
-      }
-      
-      const drops = await simplifiedStorage.getAllDrops();
-      const stats = {
-        totalDrops: drops.length,
-        activeDrops: drops.filter((drop: any) => drop.status === 'active').length,
-        completedDrops: drops.filter((drop: any) => drop.status === 'completed').length
-      };
-      
-      res.json(stats);
-    } catch (error) {
-      console.error('Failed to get drops stats:', error);
-      res.status(500).json({ error: 'Failed to get drops stats' });
-    }
-  });
+  // app.get('/api/drops/stats', async (req: Request, res: Response) => {
+  //   try {
+  //     if (!simplifiedStorage) {
+  //       return res.status(500).json({ error: 'Storage not available' });
+  //     }
+
+  //     const drops = await simplifiedStorage.getAllDrops();
+  //     const stats = {
+  //       totalDrops: drops.length,
+  //       activeDrops: drops.filter((drop: any) => drop.status === 'active').length,
+  //       completedDrops: drops.filter((drop: any) => drop.status === 'completed').length
+  //     };
+
+  //     res.json(stats);
+  //   } catch (error) {
+  //     console.error('Failed to get drops stats:', error);
+  //     res.status(500).json({ error: 'Failed to get drops stats' });
+  //   }
+  // });
 
   // ============= GOVERNANCE API ENDPOINTS =============
   
@@ -1668,14 +1664,14 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // ============= MISSING ENDPOINTS =============
   
   // Add missing /api/drops endpoint
-  app.get('/api/drops', async (req: Request, res: Response) => {
-    try {
-      const drops = await simplifiedStorage.getAllDrops();
-      res.json({ drops, totalActive: drops.filter((d: any) => d.status === 'active').length });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get drops' });
-    }
-  });
+  // app.get('/api/drops', async (req: Request, res: Response) => {
+  //   try {
+  //     const drops = await simplifiedStorage.getAllDrops();
+  //     res.json({ drops, totalActive: drops.filter((d: any) => d.status === 'active').length });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get drops' });
+  //   }
+  // });
   
   // Add missing /api/badges endpoint
   app.get('/api/badges', async (req: Request, res: Response) => {
@@ -1834,23 +1830,23 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Mining rewards for user
-  app.get('/api/mining/rewards/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        totalRewards: '250000000',
-        dailyRewards: '5000000',
-        weeklyRewards: '35000000',
-        recentRewards: [
-          { amount: '5000000', timestamp: Date.now() - 3600000, blockHeight: 1616 },
-          { amount: '5000000', timestamp: Date.now() - 7200000, blockHeight: 1615 },
-          { amount: '5000000', timestamp: Date.now() - 10800000, blockHeight: 1614 }
-        ]
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get mining rewards' });
-    }
-  });
+  // app.get('/api/mining/rewards/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       totalRewards: '250000000',
+  //       dailyRewards: '5000000',
+  //       weeklyRewards: '35000000',
+  //       recentRewards: [
+  //         { amount: '5000000', timestamp: Date.now() - 3600000, blockHeight: 1616 },
+  //         { amount: '5000000', timestamp: Date.now() - 7200000, blockHeight: 1615 },
+  //         { amount: '5000000', timestamp: Date.now() - 10800000, blockHeight: 1614 }
+  //       ]
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get mining rewards' });
+  //   }
+  // });
 
   // User transactions
   app.get('/api/transactions/user/:address', async (req: Request, res: Response) => {
@@ -1893,16 +1889,16 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Active drops
-  app.get('/api/drops/active', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        drops: [],
-        totalActive: 0
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get active drops' });
-    }
-  });
+  // app.get('/api/drops/active', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       drops: [],
+  //       totalActive: 0
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get active drops' });
+  //   }
+  // });
 
   // Learning progress for user
   app.get('/api/learning/progress/:address', async (req: Request, res: Response) => {
@@ -1995,25 +1991,25 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // ============= MISSING ENDPOINTS - FIX ALL 404 ERRORS =============
 
   // FIX: /stake/rewards endpoint - handle both query param and no address gracefully
-  app.get('/api/stake/rewards', async (req: Request, res: Response) => {
-    try {
-      const address = req.query.address as string;
-      // Return default empty data if no address provided instead of error
-      const rewards = {
-        totalRewards: address ? '12500000' : '0',
-        pendingRewards: address ? '250000' : '0',
-        claimableRewards: address ? '125000' : '0',
-        stakingPositions: address ? 3 : 0,
-        lastClaim: address ? Date.now() - 86400000 : null,
-        nextClaimAvailable: address ? Date.now() + 3600000 : null,
-        userAddress: address || null
-      };
-      res.json(rewards);
-    } catch (error) {
-      console.error('Error fetching stake rewards:', error);
-      res.status(500).json({ error: 'Failed to fetch stake rewards' });
-    }
-  });
+  // app.get('/api/stake/rewards', async (req: Request, res: Response) => {
+  //   try {
+  //     const address = req.query.address as string;
+  //     // Return default empty data if no address provided instead of error
+  //     const rewards = {
+  //       totalRewards: address ? '12500000' : '0',
+  //       pendingRewards: address ? '250000' : '0',
+  //       claimableRewards: address ? '125000' : '0',
+  //       stakingPositions: address ? 3 : 0,
+  //       lastClaim: address ? Date.now() - 86400000 : null,
+  //       nextClaimAvailable: address ? Date.now() + 3600000 : null,
+  //       userAddress: address || null
+  //     };
+  //     res.json(rewards);
+  //   } catch (error) {
+  //     console.error('Error fetching stake rewards:', error);
+  //     res.status(500).json({ error: 'Failed to fetch stake rewards' });
+  //   }
+  // });
 
   // FIX: /nfts/all endpoint
   app.get('/api/nfts/all', async (req: Request, res: Response) => {

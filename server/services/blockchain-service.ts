@@ -18,6 +18,7 @@ import { walletDao } from '../database/walletDao';
 import { transactionDao } from '../database/transactionDao';
 import { blockDao } from '../database/blockDao';
 import { stakeDao } from '../database/stakeDao';
+import { minerDao } from '../database/minerDao';
 
 // Constants for PVX blockchain
 const PVX_GENESIS_BLOCK_TIMESTAMP = 1714637462000; // May 1, 2024
@@ -340,66 +341,100 @@ export async function sendTransaction(
  */
 export async function startMining(address: string, hardwareType: string = 'cpu'): Promise<MiningStats> {
   // Validate wallet
-  const wallet = await memBlockchainStorage.getWalletByAddress(address);
+  const wallet = await walletDao.getWalletByAddress(address); // Use walletDao
   
   if (!wallet) {
     throw new Error('Wallet not found');
   }
   
   // Check if already mining
-  let minerStats = await memBlockchainStorage.getMinerByAddress(address);
+  let existingMinerStats = await minerDao.getMinerStatsByAddress(address);
   
-  if (minerStats && minerStats.isCurrentlyMining) {
+  if (existingMinerStats && existingMinerStats.isCurrentlyMining) {
     throw new Error('Already mining');
   }
   
   // Generate hashrate based on hardware type
-  let hashRate: string;
-  let hardwareName: string;
+  let numericHashRate: number;
+  let hardwareNameDb: 'CPU' | 'GPU' | 'ASIC'; // For DB
   
   switch (hardwareType.toLowerCase()) {
     case 'cpu':
-      // CPU: 10-100 MH/s
-      hashRate = (Math.random() * 90 + 10).toFixed(2);
-      hardwareName = 'CPU';
+      numericHashRate = parseFloat((Math.random() * 90 + 10).toFixed(2));
+      hardwareNameDb = 'CPU';
       break;
     case 'gpu':
-      // GPU: 100-500 MH/s
-      hashRate = (Math.random() * 400 + 100).toFixed(2);
-      hardwareName = 'GPU';
+      numericHashRate = parseFloat((Math.random() * 400 + 100).toFixed(2));
+      hardwareNameDb = 'GPU';
       break;
     case 'asic':
-      // ASIC: 500-2000 MH/s
-      hashRate = (Math.random() * 1500 + 500).toFixed(2);
-      hardwareName = 'ASIC';
+      numericHashRate = parseFloat((Math.random() * 1500 + 500).toFixed(2));
+      hardwareNameDb = 'ASIC';
       break;
     default:
-      // Default to CPU if invalid type
-      hashRate = (Math.random() * 90 + 10).toFixed(2);
-      hardwareName = 'CPU';
+      numericHashRate = parseFloat((Math.random() * 90 + 10).toFixed(2));
+      hardwareNameDb = 'CPU';
   }
-  
-  const stats: MiningStats = {
-    address,
-    blocksMined: minerStats ? minerStats.blocksMined : 0,
-    totalRewards: minerStats ? minerStats.totalRewards : "0",
-    isCurrentlyMining: true,
-    currentHashRate: hashRate + " MH/s",
-    hardwareType: hardwareName,
-    lastBlockMined: minerStats ? minerStats.lastBlockMined : undefined
-  };
-  
-  // Update or create miner stats
-  if (minerStats) {
-    await memBlockchainStorage.updateMiner(stats);
+
+  const now = Date.now();
+  let savedStatsDb: MiningStats;
+
+  if (existingMinerStats) {
+    const statsToUpdate: MiningStats = {
+      ...existingMinerStats,
+      isCurrentlyMining: true,
+      currentHashRate: numericHashRate, // This will be a number for the DAO
+      hardwareType: hardwareNameDb, // This maps to 'hardware' in DAO
+      // lastBlockMined remains from existingMinerStats
+      // blocksMined and totalRewards remain
+      joinedAt: existingMinerStats.joinedAt || new Date(now), // Keep original join date
+    };
+    // Map for DAO
+    const daoInput = {
+        address: statsToUpdate.address,
+        blocksMined: statsToUpdate.blocksMined,
+        totalRewards: statsToUpdate.totalRewards,
+        lastBlockMined: statsToUpdate.lastBlockMined ? Number(statsToUpdate.lastBlockMined) : undefined,
+        isCurrentlyMining: statsToUpdate.isCurrentlyMining,
+        hardware: hardwareNameDb, // Use the DB enum type
+        joinedAt: statsToUpdate.joinedAt,
+        currentHashRate: numericHashRate
+    };
+    savedStatsDb = await minerDao.updateMinerStats(daoInput);
   } else {
-    await memBlockchainStorage.createMiner(stats);
+    const statsToCreate: MiningStats = {
+      address,
+      blocksMined: 0,
+      totalRewards: "0",
+      isCurrentlyMining: true,
+      currentHashRate: numericHashRate, // Numeric for DAO
+      hardwareType: hardwareNameDb, // Map to 'hardware' for DAO
+      lastBlockMined: undefined,
+      joinedAt: new Date(now)
+    };
+     // Map for DAO
+    const daoInput = {
+        address: statsToCreate.address,
+        blocksMined: statsToCreate.blocksMined,
+        totalRewards: statsToCreate.totalRewards,
+        lastBlockMined: undefined,
+        isCurrentlyMining: statsToCreate.isCurrentlyMining,
+        hardware: hardwareNameDb,
+        joinedAt: statsToCreate.joinedAt,
+        currentHashRate: numericHashRate
+    };
+    savedStatsDb = await minerDao.createMinerStats(daoInput);
   }
   
-  // Schedule mock block mining (for demo purposes)
-  simulateBlockMining(address);
-  
-  return stats;
+  // Schedule mock block mining (for demo purposes) - this might need adjustment if it relies on memStorage
+  simulateBlockMining(address); // Keep for now, assuming it can work or will be refactored separately
+
+  // Return MiningStats conforming to shared type
+  return {
+    ...savedStatsDb,
+    currentHashRate: `${savedStatsDb.currentHashRate} MH/s`, // Format back to string with unit
+    hardwareType: savedStatsDb.hardware, // Map back from 'hardware'
+  };
 }
 
 /**
@@ -407,43 +442,59 @@ export async function startMining(address: string, hardwareType: string = 'cpu')
  */
 export async function stopMining(address: string): Promise<MiningStats> {
   // Validate wallet
-  const wallet = await memBlockchainStorage.getWalletByAddress(address);
+  const wallet = await walletDao.getWalletByAddress(address); // Use walletDao
   
   if (!wallet) {
     throw new Error('Wallet not found');
   }
   
   // Check if mining
-  const minerStats = await memBlockchainStorage.getMinerByAddress(address);
+  const minerStatsDb = await minerDao.getMinerStatsByAddress(address);
   
-  if (!minerStats || !minerStats.isCurrentlyMining) {
-    throw new Error('Not mining');
+  if (!minerStatsDb || !minerStatsDb.isCurrentlyMining) {
+    throw new Error('Not mining or miner stats not found');
   }
   
-  // Update miner stats
-  minerStats.isCurrentlyMining = false;
-  await memBlockchainStorage.updateMiner(minerStats);
-  
-  return minerStats;
+  // Update miner status
+  const updatedStatsDb = await minerDao.updateMinerStatus(address, false);
+  if (!updatedStatsDb) {
+      throw new Error('Failed to update miner status in DB');
+  }
+
+  // Return MiningStats conforming to shared type
+  return {
+    ...updatedStatsDb,
+    currentHashRate: `${updatedStatsDb.currentHashRate} MH/s`,
+    hardwareType: updatedStatsDb.hardware,
+  };
 }
 
 /**
  * Get mining stats
  */
 export async function getMiningStats(address: string): Promise<MiningStats> {
-  const minerStats = await memBlockchainStorage.getMinerByAddress(address);
+  const minerStatsDb = await minerDao.getMinerStatsByAddress(address);
   
-  if (!minerStats) {
+  if (!minerStatsDb) {
+    // Return default structure conforming to shared MiningStats type
     return {
       address,
       blocksMined: 0,
       totalRewards: "0",
       isCurrentlyMining: false,
-      currentHashRate: "0 MH/s"
+      currentHashRate: "0 MH/s", // String with unit
+      hardwareType: 'CPU', // Default or undefined
+      lastBlockMined: undefined,
+      joinedAt: undefined,
     };
   }
   
-  return minerStats;
+  // Convert DB format to shared MiningStats type
+  return {
+    ...minerStatsDb,
+    currentHashRate: `${minerStatsDb.currentHashRate} MH/s`, // Format to string with unit
+    hardwareType: minerStatsDb.hardware, // Map field name
+  };
 }
 
 /**
@@ -472,23 +523,27 @@ export async function getMiningRewards(address: string): Promise<any[]> {
 }
 
 /**
- * Get network hashrate
+ * Get network hashrate and active miner count
  */
-export async function getNetworkHashrate(): Promise<number> {
-  // Sum up all active miners' hashrates
-  const activeMiners = await memBlockchainStorage.getAllActiveMiners();
+export async function getNetworkHashrate(): Promise<{ totalHashrate: number; activeMinersCount: number }> {
+  // Sum up all active miners' hashrates from DAO
+  const activeMinersList = await minerDao.getAllActiveMiners(); // Use minerDao
   
-  if (!activeMiners || activeMiners.length === 0) {
-    return 0;
+  if (!activeMinersList || activeMinersList.length === 0) {
+    return { totalHashrate: 0, activeMinersCount: 0 };
   }
   
-  const totalHashrate = activeMiners.reduce((sum: number, miner: MiningStats) => {
-    const hashrate = parseFloat(miner.hashRate || '0');
-    return sum + hashrate;
+  // minerDao returns currentHashRate as a number (assumed to be in MH/s from DB schema)
+  const totalHashrateSumMHs = activeMinersList.reduce((sum: number, miner: MiningStats) => {
+    // currentHashRate from DAO is already a number (MH/s)
+    return sum + (Number(miner.currentHashRate) || 0);
   }, 0);
   
-  // Convert to TH/s
-  return totalHashrate / 1000;
+  // Convert MH/s to TH/s for the totalHashrate
+  return {
+    totalHashrate: totalHashrateSumMHs / 1000000, // MH/s to TH/s
+    activeMinersCount: activeMinersList.length
+  };
 }
 
 /**
@@ -497,18 +552,23 @@ export async function getNetworkHashrate(): Promise<number> {
 export async function forceMineBlock(minerAddress: string): Promise<Block | null> {
   try {
     // Get miner stats to check if registered as a miner
-    let minerStats = await memBlockchainStorage.getMinerByAddress(minerAddress);
+    let minerStatsDb = await minerDao.getMinerStatsByAddress(minerAddress);
     
     // Create miner stats if not exists
-    if (!minerStats) {
-      minerStats = {
+    if (!minerStatsDb) {
+      const numericHashRate = parseFloat((Math.random() * 200 + 50).toFixed(2));
+      const hardwareNameDb: 'CPU' | 'GPU' | 'ASIC' = 'CPU'; // Default for forced mine
+      const statsToCreate = {
         address: minerAddress,
         blocksMined: 0,
         totalRewards: "0",
-        isCurrentlyMining: true,
-        currentHashRate: `${(Math.random() * 200 + 50).toFixed(2)} MH/s`
+        isCurrentlyMining: true, // Forcing a mine implies it's mining now
+        currentHashRate: numericHashRate, // Numeric for DAO
+        hardware: hardwareNameDb,
+        lastBlockMined: undefined,
+        joinedAt: new Date()
       };
-      await memBlockchainStorage.createMiner(minerStats);
+      minerStatsDb = await minerDao.createMinerStats(statsToCreate);
     }
     
     // Get latest block
@@ -536,10 +596,16 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
     latestBlock = savedBlock; // Update service-scoped latestBlock
     
     // Update miner stats
-    minerStats.blocksMined += 1;
-    minerStats.lastBlockMined = newBlock.timestamp;
-    minerStats.totalRewards = (BigInt(minerStats.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString();
-    await memBlockchainStorage.updateMiner(minerStats);
+    const updatedMinerStatsData = {
+        ...minerStatsDb,
+        blocksMined: minerStatsDb.blocksMined + 1,
+        lastBlockMined: newBlock.timestamp,
+        totalRewards: (BigInt(minerStatsDb.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString(),
+        // Ensure currentHashRate and hardware are numbers/correct type for DAO
+        currentHashRate: Number(minerStatsDb.currentHashRate) || 0, // Comes as number from DAO
+        hardware: minerStatsDb.hardwareType || minerStatsDb.hardware, // Use existing hardware type
+    };
+    await minerDao.updateMinerStats(updatedMinerStatsData);
     
     // Update wallet balance
     const wallet = await walletDao.getWalletByAddress(minerAddress);
@@ -599,7 +665,7 @@ async function simulateBlockMining(minerAddress: string) {
   setTimeout(async () => {
     try {
       // Get miner stats to check if still mining
-      const minerStats = await memBlockchainStorage.getMinerByAddress(minerAddress);
+      const minerStats = await minerDao.getMinerStatsByAddress(minerAddress); // Use DAO
       
       if (!minerStats || !minerStats.isCurrentlyMining) {
         return; // Stopped mining
@@ -906,8 +972,8 @@ export function simulateThringletInteraction(
 async function mineNewBlock() {
   try {
     // If no active miners, skip
-    const activeMiners = await memBlockchainStorage.getAllActiveMiners();
-    if (!activeMiners || activeMiners.length === 0) {
+    const activeMinersList = await minerDao.getAllActiveMiners(); // Use DAO
+    if (!activeMinersList || activeMinersList.length === 0) {
       return;
     }
     
@@ -918,21 +984,26 @@ async function mineNewBlock() {
     }
     
     // Pick a random miner based on hash power
-    const totalHashrate = activeMiners.reduce((sum, miner) => {
-      const hashrate = parseFloat(miner.hashRate || '0');
-      return sum + hashrate;
+    // currentHashRate from DAO is already a number (MH/s)
+    const totalHashrateSumMHs = activeMinersList.reduce((sum, miner) => {
+      return sum + (Number(miner.currentHashRate) || 0);
     }, 0);
+
+    if (totalHashrateSumMHs === 0) { // Avoid division by zero if all have 0 hashrate
+        console.warn("No active miners with hashrate > 0. Skipping block mining.");
+        return;
+    }
     
     // Weighted random selection based on hashrate
     const selectedMinerIndex = weightedRandomSelection(
-      activeMiners.map(miner => parseFloat(miner.hashRate || '0') / totalHashrate)
+      activeMinersList.map(miner => (Number(miner.currentHashRate) || 0) / totalHashrateSumMHs)
     );
     
-    if (selectedMinerIndex < 0) {
+    if (selectedMinerIndex < 0) { // Should not happen if totalHashrateSumMHs > 0
       return;
     }
     
-    const selectedMiner = activeMiners[selectedMinerIndex];
+    const selectedMiner = activeMinersList[selectedMinerIndex];
     
     // Create block parameters
     const newHeight = latest.height + 1;
@@ -980,11 +1051,14 @@ async function mineNewBlock() {
     // Store reward transaction
     await transactionDao.createTransaction(rewardTx);
     
-    // Update miner stats
-    selectedMiner.blocksMined++;
-    selectedMiner.lastBlockMined = newTimestamp;
-    selectedMiner.totalRewards = (BigInt(selectedMiner.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString();
-    await memBlockchainStorage.updateMiner(selectedMiner);
+    // Update miner stats in DB
+    const updatedMinerStatsData = {
+        ...selectedMiner, // selectedMiner is from minerDao, so currentHashRate is number, hardware is correct field
+        blocksMined: selectedMiner.blocksMined + 1,
+        lastBlockMined: newTimestamp,
+        totalRewards: (BigInt(selectedMiner.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString(),
+    };
+    await minerDao.updateMinerStats(updatedMinerStatsData);
     
     // Update miner wallet balance in both memory and database
     const minerWallet = await walletDao.getWalletByAddress(selectedMiner.address);
@@ -1331,3 +1405,56 @@ export const blockchainService = {
     latestBlock
   }
 };
+
+/**
+ * Get aggregated blockchain information details.
+ */
+export async function getBlockchainInfoDetails() {
+  try {
+    const latestDbBlock = await blockDao.getLatestBlock();
+    const totalTransactions = await transactionDao.getTotalTransactionCount();
+    const { totalHashrate: currentNetworkHashrateTHs } = await getNetworkHashrate();
+
+    return {
+      version: '1.0.0', // Hardcoded as per instruction
+      network: 'PVX-MAINNET', // Hardcoded
+      currentBlock: latestDbBlock?.height || 0,
+      difficulty: latestDbBlock?.difficulty || PVX_MIN_DIFFICULTY,
+      hashRate: `${currentNetworkHashrateTHs.toFixed(2)} TH/s`,
+      totalSupply: PVX_INITIAL_SUPPLY,
+      circulatingSupply: PVX_INITIAL_SUPPLY, // Mock: same as total supply for now
+      consensus: 'Hybrid PoW+PoS+zkSNARK', // Hardcoded
+      totalTransactions: totalTransactions,
+      activeValidators: 50, // Mock placeholder
+      lastBlockTimestamp: latestDbBlock?.timestamp || 0,
+      averageBlockTime: PVX_BLOCK_TIME, // Constant
+    };
+  } catch (error) {
+    console.error('Error in getBlockchainInfoDetails:', error);
+    throw new Error('Failed to get blockchain info details');
+  }
+}
+
+/**
+ * Get live blockchain metrics for the /api/blockchain/metrics endpoint.
+ */
+export async function getLiveBlockchainMetrics() {
+  try {
+    const latestDbBlock = await blockDao.getLatestBlock();
+    const { totalHashrate, activeMinersCount } = await getNetworkHashrate();
+    const totalDbTransactions = await transactionDao.getTotalTransactionCount();
+
+    return {
+      latestBlockHeight: latestDbBlock?.height || 0,
+      difficulty: latestDbBlock?.difficulty || PVX_MIN_DIFFICULTY,
+      networkHashRate: `${totalHashrate.toFixed(2)} TH/s`, // TH/s
+      lastBlockTime: latestDbBlock?.timestamp || 0,
+      activeMiners: activeMinersCount,
+      pendingTransactionsCount: pendingTransactions.length, // from service-scoped array
+      totalTransactionsCount: totalDbTransactions,
+    };
+  } catch (error) {
+    console.error('Error in getLiveBlockchainMetrics:', error);
+    throw new Error('Failed to get live blockchain metrics');
+  }
+}

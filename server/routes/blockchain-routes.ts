@@ -12,19 +12,22 @@ router.use(standardLimiter);
  * Get blockchain metrics - key data for dashboard display
  * GET /api/blockchain/metrics
  */
-router.get('/metrics', (req, res) => {
+router.get('/metrics', async (req, res) => { // Made async
   try {
-    const status = blockchainService.getBlockchainStatus();
-    const stats = {
-      latestBlockHeight: status.height || 0,
-      difficulty: status.difficulty || 1,
-      hashRate: status.networkHashRate || "0 H/s",
-      lastBlockTime: status.lastBlockTime || Date.now(),
-      activeMiners: status.activeMiners || 0,
-      pendingTransactions: status.pendingTransactions || 0,
-      totalTransactions: status.totalTransactions || 0
+    // Call the new service function
+    const metrics = await blockchainService.getLiveBlockchainMetrics();
+    // The new function returns data in a slightly different structure,
+    // so we map it to the existing expected response structure.
+    const responseStats = {
+      latestBlockHeight: metrics.latestBlockHeight,
+      difficulty: metrics.difficulty,
+      hashRate: metrics.networkHashRate, // Already a string like "123.45 TH/s"
+      lastBlockTime: metrics.lastBlockTime,
+      activeMiners: metrics.activeMiners,
+      pendingTransactions: metrics.pendingTransactionsCount,
+      totalTransactions: metrics.totalTransactionsCount
     };
-    res.json(stats);
+    res.json(responseStats);
   } catch (error) {
     res.status(500).json({
       error: error instanceof Error ? error.message : 'Failed to get blockchain metrics'

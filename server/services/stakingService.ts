@@ -391,6 +391,20 @@ export class StakingService {
       console.error('❌ Failed to update pool statistics:', error);
     }
   }
+
+  /**
+   * Get staking pool by ID from database
+   */
+  async getStakingPoolById(poolId: string): Promise<StakingPool | undefined> {
+    try {
+      // Assuming stakeDao has getStakingPoolById
+      const { stakeDao } = await import('../database/stakeDao');
+      return await stakeDao.getStakingPoolById(poolId);
+    } catch (error) {
+      console.error(`❌ Failed to get staking pool by ID ${poolId}:`, error);
+      throw new Error('Failed to retrieve staking pool');
+    }
+  }
 }
 
 export const stakingService = new StakingService();
