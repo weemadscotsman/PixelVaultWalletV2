@@ -434,6 +434,31 @@ export class GovernanceDao {
       throw new Error('Failed to finalize expired proposals');
     }
   }
+
+  /**
+   * Get all votes by a specific voter
+   * @param voterAddress The address of the voter
+   * @returns Array of governance votes cast by the user
+   */
+  async getVotesByVoter(voterAddress: string): Promise<GovernanceVote[]> {
+    try {
+      const result = await db.select()
+        .from(governanceVotes)
+        .where(eq(governanceVotes.voterAddress, voterAddress))
+        .orderBy(desc(governanceVotes.timestamp));
+
+      return result.map(dbVote => ({
+        proposalId: dbVote.proposalId,
+        voterAddress: dbVote.voterAddress,
+        voteType: dbVote.voteType as 'for' | 'against' | 'abstain',
+        votingPower: Number(dbVote.votingPower),
+        timestamp: Number(dbVote.timestamp)
+      }));
+    } catch (error) {
+      console.error('Error getting votes by voter:', error);
+      throw new Error('Failed to get votes by voter');
+    }
+  }
 }
 
 // Create a singleton instance

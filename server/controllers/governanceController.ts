@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import crypto from 'crypto';
-// import { memBlockchainStorage } from '../mem-blockchain'; // Will be removed if other fns are refactored
+// import { memBlockchainStorage } from '../mem-blockchain'; // REMOVED
 import { broadcastTransaction } from '../utils/websocket';
 import { PVX_GOVERNANCE_ADDRESS } from '../utils/constants';
 import { generateRandomHash } from '../utils/crypto';
@@ -17,31 +17,12 @@ import { stakingService } from '../services/stakingService';
 import { transactionDao } from '../database/transactionDao';
 
 
-// Define TransactionType as string literals since the enum is not available
-const LocalTransactionType = { // Renamed to avoid conflict if shared TransactionType is different
-  TRANSFER: 'TRANSFER' as SharedTransaction['type'],
-  MINING_REWARD: 'MINING_REWARD'as SharedTransaction['type'],
-  STAKING_REWARD: 'STAKING_REWARD'as SharedTransaction['type'],
-  AIRDROP: 'AIRDROP'as SharedTransaction['type'],
-  NFT_MINT: 'NFT_MINT'as SharedTransaction['type'],
-  BADGE_AWARD: 'BADGE_AWARD'as SharedTransaction['type'],
-  GOVERNANCE_VOTE: 'GOVERNANCE_VOTE'as SharedTransaction['type'],
-  GOVERNANCE_PROPOSAL: 'GOVERNANCE_PROPOSAL'as SharedTransaction['type']
-};
+// Define TransactionType using SharedTransaction['type']
+const GOVERNANCE_PROPOSAL_TX_TYPE: SharedTransaction['type'] = 'GOVERNANCE_PROPOSAL';
+const GOVERNANCE_VOTE_TX_TYPE: SharedTransaction['type'] = 'GOVERNANCE_VOTE';
+const GOVERNANCE_EXECUTE_TX_TYPE: SharedTransaction['type'] = 'GOVERNANCE'; // Assuming 'GOVERNANCE' is a valid type for execution tx
 
-// Using SharedProposalStatus and SharedVoteType now, removing local enums
-// enum ProposalStatus {
-//   ACTIVE = 'active',
-//   PASSED = 'passed',
-//   REJECTED = 'rejected',
-//   EXECUTED = 'executed'
-// }
-
-// enum VoteType {
-//   FOR = 'for',
-//   AGAINST = 'against',
-//   ABSTAIN = 'abstain'
-// }
+// Using SharedProposalStatus and SharedVoteType from @shared/types
 
 // Remove in-memory storage for proposals
 // const governanceProposals: Proposal[] = [ ... ];
@@ -346,72 +327,76 @@ export const executeProposal = async (req: Request, res: Response): Promise<void
       return;
     }
     
-    // Check if proposal exists
-    const proposal = governanceProposals.find(p => p.id === proposalId);
+    // Fetch proposal from DB
+    const proposal = await governanceDao.getProposalById(proposalId);
     if (!proposal) {
       res.status(404).json({ error: 'Proposal not found' });
       return;
     }
     
     // Check if proposal is still active
-    if (proposal.status !== ProposalStatus.ACTIVE) {
-      res.status(400).json({ error: 'This proposal has already been processed' });
+    if (proposal.status !== SharedProposalStatus.ACTIVE) {
+      res.status(400).json({ error: 'This proposal has already been processed or is not active' });
       return;
     }
     
     // Check if voting period has ended
-    if (proposal.endTime > Date.now()) {
+    if (Number(proposal.endTime) > Date.now()) {
       res.status(400).json({ error: 'Voting period for this proposal has not ended yet' });
       return;
     }
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(executorAddress);
-    if (!wallet) {
+    // Check if executor wallet exists
+    const executorWallet = await walletDao.getWalletByAddress(executorAddress);
+    if (!executorWallet) {
       res.status(404).json({ error: 'Executor wallet not found' });
       return;
     }
     
-    // Determine if proposal passed
-    const totalVotes = proposal.votesFor + proposal.votesAgainst;
+    // Determine if proposal passed (votesFor and votesAgainst are numbers from DAO)
+    const totalVotes = proposal.votesFor + proposal.votesAgainst; // These are BigInts from DB, ensure they are numbers
     const isPassed = totalVotes > 0 && proposal.votesFor > proposal.votesAgainst;
     
-    // Update proposal status
-    proposal.status = isPassed ? ProposalStatus.PASSED : ProposalStatus.REJECTED;
+    const newStatus = isPassed ? SharedProposalStatus.PASSED : SharedProposalStatus.REJECTED;
     
-    // Create a transaction for the execution
+    // Create a transaction for the execution attempt
     const now = Date.now();
     const txHash = crypto.createHash('sha256')
       .update(`proposal_execute_${proposalId}_${executorAddress}_${now}`)
       .digest('hex');
     
-    const transaction = {
+    const transaction: SharedTransaction = {
       hash: txHash,
-      type: TransactionType.GOVERNANCE,
+      type: GOVERNANCE_EXECUTE_TX_TYPE,
       from: executorAddress,
       to: PVX_GOVERNANCE_ADDRESS,
-      amount: 0, // No tokens transferred for execution
+      amount: 0,
       timestamp: now,
-      nonce: Math.floor(Math.random() * 100000),
-      signature: generateRandomHash(),
-      status: 'confirmed',
+      nonce: executorWallet.nonce ? executorWallet.nonce + 1 : 1, // Example nonce handling
+      signature: generateRandomHash(), // Placeholder
+      status: 'confirmed', // Or 'pending'
       metadata: {
         action: 'execute_proposal',
         proposalId,
-        result: isPassed ? 'passed' : 'rejected'
+        result: newStatus
       }
     };
     
-    // Add transaction to the blockchain
-    await memBlockchainStorage.createTransaction(transaction);
-    
-    // Save transaction hash in proposal
-    proposal.executionTransactionHash = txHash;
-    
+    await transactionDao.createTransaction(transaction);
+    // Potentially update executorWallet nonce
+
+    // Update proposal status in DB
+    await governanceDao.updateProposalStatus(proposalId, newStatus, txHash);
+
     // Implement proposal changes if passed
     if (isPassed) {
-      await implementProposalChanges(proposal);
-      proposal.status = ProposalStatus.EXECUTED;
+      // Fetch the updated proposal to get its new status (PASSED) before execution logic
+      const updatedProposal = await governanceDao.getProposalById(proposalId);
+      if(updatedProposal && updatedProposal.status === SharedProposalStatus.PASSED) {
+        await implementProposalChanges(updatedProposal); // This function is a placeholder
+        // If implementProposalChanges is successful, update status to EXECUTED
+        await governanceDao.updateProposalStatus(proposalId, SharedProposalStatus.EXECUTED, txHash);
+      }
     }
     
     // Broadcast transaction via WebSocket
@@ -438,33 +423,21 @@ export const executeProposal = async (req: Request, res: Response): Promise<void
 /**
  * Implement changes from a passed proposal
  */
-async function implementProposalChanges(proposal: Proposal): Promise<void> {
+async function implementProposalChanges(proposal: SharedGovernanceProposal): Promise<void> {
   // This would contain the logic to implement the changes from the proposal
   // For now, we'll just log the implementation
-  console.log(`Implementing proposal ${proposal.id}: ${proposal.title}`);
+  console.log(`Attempting to implement proposal ${proposal.id}: ${proposal.title}`);
   
-  switch (proposal.category) {
-    case 'PARAMETER':
-      if (proposal.parameterChanges) {
-        for (const change of proposal.parameterChanges) {
-          console.log(`Changing parameter ${change.paramName} from ${change.currentValue} to ${change.proposedValue}`);
-          // Here we would actually update the parameter in the system
-        }
-      }
-      break;
-    case 'TREASURY':
-      console.log(`Executing treasury action from proposal: ${proposal.title}`);
-      // Here we would implement treasury-related changes
-      break;
-    case 'PROTOCOL':
-      console.log(`Executing protocol change from proposal: ${proposal.title}`);
-      // Here we would implement protocol-level changes
-      break;
-    case 'SOCIAL':
-      console.log(`Executing social directive from proposal: ${proposal.title}`);
-      // Social directives might not need on-chain implementation
-      break;
+  // Example: Parameter changes might involve updating a config file or a database table
+  // This is highly dependent on how system parameters are managed.
+  if (proposal.category === 'PARAMETER' && proposal.parameterChanges) {
+    for (const change of proposal.parameterChanges) {
+      console.log(`Changing parameter ${change.paramName} from ${change.currentValue} to ${change.proposedValue}`);
+      // Actual implementation for parameter change would go here
+    }
   }
+  // Other categories (TREASURY, PROTOCOL, SOCIAL) would have their specific logic
+  console.log(`Proposal category: ${proposal.category}`);
 }
 
 /**
@@ -472,25 +445,33 @@ async function implementProposalChanges(proposal: Proposal): Promise<void> {
  */
 export const getGovernanceStats = async (req: Request, res: Response): Promise<void> => {
   try {
-    const activeProposals = governanceProposals.filter(p => p.status === ProposalStatus.ACTIVE).length;
-    const passedProposals = governanceProposals.filter(p => p.status === ProposalStatus.PASSED || p.status === ProposalStatus.EXECUTED).length;
-    const rejectedProposals = governanceProposals.filter(p => p.status === ProposalStatus.REJECTED).length;
+    const allProposals = await governanceDao.getAllProposals();
     
-    const totalVotes = governanceProposals.reduce((sum, proposal) => {
-      return sum + proposal.voters.length;
-    }, 0);
-    
-    const totalVotingPower = governanceProposals.reduce((sum, proposal) => {
-      return sum + proposal.votesFor + proposal.votesAgainst + proposal.votesAbstain;
-    }, 0);
+    let activeProposals = 0;
+    let passedProposals = 0;
+    let rejectedProposals = 0;
+    let totalVotesCount = 0;
+    let totalVotingPowerSum = BigInt(0);
+
+    for (const proposal of allProposals) {
+      if (proposal.status === SharedProposalStatus.ACTIVE) activeProposals++;
+      if (proposal.status === SharedProposalStatus.PASSED || proposal.status === SharedProposalStatus.EXECUTED) passedProposals++;
+      if (proposal.status === SharedProposalStatus.REJECTED) rejectedProposals++;
+
+      const votesForThisProposal = await governanceDao.getVotesForProposal(proposal.id);
+      totalVotesCount += votesForThisProposal.length;
+      votesForThisProposal.forEach(vote => {
+        totalVotingPowerSum += BigInt(vote.votingPower);
+      });
+    }
     
     res.status(200).json({
       activeProposals,
       passedProposals,
       rejectedProposals,
-      totalProposals: governanceProposals.length,
-      totalVotes,
-      totalVotingPower
+      totalProposals: allProposals.length,
+      totalVotes: totalVotesCount, // Sum of individual votes cast
+      totalVotingPower: totalVotingPowerSum.toString() // Sum of voting power of all votes cast
     });
   } catch (error) {
     console.error('Error getting governance stats:', error);
@@ -505,35 +486,32 @@ export const getUserVotingPower = async (req: Request, res: Response): Promise<v
   try {
     const { walletAddress } = req.params;
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(walletAddress);
+    const wallet = await walletDao.getWalletByAddress(walletAddress);
     if (!wallet) {
       res.status(404).json({ error: 'Wallet not found' });
       return;
     }
     
-    // Calculate voting power (based on staked tokens)
-    const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(walletAddress);
-    const votingPower = activeStakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0);
-    
-    // Get user's voting history
-    const votingHistory = governanceProposals.reduce((history, proposal) => {
-      const vote = proposal.voters.find(v => v.address === walletAddress);
-      if (vote) {
-        history.push({
-          proposalId: proposal.id,
-          proposalTitle: proposal.title,
-          voteType: vote.voteType,
-          votingPower: vote.votingPower,
-          timestamp: vote.timestamp
-        });
-      }
-      return history;
-    }, [] as any[]);
+    const activeStakes = await stakingService.getActiveStakes(walletAddress);
+    const currentVotingPower = activeStakes.reduce((sum, stake) => sum + parseFloat(stake.amount), 0);
+
+    const userVotes = await governanceDao.getVotesByVoter(walletAddress);
+
+    // Optionally, enrich votes with proposal titles if needed by client
+    const votingHistory = await Promise.all(userVotes.map(async (vote) => {
+        const proposalDetails = await governanceDao.getProposalById(vote.proposalId);
+        return {
+            proposalId: vote.proposalId,
+            proposalTitle: proposalDetails?.title || 'N/A',
+            voteType: vote.voteType,
+            votingPower: vote.votingPower,
+            timestamp: Number(vote.timestamp)
+        };
+    }));
     
     res.status(200).json({
       address: walletAddress,
-      currentVotingPower: votingPower,
+      currentVotingPower,
       votingHistory
     });
   } catch (error) {

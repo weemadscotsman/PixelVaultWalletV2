@@ -19,14 +19,17 @@ import { transactionDao } from '../database/transactionDao';
 import { blockDao } from '../database/blockDao';
 import { stakeDao } from '../database/stakeDao';
 import { minerDao } from '../database/minerDao';
+import * as passphraseUtils from '../utils/passphrase';
+import * as cryptoUtils from '../utils/crypto'; // For encryptAES256GCM
+import * as tokenomics from '../tokenomics/const'; // Import tokenomics constants
 
 // Constants for PVX blockchain
 const PVX_GENESIS_BLOCK_TIMESTAMP = 1714637462000; // May 1, 2024
-const PVX_GENESIS_ADDRESS = "PVX_GENESIS_ADDR_00000000000000";
-const PVX_INITIAL_SUPPLY = "6009420000000"; // In μPVX (6,009,420 PVX)
+const PVX_GENESIS_ADDRESS = "PVX_GENESIS_ADDR_00000000000000"; // Used for reward 'from'
+const PVX_INITIAL_SUPPLY = "6009420000000"; // In μPVX (6,009,420 PVX) - Note: This is different from tokenomics.MAX_SUPPLY_PVX
 const PVX_MIN_DIFFICULTY = 0.5;
 const PVX_MAX_DIFFICULTY = 5.0;
-const PVX_BLOCK_REWARD = "5000000"; // 5 PVX
+// const PVX_BLOCK_REWARD = "5000000"; // 5 PVX - Will be replaced by tokenomics constant
 const PVX_BLOCK_TIME = 60; // 1 minute
 const PVX_TARGET_BLOCK_TIME_MS = 60000; // 1 minute
 const PVX_MAX_TRANSACTIONS_PER_BLOCK = 50;
@@ -142,34 +145,63 @@ export async function getBlockByHeight(height: number): Promise<Block | null> {
 
 /**
  * Create a new wallet
+ * Returns address, publicKey, and encrypted private key components.
+ * The raw private key is NOT returned by this service function.
  */
-export async function createWallet(passphrase: string): Promise<string> {
-  // Generate a new wallet address and keys
-  const privateKey = crypto.randomBytes(32).toString('hex');
+export async function createWallet(passphrase: string): Promise<{
+  address: string,
+  publicKey: string,
+  iv: string,
+  encryptedPrivateKey: string,
+  authTag: string
+}> {
+  // 1. Generate a new private key (ensure it's cryptographically strong for real use)
+  const rawPrivateKey = crypto.randomBytes(32).toString('hex');
+
+  // 2. Generate public key (simplified for demo, typically derived from private key via ECC)
+  // For this example, we'll keep the existing public key generation for simplicity,
+  // but acknowledge it's not a proper ECC public key.
   const publicKey = crypto.createHash('sha256')
-    .update(privateKey)
+    .update(rawPrivateKey) // Derive from the actual private key
     .digest('hex');
   
-  const address = 'PVX_' + publicKey.substring(0, 32);
+  const address = 'PVX_' + publicKey.substring(0, 32); // Address derivation can remain
   
-  // Hash the passphrase
-  const salt = crypto.randomBytes(16).toString('hex');
-  const hash = crypto.createHash('sha256')
-    .update(passphrase + salt)
-    .digest('hex');
+  // 3. Generate salt and hash the passphrase using PBKDF2 (from passphrase.ts)
+  const salt = passphraseUtils.generateSalt();
+  const passphraseHash = passphraseUtils.hashPassphrase(passphrase, salt); // This is PBKDF2-SHA256, 64-byte hex
+
+  // 4. Derive AES encryption key from the PBKDF2 hash
+  const pbkdf2Buffer = Buffer.from(passphraseHash, 'hex');
+  if (pbkdf2Buffer.length < 32) {
+    // This should not happen if passphraseHash is 64 bytes hex (128 chars)
+    throw new Error('PBKDF2 hash is too short to derive a 32-byte AES key.');
+  }
+  const aesKey = pbkdf2Buffer.subarray(0, 32); // Take the first 32 bytes for AES-256 key
+
+  // 5. Encrypt the raw private key
+  const { iv, ciphertext, authTag } = cryptoUtils.encryptAES256GCM(rawPrivateKey, aesKey);
   
-  // Store the wallet in memory with initial PVX
+  // 6. Store wallet data (WITHOUT private key) in the database
   await walletDao.createWallet({
     address,
-    publicKey,
-    balance: "100000", // 0.1 PVX as starting balance for testing
+    publicKey, // Store the conceptual public key
+    balance: "100000", // Initial balance for testing
     createdAt: new Date(),
-    lastUpdated: new Date(), // Changed from lastSynced to match database schema
-    passphraseSalt: salt,
-    passphraseHash: hash
+    lastUpdated: new Date(),
+    passphraseSalt: salt, // Store salt for verifying passphrase
+    passphraseHash: passphraseHash // Store PBKDF2 hash of passphrase
+    // DO NOT STORE rawPrivateKey or encryptedPrivateKey or aesKey here
   });
   
-  return address;
+  // 7. Return address, publicKey, and encrypted components for paper wallet/client backup
+  return {
+    address,
+    publicKey,
+    iv,
+    encryptedPrivateKey: ciphertext,
+    authTag
+  };
 }
 
 /**
@@ -578,6 +610,12 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
       return null;
     }
     
+    // TODO: Implement halving logic for block rewards
+    // TODO: Check against MAX_SUPPLY before creating rewards
+    const currentBlockRewardUPVX = tokenomics.INITIAL_BLOCK_REWARD_UPVX; // This is a number
+    const minerActualRewardUPVX = Math.floor(currentBlockRewardUPVX * tokenomics.MINER_REWARD_PERCENTAGE);
+    const founderRewardUPVX = currentBlockRewardUPVX - minerActualRewardUPVX; // Remainder to founder
+
     // Create new block
     const newBlock: Block = {
       height: currentLatestBlock.height + 1,
@@ -588,7 +626,7 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
       miner: minerAddress,
       nonce: Math.floor(Math.random() * 1000000).toString(),
       difficulty: adjustDifficulty(currentLatestBlock),
-      reward: PVX_BLOCK_REWARD
+      reward: minerActualRewardUPVX.toString() // Miner's actual reward
     };
     
     // Store new block
@@ -600,18 +638,35 @@ export async function forceMineBlock(minerAddress: string): Promise<Block | null
         ...minerStatsDb,
         blocksMined: minerStatsDb.blocksMined + 1,
         lastBlockMined: newBlock.timestamp,
-        totalRewards: (BigInt(minerStatsDb.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString(),
-        // Ensure currentHashRate and hardware are numbers/correct type for DAO
-        currentHashRate: Number(minerStatsDb.currentHashRate) || 0, // Comes as number from DAO
-        hardware: minerStatsDb.hardwareType || minerStatsDb.hardware, // Use existing hardware type
+        totalRewards: (BigInt(minerStatsDb.totalRewards) + BigInt(minerActualRewardUPVX)).toString(),
+        currentHashRate: Number(minerStatsDb.currentHashRate) || 0,
+        hardware: minerStatsDb.hardwareType || minerStatsDb.hardware,
     };
     await minerDao.updateMinerStats(updatedMinerStatsData);
     
-    // Update wallet balance
+    // Update miner's wallet balance
     const wallet = await walletDao.getWalletByAddress(minerAddress);
     if (wallet) {
-      wallet.balance = (BigInt(wallet.balance) + BigInt(PVX_BLOCK_REWARD)).toString();
+      wallet.balance = (BigInt(wallet.balance) + BigInt(minerActualRewardUPVX)).toString();
       await walletDao.updateWallet(wallet);
+    }
+
+    // Create and store founder reward transaction if founderReward is greater than 0
+    if (founderRewardUPVX > 0) {
+      const founderRewardTx: Transaction = {
+        hash: crypto.createHash('sha256').update(`founder_reward_fm_${newBlock.hash}_${newBlock.timestamp}`).digest('hex'),
+        type: 'FOUNDER_REWARD' as TransactionType, // Ensure 'FOUNDER_REWARD' is a valid TransactionType
+        from: PVX_GENESIS_ADDRESS,
+        to: tokenomics.FOUNDER_RESERVE_ADDRESS,
+        amount: founderRewardUPVX.toString(),
+        timestamp: newBlock.timestamp + 1,
+        nonce: 0,
+        signature: generateRandomHash(),
+        status: 'confirmed'
+      };
+      await transactionDao.createTransaction(founderRewardTx);
+      // Optionally broadcast this transaction if needed for real-time updates
+      // broadcastTransaction(founderRewardTx);
     }
     
     // Check and award mining-related badges
@@ -1016,6 +1071,12 @@ async function mineNewBlock() {
     // Get pending transactions (max 10)
     const blockTransactions = pendingTransactions.slice(0, 10).map(tx => tx.hash);
     
+    // TODO: Implement halving logic for block rewards
+    // TODO: Check against MAX_SUPPLY before creating rewards
+    const currentBlockRewardUPVX = tokenomics.INITIAL_BLOCK_REWARD_UPVX; // This is a number
+    const minerActualRewardUPVX = Math.floor(currentBlockRewardUPVX * tokenomics.MINER_REWARD_PERCENTAGE);
+    const founderRewardUPVX = currentBlockRewardUPVX - minerActualRewardUPVX;
+
     // Create new block
     const newBlock: Block = {
       height: newHeight,
@@ -1026,46 +1087,60 @@ async function mineNewBlock() {
       miner: selectedMiner.address,
       nonce: Math.floor(Math.random() * 1000000).toString(),
       difficulty: newDifficulty,
-      reward: PVX_BLOCK_REWARD
+      reward: minerActualRewardUPVX.toString() // Miner's actual share in µPVX
     };
     
     // Store block
     const savedBlock = await blockDao.createBlock(newBlock);
     latestBlock = savedBlock; // Update service-scoped latestBlock
     
-    // Create a reward transaction for the miner
-    const rewardTx: Transaction = {
+    // Create a reward transaction for the miner (their share)
+    const minerRewardTx: Transaction = {
       hash: crypto.createHash('sha256')
-        .update('reward_' + selectedMiner.address + newTimestamp.toString())
+        .update('miner_reward_' + selectedMiner.address + newTimestamp.toString())
         .digest('hex'),
       type: 'MINING_REWARD' as TransactionType,
       from: PVX_GENESIS_ADDRESS,
       to: selectedMiner.address,
-      amount: PVX_BLOCK_REWARD,
+      amount: minerActualRewardUPVX.toString(), // Miner's share in µPVX
       timestamp: newTimestamp,
       nonce: Math.floor(Math.random() * 100000),
       signature: generateRandomHash(),
       status: 'confirmed'
     };
+    await transactionDao.createTransaction(minerRewardTx);
     
-    // Store reward transaction
-    await transactionDao.createTransaction(rewardTx);
+    // Create and store founder reward transaction if founderReward is greater than 0
+    if (founderRewardUPVX > 0) {
+      const founderRewardTx: Transaction = {
+        hash: crypto.createHash('sha256').update(`founder_reward_mb_${newBlock.hash}_${newBlock.timestamp + 1}`).digest('hex'),
+        type: 'FOUNDER_REWARD' as TransactionType, // Ensure 'FOUNDER_REWARD' is a valid TransactionType
+        from: PVX_GENESIS_ADDRESS,
+        to: tokenomics.FOUNDER_RESERVE_ADDRESS,
+        amount: founderRewardUPVX.toString(),
+        timestamp: newTimestamp + 1,
+        nonce: 0,
+        signature: generateRandomHash(),
+        status: 'confirmed'
+      };
+      await transactionDao.createTransaction(founderRewardTx);
+      broadcastTransaction(founderRewardTx); // Broadcast founder reward transaction
+    }
     
-    // Update miner stats in DB
+    // Update miner stats in DB (totalRewards should reflect only the miner's portion)
     const updatedMinerStatsData = {
-        ...selectedMiner, // selectedMiner is from minerDao, so currentHashRate is number, hardware is correct field
+        ...selectedMiner,
         blocksMined: selectedMiner.blocksMined + 1,
         lastBlockMined: newTimestamp,
-        totalRewards: (BigInt(selectedMiner.totalRewards) + BigInt(PVX_BLOCK_REWARD)).toString(),
+        totalRewards: (BigInt(selectedMiner.totalRewards) + BigInt(minerActualRewardUPVX)).toString(),
     };
     await minerDao.updateMinerStats(updatedMinerStatsData);
     
-    // Update miner wallet balance in both memory and database
+    // Update miner wallet balance with their share
     const minerWallet = await walletDao.getWalletByAddress(selectedMiner.address);
     if (minerWallet) {
       const currentBalance = BigInt(minerWallet.balance);
-      const reward = BigInt(PVX_BLOCK_REWARD);
-      const newBalance = currentBalance + reward;
+      const newBalance = currentBalance + BigInt(minerActualRewardUPVX);
       minerWallet.balance = newBalance.toString();
       minerWallet.lastUpdated = new Date();
       await walletDao.updateWallet(minerWallet);
@@ -1090,10 +1165,10 @@ async function mineNewBlock() {
       difficulty: newBlock.difficulty
     };
     
-    // Broadcast new block and transaction via WebSocket
+    // Broadcast new block and miner's reward transaction via WebSocket
     try {
       broadcastBlock(newBlock);
-      broadcastTransaction(rewardTx);
+      broadcastTransaction(minerRewardTx); // Broadcast miner's reward
       broadcastStatusUpdate(blockchainStatus);
     } catch (err) {
       console.error('Error broadcasting via WebSocket:', err);

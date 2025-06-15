@@ -181,3 +181,52 @@ export function bufferToString(buffer: Buffer): string {
 export function generateRandomId(length: number = 16): string {
   return crypto.randomBytes(length).toString('hex');
 }
+
+/**
+ * Encrypts data using AES-256-GCM.
+ * @param dataToEncrypt The string data to encrypt.
+ * @param key A 32-byte Buffer to be used as the encryption key.
+ * @returns An object containing the hex-encoded iv, ciphertext, and authTag.
+ */
+export function encryptAES256GCM(dataToEncrypt: string, key: Buffer): { iv: string, ciphertext: string, authTag: string } {
+  if (key.length !== 32) {
+    throw new Error('Encryption key must be 32 bytes for AES-256.');
+  }
+  const iv = crypto.randomBytes(12); // 96-bit IV is recommended for GCM
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+
+  let ciphertext = cipher.update(dataToEncrypt, 'utf8', 'hex');
+  ciphertext += cipher.final('hex');
+  const authTag = cipher.getAuthTag().toString('hex');
+
+  return {
+    iv: iv.toString('hex'),
+    ciphertext,
+    authTag,
+  };
+}
+
+/**
+ * Decrypts data encrypted with AES-256-GCM.
+ * @param ivHex Hex-encoded Initialization Vector.
+ * @param ciphertextHex Hex-encoded ciphertext.
+ * @param authTagHex Hex-encoded authentication tag.
+ * @param key A 32-byte Buffer to be used as the decryption key.
+ * @returns The decrypted string data.
+ */
+export function decryptAES256GCM(ivHex: string, ciphertextHex: string, authTagHex: string, key: Buffer): string {
+  if (key.length !== 32) {
+    throw new Error('Decryption key must be 32 bytes for AES-256.');
+  }
+  const ivBuffer = Buffer.from(ivHex, 'hex');
+  const ciphertextBuffer = Buffer.from(ciphertextHex, 'hex');
+  const authTagBuffer = Buffer.from(authTagHex, 'hex');
+
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, ivBuffer);
+  decipher.setAuthTag(authTagBuffer);
+
+  let decrypted = decipher.update(ciphertextBuffer, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+
+  return decrypted;
+}

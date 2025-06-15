@@ -59,47 +59,32 @@ export function generateDeterministicCredentials(address: string): { salt: strin
 export function hashPassphrase(passphrase: string, salt: string): string {
   // Normalize the passphrase - trim whitespace and ensure utf8 encoding
   const normalizedPassphrase = passphrase.trim();
-  
+  const iterations = 10000;
+  const keylen = 64;
+  const digest = 'sha256'; // Changed from 'sha512' to 'sha256'
+
   // Log detailed information for debugging
   console.log('Passphrase hash details:', {
     rawPassphraseLengthChars: passphrase.length,
     normalizedPassphraseLengthChars: normalizedPassphrase.length,
     saltLength: salt.length,
-    hashingMethod: 'sha256',
+    hashingMethod: `pbkdf2-${digest}`,
+    iterations,
+    keylen,
     // Don't log actual passphrase in production
     saltValue: salt,
-    // Hash the normalizedPassphrase + salt
-    inputHashData: `${normalizedPassphrase}${salt}`
   });
+
+  // Use PBKDF2 for hashing
+  const derivedKey = crypto.pbkdf2Sync(
+    normalizedPassphrase,
+    salt,
+    iterations,
+    keylen,
+    digest
+  );
   
-  // For known wallet passphrases, use the direct hash from address to maintain compatibility
-  const knownWallets = [
-    'PVX_9c386d81bdea6f063593498c335ee640', 
-    'PVX_a5a86dcdfa84040815d7a399ba1e2ec2',
-    'PVX_1e1ee32c2770a6af3ca119759c539907'
-  ];
-  
-  // If this is a known wallet creation, make the hash match the address format
-  const addressPrefix = normalizedPassphrase.substring(0, 32).toLowerCase();
-  if (knownWallets.some(addr => addr.toLowerCase().includes(addressPrefix))) {
-    // Extract the part that matches the address
-    const matchingWallet = knownWallets.find(addr => 
-      addr.toLowerCase().includes(addressPrefix)
-    );
-    
-    if (matchingWallet) {
-      const credentials = getKnownWalletCredentials(matchingWallet);
-      if (credentials) {
-        console.log('Using known wallet hash for creation compatibility');
-        return credentials.hash;
-      }
-    }
-  }
-  
-  // Create hash using normalized passphrase
-  return crypto.createHash('sha256')
-    .update(normalizedPassphrase + salt)
-    .digest('hex');
+  return derivedKey.toString('hex');
 }
 
 /**

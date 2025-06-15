@@ -374,6 +374,29 @@ export class LearningDao {
       throw new Error('Failed to record module attempt');
     }
   }
+
+  /**
+   * Get all user learning progress records globally (for leaderboard).
+   * @returns Array of all user learning progress records.
+   */
+  async getAllUserProgressRecordsGlobally(): Promise<UserLearningProgress[]> {
+    try {
+      const result = await db.select().from(userLearningProgress);
+
+      return result.map(dbProgress => ({
+        userId: dbProgress.userId,
+        moduleId: dbProgress.moduleId,
+        completed: dbProgress.completed,
+        score: dbProgress.score,
+        attemptsCount: dbProgress.attemptsCount,
+        lastAttemptDate: Number(dbProgress.lastAttemptDate),
+        rewardsClaimed: dbProgress.rewardsClaimed
+      }));
+    } catch (error) {
+      console.error('Error getting all user progress records globally:', error);
+      throw new Error('Failed to get all user progress records');
+    }
+  }
 }
 
 // Create a singleton instance

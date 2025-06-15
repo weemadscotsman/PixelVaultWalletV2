@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
-import crypto from 'crypto';
-import * as cryptoUtils from '../utils/crypto';
-import * as passphraseUtils from '../utils/passphrase';
-import { memBlockchainStorage } from '../mem-blockchain';
-import { walletDao } from '../database/walletDao';
-import { transactionDao } from '../database/transactionDao';
+// import crypto from 'crypto'; // No longer directly used for key/address gen here
+// import * as cryptoUtils from '../utils/crypto'; // No longer directly used here
+import * as passphraseUtils from '../utils/passphrase'; // Still used for its constants/types if any, or can be removed if service handles all
+// import { memBlockchainStorage } from '../mem-blockchain'; // Should be removed if not used elsewhere
+import { walletDao } from '../database/walletDao'; // Potentially remove if service handles all wallet interaction for creation
+// import { transactionDao } from '../database/transactionDao'; // Not used in createWallet
 import jwt from 'jsonwebtoken';
+import { blockchainService } from '../services/blockchain-service'; // Import blockchainService
 
 // Secret for JWT signing
 const JWT_SECRET = process.env.JWT_SECRET || 'pixelvault-wallet-session-secret';
@@ -84,59 +85,26 @@ export const createWallet = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Passphrase is required' });
     }
     
-    // Generate wallet using centralized passphrase utilities
-    const salt = passphraseUtils.generateSalt();
-    const hash = passphraseUtils.hashPassphrase(passphrase, salt);
+    // Delegate wallet creation to blockchainService
+    // The service now handles private key generation, encryption,
+    // and saving the non-sensitive parts to the DB.
+    const walletCreationResult = await blockchainService.createWallet(passphrase);
+
+    // The service returns address, publicKey, and encrypted private key components
+    // (iv, encryptedPrivateKey, authTag)
+    // It does NOT return the raw private key.
     
-    console.log('Wallet creation using centralized passphrase utilities:', {
-      salt,
-      hash,
-      // Don't log actual passphrase in production
-      hashMethod: 'Using centralized passphraseUtils.hashPassphrase'
-    });
+    console.log('Wallet created via service, address:', walletCreationResult.address);
     
-    // Generate address from hash
-    const address = 'PVX_' + hash.substring(0, 32);
-    
-    // Generate public key (simplified for demo)
-    const publicKey = crypto.createHash('sha256')
-      .update(address)
-      .digest('hex');
-    
-    // Check if wallet already exists in database
-    const existingWallet = await walletDao.getWalletByAddress(address);
-    if (existingWallet) {
-      return res.status(400).json({ error: 'Wallet with this address already exists' });
-    }
-    
-    // Wallet data to insert
-    const walletData = {
-      address,
-      publicKey,
-      balance: "1000000", // 1 PVX initial balance for testing
-      createdAt: new Date(),
-      lastUpdated: new Date(),
-      passphraseSalt: salt,
-      passphraseHash: hash
-    };
-    
-    // Create wallet in database
-    console.log('Creating wallet with data:', {
-      address: walletData.address,
-      publicKey: walletData.publicKey,
-      balance: walletData.balance,
-      passphraseSalt: walletData.passphraseSalt,
-      passphraseHash: walletData.passphraseHash ? 'exists' : 'missing',
-    });
-    
-    const wallet = await walletDao.createWallet(walletData);
-    
-    console.log('Created new wallet:', address);
-    
+    // Respond to client with necessary info for paper wallet/backup
+    // Do NOT send raw private key.
     res.status(201).json({
-      address,
-      pubkey: publicKey,
-      mnemonic: null // Not implemented yet
+      address: walletCreationResult.address,
+      pubkey: walletCreationResult.publicKey, // Ensure 'pubkey' is the expected client field name
+      iv: walletCreationResult.iv,
+      encryptedPrivateKey: walletCreationResult.encryptedPrivateKey, // Or use a more generic name like 'encryptedData'
+      authTag: walletCreationResult.authTag,
+      mnemonic: null // Mnemonic generation is not implemented yet
     });
   } catch (error) {
     console.error('Error creating wallet:', error);
@@ -214,12 +182,13 @@ export const getWallet = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     
-    // Try to get the wallet from DB first
-    let wallet = await walletDao.getWalletByAddress(address);
+    // Should primarily fetch from walletDao.getWalletByAddress(address).
+    const wallet = await walletDao.getWalletByAddress(address);
     
-    // If still not found, return 404
+    // If the wallet is not in the DB, it shouldn't be considered existing.
+    // Fallback to memBlockchainStorage.getWalletByAddress(address) is REMOVED.
     if (!wallet) {
-      return res.status(404).json({ error: 'Wallet not found' });
+      return res.status(404).json({ error: 'Wallet not found in database' });
     }
     
     res.json({
@@ -245,20 +214,19 @@ export const getBalance = async (req: Request, res: Response) => {
   try {
     const { address } = req.params;
     
-    // Try to get the wallet from DB first
-    let wallet = await walletDao.getWalletByAddress(address);
+    // Should primarily fetch the wallet (and its balance) from walletDao.getWalletByAddress(address).
+    const wallet = await walletDao.getWalletByAddress(address);
     
-    // If not found in DB, try memory storage
+    // Fallback to memBlockchainStorage is REMOVED.
+    // If not found in DB, it shouldn't be considered existing for this function's purpose.
     if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
+      return res.status(404).json({ error: 'Wallet not found in database' });
     }
     
-    // If still not found, return 404
-    if (!wallet) {
-      return res.status(404).json({ error: 'Wallet not found' });
-    }
-    
-    // Get active stakes for this wallet
+    // Staking-related calculations: This part currently uses memBlockchainStorage.
+    // This will be addressed more thoroughly when we tackle "Staking Data Persistence".
+    // For now, I'll leave this part as is but ensure the base wallet data comes from the DB.
+    // TODO: Refactor staking data to be fetched from DAO/Service layer once available.
     const activeStakes = await memBlockchainStorage.getActiveStakesByAddress(address);
     
     // Calculate total staked
@@ -321,17 +289,12 @@ export const exportWalletKeys = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Passphrase is required' });
     }
     
-    // Try to get the wallet from DB first
-    let wallet = await walletDao.getWalletByAddress(address);
+    // Should primarily fetch the wallet from walletDao.getWalletByAddress(address).
+    const wallet = await walletDao.getWalletByAddress(address);
     
-    // If not found in DB, try memory storage
+    // Fallback to memBlockchainStorage is REMOVED.
     if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
-    }
-    
-    // If still not found, return 404
-    if (!wallet) {
-      return res.status(404).json({ error: 'Wallet not found' });
+      return res.status(404).json({ error: 'Wallet not found in database' });
     }
     
     // Use centralized passphrase verification utility
@@ -412,16 +375,12 @@ export const getTransactionHistory = async (req: Request, res: Response) => {
     const offset = Number(req.query.offset) || 0;
     
     // Try to get the wallet from DB first
-    let wallet = await walletDao.getWalletByAddress(address);
+    const wallet = await walletDao.getWalletByAddress(address);
     
-    // If not found in DB, try memory storage
+    // If not found in DB, wallet is not considered existing for this function.
+    // Fallback to memBlockchainStorage for wallet object is REMOVED.
     if (!wallet) {
-      wallet = await memBlockchainStorage.getWalletByAddress(address);
-    }
-    
-    // If still not found, return 404
-    if (!wallet) {
-      return res.status(404).json({ error: 'Wallet not found' });
+      return res.status(404).json({ error: 'Wallet not found in database' });
     }
     
     // Get transactions involving this wallet from database first
@@ -565,13 +524,12 @@ export const sendTransaction = async (req: Request, res: Response) => {
       }
       
       // Update transaction status to confirmed
-      tx.status = 'confirmed';
-      if (tx.metadata) {
-        tx.metadata.confirmations = 1;
-      } else {
-        tx.metadata = { confirmations: 1 };
-      }
-      await memBlockchainStorage.updateTransaction(tx);
+      // The transaction status and its persistence should be handled by
+      // the transaction engine or blockchain service called by commitTransaction.
+      // For example, transactionDao.updateTransaction(tx) should be called there.
+      // We remove memBlockchainStorage.updateTransaction(tx) from the controller.
+      tx.status = 'confirmed'; // This status might be set here for the response
+      // but the authoritative update should be in the service/engine layer.
       
       res.status(201).json({
         hash: tx.hash,
@@ -602,11 +560,12 @@ export const getStakingInfo = async (req: Request, res: Response) => {
     const { address } = req.params;
     
     // Try to get the wallet from DB first
-    let wallet = await walletDao.getWalletByAddress(address);
+    const wallet = await walletDao.getWalletByAddress(address);
     
-    // If still not found, return 404
+    // If not found in DB, wallet is not considered existing for this function.
+    // Fallback to memBlockchainStorage for wallet object is REMOVED.
     if (!wallet) {
-      return res.status(404).json({ error: 'Wallet not found' });
+      return res.status(404).json({ error: 'Wallet not found in database' });
     }
     
     // Get active stakes for this wallet

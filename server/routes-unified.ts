@@ -4,12 +4,31 @@ import { HealthController } from './controllers/healthController';
 import os from 'os';
 import process from 'process';
 
+// Import dedicated routers
+import blockchainRoutes from './routes/blockchain-routes';
+import walletRoutes from './routes/wallet';
+import txRoutes from './routes/tx';
+import stakeRoutes from './routes/stake';
+import governanceRoutes from './routes/governance';
+import dropsRoutes from './routes/drops';
+import learningRoutes from './routes/learning'; // For /api/labs
+
 export function registerRoutes(app: any, simplifiedStorage?: any) {
   // Initialize staking pools on startup
   stakingService.initializeStakingPools();
   
   // Initialize health controller
   const healthController = new HealthController();
+
+  // Mount dedicated routers first to ensure they take precedence
+  app.use('/api/blockchain', blockchainRoutes);
+  app.use('/api/wallet', walletRoutes);
+  app.use('/api/tx', txRoutes);
+  app.use('/api/staking', stakeRoutes); // Client path /api/staking, router /api/stake
+  app.use('/api/governance', governanceRoutes);
+  app.use('/api/drops', dropsRoutes);
+  app.use('/api/labs', learningRoutes);
+
 
   // ============= HEALTH ENDPOINTS - FIX UNDEFINED VALUES =============
   
@@ -313,54 +332,54 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   });
 
   // Governance propose endpoint
-  app.post('/api/governance/propose', async (req: Request, res: Response) => {
-    try {
-      const { title, description, proposer, votingPeriod } = req.body;
-      if (!title || !description || !proposer) {
-        return res.status(400).json({ error: 'Title, description, and proposer are required' });
-      }
-      
-      const proposal = {
-        id: 'prop_' + Date.now(),
-        title,
-        description,
-        proposer,
-        type: 'general',
-        status: 'active',
-        votingPeriod: votingPeriod || 604800,
-        createdAt: new Date(),
-        expiresAt: new Date(Date.now() + (votingPeriod || 604800) * 1000),
-        votes: { for: 0, against: 0, abstain: 0 }
-      };
-      
-      res.json({ success: true, proposal });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to create proposal' });
-    }
-  });
+  // app.post('/api/governance/propose', async (req: Request, res: Response) => {
+  //   try {
+  //     const { title, description, proposer, votingPeriod } = req.body;
+  //     if (!title || !description || !proposer) {
+  //       return res.status(400).json({ error: 'Title, description, and proposer are required' });
+  //     }
+
+  //     const proposal = {
+  //       id: 'prop_' + Date.now(),
+  //       title,
+  //       description,
+  //       proposer,
+  //       type: 'general',
+  //       status: 'active',
+  //       votingPeriod: votingPeriod || 604800,
+  //       createdAt: new Date(),
+  //       expiresAt: new Date(Date.now() + (votingPeriod || 604800) * 1000),
+  //       votes: { for: 0, against: 0, abstain: 0 }
+  //     };
+
+  //     res.json({ success: true, proposal });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to create proposal' });
+  //   }
+  // });
 
   // Governance vote endpoint
-  app.post('/api/governance/vote', async (req: Request, res: Response) => {
-    try {
-      const { proposalId, voter, support } = req.body;
-      if (!proposalId || !voter || support === undefined) {
-        return res.status(400).json({ error: 'ProposalId, voter, and support are required' });
-      }
-      
-      const vote = {
-        id: 'vote_' + Date.now(),
-        proposalId,
-        voter,
-        support,
-        votedAt: new Date(),
-        weight: 1
-      };
-      
-      res.json({ success: true, vote });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to cast vote' });
-    }
-  });
+  // app.post('/api/governance/vote', async (req: Request, res: Response) => {
+  //   try {
+  //     const { proposalId, voter, support } = req.body;
+  //     if (!proposalId || !voter || support === undefined) {
+  //       return res.status(400).json({ error: 'ProposalId, voter, and support are required' });
+  //     }
+
+  //     const vote = {
+  //       id: 'vote_' + Date.now(),
+  //       proposalId,
+  //       voter,
+  //       support,
+  //       votedAt: new Date(),
+  //       weight: 1
+  //     };
+
+  //     res.json({ success: true, vote });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to cast vote' });
+  //   }
+  // });
 
   // Drops claim endpoint
   // app.post('/api/drops/claim', async (req: Request, res: Response) => {
@@ -386,28 +405,28 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // });
 
   // Learning complete endpoint
-  app.post('/api/learning/complete', async (req: Request, res: Response) => {
-    try {
-      const { moduleId, userAddress, score } = req.body;
-      if (!moduleId || !userAddress) {
-        return res.status(400).json({ error: 'ModuleId and userAddress are required' });
-      }
-      
-      const completion = {
-        moduleId,
-        userAddress,
-        score: score || 100,
-        completed: true,
-        completedAt: new Date(),
-        badgeEarned: score >= 80,
-        xpEarned: Math.floor((score || 100) * 10)
-      };
-      
-      res.json({ success: true, completion });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to complete module' });
-    }
-  });
+  // app.post('/api/learning/complete', async (req: Request, res: Response) => {
+  //   try {
+  //     const { moduleId, userAddress, score } = req.body;
+  //     if (!moduleId || !userAddress) {
+  //       return res.status(400).json({ error: 'ModuleId and userAddress are required' });
+  //     }
+
+  //     const completion = {
+  //       moduleId,
+  //       userAddress,
+  //       score: score || 100,
+  //       completed: true,
+  //       completedAt: new Date(),
+  //       badgeEarned: score >= 80,
+  //       xpEarned: Math.floor((score || 100) * 10)
+  //     };
+
+  //     res.json({ success: true, completion });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to complete module' });
+  //   }
+  // });
 
   // Dev root endpoint
   app.get('/api/dev/', (req: Request, res: Response) => {
@@ -834,56 +853,56 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
 
   // ============= MISSING CRITICAL API ENDPOINTS =============
 
-import { blockchainService } from './services/blockchain-service'; // Import the service
+import { blockchainService } from './services/blockchain-service'; // This import might become redundant if all /api/blockchain routes are in blockchain-routes
 
   // Blockchain info endpoint
-  app.get('/api/blockchain/info', async (req: Request, res: Response) => {
-    try {
-      // Note: blockchainService is directly imported, not from req object
-      const blockchainInfo = await blockchainService.getBlockchainInfoDetails();
-      res.json(blockchainInfo);
-    } catch (error) {
-      console.error('Failed to get blockchain info:', error);
-      res.status(500).json({
-        error: error instanceof Error ? error.message : 'Failed to get blockchain info'
-      });
-    }
-  });
+  // app.get('/api/blockchain/info', async (req: Request, res: Response) => {
+  //   try {
+  //     // Note: blockchainService is directly imported, not from req object
+  //     const blockchainInfo = await blockchainService.getBlockchainInfoDetails();
+  //     res.json(blockchainInfo);
+  //   } catch (error) {
+  //     console.error('Failed to get blockchain info:', error);
+  //     res.status(500).json({
+  //       error: error instanceof Error ? error.message : 'Failed to get blockchain info'
+  //     });
+  //   }
+  // });
 
   // Latest block endpoint
-  app.get('/api/blockchain/latest-block', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        height: 1731,
-        hash: 'block_1731_' + Date.now(),
-        previousHash: 'block_1730_prev',
-        timestamp: Date.now(),
-        miner: 'PVX_1295b5490224b2eb64e9724dc091795a',
-        difficulty: 1000000,
-        transactions: 3,
-        reward: 5000000,
-        size: 1024
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get latest block' });
-    }
-  });
+  // app.get('/api/blockchain/latest-block', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       height: 1731,
+  //       hash: 'block_1731_' + Date.now(),
+  //       previousHash: 'block_1730_prev',
+  //       timestamp: Date.now(),
+  //       miner: 'PVX_1295b5490224b2eb64e9724dc091795a',
+  //       difficulty: 1000000,
+  //       transactions: 3,
+  //       reward: 5000000,
+  //       size: 1024
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get latest block' });
+  //   }
+  // });
 
   // Blockchain connect endpoint
-  app.get('/api/blockchain/connect', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        connected: true,
-        nodeId: 'PVX_NODE_001',
-        peers: 8,
-        syncStatus: 'synced',
-        latency: 12,
-        lastSync: new Date().toISOString()
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to connect to blockchain' });
-    }
-  });
+  // app.get('/api/blockchain/connect', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       connected: true,
+  //       nodeId: 'PVX_NODE_001',
+  //       peers: 8,
+  //       syncStatus: 'synced',
+  //       latency: 12,
+  //       lastSync: new Date().toISOString()
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to connect to blockchain' });
+  //   }
+  // });
 
   // Mining stats endpoints
   // app.get('/api/blockchain/mining/stats', async (req: Request, res: Response) => {
@@ -936,23 +955,23 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   // });
 
   // Governance stats endpoint
-  app.get('/api/governance/stats', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.query;
-      res.json({
-        userAddress: address,
-        votingPower: '15000000',
-        totalProposals: 23,
-        activeProposals: 3,
-        userVotes: 18,
-        delegatedStake: '8500000',
-        vetoGuardianStatus: true,
-        governanceRewards: '125000'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get governance stats' });
-    }
-  });
+  // app.get('/api/governance/stats', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.query;
+  //     res.json({
+  //       userAddress: address,
+  //       votingPower: '15000000',
+  //       totalProposals: 23,
+  //       activeProposals: 3,
+  //       userVotes: 18,
+  //       delegatedStake: '8500000',
+  //       vetoGuardianStatus: true,
+  //       governanceRewards: '125000'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get governance stats' });
+  //   }
+  // });
 
   // Badge progress endpoint
   app.get('/api/badges/progress/:address', async (req: Request, res: Response) => {
@@ -1052,58 +1071,58 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   // });
 
   // Fix /gov/user-votes endpoint - handle missing address gracefully  
-  app.get('/api/gov/user-votes', async (req: Request, res: Response) => {
-    try {
-      const address = req.query.address as string;
-      res.json({
-        userAddress: address || null,
-        votes: address ? [
-          {
-            proposalId: 'PROP_001',
-            vote: 'yes',
-            votingPower: '150000',
-            timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
-          }
-        ] : [],
-        totalVotes: address ? 1 : 0,
-        votingPower: address ? '150000' : '0'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get user votes' });
-    }
-  });
+  // app.get('/api/gov/user-votes', async (req: Request, res: Response) => {
+  //   try {
+  //     const address = req.query.address as string;
+  //     res.json({
+  //       userAddress: address || null,
+  //       votes: address ? [
+  //         {
+  //           proposalId: 'PROP_001',
+  //           vote: 'yes',
+  //           votingPower: '150000',
+  //           timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
+  //         }
+  //       ] : [],
+  //       totalVotes: address ? 1 : 0,
+  //       votingPower: address ? '150000' : '0'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get user votes' });
+  //   }
+  // });
 
   // Fix /learn/progress endpoint - handle missing address gracefully
-  app.get('/api/learn/progress', async (req: Request, res: Response) => {
-    try {
-      const address = req.query.address as string;
-      res.json({
-        userAddress: address || null,
-        progress: {
-          completedModules: address ? 8 : 0,
-          totalModules: 15,
-          currentLevel: address ? 3 : 1,
-          experiencePoints: address ? 840 : 0
-        },
-        modules: address ? [
-          {
-            id: 'blockchain_basics',
-            name: 'Blockchain Fundamentals',
-            completed: true,
-            score: 95
-          },
-          {
-            id: 'smart_contracts',
-            name: 'Smart Contracts',
-            completed: true,
-            score: 88
-          }
-        ] : []
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get learning progress' });
-    }
-  });
+  // app.get('/api/learn/progress', async (req: Request, res: Response) => {
+  //   try {
+  //     const address = req.query.address as string;
+  //     res.json({
+  //       userAddress: address || null,
+  //       progress: {
+  //         completedModules: address ? 8 : 0,
+  //         totalModules: 15,
+  //         currentLevel: address ? 3 : 1,
+  //         experiencePoints: address ? 840 : 0
+  //       },
+  //       modules: address ? [
+  //         {
+  //           id: 'blockchain_basics',
+  //           name: 'Blockchain Fundamentals',
+  //           completed: true,
+  //           score: 95
+  //         },
+  //         {
+  //           id: 'smart_contracts',
+  //           name: 'Smart Contracts',
+  //           completed: true,
+  //           score: 88
+  //         }
+  //       ] : []
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get learning progress' });
+  //   }
+  // });
 
   // Fix /companions/mine endpoint - handle missing address gracefully
   app.get('/api/companions/mine', async (req: Request, res: Response) => {
@@ -1135,48 +1154,48 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   });
 
   // Learning stats endpoint
-  app.get('/api/learning/stats/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        userAddress: address,
-        totalModules: 15,
-        completedModules: 8,
-        inProgressModules: 2,
-        completionRate: 53.33,
-        totalScore: 840,
-        averageScore: 84.0,
-        streak: 12,
-        rank: 156,
-        rewards: '350000',
-        nextMilestone: 'Blockchain Expert',
-        estimatedCompletion: '2 weeks'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get learning stats' });
-    }
-  });
+  // app.get('/api/learning/stats/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       userAddress: address,
+  //       totalModules: 15,
+  //       completedModules: 8,
+  //       inProgressModules: 2,
+  //       completionRate: 53.33,
+  //       totalScore: 840,
+  //       averageScore: 84.0,
+  //       streak: 12,
+  //       rank: 156,
+  //       rewards: '350000',
+  //       nextMilestone: 'Blockchain Expert',
+  //       estimatedCompletion: '2 weeks'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get learning stats' });
+  //   }
+  // });
 
   // Learning user progress endpoint
-  app.get('/api/learning/user/:address/progress', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        userAddress: address,
-        currentLevel: 8,
-        experience: 2340,
-        nextLevelXP: 3000,
-        modules: [
-          { id: 'blockchain_basics', name: 'Blockchain Fundamentals', completed: true, score: 95 },
-          { id: 'mining_theory', name: 'Mining Theory', completed: true, score: 88 },
-          { id: 'staking_mechanics', name: 'Staking Mechanics', completed: false, progress: 65 }
-        ],
-        achievements: ['Quick Learner', 'Theory Master', 'Practice Expert']
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get user learning progress' });
-    }
-  });
+  // app.get('/api/learning/user/:address/progress', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       userAddress: address,
+  //       currentLevel: 8,
+  //       experience: 2340,
+  //       nextLevelXP: 3000,
+  //       modules: [
+  //         { id: 'blockchain_basics', name: 'Blockchain Fundamentals', completed: true, score: 95 },
+  //         { id: 'mining_theory', name: 'Mining Theory', completed: true, score: 88 },
+  //         { id: 'staking_mechanics', name: 'Staking Mechanics', completed: false, progress: 65 }
+  //       ],
+  //       achievements: ['Quick Learner', 'Theory Master', 'Practice Expert']
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get user learning progress' });
+  //   }
+  // });
 
   // Mining control endpoints
   // app.post('/api/blockchain/mining/start', async (req: Request, res: Response) => {
@@ -1484,54 +1503,54 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   // ============= BLOCKCHAIN API ENDPOINTS =============
   
   // Get blockchain statistics
-  app.get('/api/blockchain/stats', async (req: Request, res: Response) => {
-    try {
-      const blockchainService = (req as any).blockchainService;
-      if (!blockchainService) {
-        return res.status(500).json({ error: 'Blockchain service not available' });
-      }
-      
-      // Get real blockchain data from the service
-      const latestBlock = await blockchainService.getLatestBlock();
-      const status = await blockchainService.getBlockchainStatus();
-      const recentBlocks = await blockchainService.getRecentBlocks(10);
-      const recentTransactions = await blockchainService.getRecentTransactions(50);
-      
-      const stats = {
-        currentBlock: latestBlock?.height || 0,
-        difficulty: latestBlock?.difficulty || 1,
-        hashRate: 150.7,
-        totalTransactions: recentTransactions.length,
-        networkStatus: status.connected ? 'active' : 'inactive',
-        lastBlockTime: latestBlock?.timestamp || Date.now(),
-        totalSupply: "6009420000000",
-        circulatingSupply: "5500000000000"
-      };
-      
-      res.json(stats);
-    } catch (error) {
-      console.error('Failed to get blockchain stats:', error);
-      res.status(500).json({ error: 'Failed to get blockchain stats' });
-    }
-  });
+  // app.get('/api/blockchain/stats', async (req: Request, res: Response) => {
+  //   try {
+  //     const blockchainService = (req as any).blockchainService; // This might be an issue if blockchainService is not attached to req
+  //     if (!blockchainService) {
+  //       return res.status(500).json({ error: 'Blockchain service not available' });
+  //     }
+
+  //     // Get real blockchain data from the service
+  //     const latestBlock = await blockchainService.getLatestBlock();
+  //     const status = await blockchainService.getBlockchainStatus(); // This is likely not async and might be outdated
+  //     const recentBlocks = await blockchainService.getRecentBlocks(10);
+  //     const recentTransactions = await blockchainService.getRecentTransactions(50);
+
+  //     const stats = {
+  //       currentBlock: latestBlock?.height || 0,
+  //       difficulty: latestBlock?.difficulty || 1,
+  //       hashRate: 150.7, // This was likely a mock value
+  //       totalTransactions: recentTransactions.length,
+  //       networkStatus: status.connected ? 'active' : 'inactive',
+  //       lastBlockTime: latestBlock?.timestamp || Date.now(),
+  //       totalSupply: "6009420000000",
+  //       circulatingSupply: "5500000000000"
+  //     };
+
+  //     res.json(stats);
+  //   } catch (error) {
+  //     console.error('Failed to get blockchain stats:', error);
+  //     res.status(500).json({ error: 'Failed to get blockchain stats' });
+  //   }
+  // });
 
   // Get recent blocks
-  app.get('/api/blockchain/blocks', async (req: Request, res: Response) => {
-    try {
-      const blockchainService = (req as any).blockchainService;
-      if (!blockchainService) {
-        return res.status(500).json({ error: 'Blockchain service not available' });
-      }
-      
-      const limit = parseInt(req.query.limit as string) || 10;
-      const recentBlocks = await blockchainService.getRecentBlocks(limit);
-      
-      res.json({ blocks: recentBlocks });
-    } catch (error) {
-      console.error('Failed to get blocks:', error);
-      res.status(500).json({ error: 'Failed to get blocks' });
-    }
-  });
+  // app.get('/api/blockchain/blocks', async (req: Request, res: Response) => {
+  //   try {
+  //     const blockchainService = (req as any).blockchainService; // This might be an issue
+  //     if (!blockchainService) {
+  //       return res.status(500).json({ error: 'Blockchain service not available' });
+  //     }
+
+  //     const limit = parseInt(req.query.limit as string) || 10;
+  //     const recentBlocks = await blockchainService.getRecentBlocks(limit);
+
+  //     res.json({ blocks: recentBlocks });
+  //   } catch (error) {
+  //     console.error('Failed to get blocks:', error);
+  //     res.status(500).json({ error: 'Failed to get blocks' });
+  //   }
+  // });
 
   // ============= MINING API ENDPOINTS =============
   
@@ -1647,19 +1666,19 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   // ============= GOVERNANCE API ENDPOINTS =============
   
   // Get governance proposals
-  app.get('/api/governance/proposals', async (req: Request, res: Response) => {
-    try {
-      if (!simplifiedStorage) {
-        return res.status(500).json({ error: 'Storage not available' });
-      }
-      
-      const proposals = await simplifiedStorage.getGovernanceProposals();
-      res.json({ proposals });
-    } catch (error) {
-      console.error('Failed to get governance proposals:', error);
-      res.status(500).json({ error: 'Failed to get governance proposals' });
-    }
-  });
+  // app.get('/api/governance/proposals', async (req: Request, res: Response) => {
+  //   try {
+  //     if (!simplifiedStorage) {
+  //       return res.status(500).json({ error: 'Storage not available' });
+  //     }
+
+  //     const proposals = await simplifiedStorage.getGovernanceProposals();
+  //     res.json({ proposals });
+  //   } catch (error) {
+  //     console.error('Failed to get governance proposals:', error);
+  //     res.status(500).json({ error: 'Failed to get governance proposals' });
+  //   }
+  // });
 
   // ============= MISSING ENDPOINTS =============
   
@@ -1684,34 +1703,34 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   });
   
   // Add missing blockchain metrics endpoint
-  app.get('/api/blockchain/metrics', async (req: Request, res: Response) => {
-    try {
-      const stats = await simplifiedStorage.getBlockchainStatus();
-      res.json({
-        hashRate: stats.hashRate || 150000,
-        difficulty: stats.difficulty || 5,
-        networkGrowth: 8.5,
-        transactionVolume: stats.totalTransactions || 50
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get blockchain metrics' });
-    }
-  });
+  // app.get('/api/blockchain/metrics', async (req: Request, res: Response) => {
+  //   try {
+  //     const stats = await simplifiedStorage.getBlockchainStatus(); // simplifiedStorage may not be the right source anymore
+  //     res.json({
+  //       hashRate: stats.hashRate || 150000,
+  //       difficulty: stats.difficulty || 5,
+  //       networkGrowth: 8.5,
+  //       transactionVolume: stats.totalTransactions || 50
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get blockchain metrics' });
+  //   }
+  // });
   
   // Add missing blockchain status endpoint
-  app.get('/api/blockchain/status', async (req: Request, res: Response) => {
-    try {
-      const status = await simplifiedStorage.getBlockchainStatus();
-      res.json({
-        status: 'active',
-        currentBlock: status.currentBlock || 1600,
-        networkStatus: 'healthy',
-        lastUpdate: new Date().toISOString()
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get blockchain status' });
-    }
-  });
+  // app.get('/api/blockchain/status', async (req: Request, res: Response) => {
+  //   try {
+  //     const status = await simplifiedStorage.getBlockchainStatus(); // simplifiedStorage may not be the right source anymore
+  //     res.json({
+  //       status: 'active',
+  //       currentBlock: status.currentBlock || 1600,
+  //       networkStatus: 'healthy',
+  //       lastUpdate: new Date().toISOString()
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get blockchain status' });
+  //   }
+  // });
   
   // Add missing UTR (Universal Transaction Router) endpoints
   app.get('/api/utr/transactions', async (req: Request, res: Response) => {
@@ -1765,37 +1784,37 @@ import { blockchainService } from './services/blockchain-service'; // Import the
     }
   });
   
-  app.get('/api/learning/leaderboard', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        leaderboard: [
-          { rank: 1, address: 'PVX_1295b5490224b2eb64e9724dc091795a', completedModules: 5, experience: 2500 },
-          { rank: 2, address: 'PVX_learner_001', completedModules: 3, experience: 1800 },
-          { rank: 3, address: 'PVX_learner_002', completedModules: 2, experience: 1200 }
-        ],
-        totalLearners: 3
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get learning leaderboard' });
-    }
-  });
+  // app.get('/api/learning/leaderboard', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       leaderboard: [
+  //         { rank: 1, address: 'PVX_1295b5490224b2eb64e9724dc091795a', completedModules: 5, experience: 2500 },
+  //         { rank: 2, address: 'PVX_learner_001', completedModules: 3, experience: 1800 },
+  //         { rank: 3, address: 'PVX_learner_002', completedModules: 2, experience: 1200 }
+  //       ],
+  //       totalLearners: 3
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get learning leaderboard' });
+  //   }
+  // });
   
   // Add missing governance veto guardians endpoint
-  app.get('/api/governance/veto-guardians', async (req: Request, res: Response) => {
-    try {
-      res.json({
-        guardians: [
-          { address: 'PVX_1295b5490224b2eb64e9724dc091795a', stakingPower: '999999999', votes: 150 },
-          { address: 'PVX_guardian_001', stakingPower: '500000000', votes: 75 },
-          { address: 'PVX_guardian_002', stakingPower: '250000000', votes: 42 }
-        ],
-        totalGuardians: 3,
-        quorumThreshold: '1000000000'
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get veto guardians' });
-    }
-  });
+  // app.get('/api/governance/veto-guardians', async (req: Request, res: Response) => {
+  //   try {
+  //     res.json({
+  //       guardians: [
+  //         { address: 'PVX_1295b5490224b2eb64e9724dc091795a', stakingPower: '999999999', votes: 150 },
+  //         { address: 'PVX_guardian_001', stakingPower: '500000000', votes: 75 },
+  //         { address: 'PVX_guardian_002', stakingPower: '250000000', votes: 42 }
+  //       ],
+  //       totalGuardians: 3,
+  //       quorumThreshold: '1000000000'
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get veto guardians' });
+  //   }
+  // });
 
   // Add missing /api/tx/recent endpoint (alternative to /api/transactions/recent)
   app.get('/api/tx/recent', async (req: Request, res: Response) => {
@@ -1901,22 +1920,22 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   // });
 
   // Learning progress for user
-  app.get('/api/learning/progress/:address', async (req: Request, res: Response) => {
-    try {
-      const { address } = req.params;
-      res.json({
-        progress: {
-          completedModules: 0,
-          totalModules: 5,
-          currentLevel: 1,
-          experiencePoints: 0
-        },
-        modules: []
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to get learning progress' });
-    }
-  });
+  // app.get('/api/learning/progress/:address', async (req: Request, res: Response) => {
+  //   try {
+  //     const { address } = req.params;
+  //     res.json({
+  //       progress: {
+  //         completedModules: 0,
+  //         totalModules: 5,
+  //         currentLevel: 1,
+  //         experiencePoints: 0
+  //       },
+  //       modules: []
+  //     });
+  //   } catch (error) {
+  //     res.status(500).json({ error: 'Failed to get learning progress' });
+  //   }
+  // });
 
   // Companions endpoint
   app.get('/api/companions', async (req: Request, res: Response) => {
@@ -1974,19 +1993,19 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   // ============= LEARNING API ENDPOINTS =============
   
   // Get learning modules
-  app.get('/api/learning/modules', async (req: Request, res: Response) => {
-    try {
-      if (!simplifiedStorage) {
-        return res.status(500).json({ error: 'Storage not available' });
-      }
-      
-      const modules = await simplifiedStorage.getLearningModules();
-      res.json({ modules });
-    } catch (error) {
-      console.error('Failed to get learning modules:', error);
-      res.status(500).json({ error: 'Failed to get learning modules' });
-    }
-  });
+  // app.get('/api/learning/modules', async (req: Request, res: Response) => {
+  //   try {
+  //     if (!simplifiedStorage) {
+  //       return res.status(500).json({ error: 'Storage not available' });
+  //     }
+
+  //     const modules = await simplifiedStorage.getLearningModules();
+  //     res.json({ modules });
+  //   } catch (error) {
+  //     console.error('Failed to get learning modules:', error);
+  //     res.status(500).json({ error: 'Failed to get learning modules' });
+  //   }
+  // });
 
   // ============= MISSING ENDPOINTS - FIX ALL 404 ERRORS =============
 
@@ -2068,40 +2087,40 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   });
 
   // FIX: /gov/proposals endpoint
-  app.get('/api/gov/proposals', async (req: Request, res: Response) => {
-    try {
-      const proposals = [
-        {
-          id: '1',
-          title: 'Increase Block Reward',
-          description: 'Proposal to increase mining block reward from 5M to 7.5M μPVX',
-          proposer: 'PVX_governance_committee',
-          status: 'active',
-          votesFor: 15420000,
-          votesAgainst: 3250000,
-          quorum: 20000000,
-          endTime: Date.now() + 604800000,
-          created: Date.now() - 172800000
-        },
-        {
-          id: '2',
-          title: 'Network Upgrade v1.52',
-          description: 'Technical upgrade to improve transaction throughput',
-          proposer: 'PVX_dev_team',
-          status: 'pending',
-          votesFor: 8950000,
-          votesAgainst: 1200000,
-          quorum: 20000000,
-          endTime: Date.now() + 1209600000,
-          created: Date.now() - 86400000
-        }
-      ];
-      res.json(proposals);
-    } catch (error) {
-      console.error('Error fetching governance proposals:', error);
-      res.status(500).json({ error: 'Failed to fetch governance proposals' });
-    }
-  });
+  // app.get('/api/gov/proposals', async (req: Request, res: Response) => {
+  //   try {
+  //     const proposals = [
+  //       {
+  //         id: '1',
+  //         title: 'Increase Block Reward',
+  //         description: 'Proposal to increase mining block reward from 5M to 7.5M μPVX',
+  //         proposer: 'PVX_governance_committee',
+  //         status: 'active',
+  //         votesFor: 15420000,
+  //         votesAgainst: 3250000,
+  //         quorum: 20000000,
+  //         endTime: Date.now() + 604800000,
+  //         created: Date.now() - 172800000
+  //       },
+  //       {
+  //         id: '2',
+  //         title: 'Network Upgrade v1.52',
+  //         description: 'Technical upgrade to improve transaction throughput',
+  //         proposer: 'PVX_dev_team',
+  //         status: 'pending',
+  //         votesFor: 8950000,
+  //         votesAgainst: 1200000,
+  //         quorum: 20000000,
+  //         endTime: Date.now() + 1209600000,
+  //         created: Date.now() - 86400000
+  //       }
+  //     ];
+  //     res.json(proposals);
+  //   } catch (error) {
+  //     console.error('Error fetching governance proposals:', error);
+  //     res.status(500).json({ error: 'Failed to fetch governance proposals' });
+  //   }
+  // });
 
   // FIX: /gov/user-votes endpoint
   app.get('/api/gov/user-votes', async (req: Request, res: Response) => {
@@ -2189,46 +2208,46 @@ import { blockchainService } from './services/blockchain-service'; // Import the
   });
 
   // FIX: /learn/modules endpoint
-  app.get('/api/learn/modules', async (req: Request, res: Response) => {
-    try {
-      const modules = [
-        {
-          id: '1',
-          title: 'Blockchain Fundamentals',
-          description: 'Learn the basics of blockchain technology and PVX consensus',
-          difficulty: 'Beginner',
-          duration: 30,
-          lessons: 8,
-          completionReward: '100000',
-          thumbnail: '/assets/blockchain-fundamentals.png'
-        },
-        {
-          id: '2',
-          title: 'PVX Mining Strategies',
-          description: 'Advanced mining techniques and optimization for PVX',
-          difficulty: 'Intermediate',
-          duration: 45,
-          lessons: 12,
-          completionReward: '250000',
-          thumbnail: '/assets/mining-strategies.png'
-        },
-        {
-          id: '3',
-          title: 'DeFi on PVX',
-          description: 'Staking, governance, and decentralized finance protocols',
-          difficulty: 'Advanced',
-          duration: 60,
-          lessons: 15,
-          completionReward: '500000',
-          thumbnail: '/assets/defi-pvx.png'
-        }
-      ];
-      res.json(modules);
-    } catch (error) {
-      console.error('Error fetching learning modules:', error);
-      res.status(500).json({ error: 'Failed to fetch learning modules' });
-    }
-  });
+  // app.get('/api/learn/modules', async (req: Request, res: Response) => {
+  //   try {
+  //     const modules = [
+  //       {
+  //         id: '1',
+  //         title: 'Blockchain Fundamentals',
+  //         description: 'Learn the basics of blockchain technology and PVX consensus',
+  //         difficulty: 'Beginner',
+  //         duration: 30,
+  //         lessons: 8,
+  //         completionReward: '100000',
+  //         thumbnail: '/assets/blockchain-fundamentals.png'
+  //       },
+  //       {
+  //         id: '2',
+  //         title: 'PVX Mining Strategies',
+  //         description: 'Advanced mining techniques and optimization for PVX',
+  //         difficulty: 'Intermediate',
+  //         duration: 45,
+  //         lessons: 12,
+  //         completionReward: '250000',
+  //         thumbnail: '/assets/mining-strategies.png'
+  //       },
+  //       {
+  //         id: '3',
+  //         title: 'DeFi on PVX',
+  //         description: 'Staking, governance, and decentralized finance protocols',
+  //         difficulty: 'Advanced',
+  //         duration: 60,
+  //         lessons: 15,
+  //         completionReward: '500000',
+  //         thumbnail: '/assets/defi-pvx.png'
+  //       }
+  //     ];
+  //     res.json(modules);
+  //   } catch (error) {
+  //     console.error('Error fetching learning modules:', error);
+  //     res.status(500).json({ error: 'Failed to fetch learning modules' });
+  //   }
+  // });
 
   // FIX: /learn/progress endpoint
   app.get('/api/learn/progress', async (req: Request, res: Response) => {

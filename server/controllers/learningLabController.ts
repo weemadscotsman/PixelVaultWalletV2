@@ -1,192 +1,56 @@
 import { Request, Response } from 'express';
-import crypto from 'crypto';
-import { memBlockchainStorage } from '../mem-blockchain';
+import crypto from 'crypto'; // Needed for claimModuleRewards tx hash
+// import { memBlockchainStorage } from '../mem-blockchain'; // REMOVED
 import { broadcastTransaction } from '../utils/websocket';
 import { PVX_GENESIS_ADDRESS } from '../utils/constants';
 import { updateBadgeStatus } from '../services/badge-service';
 import { generateRandomHash } from '../utils/crypto';
+import { learningDao } from '../database/learningDao'; // IMPORT learningDao
+import {
+  LearningModule as SharedLearningModule,
+  LearningQuestion as SharedLearningQuestion,
+  UserLearningProgress as SharedUserLearningProgress, // Import shared UserLearningProgress
+  Transaction as SharedTransaction // For claimModuleRewards
+} from '@shared/types';
+import { walletDao } from '../database/walletDao'; // Import walletDao
+import { transactionDao } from '../database/transactionDao'; // For claimModuleRewards
 
 // Define TransactionType as string literals since the enum is not available
-const TransactionType = {
-  TRANSFER: 'TRANSFER',
-  MINING_REWARD: 'MINING_REWARD',
-  STAKING_REWARD: 'STAKING_REWARD',
-  AIRDROP: 'AIRDROP',
-  NFT_MINT: 'NFT_MINT',
-  BADGE_AWARD: 'BADGE_AWARD',
-  GOVERNANCE_VOTE: 'GOVERNANCE_VOTE',
-  GOVERNANCE_PROPOSAL: 'GOVERNANCE_PROPOSAL'
+const LocalTransactionType = { // Renamed to avoid conflict
+  TRANSFER: 'TRANSFER' as SharedTransaction['type'],
+  MINING_REWARD: 'MINING_REWARD' as SharedTransaction['type'],
+  STAKING_REWARD: 'STAKING_REWARD' as SharedTransaction['type'],
+  AIRDROP: 'AIRDROP' as SharedTransaction['type'],
+  NFT_MINT: 'NFT_MINT' as SharedTransaction['type'],
+  BADGE_AWARD: 'BADGE_AWARD' as SharedTransaction['type'],
+  GOVERNANCE_VOTE: 'GOVERNANCE_VOTE' as SharedTransaction['type'],
+  GOVERNANCE_PROPOSAL: 'GOVERNANCE_PROPOSAL' as SharedTransaction['type'],
+  REWARD: 'REWARD' as SharedTransaction['type'] // Added for claimModuleRewards
 };
 
-// Learning module interface
-interface LearningModule {
-  id: string;
-  title: string;
-  description: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  type: 'quiz' | 'interactive' | 'tutorial' | 'challenge';
-  xpReward: number;
-  tokenReward: number;
-  badgeId?: string;
-  questions?: LearningQuestion[];
-  completionCriteria?: {
-    minScore: number;
-    timeLimit?: number;
-  };
-}
-
-// Learning question interface
-interface LearningQuestion {
-  id: string;
-  text: string;
-  options: string[];
-  correctOption: number;
-  explanation: string;
-}
-
-// User progress interface
-interface UserProgress {
-  userId: string;
-  moduleId: string;
-  completed: boolean;
-  score: number;
-  attemptsCount: number;
-  lastAttemptDate: number;
-  rewardsClaimed: boolean;
-}
-
-// In-memory storage for learning modules and user progress
-const learningModules: LearningModule[] = [
-  {
-    id: 'mod_blockchain_basics',
-    title: 'Blockchain Fundamentals',
-    description: 'Learn the core concepts behind blockchain technology and how it works.',
-    difficulty: 'beginner',
-    type: 'quiz',
-    xpReward: 100,
-    tokenReward: 50,
-    badgeId: 'blockchain_basics',
-    questions: [
-      {
-        id: 'q1',
-        text: 'What is a blockchain?',
-        options: [
-          'A type of database that stores information in blocks that are chained together',
-          'A programming language for creating decentralized applications',
-          'A digital currency like Bitcoin',
-          'A company that mines cryptocurrency'
-        ],
-        correctOption: 0,
-        explanation: 'A blockchain is a distributed ledger technology that stores data in blocks linked together using cryptography.'
-      },
-      {
-        id: 'q2',
-        text: 'What is a consensus mechanism?',
-        options: [
-          'A voting system for blockchain governance',
-          'A process for nodes to agree on the state of the blockchain',
-          'A way to mine new coins',
-          'A security protocol for private keys'
-        ],
-        correctOption: 1,
-        explanation: 'Consensus mechanisms are protocols that ensure all nodes in the network agree on which transactions are valid.'
-      },
-      {
-        id: 'q3',
-        text: 'What is a private key in blockchain?',
-        options: [
-          'A password to log into a blockchain explorer',
-          'A unique identifier for a blockchain node',
-          'A cryptographic key that gives access to your crypto assets',
-          'A key used by miners to unlock new blocks'
-        ],
-        correctOption: 2,
-        explanation: 'A private key is a secure digital code that allows you to access and manage your crypto assets.'
-      }
-    ],
-    completionCriteria: {
-      minScore: 70 // Percentage
-    }
-  },
-  {
-    id: 'mod_crypto_security',
-    title: 'Cryptographic Security',
-    description: 'Understand the security principles behind blockchain and best practices for wallet security.',
-    difficulty: 'intermediate',
-    type: 'quiz',
-    xpReward: 150,
-    tokenReward: 100,
-    badgeId: 'crypto_security',
-    questions: [
-      {
-        id: 'q1',
-        text: 'What is a public key used for?',
-        options: [
-          'Signing transactions',
-          'Receiving cryptocurrency',
-          'Mining new blocks',
-          'Encrypting private messages'
-        ],
-        correctOption: 1,
-        explanation: 'Public keys are used to derive addresses where others can send cryptocurrency to you.'
-      },
-      {
-        id: 'q2',
-        text: 'Which of the following is the most secure way to store your private keys?',
-        options: [
-          'In a text file on your desktop',
-          'Written on paper stored in a secure location',
-          'In an email draft',
-          'Shared with a trusted friend for backup'
-        ],
-        correctOption: 1,
-        explanation: 'Hardware wallets or offline storage (cold storage) such as paper wallets are the most secure options.'
-      },
-      {
-        id: 'q3',
-        text: 'What is a seed phrase?',
-        options: [
-          'A random set of words used to initialize a blockchain',
-          'A set of words that can be used to recover your private keys',
-          'A password for mining pools',
-          'The first block in a new blockchain'
-        ],
-        correctOption: 1,
-        explanation: 'A seed phrase (or recovery phrase) is a list of words that store all the information needed to recover a wallet.'
-      }
-    ],
-    completionCriteria: {
-      minScore: 80
-    }
-  },
-  {
-    id: 'mod_defi_basics',
-    title: 'DeFi Fundamentals',
-    description: 'Explore the world of Decentralized Finance and understand concepts like liquidity, staking, and yield farming.',
-    difficulty: 'advanced',
-    type: 'interactive',
-    xpReward: 200,
-    tokenReward: 150,
-    badgeId: 'defi_explorer',
-    completionCriteria: {
-      minScore: 85
-    }
-  }
-];
-
-// In-memory storage for user progress
-const userProgress: UserProgress[] = [];
+// Remove local interfaces and in-memory storage
+// interface LearningModule { ... }
+// interface LearningQuestion { ... }
+// interface UserProgress { ... }
+// const learningModules: LearningModule[] = [ ... ];
+// const userProgress: UserProgress[] = [];
 
 /**
  * Get all learning modules
  */
 export const getAllModules = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Don't send questions to client until they start the module
-    const sanitizedModules = learningModules.map(({ questions, ...rest }) => ({
-      ...rest,
-      questionCount: questions?.length || 0
-    }));
+    const modulesFromDao = await learningDao.getAllLearningModules();
+
+    const sanitizedModules = modulesFromDao.map(module => {
+      const { questions, ...restOfModule } = module;
+      return {
+        ...restOfModule,
+        questionCount: questions?.length || 0,
+        // Questions are not sent in the list view, only their count.
+        // If questions were to be sent, they'd be sanitized here.
+      };
+    });
     
     res.status(200).json(sanitizedModules);
   } catch (error) {
@@ -201,26 +65,30 @@ export const getAllModules = async (req: Request, res: Response): Promise<void> 
 export const getModuleById = async (req: Request, res: Response): Promise<void> => {
   try {
     const { moduleId } = req.params;
-    const module = learningModules.find(m => m.id === moduleId);
+    const moduleWithQuestions = await learningDao.getLearningModuleById(moduleId);
     
-    if (!module) {
+    if (!moduleWithQuestions) {
       res.status(404).json({ error: 'Learning module not found' });
       return;
     }
     
-    // For quiz modules, send everything except the correct answers
-    if (module.type === 'quiz' && module.questions) {
-      const sanitizedQuestions = module.questions.map(({ correctOption, explanation, ...rest }) => rest);
-      
-      const sanitizedModule = {
-        ...module,
-        questions: sanitizedQuestions
-      };
-      
-      res.status(200).json(sanitizedModule);
-    } else {
-      res.status(200).json(module);
+    // Sanitize questions by removing correctOption and explanation for client response
+    let sanitizedQuestionsData;
+    if (moduleWithQuestions.questions && moduleWithQuestions.type === 'quiz') {
+      sanitizedQuestionsData = moduleWithQuestions.questions.map(q => {
+        const { correctOption, explanation, ...restOfQuestion } = q;
+        return restOfQuestion;
+      });
+    } else if (moduleWithQuestions.questions) { // For non-quiz types, maybe send questions without sanitization or don't send
+        sanitizedQuestionsData = moduleWithQuestions.questions; // Or an empty array if they shouldn't be sent
     }
+
+    const responseModule = {
+      ...moduleWithQuestions,
+      questions: sanitizedQuestionsData, // Attach sanitized or original questions
+    };
+
+    res.status(200).json(responseModule);
   } catch (error) {
     console.error('Error getting module by ID:', error);
     res.status(500).json({ error: 'Failed to fetch learning module' });
@@ -235,43 +103,38 @@ export const startModule = async (req: Request, res: Response): Promise<void> =>
     const { moduleId } = req.params;
     const { userId } = req.body;
     
-    // Check if module exists
-    const module = learningModules.find(m => m.id === moduleId);
+    const module = await learningDao.getLearningModuleById(moduleId);
     if (!module) {
       res.status(404).json({ error: 'Learning module not found' });
       return;
     }
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(userId);
+    const wallet = await walletDao.getWalletByAddress(userId);
     if (!wallet) {
       res.status(404).json({ error: 'User wallet not found' });
       return;
     }
     
-    // Check if user has already completed this module
-    const existingProgress = userProgress.find(p => p.userId === userId && p.moduleId === moduleId);
+    let progress = await learningDao.getUserProgressByModuleId(userId, moduleId);
     
-    if (existingProgress && existingProgress.completed && existingProgress.rewardsClaimed) {
+    if (progress && progress.completed && progress.rewardsClaimed) {
       res.status(200).json({
         alreadyCompleted: true,
         message: 'You have already completed this module and claimed rewards.',
-        progress: existingProgress
+        progress
       });
       return;
     }
     
-    // If there's existing progress but not completed, return that
-    if (existingProgress) {
+    if (progress) {
       res.status(200).json({
         message: 'Resuming module',
-        progress: existingProgress
+        progress
       });
       return;
     }
     
-    // Create new progress entry
-    const newProgress: UserProgress = {
+    const newProgressData: SharedUserLearningProgress = {
       userId,
       moduleId,
       completed: false,
@@ -281,11 +144,11 @@ export const startModule = async (req: Request, res: Response): Promise<void> =>
       rewardsClaimed: false
     };
     
-    userProgress.push(newProgress);
+    const createdProgress = await learningDao.createOrUpdateUserProgress(newProgressData);
     
     res.status(201).json({
       message: 'Module started successfully',
-      progress: newProgress
+      progress: createdProgress
     });
   } catch (error) {
     console.error('Error starting learning module:', error);
@@ -302,14 +165,14 @@ export const submitModuleAnswers = async (req: Request, res: Response): Promise<
     const { userId, answers } = req.body;
     
     // Check if module exists
-    const module = learningModules.find(m => m.id === moduleId);
+    const module = await learningDao.getLearningModuleById(moduleId);
     if (!module) {
       res.status(404).json({ error: 'Learning module not found' });
       return;
     }
     
     // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(userId);
+    const wallet = await walletDao.getWalletByAddress(userId);
     if (!wallet) {
       res.status(404).json({ error: 'User wallet not found' });
       return;
@@ -322,19 +185,20 @@ export const submitModuleAnswers = async (req: Request, res: Response): Promise<
     }
     
     // Find existing progress or create new
-    let progress = userProgress.find(p => p.userId === userId && p.moduleId === moduleId);
+    let progress = await learningDao.getUserProgressByModuleId(userId, moduleId);
     
     if (!progress) {
-      progress = {
+      const newProgressData: SharedUserLearningProgress = {
         userId,
         moduleId,
         completed: false,
         score: 0,
-        attemptsCount: 0,
+        attemptsCount: 0, // Will be incremented below
         lastAttemptDate: Date.now(),
         rewardsClaimed: false
       };
-      userProgress.push(progress);
+      // Create it first so attemptsCount can be incremented properly
+      progress = await learningDao.createOrUpdateUserProgress(newProgressData);
     }
     
     // Calculate score
@@ -359,30 +223,31 @@ export const submitModuleAnswers = async (req: Request, res: Response): Promise<
     const score = Math.round((correctAnswers / module.questions.length) * 100);
     
     // Update progress
-    progress.score = Math.max(progress.score, score);  // Keep highest score
-    progress.attemptsCount++;
-    progress.lastAttemptDate = Date.now();
+    const updatedProgressData: SharedUserLearningProgress = {
+      ...progress,
+      score: Math.max(progress.score, score),  // Keep highest score
+      attemptsCount: progress.attemptsCount + 1,
+      lastAttemptDate: Date.now(),
+      completed: progress.completed || (score >= (module.completionCriteria?.minScore || 70))
+    };
     
-    // Check if passed
-    const passed = score >= (module.completionCriteria?.minScore || 70);
-    progress.completed = passed;
+    const savedProgress = await learningDao.createOrUpdateUserProgress(updatedProgressData);
     
     const response: any = {
       score,
       results,
-      passed,
-      progress
+      passed: savedProgress.completed,
+      progress: savedProgress
     };
     
-    // If passed, offer to claim rewards
-    if (passed && !progress.rewardsClaimed) {
+    if (savedProgress.completed && !savedProgress.rewardsClaimed) {
       response.rewards = {
         xp: module.xpReward,
         tokens: module.tokenReward,
         badge: module.badgeId ? { id: module.badgeId } : null
       };
       response.message = 'Congratulations! You passed the module and can claim rewards.';
-    } else if (passed) {
+    } else if (savedProgress.completed) {
       response.message = 'Congratulations! You passed the module again.';
     } else {
       response.message = `You scored ${score}%. You need ${module.completionCriteria?.minScore || 70}% to pass.`;
@@ -403,66 +268,58 @@ export const claimModuleRewards = async (req: Request, res: Response): Promise<v
     const { moduleId } = req.params;
     const { userId } = req.body;
     
-    // Check if module exists
-    const module = learningModules.find(m => m.id === moduleId);
+    const module = await learningDao.getLearningModuleById(moduleId);
     if (!module) {
       res.status(404).json({ error: 'Learning module not found' });
       return;
     }
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(userId);
+    const wallet = await walletDao.getWalletByAddress(userId);
     if (!wallet) {
       res.status(404).json({ error: 'User wallet not found' });
       return;
     }
     
-    // Find user progress
-    const progress = userProgress.find(p => p.userId === userId && p.moduleId === moduleId);
-    
+    const progress = await learningDao.getUserProgressByModuleId(userId, moduleId);
     if (!progress) {
       res.status(404).json({ error: 'No progress found for this module' });
       return;
     }
     
-    // Check if completed
     if (!progress.completed) {
       res.status(400).json({ error: 'You must complete the module before claiming rewards' });
       return;
     }
     
-    // Check if already claimed
     if (progress.rewardsClaimed) {
       res.status(400).json({ error: 'Rewards have already been claimed for this module' });
       return;
     }
     
-    // Prepare rewards
     const now = Date.now();
-    const rewards = {
+    const rewardsToClaim = {
       xp: module.xpReward,
       tokens: module.tokenReward,
-      badge: module.badgeId
+      badgeId: module.badgeId // Use badgeId consistent with SharedLearningModule
     };
     
-    // Mark as claimed
     progress.rewardsClaimed = true;
+    await learningDao.createOrUpdateUserProgress(progress);
     
-    // Create a transaction for the token reward
     const txHash = crypto.createHash('sha256')
       .update(`learning_reward_${moduleId}_${userId}_${now}`)
       .digest('hex');
     
-    const transaction = {
+    const transaction: SharedTransaction = {
       hash: txHash,
-      type: TransactionType.REWARD,
+      type: LocalTransactionType.REWARD,
       from: PVX_GENESIS_ADDRESS,
       to: userId,
-      amount: module.tokenReward,
+      amount: module.tokenReward, // This is number from shared type
       timestamp: now,
-      nonce: Math.floor(Math.random() * 100000),
-      signature: generateRandomHash(),
-      status: 'confirmed',
+      nonce: wallet.nonce ? wallet.nonce + 1 : 1, // Example nonce handling
+      signature: generateRandomHash(), // Placeholder
+      status: 'confirmed', // Or 'pending'
       metadata: {
         source: 'learning_lab',
         moduleId,
@@ -470,32 +327,26 @@ export const claimModuleRewards = async (req: Request, res: Response): Promise<v
       }
     };
     
-    // Add transaction to the blockchain
-    await memBlockchainStorage.createTransaction(transaction);
+    await transactionDao.createTransaction(transaction);
     
-    // Update wallet balance
     const newBalance = BigInt(wallet.balance) + BigInt(module.tokenReward);
-    wallet.balance = newBalance.toString();
-    wallet.lastSynced = new Date(now);
-    await memBlockchainStorage.updateWallet(wallet);
-    
-    // Award badge if applicable
-    if (module.badgeId) {
-      await updateBadgeStatus(userId, module.badgeId, true);
+    await walletDao.updateWallet({ ...wallet, balance: newBalance.toString(), lastUpdated: new Date(now) });
+    // Potentially update wallet nonce if that's handled centrally after tx creation
+
+    if (rewardsToClaim.badgeId) {
+      await updateBadgeStatus(userId, rewardsToClaim.badgeId, true);
     }
     
-    // Broadcast transaction via WebSocket
     try {
       broadcastTransaction(transaction);
     } catch (err) {
       console.error('Error broadcasting learning reward transaction:', err);
-      // Continue even if broadcast fails
     }
     
     res.status(200).json({
       success: true,
       message: 'Rewards claimed successfully',
-      rewards,
+      rewards: rewardsToClaim,
       transactionHash: txHash
     });
   } catch (error) {
@@ -511,19 +362,18 @@ export const getUserProgress = async (req: Request, res: Response): Promise<void
   try {
     const { userId } = req.params;
     
-    // Check if wallet exists
-    const wallet = await memBlockchainStorage.getWalletByAddress(userId);
+    const wallet = await walletDao.getWalletByAddress(userId);
     if (!wallet) {
       res.status(404).json({ error: 'User wallet not found' });
       return;
     }
     
-    // Get user progress for all modules
-    const progress = userProgress.filter(p => p.userId === userId);
-    
-    // Add module info to progress
-    const progressWithModuleInfo = progress.map(p => {
-      const module = learningModules.find(m => m.id === p.moduleId);
+    const progressRecords = await learningDao.getAllUserProgress(userId);
+    const allModules = await learningDao.getAllLearningModules();
+    const modulesMap = new Map(allModules.map(m => [m.id, m]));
+
+    const progressWithModuleInfo = progressRecords.map(p => {
+      const module = modulesMap.get(p.moduleId);
       return {
         ...p,
         moduleTitle: module?.title || 'Unknown Module',
@@ -537,34 +387,36 @@ export const getUserProgress = async (req: Request, res: Response): Promise<void
       };
     });
     
-    // Calculate stats
-    const completedModules = progress.filter(p => p.completed).length;
-    const totalXP = progress.reduce((sum, p) => {
+    const completedModulesCount = progressRecords.filter(p => p.completed).length;
+    const totalXP = progressRecords.reduce((sum, p) => {
       if (p.completed && p.rewardsClaimed) {
-        const module = learningModules.find(m => m.id === p.moduleId);
+        const module = modulesMap.get(p.moduleId);
         return sum + (module?.xpReward || 0);
       }
       return sum;
     }, 0);
     
-    const totalTokensEarned = progress.reduce((sum, p) => {
+    const totalTokensEarned = progressRecords.reduce((sum, p) => {
       if (p.completed && p.rewardsClaimed) {
-        const module = learningModules.find(m => m.id === p.moduleId);
+        const module = modulesMap.get(p.moduleId);
         return sum + (module?.tokenReward || 0);
       }
       return sum;
     }, 0);
     
+    const totalSystemModules = allModules.length;
+    const completionRate = totalSystemModules > 0 ? Math.round((completedModulesCount / totalSystemModules) * 100) : 0;
+
     const stats = {
       userId,
-      completedModules,
-      totalModules: learningModules.length,
-      completionRate: Math.round((completedModules / learningModules.length) * 100),
+      completedModules: completedModulesCount,
+      totalModules: totalSystemModules,
+      completionRate,
       totalXP,
       totalTokensEarned,
-      badgesEarned: progress.filter(p => {
+      badgesEarned: progressRecords.filter(p => {
         if (p.completed && p.rewardsClaimed) {
-          const module = learningModules.find(m => m.id === p.moduleId);
+          const module = modulesMap.get(p.moduleId);
           return !!module?.badgeId;
         }
         return false;
@@ -586,48 +438,57 @@ export const getUserProgress = async (req: Request, res: Response): Promise<void
  */
 export const getLeaderboard = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Group progress by user
-    const userStats = userProgress.reduce((acc, progress) => {
-      if (!acc[progress.userId]) {
-        acc[progress.userId] = {
+    const allProgressRecords = await learningDao.getAllUserProgressRecordsGlobally();
+    const allModules = await learningDao.getAllLearningModules();
+    const modulesMap = new Map(allModules.map(m => [m.id, m]));
+
+    const userStatsAggregated: Record<string, {
+      userId: string;
+      completedModules: number;
+      totalXP: number;
+      totalScore: number;
+      moduleCount: number;
+      averageScore?: number; // Make optional as it's calculated
+    }> = {};
+
+    for (const progress of allProgressRecords) {
+      if (!userStatsAggregated[progress.userId]) {
+        userStatsAggregated[progress.userId] = {
           userId: progress.userId,
           completedModules: 0,
           totalXP: 0,
           totalScore: 0,
-          averageScore: 0,
           moduleCount: 0
         };
       }
       
+      const userAgg = userStatsAggregated[progress.userId];
       if (progress.completed) {
-        acc[progress.userId].completedModules++;
+        userAgg.completedModules++;
       }
       
-      if (progress.rewardsClaimed) {
-        const module = learningModules.find(m => m.id === progress.moduleId);
+      if (progress.completed && progress.rewardsClaimed) {
+        const module = modulesMap.get(progress.moduleId);
         if (module) {
-          acc[progress.userId].totalXP += module.xpReward;
+          userAgg.totalXP += module.xpReward || 0;
         }
       }
-      
-      acc[progress.userId].totalScore += progress.score;
-      acc[progress.userId].moduleCount++;
-      acc[progress.userId].averageScore = Math.round(acc[progress.userId].totalScore / acc[progress.userId].moduleCount);
-      
-      return acc;
-    }, {} as Record<string, any>);
+      userAgg.totalScore += progress.score || 0;
+      userAgg.moduleCount++;
+    }
     
-    // Convert to array and sort by XP
-    const leaderboard = Object.values(userStats).sort((a: any, b: any) => b.totalXP - a.totalXP);
+    const leaderboard = Object.values(userStatsAggregated).map(userAgg => ({
+      ...userAgg,
+      averageScore: userAgg.moduleCount > 0 ? Math.round(userAgg.totalScore / userAgg.moduleCount) : 0
+    })).sort((a, b) => b.totalXP - a.totalXP); // Sort by XP
     
-    // Add rank and user info
-    const leaderboardWithRank = await Promise.all(leaderboard.map(async (entry: any, index: number) => {
-      const wallet = await memBlockchainStorage.getWalletByAddress(entry.userId);
-      
+    const leaderboardWithRank = await Promise.all(leaderboard.map(async (entry, index) => {
+      const wallet = await walletDao.getWalletByAddress(entry.userId);
       return {
         ...entry,
         rank: index + 1,
-        username: wallet ? shortenAddress(entry.userId) : 'Unknown User'
+        username: wallet ? shortenAddress(entry.userId) : 'Unknown User',
+        address: entry.userId // Added for clarity, though userId is the address
       };
     }));
     
@@ -642,4 +503,108 @@ export const getLeaderboard = async (req: Request, res: Response): Promise<void>
 function shortenAddress(address: string): string {
   if (!address) return 'Unknown';
   return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+};
+
+/**
+ * Get user learning statistics
+ */
+export const getUserLearningStats = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    const wallet = await walletDao.getWalletByAddress(userId);
+    if (!wallet) {
+      res.status(404).json({ error: 'User wallet not found' });
+      return;
+    }
+
+    const allUserProgress = await learningDao.getAllUserProgress(userId);
+    const allModules = await learningDao.getAllLearningModules(); // Fetch all modules to map details
+    const modulesMap = new Map(allModules.map(m => [m.id, m]));
+
+    let completedModules = 0;
+    let totalXP = 0;
+    let totalScoreSum = 0;
+    let modulesAttemptedCount = 0;
+    let lastActivityTimestamp = 0;
+    const earnedBadgeIds = new Set<string>();
+
+    for (const progress of allUserProgress) {
+      if (progress.completed) {
+        completedModules++;
+        const module = modulesMap.get(progress.moduleId);
+        if (module) {
+          if (progress.rewardsClaimed) {
+            totalXP += module.xpReward || 0;
+          }
+          if (module.badgeId) {
+            earnedBadgeIds.add(module.badgeId);
+          }
+        }
+      }
+      if (progress.attemptsCount > 0) { // Consider only attempted modules for avgScore
+          totalScoreSum += progress.score || 0;
+          modulesAttemptedCount++;
+      }
+      if (progress.lastAttemptDate > lastActivityTimestamp) {
+        lastActivityTimestamp = progress.lastAttemptDate;
+      }
+    }
+
+    const avgScore = modulesAttemptedCount > 0 ? Math.round(totalScoreSum / modulesAttemptedCount) : 0;
+
+    // Leaderboard Rank calculation
+    const allGlobalProgress = await learningDao.getAllUserProgressRecordsGlobally();
+    const userXpMap: Record<string, number> = {};
+    for (const prog of allGlobalProgress) {
+        if (prog.completed && prog.rewardsClaimed) {
+            const module = modulesMap.get(prog.moduleId); // Use the same modulesMap
+            if (module) {
+                userXpMap[prog.userId] = (userXpMap[prog.userId] || 0) + (module.xpReward || 0);
+            }
+        }
+    }
+    const sortedUsersByXp = Object.entries(userXpMap).sort((a, b) => b[1] - a[1]);
+    let leaderboardRank = -1;
+    const userRankIndex = sortedUsersByXp.findIndex(entry => entry[0] === userId);
+    if (userRankIndex !== -1) {
+        leaderboardRank = userRankIndex + 1;
+    }
+
+    const currentStreak = 0; // Mocked: Needs dedicated tracking
+    const timeSpent = 0; // Mocked: in minutes, needs dedicated tracking
+    const recentProgress = { // Mocked: Needs more specific definition or tracking
+        modulesThisWeek: 0,
+        pointsThisWeek: 0,
+        perfectScores: 0
+    };
+
+    const achievements = Array.from(earnedBadgeIds).map(badgeId => {
+        const module = allModules.find(m => m.badgeId === badgeId);
+        return {
+            id: badgeId,
+            name: module?.title ? `${module.title} Badge` : badgeId,
+            earnedAt: new Date(), // Placeholder: actual earnedAt would need to be stored
+            chainVerified: true // Placeholder
+        };
+    });
+
+    res.status(200).json({
+      userId,
+      completedModules,
+      totalModules: allModules.length,
+      currentStreak,
+      totalPoints: totalXP,
+      leaderboardRank: leaderboardRank > 0 ? leaderboardRank : "N/A",
+      timeSpent,
+      avgScore,
+      lastActivity: lastActivityTimestamp > 0 ? new Date(lastActivityTimestamp).toISOString() : "N/A",
+      achievements,
+      recentProgress,
+    });
+
+  } catch (error) {
+    console.error('Error getting user learning stats:', error);
+    res.status(500).json({ error: 'Failed to fetch user learning stats' });
+  }
 };
