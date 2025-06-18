@@ -181,3 +181,14 @@ export function bufferToString(buffer: Buffer): string {
 export function generateRandomId(length: number = 16): string {
   return crypto.randomBytes(length).toString('hex');
 }
+
+// Placeholder for crypto utils
+export const deriveAESKeyFromPassphrase = async (passphrase: string): Promise<string> => {
+  console.log('Deriving AES key from passphrase (mock implementation)');
+  return Promise.resolve(`mockAESKey_for_${passphrase}`);
+};
+
+export const encryptWithAES = async (data: string, aesKey: string): Promise<string> => {
+  console.log(`Encrypting data with AES key ${aesKey} (mock implementation)`);
+  return Promise.resolve(`encrypted_${data}_with_${aesKey}`);
+};

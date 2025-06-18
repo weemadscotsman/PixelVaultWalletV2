@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './index';
 import { wallets } from './schema';
 import { Wallet } from '../mem-blockchain';
+import crypto from 'crypto';
 
 /**
  * Data access object for wallets

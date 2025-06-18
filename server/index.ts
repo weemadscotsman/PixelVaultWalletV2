@@ -32,6 +32,11 @@ app.use(json());
 app.use(urlencoded({ extended: true }));
 console.log("[BACKEND LIFECYCLE] Stage 3: Core middleware (trust proxy, cors, json, urlencoded) added.");
 
+// Wallet Routes
+import walletRoutes from './routes/wallet';
+app.use('/api/wallet', walletRoutes);
+console.log("[BACKEND LIFECYCLE] Wallet routes /api/wallet mounted.");
+
 // --- Basic Test Route ---
 app.get('/api/ping', (req: Request, res: Response) => {
   console.log("[BACKEND REQUEST] GET /api/ping");

@@ -644,6 +644,7 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
   // ============= WALLET SYSTEM =============
   
   // Get wallet information
+  /*
   app.get('/api/wallet/:address', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -661,8 +662,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to get wallet information' });
     }
   });
+  */
 
   // List all wallets
+  /*
   app.get('/api/wallet/all', async (req: Request, res: Response) => {
     try {
       const wallets = [
@@ -681,8 +684,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to list wallets' });
     }
   });
+  */
 
   // Create new wallet
+  /*
   app.post('/api/wallet/create', async (req: Request, res: Response) => {
     try {
       const { passphrase } = req.body;
@@ -709,8 +714,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to create wallet' });
     }
   });
+  */
 
   // Get wallet balance
+  /*
   app.get('/api/wallet/:address/balance', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -725,8 +732,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to get balance' });
     }
   });
+  */
 
   // Get wallet transactions
+  /*
   app.get('/api/wallet/:address/transactions', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -748,8 +757,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to get transactions' });
     }
   });
+  */
 
   // Export wallet
+  /*
   app.post('/api/wallet/:address/export', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -763,8 +774,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to export wallet' });
     }
   });
+  */
 
   // Wallet authentication
+  /*
   app.post('/api/wallet/:address/auth', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -785,8 +798,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Authentication failed' });
     }
   });
+  */
 
   // Send transaction
+  /*
   app.post('/api/wallet/send', async (req: Request, res: Response) => {
     try {
       const { fromAddress, toAddress, amount, passphrase } = req.body;
@@ -810,8 +825,10 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to send transaction' });
     }
   });
+  */
 
   // Wallet history
+  /*
   app.get('/api/wallet/history/:address', async (req: Request, res: Response) => {
     try {
       const { address } = req.params;
@@ -831,6 +848,7 @@ export function registerRoutes(app: any, simplifiedStorage?: any) {
       res.status(500).json({ error: 'Failed to get wallet history' });
     }
   });
+  */
 
   // ============= MISSING CRITICAL API ENDPOINTS =============
 
