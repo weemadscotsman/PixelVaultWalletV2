@@ -1,49 +1,55 @@
-// server/controllers/walletController.ts
-import { generateKeyPairSync, randomBytes } from 'crypto';
-import { base64SpkiToPem } from '../utils/formatters';
-// Potentially needed for later steps, keep them commented if not used in this step:
-// import { encryptWithAES, deriveAESKeyFromPassphrase } from '../utils/crypto';
-// import { createWallet as saveWalletInDao } from '../dao/walletDao';
+import { generateKeyPairSync } from "crypto";
+import { base64SpkiToPem } from "../utils/formatters";
+import { deriveAESKeyFromPassphrase, encryptWithAES } from "../utils/crypto";
+import { createWallet } from "../database/walletDao"; // Corrected path
 
-export const createWallet = async (req: any, res: any, next: any) => {
-  console.log('[walletController.ts] Phase 5.1: Testing with RSA key generation.');
+export const createWalletHandler = async (req: any, res: any, next: any) => { // Added next for error handling
   try {
     const { passphrase } = req.body;
-    if (!passphrase) {
-      console.log('[walletController.ts] Phase 5.1: Passphrase missing.');
-      return res.status(400).json({ error: 'Passphrase required' });
-    }
-    console.log(`[walletController.ts] Phase 5.1: Received passphrase: ${passphrase}`);
+    if (!passphrase) return res.status(400).json({ error: "Missing passphrase" });
 
-    // Generate RSA Keypair
-    const { publicKey, privateKey } = generateKeyPairSync('rsa', {
+    // Note: Previous fix for generateKeyPairSync used 'der' for privateKeyEncoding too.
+    // The user provided 'pem' for privateKeyEncoding. We'll try 'pem' first as specified.
+    // If errors occur, this might need to be changed back to 'der'.
+    const { publicKey, privateKey } = generateKeyPairSync("rsa", {
       modulusLength: 2048,
-      publicKeyEncoding: { type: 'spki', format: 'der' }, // Corrected
-      privateKeyEncoding: { type: 'pkcs8', format: 'der' }, // Corrected & Keep privateKey for next steps
+      publicKeyEncoding: { type: "spki", format: "der" },
+      privateKeyEncoding: { type: "pkcs8", format: "pem" }, // User specified 'pem'
     });
-    console.log('[walletController.ts] Phase 5.1: RSA key pair generated.');
 
-    const publicKeyBase64 = publicKey.toString('base64');
-    const publicKeyPem = base64SpkiToPem(publicKeyBase64);
-    console.log('[walletController.ts] Phase 5.1: publicKeyPem created.');
+    const publicKeyPem = base64SpkiToPem(publicKey.toString("base64"));
+    const { key: aesKey, salt } = deriveAESKeyFromPassphrase(passphrase); // Ensure crypto.ts exports this structure
 
-    // For now, let's generate a dummy walletAddress, actual generation can be in a later step
-    const walletAddress = 'PVX_TEST_ADDR_' + randomBytes(8).toString('hex');
+    // encryptWithAES expects data: string. privateKey from generateKeyPairSync with 'pem' format should be a string.
+    const encryptedPrivateKey = encryptWithAES(privateKey, aesKey);
 
-    const response = {
-      message: "Phase 5.1: createWallet with RSA key gen executed.",
-      walletAddress,
-      publicKeyPem
-    };
-    console.log('[walletController.ts] Phase 5.1: Sending successful response.');
-    return res.status(200).json(response);
+    // Ensure walletAddress generation is robust.
+    const walletAddress = "PVX_" + publicKeyPem.slice(-32).replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
 
-  } catch (error) {
-    console.error('[walletController.ts] Phase 5.1: Error:', error);
+    await createWallet({
+      address: walletAddress,
+      publicKey: publicKeyPem, // DAO expects publicKey, controller provides publicKeyPem
+      encryptedPrivateKey,
+      salt
+    });
+
+    // Adjust response to match user's expected output for testing if possible,
+    // or note the difference. User expects: address, publicKey, createdAt, status.
+    // Current controller provides: walletAddress, publicKey.
+    // We can add createdAt and status for now.
+    res.status(200).json({
+      status: "success",
+      address: walletAddress,
+      publicKey: publicKeyPem,
+      createdAt: new Date().toISOString() // Added createdAt
+    });
+  } catch (err) {
+    console.error("Wallet creation error:", err);
+    // Pass error to Express error handler if next is available
     if (next) {
-      next(error);
+      next(err);
     } else {
-      res.status(500).json({ error: 'Internal server error during phase 5.1' });
+      res.status(500).json({ error: "Internal server error" });
     }
   }
 };

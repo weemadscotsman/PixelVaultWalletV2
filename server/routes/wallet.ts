@@ -1,19 +1,13 @@
 import express from 'express';
-import { createWallet } from '../controllers/walletController';
-
-import { createWallet } from '../controllers/walletController';
+// Ensure the import path and name are correct
+import { createWalletHandler } from '../controllers/walletController';
 
 const router = express.Router();
-console.log('[WalletRoutes] Router created.');
 
-router.post('/new', async (req: any, res: any, next: any) => { // Make the wrapper async
-  console.log('[WalletRoutes] /new POST route hit. Attempting to call createWallet...');
-  try {
-    await createWallet(req, res); // Await the async controller function
-  } catch (error) {
-    console.error('[WalletRoutes] Error calling createWallet:', error);
-    next(error); // Pass error to Express error handler
-  }
-});
+// POST /api/wallet/new - uses the new handler
+router.post('/new', createWalletHandler);
+
+// Placeholder for GET /api/wallet/:address
+// router.get('/:address', getWalletHandler); // Assuming a getWalletHandler will be created
 
 export default router;

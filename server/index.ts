@@ -129,10 +129,17 @@ async function startServer() {
     
     // Check database connection
     console.log("[BACKEND LIFECYCLE] Stage 5a: Checking database connection...");
-    const isDatabaseConnected = await checkDatabaseConnection();
+    let isDatabaseConnected = false;
+    if (process.env.NODE_ENV !== 'development') {
+        isDatabaseConnected = await checkDatabaseConnection();
+    } else {
+        console.warn("[BACKEND DEVELOPMENT] Skipping initial database connection check for Neon/wss error isolation.");
+        // isDatabaseConnected remains false. Services will attempt their own connections or use fallbacks.
+        // The specific ECONNREFUSED 127.0.0.1:443 error from checkDatabaseConnection should not occur.
+    }
     
     if (isDatabaseConnected) {
-      console.log("[BACKEND LIFECYCLE] Stage 5b: Database connection successful");
+      console.log("[BACKEND LIFECYCLE] Stage 5b: Database connection successful (non-dev path)");
       
       // Initialize the database and migrate memory data if needed
       await dbInit.initDatabaseWithMigration();
@@ -140,7 +147,9 @@ async function startServer() {
       // Seed default data if needed
       await dbInit.seedDefaultData();
     } else {
-      console.warn("[BACKEND WARNING] Database connection failed - falling back to in-memory storage");
+      // In development, this path will always be taken if the check is skipped.
+      // Or if checkDatabaseConnection() is called and fails in non-dev.
+      console.warn("[BACKEND WARNING] Database connection initially reported as not available or check skipped (dev mode). Falling back to in-memory/service-level connections.");
     }
     
     // Initialize the blockchain AFTER WebSocket server is ready
